@@ -1,213 +1,822 @@
+/**
+ * CSS: auth.css
+ * Story: S1-03 - Quên mật khẩu và đặt lại mật khẩu qua email
+ * Author: Hứa Lan Hương (FE)
+ * Project: CRM Bán Hàng - Nhóm 10
+ */
+
+/* ==========================================================================
+   1. DESIGN TOKENS & VARIABLES
+   ========================================================================== */
 :root {
-    --primary-color: #2563eb;
-    --primary-hover: #1d4ed8;
-    --primary-light: #eff6ff;
-    --text-main: #1e293b;
-    --text-muted: #64748b;
-    --bg-page: #f8fafc;
-    --bg-card: #ffffff;
-    --border-color: #e2e8f0;
-    --success-bg: #ecfdf5;
-    --success-border: #10b981;
+    /* Primary Colors */
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-active: #3730a3;
+    --primary-light: #eef2ff;
+    --primary-focus: rgba(79, 70, 229, 0.22);
+
+    /* Semantic Status Colors */
+    --success: #10b981;
+    --success-hover: #059669;
+    --success-light: #ecfdf5;
+    --success-border: #a7f3d0;
     --success-text: #065f46;
-    --error-bg: #fef2f2;
-    --error-border: #ef4444;
-    --error-text: #991b1b;
-    --warning-bg: #fffbeb;
-    --warning-border: #f59e0b;
+
+    --warning: #f59e0b;
+    --warning-light: #fffbeb;
+    --warning-border: #fde68a;
     --warning-text: #92400e;
-    --radius-md: 8px;
-    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+    --danger: #ef4444;
+    --danger-light: #fef2f2;
+    --danger-border: #fecaca;
+    --danger-text: #991b1b;
+
+    --info: #0284c7;
+    --info-light: #f0f9ff;
+    --info-border: #bae6fd;
+    --info-text: #075985;
+
+    /* Neutrals / Slate */
+    --slate-900: #0f172a;
+    --slate-800: #1e293b;
+    --slate-700: #334155;
+    --slate-600: #475569;
+    --slate-500: #64748b;
+    --slate-400: #94a3b8;
+    --slate-300: #cbd5e1;
+    --slate-200: #e2e8f0;
+    --slate-100: #f1f5f9;
+    --slate-50:  #f8fafc;
+    --white:     #ffffff;
+
+    /* Typography */
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+    --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.09), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+    --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+
+    /* Radii */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+
+    /* Transitions */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-* {
+/* ==========================================================================
+   2. RESET & BASE
+   ========================================================================== */
+*, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: var(--bg-page);
-    color: var(--text-main);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+body.crm-auth-body {
+    font-family: var(--font-sans);
+    background-color: var(--slate-50);
+    background-image: 
+        radial-gradient(circle at 10% 10%, rgba(79, 70, 229, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(14, 165, 233, 0.05) 0%, transparent 40%);
+    color: var(--slate-700);
+    line-height: 1.6;
     min-height: 100vh;
-    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+}
+
+.d-none {
+    display: none !important;
+}
+
+/* ==========================================================================
+   3. HEADER & TOP BAR
+   ========================================================================== */
+.auth-topbar {
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.auth-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    text-decoration: none;
+    color: var(--slate-900);
+    font-weight: 800;
+    font-size: 1.15rem;
+}
+
+.brand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+    color: var(--white);
+    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+}
+
+.brand-badge {
+    padding: 0.2rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background-color: var(--primary-light);
+    color: var(--primary);
+    border-radius: var(--radius-full);
+}
+
+/* ==========================================================================
+   4. MAIN AUTH WRAPPER
+   ========================================================================== */
+.auth-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 1rem 3rem;
 }
 
 .auth-container {
     width: 100%;
-    max-width: 440px;
+    max-width: 480px;
+}
+
+.auth-container.wide {
+    max-width: 540px;
 }
 
 .auth-card {
-    background-color: var(--bg-card);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-card);
-    border: 1px solid var(--border-color);
-    padding: 32px;
+    background-color: var(--white);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--slate-200);
+    box-shadow: var(--shadow-xl);
+    padding: 2.25rem 2.25rem;
+    animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Auth Header inside Card */
 .auth-header {
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 1.75rem;
 }
 
-.auth-logo {
+.auth-icon-circle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background-color: var(--primary-light);
-    color: var(--primary-color);
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 12px;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--primary-light) 0%, #e0e7ff 100%);
+    color: var(--primary);
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+}
+
+.auth-icon-circle.success {
+    background: linear-gradient(135deg, var(--success-light) 0%, #d1fae5 100%);
+    color: var(--success);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.auth-icon-circle.danger {
+    background: linear-gradient(135deg, var(--danger-light) 0%, #fee2e2 100%);
+    color: var(--danger);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
 .auth-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text-main);
-    margin-bottom: 8px;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--slate-900);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.4rem;
 }
 
 .auth-subtitle {
-    font-size: 14px;
-    color: var(--text-muted);
+    font-size: 0.9rem;
+    color: var(--slate-500);
     line-height: 1.5;
 }
 
+/* Security Notice Pills */
+.security-notice-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.85rem;
+    background-color: var(--slate-50);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-md);
+    margin-bottom: 1.5rem;
+    font-size: 0.8rem;
+    color: var(--slate-600);
+}
+
+.security-notice-pill svg {
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+/* ==========================================================================
+   5. ALERTS & MESSAGES
+   ========================================================================== */
 .alert-message {
-    padding: 14px 16px;
-    border-radius: 6px;
-    font-size: 14px;
-    line-height: 1.5;
-    margin-bottom: 20px;
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    gap: 0.75rem;
+    padding: 0.95rem 1.15rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    animation: alertFadeIn 0.25s ease-out;
+}
+
+@keyframes alertFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .alert-message.alert-success {
-    background-color: var(--success-bg);
+    background-color: var(--success-light);
     border: 1px solid var(--success-border);
     color: var(--success-text);
 }
 
 .alert-message.alert-danger {
-    background-color: var(--error-bg);
-    border: 1px solid var(--error-border);
-    color: var(--error-text);
+    background-color: var(--danger-light);
+    border: 1px solid var(--danger-border);
+    color: var(--danger-text);
 }
 
 .alert-message.alert-warning {
-    background-color: var(--warning-bg);
+    background-color: var(--warning-light);
     border: 1px solid var(--warning-border);
     color: var(--warning-text);
 }
 
+.alert-icon-col {
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.alert-body {
+    flex: 1;
+}
+
+.alert-body strong {
+    display: block;
+    margin-bottom: 0.15rem;
+}
+
+/* AC3: Email Sent Success Card */
+.email-sent-card {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    border: 1.5px solid var(--success-border);
+    border-radius: var(--radius-md);
+    padding: 1.35rem 1.25rem;
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.email-sent-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--success-text);
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.6rem;
+}
+
+.email-sent-desc {
+    font-size: 0.85rem;
+    color: #166534;
+    line-height: 1.5;
+    margin-bottom: 0.85rem;
+}
+
+.email-sent-instructions {
+    list-style: none;
+    font-size: 0.825rem;
+    color: #14532d;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding-left: 0.2rem;
+}
+
+.email-sent-instructions li {
+    position: relative;
+    padding-left: 1.2rem;
+    line-height: 1.4;
+}
+
+.email-sent-instructions li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+    color: var(--success);
+}
+
+/* Resend section */
+.resend-box {
+    margin-top: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px dashed #bbf7d0;
+    font-size: 0.8rem;
+    color: #166534;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.resend-link {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.resend-link:hover {
+    text-decoration: underline;
+}
+
+/* ==========================================================================
+   6. FORMS & INPUTS
+   ========================================================================== */
 .form-group {
-    margin-bottom: 18px;
+    margin-bottom: 1.35rem;
 }
 
 .form-label {
     display: block;
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 6px;
-    color: var(--text-main);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--slate-800);
+    margin-bottom: 0.45rem;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon-left {
+    position: absolute;
+    left: 0.95rem;
+    color: var(--slate-400);
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    transition: color var(--transition-fast);
 }
 
 .form-control {
     width: 100%;
-    padding: 10px 14px;
-    font-size: 14px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
+    height: 46px;
+    padding: 0.65rem 2.75rem 0.65rem 2.65rem;
+    font-family: var(--font-sans);
+    font-size: 0.925rem;
+    color: var(--slate-900);
+    background-color: var(--white);
+    border: 1.5px solid var(--slate-300);
+    border-radius: var(--radius-md);
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    background-color: #fff;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-control.no-icon-right {
+    padding-right: 1rem;
+}
+
+.form-control::placeholder {
+    color: var(--slate-400);
+    font-size: 0.875rem;
 }
 
 .form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3.5px var(--primary-focus);
 }
 
-.form-hint {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-top: 5px;
+.input-wrapper:focus-within .input-icon-left {
+    color: var(--primary);
 }
 
-.btn-primary {
-    display: inline-block;
-    width: 100%;
-    padding: 11px 16px;
-    font-size: 14px;
-    font-weight: 600;
-    text-align: center;
-    color: #fff;
-    background-color: var(--primary-color);
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    text-decoration: none;
+/* Validation states */
+.form-control.is-invalid {
+    border-color: var(--danger) !important;
+    background-color: #fffafb;
 }
 
-.btn-primary:hover {
-    background-color: var(--primary-hover);
+.form-control.is-invalid:focus {
+    box-shadow: 0 0 0 3.5px rgba(239, 68, 68, 0.2) !important;
 }
 
-.btn-secondary {
-    display: inline-block;
-    width: 100%;
-    padding: 11px 16px;
-    font-size: 14px;
-    font-weight: 600;
-    text-align: center;
-    color: var(--text-main);
-    background-color: #f1f5f9;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    cursor: pointer;
-    text-decoration: none;
-    margin-top: 10px;
+.form-control.is-valid {
+    border-color: var(--success);
 }
 
-.btn-secondary:hover {
-    background-color: #e2e8f0;
+.field-hint {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.775rem;
+    color: var(--slate-500);
+    line-height: 1.4;
 }
 
-.auth-footer {
-    text-align: center;
-    margin-top: 24px;
-    font-size: 14px;
-    color: var(--text-muted);
-}
-
-.auth-footer a {
-    color: var(--primary-color);
-    text-decoration: none;
+.field-error {
+    display: none;
+    margin-top: 0.35rem;
+    font-size: 0.8rem;
+    color: var(--danger);
     font-weight: 500;
 }
 
-.auth-footer a:hover {
+.field-error.active {
+    display: block;
+    animation: alertFadeIn 0.2s ease-in-out;
+}
+
+/* Eye Toggle Button */
+.btn-toggle-pwd {
+    position: absolute;
+    right: 0.65rem;
+    background: transparent;
+    border: none;
+    padding: 0.35rem;
+    color: var(--slate-400);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--transition-fast);
+}
+
+.btn-toggle-pwd:hover {
+    color: var(--slate-700);
+}
+
+.btn-toggle-pwd:focus-visible {
+    outline: 2px solid var(--primary);
+}
+
+/* ==========================================================================
+   7. PASSWORD STRENGTH METER & CHECKLIST (Story S1-03 / S1-04)
+   ========================================================================== */
+.strength-meter-container {
+    margin-top: 0.65rem;
+    padding: 0.65rem 0.85rem;
+    background-color: var(--slate-50);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--slate-200);
+}
+
+.strength-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.775rem;
+    margin-bottom: 0.35rem;
+}
+
+.strength-title {
+    color: var(--slate-600);
+    font-weight: 600;
+}
+
+.strength-level {
+    font-weight: 700;
+    color: var(--slate-400);
+}
+
+.strength-level.weak { color: var(--danger); }
+.strength-level.medium { color: var(--warning); }
+.strength-level.good { color: #0284c7; }
+.strength-level.strong { color: var(--success); }
+
+.strength-bars {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.3rem;
+    height: 5px;
+}
+
+.strength-bars .bar {
+    height: 100%;
+    border-radius: var(--radius-full);
+    background-color: var(--slate-200);
+    transition: background-color var(--transition-fast);
+}
+
+/* Checklist */
+.password-checklist-card {
+    margin-top: 0.75rem;
+    background-color: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 0.85rem;
+}
+
+.checklist-heading {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--slate-700);
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.checklist-items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.checklist-item {
+    font-size: 0.8rem;
+    color: var(--slate-500);
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    transition: color var(--transition-fast);
+}
+
+.rule-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: var(--radius-full);
+    font-size: 0.65rem;
+    font-weight: bold;
+    background-color: var(--slate-100);
+    color: var(--slate-400);
+    transition: all var(--transition-fast);
+}
+
+.checklist-item.met {
+    color: var(--slate-800);
+}
+
+.checklist-item.met .rule-icon {
+    background-color: var(--success-light);
+    color: var(--success);
+    border: 1px solid var(--success-border);
+}
+
+/* Match status */
+.match-status {
+    margin-top: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    min-height: 1.1rem;
+}
+
+.match-status.match { color: var(--success); }
+.match-status.mismatch { color: var(--danger); }
+
+/* ==========================================================================
+   8. BUTTONS & ACTIONS
+   ========================================================================== */
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    height: 48px;
+    padding: 0 1.5rem;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--white);
+    background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+    transition: all var(--transition-fast);
+    margin-top: 0.5rem;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.45);
+    transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 46px;
+    padding: 0 1.25rem;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--slate-700);
+    background-color: var(--white);
+    border: 1.5px solid var(--slate-300);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    margin-top: 0.65rem;
+}
+
+.btn-secondary:hover {
+    background-color: var(--slate-100);
+    border-color: var(--slate-400);
+    color: var(--slate-900);
+}
+
+/* Spinner */
+.btn-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid rgba(255, 255, 255, 0.3);
+    border-top-color: var(--white);
+    border-radius: var(--radius-full);
+    animation: btnSpin 0.75s linear infinite;
+}
+
+@keyframes btnSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   9. TOKEN STATUS STATES (Expired / Used / Invalid)
+   ========================================================================== */
+.token-status-card {
+    text-align: center;
+    padding: 1.25rem 0.5rem;
+}
+
+.token-status-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.token-status-icon.expired {
+    background-color: var(--warning-light);
+    color: var(--warning);
+}
+
+.token-status-icon.used {
+    background-color: var(--slate-100);
+    color: var(--slate-600);
+}
+
+.token-status-icon.invalid {
+    background-color: var(--danger-light);
+    color: var(--danger);
+}
+
+.token-status-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--slate-900);
+    margin-bottom: 0.5rem;
+}
+
+.token-status-desc {
+    font-size: 0.875rem;
+    color: var(--slate-600);
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+/* Success celebratory state */
+.success-card-celebrate {
+    text-align: center;
+    padding: 1.5rem 0.5rem;
+}
+
+.success-card-celebrate .celebrate-icon {
+    width: 68px;
+    height: 68px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--success-light) 0%, #a7f3d0 100%);
+    color: var(--success);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
+}
+
+.success-card-celebrate h2 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--slate-900);
+    margin-bottom: 0.5rem;
+}
+
+.success-card-celebrate p {
+    font-size: 0.9rem;
+    color: var(--slate-600);
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+/* ==========================================================================
+   10. FOOTER
+   ========================================================================== */
+.auth-card-footer {
+    text-align: center;
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--slate-100);
+    font-size: 0.85rem;
+    color: var(--slate-500);
+}
+
+.auth-card-footer a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color var(--transition-fast);
+}
+
+.auth-card-footer a:hover {
+    color: var(--primary-hover);
     text-decoration: underline;
 }
 
-.token-notice {
-    font-size: 13px;
-    color: var(--text-muted);
-    background: #f8fafc;
-    border: 1px dashed var(--border-color);
-    padding: 10px 14px;
-    border-radius: 6px;
-    margin-bottom: 18px;
+.crm-auth-page-footer {
+    text-align: center;
+    padding: 1rem 1.5rem 1.5rem;
+    font-size: 0.8rem;
+    color: var(--slate-400);
+}
+
+/* ==========================================================================
+   11. RESPONSIVE
+   ========================================================================== */
+@media (max-width: 576px) {
+    .auth-topbar {
+        padding: 1rem 1.25rem;
+    }
+
+    .auth-card {
+        padding: 1.75rem 1.25rem;
+    }
+
+    .auth-title {
+        font-size: 1.3rem;
+    }
 }
