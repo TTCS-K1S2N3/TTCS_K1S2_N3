@@ -1,23 +1,48 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="vn.nhom10.crm.dto.ThongTinDieuHuongDTO" %>
 <%@ page import="vn.nhom10.crm.model.NguoiDung" %>
+<%@ page import="vn.nhom10.crm.model.ModuleHeThong" %>
 <%@ page import="vn.nhom10.crm.dto.MucMenuDTO" %>
+<%@ page import="vn.nhom10.crm.service.MenuService" %>
+<%@ page import="java.util.Arrays" %>
+<%@ page import="java.util.Comparator" %>
 <%
     ThongTinDieuHuongDTO navData = (ThongTinDieuHuongDTO) request.getAttribute("thongTinDieuHuong");
+    if (navData == null) {
+        navData = new ThongTinDieuHuongDTO();
+    }
     NguoiDung currentUser = (NguoiDung) request.getAttribute("nguoiDungHienTai");
+    if (currentUser == null) {
+        currentUser = new NguoiDung();
+    }
+
+    String currentRoleParam = request.getParameter("vaiTro");
+    String simRole = (currentRoleParam != null && !currentRoleParam.isBlank())
+            ? currentRoleParam
+            : (!currentUser.getDanhSachVaiTroEnum().isEmpty()
+                ? currentUser.getDanhSachVaiTroEnum().iterator().next().name()
+                : "SALES_REP");
+
+    ModuleHeThong[] allModules = ModuleHeThong.values();
+    Arrays.sort(allModules, Comparator.comparingInt(ModuleHeThong::getThuTu));
+    MenuService menuService = MenuService.getInstance();
 %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu Điều Hướng Phân Quyền | CRM Bán Hàng</title>
+    <title>Menu Điều Hướng Phân Quyền | CRM Bán Hàng (S1-06)</title>
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- CSS Navigation & Responsive cho 360px -->
     <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/navigation.css">
 </head>
 <body class="crm-body">
 
-    <!-- Bao gồm Component Điều hướng Navigation (Top bar + Sidebar) -->
+    <!-- Bao gồm Component Điều hướng Navigation (Top bar + Sidebar Drawer) -->
     <jsp:include page="/WEB-INF/views/layout/navigation.jsp" />
 
     <!-- Main Content Area -->
@@ -27,14 +52,16 @@
             <!-- Banner Story Info -->
             <div class="crm-story-card">
                 <div class="crm-story-header">
-                    <span class="crm-pill crm-pill-epic">EP-01</span>
-                    <span class="crm-pill crm-pill-story">S1-06</span>
+                    <span class="crm-pill crm-pill-epic">EP-01 Xác thực & Phân quyền</span>
+                    <span class="crm-pill crm-pill-story">Story S1-06</span>
+                    <span class="crm-pill crm-pill-fe">FE: Ngô Trung Kiên</span>
                     <span class="crm-pill crm-pill-role">BE: Thào A Khua</span>
                 </div>
-                <h1 class="crm-story-title">Kiểm thử Menu Điều Hướng Theo Phân Quyền</h1>
+                <h1 class="crm-story-title">Kiểm thử Menu Điều Hướng Theo Phân Quyền & Responsive 360px</h1>
                 <p class="crm-story-desc">
-                    Hệ thống tự động lọc các mục menu dựa trên vai trò của người dùng.
-                    Mục menu không thuộc quyền sẽ bị ẩn hoàn toàn khỏi danh sách menu phía server.
+                    Hệ thống tự động lọc các mục menu dựa trên vai trò của người dùng trong phiên làm việc.
+                    Mục menu không thuộc quyền được loại bỏ hoàn toàn phía server.
+                    Giao diện thanh điều hướng hỗ trợ mở/đóng drawer và cử chỉ vuốt chạm mượt mà trên thiết bị di động 360px.
                 </p>
             </div>
 
@@ -47,8 +74,8 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         </div>
                         <div class="crm-ac-info">
-                            <strong>Mục menu không thuộc quyền thì không hiển thị</strong>
-                            <p>Số mục menu hiện tại: <strong><%= navData.getSoLuongMenu() %></strong> mục.</p>
+                            <strong>AC 1: Mục menu không thuộc quyền thì không hiển thị</strong>
+                            <p>Hiển thị <strong><%= navData.getSoLuongMenu() %> / 12</strong> module khả dụng. Đã ẩn <strong><%= 12 - navData.getSoLuongMenu() %></strong> module không thuộc quyền.</p>
                         </div>
                     </div>
                     <div class="crm-ac-item pass">
@@ -56,8 +83,8 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         </div>
                         <div class="crm-ac-info">
-                            <strong>Hiển thị tên, vai trò và nhóm kinh doanh</strong>
-                            <p>Họ tên: <strong><%= navData.getHoTen() %></strong> | Nhóm: <strong><%= navData.getTenNhomKinhDoanh() %></strong></p>
+                            <strong>AC 2: Hiển thị tên, vai trò và nhóm kinh doanh</strong>
+                            <p>Họ tên: <strong><%= navData.getHoTen() %></strong> | Vai trò: <strong><%= navData.getVaiTroHienThi() %></strong> | Nhóm: <strong><%= navData.getTenNhomKinhDoanh() %></strong></p>
                         </div>
                     </div>
                     <div class="crm-ac-item pass">
@@ -65,17 +92,22 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         </div>
                         <div class="crm-ac-info">
-                            <strong>Dùng được thuận tiện trên màn hình 360px</strong>
-                            <p>Hamburger drawer mở/đóng mượt mà, touch target >= 44px, không tràn ngang.</p>
+                            <strong>AC 3: Dùng được thuận tiện trên màn hình 360px</strong>
+                            <p>Touch target tối thiểu 44px, hamburger drawer mượt mà, hỗ trợ touch swipe, không tràn ngang.</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Role Switcher Panel for Testing All 7 Roles -->
+            <!-- Role Switcher Panel for Testing All Roles -->
             <div class="crm-role-switcher-card">
-                <h2 class="crm-section-title">Chuyển đổi vai trò kiểm thử (7 Vai Trò Hệ Thống)</h2>
-                <p class="crm-switcher-help">Nhấp chọn một vai trò để kiểm tra sự thay đổi của menu điều hướng và thông tin người dùng:</p>
+                <div class="crm-card-header-flex">
+                    <div>
+                        <h2 class="crm-section-title">Chuyển đổi vai trò kiểm thử hệ thống</h2>
+                        <p class="crm-switcher-help">Chọn một vai trò để kiểm tra sự thay đổi tức thì của menu điều hướng và hồ sơ người dùng:</p>
+                    </div>
+                    <span class="crm-badge crm-badge-live">Trực tiếp</span>
+                </div>
                 <div class="crm-role-buttons">
                     <a href="?vaiTro=SALES_REP" class="crm-btn-role <%= currentUser.coVaiTro("SALES_REP") && !currentUser.coVaiTro("TEAM_LEAD") ? "active" : "" %>">
                         <span class="role-title">Nhân viên kinh doanh</span>
@@ -114,27 +146,31 @@
 
             <!-- Current User State Summary -->
             <div class="crm-summary-card">
-                <h2 class="crm-section-title">Thông tin người dùng hiện tại trong Session</h2>
+                <h2 class="crm-section-title">Hồ sơ người dùng hiện tại (Session State - AC 2)</h2>
                 <div class="crm-meta-grid">
                     <div class="crm-meta-col">
                         <div class="crm-meta-label">Họ và tên:</div>
                         <div class="crm-meta-value highlight"><%= navData.getHoTen() %></div>
                     </div>
                     <div class="crm-meta-col">
-                        <div class="crm-meta-label">Email:</div>
+                        <div class="crm-meta-label">Email tài khoản:</div>
                         <div class="crm-meta-value"><%= navData.getEmail() %></div>
                     </div>
                     <div class="crm-meta-col">
-                        <div class="crm-meta-label">Vai trò:</div>
-                        <div class="crm-meta-value highlight"><%= navData.getVaiTroHienThi() %></div>
+                        <div class="crm-meta-label">Vai trò hiển thị:</div>
+                        <div class="crm-meta-value highlight">
+                            <span class="crm-badge crm-badge-role"><%= navData.getVaiTroHienThi() %></span>
+                        </div>
                     </div>
                     <div class="crm-meta-col">
                         <div class="crm-meta-label">Nhóm kinh doanh:</div>
-                        <div class="crm-meta-value highlight"><%= navData.getTenNhomKinhDoanh() %></div>
+                        <div class="crm-meta-value highlight">
+                            <span class="crm-badge crm-badge-team"><%= navData.getTenNhomKinhDoanh() %></span>
+                        </div>
                     </div>
                 </div>
 
-                <h3 class="crm-sub-title">Danh sách mục menu đang được cấp quyền hiển thị (<%= navData.getSoLuongMenu() %> mục):</h3>
+                <h3 class="crm-sub-title">Danh sách mục menu được cấp quyền hiển thị (<%= navData.getSoLuongMenu() %> mục):</h3>
                 <div class="crm-menu-tags">
                     <% for (MucMenuDTO m : navData.getDanhSachMucMenu()) { %>
                         <span class="crm-menu-tag">
@@ -146,19 +182,111 @@
                 </div>
             </div>
 
-            <!-- 360px Mobile Simulator Section -->
+            <!-- Module Permission Verification Matrix (Chứng minh AC 1) -->
+            <div class="crm-matrix-card">
+                <div class="crm-card-header-flex">
+                    <div>
+                        <h2 class="crm-section-title">Ma trận kiểm tra phân quyền 12 Module (Chứng minh AC 1)</h2>
+                        <p class="crm-switcher-help">Đối chiếu danh sách hiển thị trên menu và kiểm tra chặn quyền trực tiếp phía server:</p>
+                    </div>
+                    <span class="crm-badge crm-badge-matrix">12 Module</span>
+                </div>
+                <div class="crm-table-responsive">
+                    <table class="crm-matrix-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Tên Module</th>
+                                <th>Đường dẫn URL</th>
+                                <th>Trạng thái Menu</th>
+                                <th>Quyền truy cập Server</th>
+                                <th>Kiểm thử thực tế</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <%
+                                for (ModuleHeThong mod : allModules) {
+                                    boolean coQuyen = menuService.kiemTraQuyenTruyCap(currentUser, mod);
+                            %>
+                            <tr class="<%= coQuyen ? "row-permitted" : "row-denied" %>">
+                                <td><%= mod.getThuTu() %></td>
+                                <td><strong><%= mod.getTenHienThi() %></strong></td>
+                                <td><code><%= mod.getDuongDanUrl() %></code></td>
+                                <td>
+                                    <% if (coQuyen) { %>
+                                        <span class="crm-badge-status badge-visible">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                            Hiển thị trên menu
+                                        </span>
+                                    <% } else { %>
+                                        <span class="crm-badge-status badge-hidden">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                            Ẩn (Không thuộc quyền)
+                                        </span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (coQuyen) { %>
+                                        <span class="crm-text-success">Cho phép truy cập</span>
+                                    <% } else { %>
+                                        <span class="crm-text-denied">Chặn truy cập (Lỗi 403)</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (coQuyen) { %>
+                                        <a href="<%= request.getContextPath() %><%= mod.getDuongDanUrl() %>" class="crm-btn-table-action btn-allowed" title="Truy cập module được cấp phép">
+                                            Mở chức năng
+                                        </a>
+                                    <% } else { %>
+                                        <a href="<%= request.getContextPath() %><%= mod.getDuongDanUrl() %>" class="crm-btn-table-action btn-test-denied" title="Thử gõ trực tiếp URL để kiểm tra lỗi 403">
+                                            Thử truy cập URL (Kiểm tra 403)
+                                        </a>
+                                    <% } %>
+                                </td>
+                            </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 360px Mobile Simulator Section (Chứng minh AC 3) -->
             <div class="crm-simulator-section">
                 <div class="crm-simulator-header">
-                    <h2 class="crm-section-title">Mô phỏng trải nghiệm trên màn hình 360px (Mobile 360x640)</h2>
-                    <p class="crm-simulator-hint">
-                        Bạn có thể nhấn nút mở rộng hoặc co nhỏ trình duyệt để kiểm tra trực tiếp,
-                        hoặc xem khung hiển thị 360px bên dưới.
-                    </p>
+                    <div class="crm-simulator-header-left">
+                        <h2 class="crm-section-title">Mô phỏng trải nghiệm trên màn hình 360px (Chứng minh AC 3)</h2>
+                        <p class="crm-simulator-hint">
+                            Kiểm tra trực quan layout, touch target tối thiểu 44px, hamburger drawer và thông tin hồ sơ trên kích thước 360px:
+                        </p>
+                    </div>
+                    <div class="crm-simulator-toolbar">
+                        <span class="crm-dimensions-badge" id="simulator-dimensions-badge">360 × 640 px</span>
+                        <button type="button" class="crm-btn-sim-action" id="btn-simulator-toggle-menu">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                            Mở menu trên mô phỏng
+                        </button>
+                    </div>
                 </div>
+
+                <div class="crm-simulator-presets">
+                    <button type="button" class="crm-btn-size-preset active" data-width="360" data-height="640">
+                        Chuẩn 360px (360×640)
+                    </button>
+                    <button type="button" class="crm-btn-size-preset" data-width="375" data-height="667">
+                        iPhone SE (375×667)
+                    </button>
+                    <button type="button" class="crm-btn-size-preset" data-width="390" data-height="844">
+                        iPhone 14 (390×844)
+                    </button>
+                    <button type="button" class="crm-btn-size-preset" data-width="100%" data-height="600">
+                        Toàn chiều rộng (Fluid)
+                    </button>
+                </div>
+
                 <div class="crm-simulator-wrapper">
                     <div class="crm-simulator-phone" id="simulator-phone">
                         <div class="crm-simulator-notch"></div>
-                        <iframe src="<%= request.getContextPath() %>/dieu-huong?demoRole=<%= currentUser.getDanhSachVaiTroEnum().iterator().next().name() %>" class="crm-simulator-iframe" title="Mô phỏng 360px"></iframe>
+                        <iframe src="<%= request.getContextPath() %>/dieu-huong?vaiTro=<%= simRole %>" class="crm-simulator-iframe" title="Mô phỏng màn hình di động 360px"></iframe>
                     </div>
                 </div>
             </div>
@@ -170,3 +298,4 @@
     <script src="<%= request.getContextPath() %>/assets/js/navigation.js"></script>
 </body>
 </html>
+
