@@ -53,6 +53,12 @@ Không sử dụng file này để ghi tiến độ Story.
 
 Không sử dụng React, Vue hoặc Angular trong kiến trúc hiện tại.
 
+## Testing
+
+- JUnit Jupiter: 5.10.2
+- Mục đích: Kiểm thử đơn vị (Unit Testing) cho tầng Service, Controller và DAO.
+
+
 ## Version Source
 
 Version dependency Java phải ưu tiên theo:
