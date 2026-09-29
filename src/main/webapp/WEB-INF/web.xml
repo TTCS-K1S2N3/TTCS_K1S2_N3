@@ -17,4 +17,35 @@
         </cookie-config>
     </session-config>
 
+    <!-- Cấu hình các trang báo lỗi dùng chung (Story S1-07) -->
+    <error-page>
+        <error-code>400</error-code>
+        <location>/loi-400</location>
+    </error-page>
+
+    <error-page>
+        <error-code>401</error-code>
+        <location>/loi-401</location>
+    </error-page>
+
+    <error-page>
+        <error-code>403</error-code>
+        <location>/loi-403</location>
+    </error-page>
+
+    <error-page>
+        <error-code>404</error-code>
+        <location>/loi-404</location>
+    </error-page>
+
+    <error-page>
+        <error-code>500</error-code>
+        <location>/loi-500</location>
+    </error-page>
+
+    <error-page>
+        <exception-type>java.lang.Throwable</exception-type>
+        <location>/loi-500</location>
+    </error-page>
+
 </web-app>

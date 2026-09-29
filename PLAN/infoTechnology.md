@@ -44,6 +44,12 @@ Không sử dụng file này để ghi tiến độ Story.
 - Version: kiểm tra theo `pom.xml`.
 - Mục đích: Kết nối Java với MySQL.
 
+## Kiểm thử
+
+- JUnit Jupiter: 5.11.4 (theo `pom.xml`)
+- Mockito: 5.14.2 (theo `pom.xml`)
+- Mục đích: Unit test và Integration test tự động cho Controller, Service, Filter.
+
 ## Frontend
 
 - HTML5
