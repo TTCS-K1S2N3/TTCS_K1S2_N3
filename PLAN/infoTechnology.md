@@ -41,8 +41,26 @@ Không sử dụng file này để ghi tiến độ Story.
 ## Database Access
 
 - JDBC / MySQL Connector/J
-- Version: kiểm tra theo `pom.xml`.
+- Version: 8.4.0 (theo `pom.xml`).
 - Mục đích: Kết nối Java với MySQL.
+
+## Bảo mật và Mã hóa
+
+- jBCrypt: 0.4 (theo `pom.xml`)
+- Mục đích: Băm mật khẩu người dùng theo chuẩn BCrypt an toàn.
+
+## Email
+
+- Jakarta Mail API: 2.1.3 (theo `pom.xml`)
+- Angus Mail: 2.0.3 (theo `pom.xml`)
+- Mục đích: Gửi email khôi phục mật khẩu và thông báo qua giao thức SMTP.
+
+## Kiểm thử
+
+- JUnit Jupiter: 5.11.4 (theo `pom.xml`)
+- Mockito: 5.14.2 (theo `pom.xml`)
+- H2 Database (In-Memory Test): 2.3.232 (theo `pom.xml`)
+- Mục đích: Unit test và Integration test tự động cho DAO, Service, Servlet.
 
 ## Frontend
 
