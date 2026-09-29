@@ -44,6 +44,11 @@ Không sử dụng file này để ghi tiến độ Story.
 - Version: kiểm tra theo `pom.xml`.
 - Mục đích: Kết nối Java với MySQL.
 
+## Testing
+
+- JUnit: 5.10.2
+- Mục đích: Unit test cho tầng Service, DAO và logic nghiệp vụ.
+
 ## Frontend
 
 - HTML5
