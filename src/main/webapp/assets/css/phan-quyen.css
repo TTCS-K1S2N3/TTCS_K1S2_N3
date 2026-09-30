@@ -1,15 +1,226 @@
 /* ====================================================================
-   CRM BÁN HÀNG - GÁN VAI TRÒ & NHÓM KINH DOANH CSS (STORY S1-09)
-   Tối ưu hiển thị cho máy tính và màn hình di động nhỏ 360px
+   CRM BÁN HÀNG - GÁN VAI TRÒ & NHÓM KINH DOANH CSS (STORY S1-09 - FE)
+   Tác giả: Ngô Trung Kiên (FE)
+   Hỗ trợ:
+   - AC1: Đa vai trò (Một người dùng có thể giữ nhiều vai trò cùng lúc)
+   - AC2: Trưởng nhóm bắt buộc gắn nhóm kinh doanh cụ thể
+   - AC3: Bảo vệ an toàn - Không tự thu hồi vai trò quản trị của chính mình
+   - Responsive xuất sắc cho Desktop, Tablet và Mobile màn hình nhỏ 360px
+   - Touch Target >= 44px cho toàn bộ nút bấm và phần tử tương tác
    ==================================================================== */
 
+:root {
+    --crm-role-admin: #dc2626;
+    --crm-role-director: #7c3aed;
+    --crm-role-team-lead: #d97706;
+    --crm-role-sales: #2563eb;
+    --crm-role-mkt: #0891b2;
+    --crm-role-cs: #059669;
+    --crm-role-accountant: #4f46e5;
+
+    --crm-card-border: #e2e8f0;
+    --crm-card-hover-border: #93c5fd;
+    --crm-card-active-border: #2563eb;
+}
+
+/* ====================================================================
+   1. BREADCRUMB & STORY BANNER
+   ==================================================================== */
+.crm-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--crm-text-muted);
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.crm-breadcrumb a {
+    color: var(--crm-text-muted);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.crm-breadcrumb a:hover {
+    color: var(--crm-primary);
+}
+
+.crm-breadcrumb-separator {
+    color: #cbd5e1;
+}
+
+.crm-breadcrumb-current {
+    color: var(--crm-text-main);
+    font-weight: 600;
+}
+
+.crm-story-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #ffffff;
+    border-radius: var(--crm-radius-lg);
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.crm-story-card::after {
+    content: "";
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.25) 0%, rgba(37, 99, 235, 0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.crm-story-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.crm-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.crm-pill-epic {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    border: 1px solid rgba(147, 197, 253, 0.3);
+}
+
+.crm-pill-story {
+    background: rgba(16, 185, 129, 0.2);
+    color: #a7f3d0;
+    border: 1px solid rgba(167, 243, 208, 0.3);
+}
+
+.crm-pill-role {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fde68a;
+    border: 1px solid rgba(253, 230, 138, 0.3);
+}
+
+.crm-story-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.crm-story-desc {
+    font-size: 14px;
+    color: #cbd5e1;
+    line-height: 1.6;
+    max-width: 860px;
+}
+
+/* ====================================================================
+   2. ACCEPTANCE CRITERIA STATUS CARDS
+   ==================================================================== */
+.crm-ac-card {
+    background: #ffffff;
+    border: 1px solid var(--crm-border);
+    border-radius: var(--crm-radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--crm-shadow-sm);
+}
+
+.crm-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--crm-text-main);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.crm-ac-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+}
+
+.crm-ac-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: var(--crm-radius-md);
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.crm-ac-item.pass {
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+}
+
+.crm-ac-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #22c55e;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.crm-ac-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.crm-ac-info strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #14532d;
+    margin-bottom: 2px;
+}
+
+.crm-ac-info p {
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* ====================================================================
+   3. GENERAL CARD & HEADER
+   ==================================================================== */
 .crm-card {
     background: #ffffff;
     border: 1px solid var(--crm-border);
     border-radius: var(--crm-radius-lg);
     padding: 24px;
     box-shadow: var(--crm-shadow-sm);
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    transition: box-shadow 0.2s ease;
+}
+
+.crm-card:hover {
+    box-shadow: var(--crm-shadow-md);
 }
 
 .crm-card-header {
@@ -22,9 +233,19 @@
 }
 
 .crm-card-title {
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
     color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.crm-card-title-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--crm-primary);
+    flex-shrink: 0;
 }
 
 .crm-badge-count {
@@ -41,8 +262,11 @@
     color: #1e40af;
     font-size: 12px;
     font-weight: 700;
-    padding: 4px 10px;
+    padding: 4px 12px;
     border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .crm-badge-warning {
@@ -50,18 +274,96 @@
     color: #92400e;
     font-size: 12px;
     font-weight: 700;
-    padding: 4px 10px;
+    padding: 4px 12px;
     border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
-/* User Selector Grid */
+.crm-badge-success {
+    background-color: #dcfce7;
+    color: #166534;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ====================================================================
+   4. USER SELECTOR & QUICK SEARCH
+   ==================================================================== */
+.crm-user-search-bar {
+    position: relative;
+    margin-bottom: 14px;
+}
+
+.crm-search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.crm-search-input {
+    width: 100%;
+    padding: 10px 38px 10px 42px;
+    min-height: 44px; /* Touch target >= 44px */
+    font-size: 14px;
+    border: 1.5px solid var(--crm-border);
+    border-radius: var(--crm-radius-md);
+    background: #f8fafc;
+    color: var(--crm-text-main);
+    transition: all 0.2s ease;
+}
+
+.crm-search-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.crm-search-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: #e2e8f0;
+    color: #64748b;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.crm-search-clear:hover {
+    background: #cbd5e1;
+    color: #0f172a;
+}
+
 .crm-user-selector-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 12px;
-    max-height: 280px;
+    max-height: 290px;
     overflow-y: auto;
     padding: 4px;
+    border-radius: var(--crm-radius-md);
 }
 
 .crm-user-select-item {
@@ -69,30 +371,45 @@
     align-items: center;
     gap: 12px;
     padding: 12px 14px;
-    min-height: 52px;
-    border: 1px solid var(--crm-border);
+    min-height: 60px; /* Touch target >= 44px */
+    border: 1.5px solid var(--crm-border);
     border-radius: var(--crm-radius-md);
-    background: #f8fafc;
+    background: #ffffff;
     text-decoration: none;
     color: inherit;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
 }
 
 .crm-user-select-item:hover {
     border-color: #93c5fd;
-    background: #eff6ff;
-    transform: translateY(-1px);
+    background: #f8fafc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06);
 }
 
 .crm-user-select-item.active {
     background: #eff6ff;
     border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2), 0 4px 8px rgba(37, 99, 235, 0.1);
+}
+
+.crm-user-select-item.active::after {
+    content: "✓ Đang chọn";
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #2563eb;
+    background: #dbeafe;
+    padding: 1px 6px;
+    border-radius: 4px;
 }
 
 .crm-user-item-avatar {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: linear-gradient(135deg, #3b82f6, #1d4ed8);
     color: #ffffff;
@@ -102,6 +419,7 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
 }
 
 .crm-user-item-info {
@@ -133,40 +451,91 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-top: 2px;
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
-/* Selected User Card */
+.crm-user-empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--crm-text-muted);
+    background: #f8fafc;
+    border: 1px dashed var(--crm-border);
+    border-radius: var(--crm-radius-md);
+}
+
+.crm-user-empty-state svg {
+    width: 36px;
+    height: 36px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+}
+
+/* ====================================================================
+   5. SELECTED USER CARD & ADMIN PROTECTION BANNER (AC 3)
+   ==================================================================== */
 .crm-selected-user-card {
     display: flex;
     align-items: center;
-    gap: 16px;
-    background: #ffffff;
-    border: 1px solid #bfdbfe;
+    justify-content: space-between;
+    gap: 18px;
+    background: linear-gradient(to right, #f8fafc, #eff6ff);
+    border: 1.5px solid #bfdbfe;
     border-radius: var(--crm-radius-lg);
-    padding: 18px 24px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.05);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.06);
+    flex-wrap: wrap;
+}
+
+.crm-selected-user-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+    flex: 1;
 }
 
 .crm-selected-user-avatar {
-    width: 52px;
-    height: 52px;
+    width: 58px;
+    height: 58px;
     border-radius: 50%;
     background: linear-gradient(135deg, #2563eb, #1e40af);
     color: #ffffff;
     font-weight: 800;
-    font-size: 18px;
+    font-size: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.25);
+    border: 3px solid #ffffff;
+}
+
+.crm-selected-user-info {
+    min-width: 0;
 }
 
 .crm-selected-user-name {
-    font-size: 18px;
+    font-size: 19px;
     font-weight: 800;
     color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.crm-user-id-badge {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    background: #e2e8f0;
+    padding: 2px 8px;
+    border-radius: 6px;
 }
 
 .crm-selected-user-meta {
@@ -174,75 +543,190 @@
     gap: 16px;
     font-size: 13px;
     color: var(--crm-text-muted);
-    margin-top: 4px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.crm-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.crm-meta-icon {
+    width: 15px;
+    height: 15px;
+    color: #64748b;
+}
+
+/* AC 3: Protected Admin Account Banner */
+.crm-self-protect-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    color: #9f1239;
+    padding: 12px 18px;
+    border-radius: var(--crm-radius-md);
+    margin-bottom: 20px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.crm-self-protect-icon {
+    width: 24px;
+    height: 24px;
+    color: #e11d48;
+    flex-shrink: 0;
+}
+
+/* ====================================================================
+   6. ROLES GRID & MULTI-ROLE SELECTION (AC 1 & AC 3)
+   ==================================================================== */
+.crm-roles-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.crm-roles-quick-actions {
+    display: flex;
+    gap: 8px;
     flex-wrap: wrap;
 }
 
-.text-success {
-    color: #16a34a;
+.crm-btn-chip {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    min-height: 36px;
+    border-radius: 9999px;
+    border: 1px solid var(--crm-border);
+    background: #ffffff;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
 }
 
-/* Roles Grid Checkboxes */
-.crm-field-hint {
-    font-size: 14px;
-    color: var(--crm-text-muted);
-    margin-bottom: 14px;
+.crm-btn-chip:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0f172a;
 }
 
 .crm-roles-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
 }
 
 .crm-role-checkbox-card {
     display: flex;
     flex-direction: column;
-    padding: 14px 16px;
-    border: 1.5px solid var(--crm-border);
+    padding: 18px;
+    border: 2px solid var(--crm-border);
     border-radius: var(--crm-radius-md);
     background: #ffffff;
     cursor: pointer;
-    transition: all 0.2s ease;
-    min-height: 48px; /* Touch target >= 44px */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    user-select: none;
+    min-height: 52px; /* Touch target >= 44px */
 }
 
 .crm-role-checkbox-card:hover {
     border-color: #93c5fd;
-    background: #f8fafc;
+    background: #fafafa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 .crm-role-checkbox-card.checked {
     border-color: #2563eb;
     background: #eff6ff;
-    box-shadow: 0 2px 5px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+}
+
+/* AC 3: Protected role styling */
+.crm-role-checkbox-card.protected {
+    border-color: #f43f5e !important;
+    background: #fff1f2 !important;
+}
+
+.crm-role-checkbox-card.shake {
+    animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
 }
 
 .crm-checkbox-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 6px;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.crm-checkbox-wrapper {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
 }
 
 .crm-checkbox-input {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     accent-color: #2563eb;
     cursor: pointer;
+    margin: 0;
 }
 
+.crm-role-icon-box {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.crm-role-icon-box svg {
+    width: 18px;
+    height: 18px;
+}
+
+.crm-icon-admin { background: #fee2e2; color: #dc2626; }
+.crm-icon-director { background: #f3e8ff; color: #7c3aed; }
+.crm-icon-team-lead { background: #fef3c7; color: #d97706; }
+.crm-icon-sales { background: #dbeafe; color: #2563eb; }
+.crm-icon-marketing { background: #cffafe; color: #0891b2; }
+.crm-icon-cskh { background: #d1fae5; color: #059669; }
+.crm-icon-accountant { background: #e0e7ff; color: #4f46e5; }
+
 .crm-role-title {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
     color: #0f172a;
+    flex: 1;
+    line-height: 1.3;
 }
 
 .crm-role-desc {
     font-size: 12px;
     color: var(--crm-text-muted);
-    line-height: 1.4;
-    margin-bottom: 10px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    flex: 1;
 }
 
 .crm-role-badges {
@@ -258,8 +742,9 @@
     color: #334155;
     font-size: 10px;
     font-weight: 700;
-    padding: 2px 6px;
+    padding: 3px 7px;
     border-radius: 4px;
+    letter-spacing: 0.03em;
 }
 
 .crm-badge-required-team {
@@ -267,20 +752,135 @@
     color: #b45309;
     font-size: 10px;
     font-weight: 700;
-    padding: 2px 6px;
+    padding: 3px 8px;
     border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    border: 1px solid #fde68a;
 }
 
 .crm-badge-admin-safe {
-    background: #fce7f3;
-    color: #be185d;
+    background: #ffe4e6;
+    color: #be123c;
     font-size: 10px;
     font-weight: 700;
-    padding: 2px 6px;
+    padding: 3px 8px;
     border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    border: 1px solid #fecdd3;
 }
 
-/* Select Group */
+/* ====================================================================
+   7. LIVE SCOPE & CAPABILITIES PREVIEW (XEM TRƯỚC PHÂN QUYỀN)
+   ==================================================================== */
+.crm-preview-card {
+    background: #fafafa;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: var(--crm-radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    transition: all 0.3s ease;
+}
+
+.crm-preview-card.has-admin {
+    border-color: #a78bfa;
+    background: #fdf4ff;
+}
+
+.crm-preview-card.has-team-lead {
+    border-color: #fcd34d;
+    background: #fffbeb;
+}
+
+.crm-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.crm-preview-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.crm-scope-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #ffffff;
+    border: 1px solid var(--crm-border);
+    border-radius: var(--crm-radius-md);
+    margin-bottom: 12px;
+}
+
+.crm-scope-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+    flex-shrink: 0;
+}
+
+.crm-scope-text strong {
+    font-size: 13px;
+    color: #0f172a;
+}
+
+.crm-scope-text span {
+    font-size: 12px;
+    color: var(--crm-text-muted);
+    display: block;
+    margin-top: 2px;
+}
+
+.crm-preview-permissions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.crm-perm-chip {
+    font-size: 11px;
+    font-weight: 600;
+    color: #1e40af;
+    background: #dbeafe;
+    padding: 3px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ====================================================================
+   8. TEAM ASSIGNMENT CARD & VALIDATION HIGHLIGHT (AC 2)
+   ==================================================================== */
+.crm-team-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.crm-team-card.team-required-active {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+.crm-team-card.team-error {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+}
+
 .crm-form-group {
     display: flex;
     flex-direction: column;
@@ -291,18 +891,45 @@
     font-size: 14px;
     font-weight: 700;
     color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.crm-required-mark {
+    color: #ef4444;
+    font-weight: 800;
+}
+
+.crm-select-wrapper {
+    position: relative;
+    width: 100%;
 }
 
 .crm-select {
     width: 100%;
-    padding: 12px 14px;
-    min-height: 48px;
+    padding: 12px 40px 12px 14px;
+    min-height: 48px; /* Touch target >= 44px */
     font-size: 14px;
     border: 1.5px solid var(--crm-border);
     border-radius: var(--crm-radius-sm);
     background-color: #ffffff;
     color: #0f172a;
-    transition: border-color 0.2s ease;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.crm-select-arrow {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: #64748b;
+    pointer-events: none;
 }
 
 .crm-select:focus {
@@ -311,77 +938,218 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
+.crm-select.success {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+}
+
+.crm-select.error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
 .crm-input-helper {
     font-size: 13px;
     color: var(--crm-text-muted);
     line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    transition: color 0.2s ease;
 }
 
-/* Alerts */
+.crm-input-helper.warn {
+    color: #b45309;
+    font-weight: 600;
+}
+
+.crm-input-helper.valid {
+    color: #15803d;
+    font-weight: 600;
+}
+
+.crm-inline-error {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #dc2626;
+    margin-top: 4px;
+}
+
+/* ====================================================================
+   9. ALERTS & TOAST NOTIFICATION SYSTEM
+   ==================================================================== */
 .crm-alert {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
+    gap: 14px;
     padding: 16px 20px;
     border-radius: var(--crm-radius-md);
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .crm-alert-success {
     background: #f0fdf4;
-    border: 1px solid #bbf7d0;
+    border: 1.5px solid #86efac;
     color: #14532d;
 }
 
 .crm-alert-danger {
     background: #fef2f2;
-    border: 1px solid #fecaca;
+    border: 1.5px solid #fca5a5;
     color: #991b1b;
 }
 
 .crm-alert-icon {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
     flex-shrink: 0;
+    margin-top: 1px;
 }
 
 .crm-alert-icon svg {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
 }
 
 .crm-alert-text {
     font-size: 14px;
     line-height: 1.5;
+    flex: 1;
 }
 
-/* Form Actions */
+/* Floating Toast Container */
+.crm-toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+    max-width: 420px;
+    width: calc(100% - 32px);
+}
+
+.crm-toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    background: #0f172a;
+    color: #ffffff;
+    border-radius: var(--crm-radius-md);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+    font-size: 13.5px;
+    line-height: 1.45;
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.crm-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.crm-toast-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.crm-toast-warning {
+    background: #78350f;
+    border-left: 4px solid #f59e0b;
+}
+
+.crm-toast-error {
+    background: #881337;
+    border-left: 4px solid #f43f5e;
+}
+
+.crm-toast-success {
+    background: #064e3b;
+    border-left: 4px solid #10b981;
+}
+
+.crm-toast-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    padding: 2px;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.crm-toast-close:hover {
+    color: #ffffff;
+}
+
+/* ====================================================================
+   10. FORM ACTIONS & BUTTONS (TOUCH TARGET >= 44PX)
+   ==================================================================== */
 .crm-form-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     margin-top: 10px;
+    margin-bottom: 24px;
     flex-wrap: wrap;
 }
 
 .crm-btn-primary {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    gap: 10px;
     background: #1e40af;
     color: #ffffff;
     border: none;
-    padding: 12px 24px;
+    padding: 12px 28px;
     min-height: 48px; /* >= 44px */
     font-size: 14px;
     font-weight: 700;
     border-radius: var(--crm-radius-sm);
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(30, 64, 175, 0.2);
 }
 
 .crm-btn-primary:hover {
     background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(30, 64, 175, 0.3);
+}
+
+.crm-btn-primary:active {
+    transform: translateY(0);
+}
+
+.crm-btn-primary:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .crm-btn-icon {
@@ -392,20 +1160,25 @@
 .crm-btn-secondary {
     display: inline-flex;
     align-items: center;
-    padding: 12px 18px;
-    min-height: 48px;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    min-height: 48px; /* >= 44px */
     font-size: 14px;
     font-weight: 600;
     color: #475569;
-    background: #f1f5f9;
-    border: 1px solid var(--crm-border);
+    background: #ffffff;
+    border: 1.5px solid var(--crm-border);
     border-radius: var(--crm-radius-sm);
     text-decoration: none;
-    transition: background-color 0.2s ease;
+    cursor: pointer;
+    transition: all 0.15s ease;
 }
 
 .crm-btn-secondary:hover {
-    background: #e2e8f0;
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #0f172a;
 }
 
 .crm-btn-link {
@@ -414,58 +1187,56 @@
     color: #2563eb;
     text-decoration: none;
     margin-left: auto;
-    padding: 10px 0;
+    padding: 12px 0;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
 }
 
 .crm-btn-link:hover {
     text-decoration: underline;
 }
 
+/* Spinner inside button */
+.crm-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 /* ====================================================================
-   TỐI ƯU ĐẶC BIỆT CHO MÀN HÌNH 360PX (MOBILE SMALL)
+   11. RESPONSIVE DESIGN - TỐI ƯU ĐẶC BIỆT CHO 360PX (MOBILE SMALL)
    ==================================================================== */
-@media screen and (max-width: 360px) {
-    .crm-card {
-        padding: 14px 12px;
-        border-radius: var(--crm-radius-md);
-        margin-bottom: 14px;
+@media screen and (max-width: 768px) {
+    .crm-story-card {
+        padding: 18px 16px;
     }
 
-    .crm-card-title {
-        font-size: 15px;
+    .crm-story-title {
+        font-size: 18px;
+    }
+
+    .crm-selected-user-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
     }
 
     .crm-user-selector-grid {
         grid-template-columns: 1fr;
-        max-height: 220px;
-    }
-
-    .crm-selected-user-card {
-        padding: 12px 10px;
-        gap: 10px;
-    }
-
-    .crm-selected-user-avatar {
-        width: 42px;
-        height: 42px;
-        font-size: 15px;
-    }
-
-    .crm-selected-user-name {
-        font-size: 15px;
+        max-height: 240px;
     }
 
     .crm-roles-grid {
         grid-template-columns: 1fr;
-    }
-
-    .crm-role-checkbox-card {
-        padding: 12px 10px;
-    }
-
-    .crm-select {
-        font-size: 13px;
-        padding: 10px 10px;
     }
 
     .crm-form-actions {
@@ -475,11 +1246,75 @@
 
     .crm-btn-primary, .crm-btn-secondary {
         width: 100%;
-        justify-content: center;
     }
 
     .crm-btn-link {
         margin-left: 0;
-        text-align: center;
+        justify-content: center;
+    }
+}
+
+@media screen and (max-width: 360px) {
+    .crm-card {
+        padding: 14px 10px;
+        border-radius: var(--crm-radius-md);
+        margin-bottom: 16px;
+    }
+
+    .crm-card-title {
+        font-size: 14.5px;
+    }
+
+    .crm-story-card {
+        padding: 14px 12px;
+        margin-bottom: 16px;
+    }
+
+    .crm-story-title {
+        font-size: 16px;
+    }
+
+    .crm-ac-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .crm-ac-item {
+        padding: 10px 12px;
+    }
+
+    .crm-selected-user-avatar {
+        width: 44px;
+        height: 44px;
+        font-size: 16px;
+    }
+
+    .crm-selected-user-name {
+        font-size: 15px;
+    }
+
+    .crm-role-checkbox-card {
+        padding: 12px 10px;
+    }
+
+    .crm-role-title {
+        font-size: 13.5px;
+    }
+
+    .crm-select {
+        font-size: 13px;
+        padding: 10px 32px 10px 10px;
+    }
+
+    .crm-btn-primary, .crm-btn-secondary {
+        min-height: 48px;
+        font-size: 13.5px;
+        padding: 10px 14px;
+    }
+
+    .crm-toast-container {
+        left: 10px;
+        right: 10px;
+        bottom: 12px;
+        width: auto;
     }
 }
