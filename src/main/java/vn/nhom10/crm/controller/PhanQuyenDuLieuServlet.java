@@ -27,7 +27,15 @@ import java.util.List;
 public class PhanQuyenDuLieuServlet extends HttpServlet {
 
     private static final String SESSION_USER_KEY = "nguoiDungHienTai";
-    private final PhanQuyenDuLieuService phanQuyenService = new PhanQuyenDuLieuService();
+    private final PhanQuyenDuLieuService phanQuyenService;
+
+    public PhanQuyenDuLieuServlet() {
+        this.phanQuyenService = new PhanQuyenDuLieuService();
+    }
+
+    public PhanQuyenDuLieuServlet(PhanQuyenDuLieuService phanQuyenService) {
+        this.phanQuyenService = phanQuyenService;
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -95,9 +103,8 @@ public class PhanQuyenDuLieuServlet extends HttpServlet {
         }
 
         // 4. Lấy dữ liệu và thực hiện lọc theo phạm vi (AC1, AC2)
-        List<BanGhiNghiepVuDTO> danhSachGoc = phanQuyenService.layDanhSachDuLieuMau();
-        List<BanGhiNghiepVuDTO> danhSachDaLoc = phanQuyenService.locTheoPhamVi(
-                danhSachGoc, currentUser, phamViHieuLuc, tuKhoa, loaiNghiepVu
+        List<BanGhiNghiepVuDTO> danhSachDaLoc = phanQuyenService.layDanhSachDuLieu(
+                currentUser, phamViHieuLuc, tuKhoa, loaiNghiepVu
         );
 
         // 5. Kiểm tra nếu là yêu cầu Xuất Excel / CSV (AC2)
@@ -119,7 +126,7 @@ public class PhanQuyenDuLieuServlet extends HttpServlet {
         request.setAttribute("danhSachPhamViChoPhep", currentUser.getDanhSachPhamViChoPhep());
         request.setAttribute("danhSachBanGhi", danhSachDaLoc);
         request.setAttribute("tongSoBanGhi", danhSachDaLoc.size());
-        request.setAttribute("tongSoBanGhiGoc", danhSachGoc.size());
+        request.setAttribute("tongSoBanGhiGoc", phanQuyenService.layDanhSachDuLieuMau().size());
         request.setAttribute("tuKhoaHienTai", tuKhoa != null ? tuKhoa : "");
         request.setAttribute("loaiHienTai", loaiNghiepVu);
 
@@ -145,29 +152,23 @@ public class PhanQuyenDuLieuServlet extends HttpServlet {
             if (paramId != null) id = Long.parseLong(paramId.trim());
         } catch (NumberFormatException ignored) {}
 
-        List<BanGhiNghiepVuDTO> danhSachGoc = phanQuyenService.layDanhSachDuLieuMau();
-        BanGhiNghiepVuDTO banGhi = null;
-        if (id != null) {
-            for (BanGhiNghiepVuDTO bg : danhSachGoc) {
-                if (bg.getId().equals(id)) {
-                    banGhi = bg;
-                    break;
-                }
-            }
-        }
+        String loaiNghiepVu = request.getParameter("loai");
+        BanGhiNghiepVuDTO banGhi = phanQuyenService.timBanGhiTheoId(id, loaiNghiepVu);
 
         // Kiểm tra quyền truy cập
         PhanQuyenDuLieuService.KetQuaKiemTra ketQua = phanQuyenService.kiemTraQuyenTruyCap(currentUser, banGhi);
 
         response.setContentType("text/html;charset=UTF-8");
         if (!ketQua.isCoQuyen()) {
-            // AC3: Hiển thị trang lỗi từ chối với thông báo tiếng Việt rõ ràng
+            // AC3: Trả về HTTP 403 Forbidden và hiển thị trang thông báo tiếng Việt rõ ràng
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             request.setAttribute("currentUser", currentUser);
             request.setAttribute("thongBaoLoi", ketQua.getThongBao());
             request.setAttribute("banGhi", banGhi);
             request.getRequestDispatcher("/WEB-INF/views/phan-quyen/ngoai-pham-vi.jsp").forward(request, response);
         } else {
-            // Có quyền truy cập -> hiển thị chi tiết
+            // Có quyền truy cập -> hiển thị chi tiết (HTTP 200 OK)
+            response.setStatus(HttpServletResponse.SC_OK);
             request.setAttribute("currentUser", currentUser);
             request.setAttribute("thongBaoThanhCong", ketQua.getThongBao());
             request.setAttribute("banGhi", banGhi);
@@ -178,7 +179,7 @@ public class PhanQuyenDuLieuServlet extends HttpServlet {
     /**
      * Phương thức tiện ích sinh thông tin tài khoản demo cho 4 vai trò chính.
      */
-    private NguoiDungDTO taoNguoiDungGiaLap(String maVaiTro) {
+    public NguoiDungDTO taoNguoiDungGiaLap(String maVaiTro) {
         if ("sales_b".equalsIgnoreCase(maVaiTro)) {
             return new NguoiDungDTO(102L, "Trần Thị B (Sales)", "sales.b@crm.vn",
                     VaiTroNguoiDung.SALES_REP, 1L, "Nhóm Miền Bắc");

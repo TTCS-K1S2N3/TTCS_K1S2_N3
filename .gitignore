@@ -36,3 +36,4 @@ temp/
 # Database backups
 *.sql
 *.sql.gz
+!src/main/resources/db/*.sql

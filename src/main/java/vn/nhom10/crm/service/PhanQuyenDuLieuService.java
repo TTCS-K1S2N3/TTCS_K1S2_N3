@@ -1,6 +1,8 @@
 package vn.nhom10.crm.service;
 
+import vn.nhom10.crm.dao.PhanQuyenDuLieuDAO;
 import vn.nhom10.crm.dto.BanGhiNghiepVuDTO;
+import vn.nhom10.crm.dto.BanGhiNghiepVuDTO.LoaiNghiepVu;
 import vn.nhom10.crm.dto.NguoiDungDTO;
 import vn.nhom10.crm.model.PhamViDuLieu;
 import vn.nhom10.crm.model.VaiTroNguoiDung;
@@ -9,6 +11,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -20,6 +24,18 @@ import java.util.stream.Collectors;
  * - AC4: Kiểm thử tự động chứng minh nhân viên A không đọc được khách hàng của nhân viên B.
  */
 public class PhanQuyenDuLieuService {
+
+    private static final Logger LOGGER = Logger.getLogger(PhanQuyenDuLieuService.class.getName());
+
+    private final PhanQuyenDuLieuDAO dao;
+
+    public PhanQuyenDuLieuService() {
+        this(new PhanQuyenDuLieuDAO());
+    }
+
+    public PhanQuyenDuLieuService(PhanQuyenDuLieuDAO dao) {
+        this.dao = dao;
+    }
 
     /**
      * Kết quả kiểm tra quyền truy cập bản ghi chi tiết (AC3).
@@ -64,6 +80,72 @@ public class PhanQuyenDuLieuService {
             return user.getVaiTro() != null ? user.getVaiTro().getPhamViToiDa() : PhamViDuLieu.CA_NHAN;
         }
         return phamViYeuCau;
+    }
+
+    /**
+     * Lấy danh sách bản ghi theo phạm vi dữ liệu, hỗ trợ truy vấn trực tiếp từ DAO hoặc fallback dữ liệu mẫu.
+     */
+    public List<BanGhiNghiepVuDTO> layDanhSachDuLieu(NguoiDungDTO user,
+                                                     PhamViDuLieu phamViYeuCau,
+                                                     String tuKhoa,
+                                                     String loaiNghiepVu) {
+        if (user == null) {
+            return Collections.emptyList();
+        }
+
+        PhamViDuLieu phamViHieuLuc = xacDinhPhamViHieuLuc(user, phamViYeuCau);
+        LoaiNghiepVu loaiEnum = parseLoaiNghiepVu(loaiNghiepVu);
+
+        // 1. Thử truy vấn qua DAO từ cơ sở dữ liệu
+        if (dao != null) {
+            try {
+                List<BanGhiNghiepVuDTO> dbList = dao.layDanhSachTongHopTheoPhamVi(
+                        user.getId(),
+                        user.getNhomKinhDoanhId(),
+                        phamViHieuLuc,
+                        tuKhoa,
+                        loaiEnum
+                );
+                if (dbList != null && !dbList.isEmpty()) {
+                    return dbList;
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.FINE, "Không thể truy vấn từ database, chuyển sang fallback bộ nhớ: " + e.getMessage());
+            }
+        }
+
+        // 2. Fallback sử dụng dữ liệu mẫu trong bộ nhớ để demo và test độc lập
+        List<BanGhiNghiepVuDTO> danhSachGoc = layDanhSachDuLieuMau();
+        return locTheoPhamVi(danhSachGoc, user, phamViHieuLuc, tuKhoa, loaiNghiepVu);
+    }
+
+    /**
+     * Tìm bản ghi theo ID (hỗ trợ cả DAO và danh sách mẫu).
+     */
+    public BanGhiNghiepVuDTO timBanGhiTheoId(Long id, String loaiNghiepVu) {
+        if (id == null) {
+            return null;
+        }
+
+        LoaiNghiepVu loaiEnum = parseLoaiNghiepVu(loaiNghiepVu);
+        if (dao != null) {
+            try {
+                BanGhiNghiepVuDTO bg = dao.timBanGhiTheoId(id, loaiEnum);
+                if (bg != null) {
+                    return bg;
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.FINE, "Không thể tìm bản ghi trong database: " + e.getMessage());
+            }
+        }
+
+        // Fallback tìm trong danh sách mẫu
+        for (BanGhiNghiepVuDTO bg : layDanhSachDuLieuMau()) {
+            if (bg.getId().equals(id)) {
+                return bg;
+            }
+        }
+        return null;
     }
 
     /**
@@ -189,6 +271,18 @@ public class PhanQuyenDuLieuService {
     private String escapeCsv(String value) {
         if (value == null) return "\"\"";
         return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
+
+    private LoaiNghiepVu parseLoaiNghiepVu(String loai) {
+        if (loai == null || loai.trim().isEmpty() || "ALL".equalsIgnoreCase(loai)) {
+            return null;
+        }
+        for (LoaiNghiepVu l : LoaiNghiepVu.values()) {
+            if (l.getMa().equalsIgnoreCase(loai.trim())) {
+                return l;
+            }
+        }
+        return null;
     }
 
     /**

@@ -41,8 +41,15 @@ Không sử dụng file này để ghi tiến độ Story.
 ## Database Access
 
 - JDBC / MySQL Connector/J
-- Version: kiểm tra theo `pom.xml`.
+- Version: 8.4.0 (theo `pom.xml`).
 - Mục đích: Kết nối Java với MySQL.
+
+## Kiểm thử
+
+- JUnit Jupiter: 5.11.2 (theo `pom.xml`)
+- Mockito: 5.14.2 (theo `pom.xml`)
+- H2 Database (In-Memory Test): 2.3.232 (theo `pom.xml`)
+- Mục đích: Unit test và Integration test tự động cho DAO, Service, Servlet.
 
 ## Frontend
 
