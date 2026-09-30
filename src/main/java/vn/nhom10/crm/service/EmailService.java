@@ -41,7 +41,7 @@ public class EmailService {
         Properties props = new Properties();
         try (InputStream is = EmailService.class.getClassLoader().getResourceAsStream("config/email.properties")) {
             if (is != null) {
-                props.load(is);
+                props.load(new java.io.InputStreamReader(is, StandardCharsets.UTF_8));
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Không thể đọc file config/email.properties: " + e.getMessage());
@@ -58,7 +58,14 @@ public class EmailService {
 
         this.smtpAuth = Boolean.parseBoolean(getEnvOrDefault("SMTP_AUTH", props.getProperty("mail.smtp.auth", "true")));
         this.startTls = Boolean.parseBoolean(getEnvOrDefault("SMTP_STARTTLS", props.getProperty("mail.smtp.starttls.enable", "true")));
-        this.smtpUsername = getEnvOrDefault("SMTP_USERNAME", props.getProperty("mail.smtp.username", ""));
+
+        // Hỗ trợ đồng thời cả SMTP_USER và SMTP_USERNAME (ưu tiên SMTP_USER nếu được thiết lập)
+        String userEnv = System.getenv("SMTP_USER");
+        if (userEnv == null || userEnv.trim().isEmpty()) {
+            userEnv = System.getenv("SMTP_USERNAME");
+        }
+        this.smtpUsername = (userEnv != null && !userEnv.trim().isEmpty()) ? userEnv.trim() : props.getProperty("mail.smtp.username", "");
+
         this.smtpPassword = getEnvOrDefault("SMTP_PASSWORD", props.getProperty("mail.smtp.password", ""));
         this.fromEmail = getEnvOrDefault("SMTP_FROM", props.getProperty("mail.from", "noreply@crmbanhang.vn"));
         this.fromName = getEnvOrDefault("SMTP_FROM_NAME", props.getProperty("mail.from.name", "CRM Bán Hàng"));
@@ -90,8 +97,8 @@ public class EmailService {
         if (smtpUsername == null || smtpUsername.trim().isEmpty() ||
             smtpPassword == null || smtpPassword.trim().isEmpty()) {
             LOGGER.info(String.format(
-                "[CHẾ ĐỘ DEV/TEST] Đã ghi nhận gửi email kích hoạt đến %s (%s). Mật khẩu tạm: %s. Link: %s",
-                toEmail, hoTenNguoiNhan, matKhauTam, loginUrl));
+                "[CHẾ ĐỘ DEV/TEST] Đã ghi nhận gửi email kích hoạt đến %s (%s). Mật khẩu tạm: [ĐÃ MÃ HÓA/BẢO MẬT]. Link: %s",
+                toEmail, hoTenNguoiNhan, loginUrl));
             return true;
         }
 
@@ -102,6 +109,19 @@ public class EmailService {
             mailProps.put("mail.smtp.auth", String.valueOf(smtpAuth));
             mailProps.put("mail.smtp.starttls.enable", String.valueOf(startTls));
             mailProps.put("mail.smtp.ssl.protocols", "TLSv1.2 TLSv1.3");
+
+            // Thiết lập timeout kết nối (10 giây) tránh treo luồng hệ thống
+            mailProps.put("mail.smtp.connectiontimeout", "10000");
+            mailProps.put("mail.smtp.timeout", "10000");
+            mailProps.put("mail.smtp.writetimeout", "10000");
+
+            // Hỗ trợ SSL tự động khi dùng port 465 hoặc cấu hình SMTP_SSL=true
+            boolean isSsl = smtpPort == 465 || Boolean.parseBoolean(getEnvOrDefault("SMTP_SSL", "false"));
+            if (isSsl) {
+                mailProps.put("mail.smtp.ssl.enable", "true");
+                mailProps.put("mail.smtp.socketFactory.port", String.valueOf(smtpPort));
+                mailProps.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            }
 
             Session session;
             if (smtpAuth) {
@@ -124,6 +144,8 @@ public class EmailService {
             String emailContent = buildActivationHtmlContent(greeting, toEmail, matKhauTam, loginUrl);
 
             message.setContent(emailContent, "text/html; charset=UTF-8");
+            message.setHeader("Content-Type", "text/html; charset=UTF-8");
+            message.setHeader("Content-Transfer-Encoding", "quoted-printable");
 
             Transport.send(message);
             LOGGER.info("Đã gửi email kích hoạt tài khoản thành công tới: " + toEmail);

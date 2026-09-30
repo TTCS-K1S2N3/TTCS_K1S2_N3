@@ -28,3 +28,16 @@ Dự án sử dụng:
 Thông tin version thực tế được quản lý trong:
 
 `PLAN/infoTechnology.md`
+
+## Cấu hình SMTP (Email Service)
+
+Hệ thống hỗ trợ gửi email kích hoạt tài khoản qua SMTP. Bạn có thể cấu hình qua file `.env` hoặc các biến môi trường:
+
+- `SMTP_HOST`: Máy chủ SMTP (mặc định: `smtp.gmail.com`)
+- `SMTP_PORT`: Cổng SMTP (mặc định: `587` cho TLS hoặc `465` cho SSL)
+- `SMTP_USER` / `SMTP_USERNAME`: Tài khoản đăng nhập SMTP
+- `SMTP_PASSWORD`: Mật khẩu ứng dụng (App Password)
+- `SMTP_FROM`: Email người gửi
+- `SMTP_FROM_NAME`: Tên người gửi hiển thị (mặc định: `CRM Bán Hàng`)
+
+Chi tiết tham khảo file `.env.example`.
