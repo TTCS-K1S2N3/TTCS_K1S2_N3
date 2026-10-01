@@ -48,7 +48,27 @@ class DoiMatKhauServiceTest {
         // Tạo schema bảng nguoi_dung và phien_dang_nhap trên H2 theo chuẩn integration
         try (Statement stmt = h2Connection.createStatement()) {
             stmt.execute("DROP TABLE IF EXISTS phien_dang_nhap");
+            stmt.execute("DROP TABLE IF EXISTS nguoi_dung_vai_tro");
+            stmt.execute("DROP TABLE IF EXISTS vai_tro");
             stmt.execute("DROP TABLE IF EXISTS nguoi_dung");
+
+            stmt.execute("""
+                CREATE TABLE vai_tro (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    ma_vai_tro VARCHAR(50) NOT NULL UNIQUE,
+                    ten_vai_tro VARCHAR(100) NOT NULL,
+                    mo_ta VARCHAR(255) NULL,
+                    pham_vi_toi_da VARCHAR(50) NOT NULL DEFAULT 'CA_NHAN'
+                )
+            """);
+
+            stmt.execute("""
+                CREATE TABLE nguoi_dung_vai_tro (
+                    nguoi_dung_id BIGINT NOT NULL,
+                    vai_tro_id INT NOT NULL,
+                    PRIMARY KEY (nguoi_dung_id, vai_tro_id)
+                )
+            """);
 
             stmt.execute("""
                 CREATE TABLE nguoi_dung (

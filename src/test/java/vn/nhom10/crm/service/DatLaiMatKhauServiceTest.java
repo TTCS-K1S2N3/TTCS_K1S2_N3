@@ -44,6 +44,21 @@ class DatLaiMatKhauServiceTest {
         try (Statement stmt = initConn.createStatement()) {
             stmt.execute("DROP ALL OBJECTS");
 
+            // Tạo bảng vai_tro & nguoi_dung_vai_tro
+            stmt.execute("CREATE TABLE vai_tro ("
+                    + "id INT AUTO_INCREMENT PRIMARY KEY, "
+                    + "ma_vai_tro VARCHAR(50) NOT NULL UNIQUE, "
+                    + "ten_vai_tro VARCHAR(100) NOT NULL, "
+                    + "mo_ta VARCHAR(255) NULL, "
+                    + "pham_vi_toi_da VARCHAR(50) NOT NULL DEFAULT 'CA_NHAN'"
+                    + ")");
+
+            stmt.execute("CREATE TABLE nguoi_dung_vai_tro ("
+                    + "nguoi_dung_id BIGINT NOT NULL, "
+                    + "vai_tro_id INT NOT NULL, "
+                    + "PRIMARY KEY (nguoi_dung_id, vai_tro_id)"
+                    + ")");
+
             // Tạo bảng nguoi_dung
             stmt.execute("CREATE TABLE nguoi_dung ("
                     + "id BIGINT AUTO_INCREMENT PRIMARY KEY, "
