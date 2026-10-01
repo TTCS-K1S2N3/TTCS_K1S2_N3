@@ -165,4 +165,92 @@ class KhachHangServletTest {
         verify(request).getRequestDispatcher("/WEB-INF/views/phan-quyen/ngoai-pham-vi.jsp");
         verify(dispatcher).forward(request, response);
     }
+
+    @Test
+    @DisplayName("S1-05: Thêm khách hàng thành công và tự động gán quyền sở hữu cho người dùng hiện tại")
+    void testThemKhachHang_ThanhCong_TuDongGanNguoiSoHuu() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getParameter("action")).thenReturn("them");
+        when(request.getParameter("tenCongTy")).thenReturn("Tập đoàn Công nghệ CMC");
+        when(request.getParameter("maKhachHang")).thenReturn("KH-CMC-01");
+        when(request.getParameter("doanhThuUocTinh")).thenReturn("250,000,000 đ");
+        when(request.getParameter("trangThai")).thenReturn("Tiềm năng");
+        when(request.getParameter("moTaChiTiet")).thenReturn("Khách hàng doanh nghiệp viễn thông CNTT");
+
+        servlet.doPost(request, response);
+
+        // Xác nhận thông báo thành công và bản ghi mới được tạo gắn với A (101)
+        verify(request).setAttribute(eq("thongBaoThanhCong"), contains("Tập đoàn Công nghệ CMC"));
+        verify(request).setAttribute(eq("khachHangVuaThem"), argThat(arg -> {
+            BanGhiNghiepVuDTO bg = (BanGhiNghiepVuDTO) arg;
+            assertEquals(101L, bg.getNguoiPhuTrachId(), "Chủ sở hữu phải tự động gán là User A (101)");
+            assertEquals("KH-CMC-01", bg.getMaBanGhi());
+            assertEquals("Tập đoàn Công nghệ CMC", bg.getTieuDe());
+            return true;
+        }));
+        verify(request).getRequestDispatcher("/WEB-INF/views/khach-hang/danh-sach.jsp");
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("S1-05 Bảo mật: Chặn client-side owner spoofing - luôn ép quyền sở hữu về session user")
+    void testThemKhachHang_NganChanGiaMaoNguoiSoHuu() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getParameter("action")).thenReturn("them");
+        when(request.getParameter("tenCongTy")).thenReturn("Công ty Cổ phần MISA");
+        when(request.getParameter("maKhachHang")).thenReturn("KH-MISA-99");
+        // Kẻ tấn công cố tình truyền người sở hữu là user khác (ID 999 hoặc 102 của Sales B)
+        when(request.getParameter("nguoiSoHuuId")).thenReturn("999");
+        when(request.getParameter("nguoi_so_huu_id")).thenReturn("102");
+        when(request.getParameter("nguoiPhuTrachId")).thenReturn("999");
+
+        servlet.doPost(request, response);
+
+        verify(request).setAttribute(eq("khachHangVuaThem"), argThat(arg -> {
+            BanGhiNghiepVuDTO bg = (BanGhiNghiepVuDTO) arg;
+            assertNotEquals(999L, bg.getNguoiPhuTrachId(), "Tuyệt đối không nhận ID giả mạo từ client");
+            assertNotEquals(102L, bg.getNguoiPhuTrachId(), "Tuyệt đối không nhận ID người khác từ client");
+            assertEquals(101L, bg.getNguoiPhuTrachId(), "Server bắt buộc lấy chủ sở hữu từ session user A (101)");
+            return true;
+        }));
+    }
+
+    @Test
+    @DisplayName("S1-05 Bảo mật: Chưa đăng nhập gửi POST tạo khách hàng bị từ chối chuyển hướng đăng nhập")
+    void testThemKhachHang_ChuaDangNhap_RedirectDangNhap() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(null);
+        when(request.getParameter("action")).thenReturn("them");
+        when(request.getParameter("tenCongTy")).thenReturn("Doanh Nghiệp Hacker");
+
+        servlet.doPost(request, response);
+
+        verify(response).sendRedirect("/crm/dang-nhap?error=auth_required");
+    }
+
+    @Test
+    @DisplayName("S1-05 Server-side validation: Tên công ty rỗng bị từ chối với HTTP 400 Bad Request")
+    void testThemKhachHang_TenCongTyRong_TraVe400() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getParameter("action")).thenReturn("them");
+        when(request.getParameter("tenCongTy")).thenReturn("   "); // Trắng
+
+        servlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        verify(request).setAttribute(eq("thongBaoLoi"), contains("không được để trống"));
+    }
+
+    @Test
+    @DisplayName("S1-05 Server-side validation: Trùng mã khách hàng đã có bị từ chối với HTTP 400 Bad Request")
+    void testThemKhachHang_TrungMaKhachHang_TraVe400() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getParameter("action")).thenReturn("them");
+        when(request.getParameter("tenCongTy")).thenReturn("Khách Hàng Trùng Mã");
+        when(request.getParameter("maKhachHang")).thenReturn("KH-001"); // Mã KH-001 đã tồn tại trong hệ thống
+
+        servlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        verify(request).setAttribute(eq("thongBaoLoi"), contains("đã tồn tại"));
+    }
 }

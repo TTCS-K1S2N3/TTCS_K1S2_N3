@@ -260,4 +260,37 @@ class PhanQuyenDuLieuDAOTest {
             }
         }
     }
+
+    @Test
+    @DisplayName("DAO: Thêm khách hàng mới và kiểm tra mã khách hàng tồn tại")
+    void testThemKhachHangVaKiemTraTonTaiMa() throws Exception {
+        assertTrue(dao.kiemTraTonTaiMaKhachHang("KH-001"), "Mã KH-001 đã nạp mẫu phải tồn tại");
+        assertFalse(dao.kiemTraTonTaiMaKhachHang("KH-NON-EXISTENT"), "Mã chưa có phải trả về false");
+
+        try {
+            Long newId = dao.themKhachHang(
+                    "KH-NEW-TEST",
+                    "Công ty Kiểm Thử Mới",
+                    101L,
+                    1L,
+                    new java.math.BigDecimal("12000000.00"),
+                    "Tiềm năng",
+                    "Ghi chú kiểm thử"
+            );
+            assertNotNull(newId, "Thêm khách hàng thành công phải sinh ID");
+
+            assertTrue(dao.kiemTraTonTaiMaKhachHang("KH-NEW-TEST"), "Sau khi thêm thì mã phải tồn tại");
+
+            BanGhiNghiepVuDTO kh = dao.timBanGhiTheoId(newId, LoaiNghiepVu.KHACH_HANG);
+            assertNotNull(kh);
+            assertEquals("KH-NEW-TEST", kh.getMaBanGhi());
+            assertEquals("Công ty Kiểm Thử Mới", kh.getTieuDe());
+            assertEquals(101L, kh.getNguoiPhuTrachId());
+        } finally {
+            try (Connection conn = DatabaseConnection.layKetNoi();
+                 Statement st = conn.createStatement()) {
+                st.executeUpdate("DELETE FROM khach_hang WHERE ma_khach_hang = 'KH-NEW-TEST'");
+            }
+        }
+    }
 }

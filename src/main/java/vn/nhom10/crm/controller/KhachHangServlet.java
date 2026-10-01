@@ -149,7 +149,9 @@ public class KhachHangServlet extends HttpServlet {
 
             // Cập nhật thông tin nếu có quyền sửa
             String tieuDeMoi = request.getParameter("tieuDe");
+            if (tieuDeMoi == null) tieuDeMoi = request.getParameter("tenCongTy");
             String giaTriMoi = request.getParameter("giaTri");
+            if (giaTriMoi == null) giaTriMoi = request.getParameter("doanhThuUocTinh");
             String trangThaiMoi = request.getParameter("trangThai");
             String moTaMoi = request.getParameter("moTaChiTiet");
 
@@ -160,6 +162,63 @@ public class KhachHangServlet extends HttpServlet {
 
             phanQuyenService.capNhatBanGhi(banGhi);
             request.setAttribute("thongBaoThanhCong", "Cập nhật dữ liệu khách hàng thành công.");
+        } else if ("them".equals(action) || "create".equals(action) || paramId == null) {
+            // 5. Xử lý thao tác thêm mới khách hàng (Story S1-05)
+            String tenCongTy = request.getParameter("tenCongTy");
+            if (tenCongTy == null || tenCongTy.trim().isEmpty()) {
+                tenCongTy = request.getParameter("tieuDe");
+            }
+
+            String maKhachHang = request.getParameter("maKhachHang");
+            if (maKhachHang == null || maKhachHang.trim().isEmpty()) {
+                maKhachHang = request.getParameter("maBanGhi");
+            }
+
+            String giaTri = request.getParameter("doanhThuUocTinh");
+            if (giaTri == null || giaTri.trim().isEmpty()) {
+                giaTri = request.getParameter("giaTri");
+            }
+
+            String trangThai = request.getParameter("trangThai");
+            String moTaChiTiet = request.getParameter("moTaChiTiet");
+
+            // Server-side validation: Bắt buộc tên công ty / khách hàng
+            if (tenCongTy == null || tenCongTy.trim().isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                request.setAttribute("thongBaoLoi", "Tên công ty / khách hàng không được để trống.");
+                doGet(request, response);
+                return;
+            }
+
+            // Server-side validation: Kiểm tra trùng mã khách hàng nếu có nhập
+            if (maKhachHang != null && !maKhachHang.trim().isEmpty() && phanQuyenService.kiemTraTonTaiMaKhachHang(maKhachHang.trim())) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                request.setAttribute("thongBaoLoi", "Mã khách hàng '" + maKhachHang.trim() + "' đã tồn tại trong hệ thống.");
+                doGet(request, response);
+                return;
+            }
+
+            // BẢO MẬT & DATA SCOPE (S1-05):
+            // Tuyệt đối không cho phép client giả mạo người sở hữu (no owner spoofing).
+            // Người sở hữu luôn tự động quyết định bởi server từ session người dùng (nguoiDung).
+            try {
+                BanGhiNghiepVuDTO khachHangMoi = phanQuyenService.themKhachHang(
+                        userDTO,
+                        maKhachHang,
+                        tenCongTy,
+                        giaTri,
+                        trangThai,
+                        moTaChiTiet
+                );
+                request.setAttribute("thongBaoThanhCong", "Thêm mới khách hàng '" + khachHangMoi.getTieuDe() + "' thành công.");
+                request.setAttribute("khachHangVuaThem", khachHangMoi);
+            } catch (IllegalArgumentException e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                request.setAttribute("thongBaoLoi", e.getMessage());
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                request.setAttribute("thongBaoLoi", "Lỗi tạo khách hàng: " + e.getMessage());
+            }
         }
 
         doGet(request, response);

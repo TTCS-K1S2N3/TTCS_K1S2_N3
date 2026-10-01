@@ -29,6 +29,7 @@ public class PhanQuyenDuLieuService {
     private static final Logger LOGGER = Logger.getLogger(PhanQuyenDuLieuService.class.getName());
 
     private final PhanQuyenDuLieuDAO dao;
+    private final List<BanGhiNghiepVuDTO> danhSachBoNho;
 
     public PhanQuyenDuLieuService() {
         this(new PhanQuyenDuLieuDAO());
@@ -36,6 +37,7 @@ public class PhanQuyenDuLieuService {
 
     public PhanQuyenDuLieuService(PhanQuyenDuLieuDAO dao) {
         this.dao = dao;
+        this.danhSachBoNho = new java.util.concurrent.CopyOnWriteArrayList<>(layDanhSachDuLieuMau());
     }
 
     /**
@@ -121,8 +123,7 @@ public class PhanQuyenDuLieuService {
         }
 
         // 2. Fallback sử dụng dữ liệu mẫu trong bộ nhớ để demo và test độc lập
-        List<BanGhiNghiepVuDTO> danhSachGoc = layDanhSachDuLieuMau();
-        return locTheoPhamVi(danhSachGoc, user, phamViHieuLuc, tuKhoa, loaiNghiepVu);
+        return locTheoPhamVi(new ArrayList<>(danhSachBoNho), user, phamViHieuLuc, tuKhoa, loaiNghiepVu);
     }
 
     public List<BanGhiNghiepVuDTO> layDanhSachDuLieu(NguoiDung nd,
@@ -152,8 +153,8 @@ public class PhanQuyenDuLieuService {
             }
         }
 
-        // Fallback tìm trong danh sách mẫu
-        for (BanGhiNghiepVuDTO bg : layDanhSachDuLieuMau()) {
+        // Fallback tìm trong danh sách bộ nhớ
+        for (BanGhiNghiepVuDTO bg : danhSachBoNho) {
             if (bg.getId().equals(id)) {
                 return bg;
             }
@@ -239,12 +240,114 @@ public class PhanQuyenDuLieuService {
         }
         if (dao != null) {
             try {
-                return dao.capNhatBanGhi(banGhi);
+                dao.capNhatBanGhi(banGhi);
             } catch (Exception e) {
                 LOGGER.log(Level.FINE, "Không thể cập nhật database: " + e.getMessage());
             }
         }
+        for (int i = 0; i < danhSachBoNho.size(); i++) {
+            if (danhSachBoNho.get(i).getId().equals(banGhi.getId())) {
+                danhSachBoNho.set(i, banGhi);
+                break;
+            }
+        }
         return true;
+    }
+
+    /**
+     * Kiểm tra xem mã khách hàng đã tồn tại hay chưa.
+     */
+    public boolean kiemTraTonTaiMaKhachHang(String maKhachHang) {
+        if (maKhachHang == null || maKhachHang.trim().isEmpty()) {
+            return false;
+        }
+        String cleanMa = maKhachHang.trim();
+        if (dao != null) {
+            try {
+                if (dao.kiemTraTonTaiMaKhachHang(cleanMa)) {
+                    return true;
+                }
+            } catch (Exception ignored) {}
+        }
+        for (BanGhiNghiepVuDTO bg : danhSachBoNho) {
+            if (cleanMa.equalsIgnoreCase(bg.getMaBanGhi())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Thêm mới khách hàng với kiểm tra phân quyền sở hữu tự động (Story S1-05).
+     * Server-side ownership determination:
+     * Người sở hữu (nguoi_so_huu_id) LUÔN LUÔN được gán từ user hiện tại.
+     * Tuyệt đối không cho phép client giả mạo (no client-side owner spoofing).
+     */
+    public BanGhiNghiepVuDTO themKhachHang(NguoiDungDTO user,
+                                           String maKhachHang,
+                                           String tenCongTy,
+                                           String giaTri,
+                                           String trangThai,
+                                           String moTaChiTiet) {
+        if (user == null) {
+            throw new SecurityException("Vui lòng đăng nhập để thực hiện thêm khách hàng.");
+        }
+        if (tenCongTy == null || tenCongTy.trim().isEmpty()) {
+            throw new IllegalArgumentException("Tên công ty / khách hàng không được để trống.");
+        }
+
+        String ma = (maKhachHang != null && !maKhachHang.trim().isEmpty())
+                ? maKhachHang.trim()
+                : "KH-" + (System.currentTimeMillis() % 100000);
+
+        if (kiemTraTonTaiMaKhachHang(ma)) {
+            throw new IllegalArgumentException("Mã khách hàng '" + ma + "' đã tồn tại trong hệ thống.");
+        }
+
+        String tt = (trangThai != null && !trangThai.trim().isEmpty()) ? trangThai.trim() : "Tiềm năng";
+        String moTa = moTaChiTiet != null ? moTaChiTiet.trim() : "";
+        String gt = (giaTri != null && !giaTri.trim().isEmpty()) ? giaTri.trim() : "0 đ";
+
+        Long newId = null;
+        if (dao != null) {
+            try {
+                java.math.BigDecimal bdGiaTri = parseGiaTri(gt);
+                newId = dao.themKhachHang(ma, tenCongTy.trim(), user.getId(), user.getNhomKinhDoanhId(), bdGiaTri, tt, moTa);
+            } catch (Exception e) {
+                LOGGER.log(Level.FINE, "Không thể lưu vào database, chuyển sang fallback bộ nhớ: " + e.getMessage());
+            }
+        }
+
+        if (newId == null) {
+            newId = (long) (Math.abs(ma.hashCode()) + 1000L);
+        }
+
+        BanGhiNghiepVuDTO bg = new BanGhiNghiepVuDTO(
+                newId,
+                ma,
+                tenCongTy.trim(),
+                LoaiNghiepVu.KHACH_HANG,
+                user.getId(), // QUAN TRỌNG (S1-05): Quyền sở hữu bắt buộc gắn với user đang đăng nhập
+                user.getHoTen(),
+                user.getNhomKinhDoanhId(),
+                user.getTenNhom(),
+                gt,
+                tt,
+                LocalDate.now(),
+                moTa
+        );
+
+        danhSachBoNho.add(0, bg);
+        return bg;
+    }
+
+    public BanGhiNghiepVuDTO themKhachHang(NguoiDung nd,
+                                           String maKhachHang,
+                                           String tenCongTy,
+                                           String giaTri,
+                                           String trangThai,
+                                           String moTaChiTiet) {
+        return themKhachHang(NguoiDungDTO.tuNguoiDung(nd), maKhachHang, tenCongTy, giaTri, trangThai, moTaChiTiet);
     }
 
     /**
@@ -325,6 +428,21 @@ public class PhanQuyenDuLieuService {
     private String escapeCsv(String value) {
         if (value == null) return "\"\"";
         return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
+
+    private java.math.BigDecimal parseGiaTri(String giaTri) {
+        if (giaTri == null || giaTri.trim().isEmpty()) {
+            return java.math.BigDecimal.ZERO;
+        }
+        try {
+            String clean = giaTri.replaceAll("[^0-9.]", "");
+            if (clean.isEmpty()) {
+                return java.math.BigDecimal.ZERO;
+            }
+            return new java.math.BigDecimal(clean);
+        } catch (Exception e) {
+            return java.math.BigDecimal.ZERO;
+        }
     }
 
     private LoaiNghiepVu parseLoaiNghiepVu(String loai) {

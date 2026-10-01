@@ -19,6 +19,20 @@
     <jsp:include page="/WEB-INF/views/layout/navigation.jsp" />
 
     <main class="crm-main-content page-container" id="crm-main-content">
+        <!-- Thông báo kết quả thao tác -->
+        <c:if test="${not empty thongBaoThanhCong}">
+            <div class="alert alert-success" id="alertSuccess">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span><c:out value="${thongBaoThanhCong}" /></span>
+            </div>
+        </c:if>
+        <c:if test="${not empty thongBaoLoi}">
+            <div class="alert alert-danger" id="alertError">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span><c:out value="${thongBaoLoi}" /></span>
+            </div>
+        </c:if>
+
         <!-- Story S1-02: Khu vực soạn thảo ghi chú cuộc gặp (Ngồi ở quán cà phê không bị mất ghi chú) -->
         <div class="card" style="margin-bottom: 24px;">
             <div class="card-title">
@@ -181,9 +195,69 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Modal Thêm Khách Hàng Mới (Story S1-05) -->
+        <div class="modal-backdrop" id="modalThemKhachHang" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalThemKhachHangTieuDe">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="modal-title" id="modalThemKhachHangTieuDe">Thêm Khách Hàng Mới</h2>
+                        <p class="modal-subtitle">Tạo mới khách hàng thuộc phạm vi sở hữu của tài khoản hiện tại (S1-05)</p>
+                    </div>
+                    <button type="button" class="modal-close-btn" id="btnDongModalThemKhachHang" aria-label="Đóng">&times;</button>
+                </div>
+                <form id="formThemKhachHang" method="POST" action="${pageContext.request.contextPath}/khach-hang">
+                    <input type="hidden" name="action" value="them">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label" for="tenCongTy">Tên khách hàng / Công ty <span class="required">*</span></label>
+                            <input type="text" id="tenCongTy" name="tenCongTy" class="form-input" placeholder="Ví dụ: Công ty Cổ phần Công nghệ ABC" required autocomplete="off">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label class="form-label" for="maKhachHang">Mã khách hàng</label>
+                                <input type="text" id="maKhachHang" name="maKhachHang" class="form-input" placeholder="Tự sinh nếu để trống" autocomplete="off">
+                            </div>
+                            <div class="form-col">
+                                <label class="form-label" for="doanhThuUocTinh">Doanh thu ước tính</label>
+                                <input type="text" id="doanhThuUocTinh" name="doanhThuUocTinh" class="form-input" placeholder="Ví dụ: 100,000,000 đ" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="trangThai">Trạng thái</label>
+                            <select id="trangThai" name="trangThai" class="form-select">
+                                <option value="Tiềm năng" selected>Tiềm năng</option>
+                                <option value="Đang tiếp cận">Đang tiếp cận</option>
+                                <option value="Đang hợp tác">Đang hợp tác</option>
+                                <option value="Khách hàng VIP">Khách hàng VIP</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Người sở hữu (Data Scope Server Enforcement)</label>
+                            <div class="form-readonly-badge">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                <span>Chủ sở hữu: <strong><c:out value="${not empty currentUser ? currentUser.hoTen : sessionScope.nguoiDung.hoTen}" /></strong> &bull; <c:out value="${not empty currentUser ? currentUser.tenNhom : sessionScope.nguoiDung.tenNhomKinhDoanh}" /></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="moTaChiTiet">Ghi chú / Mô tả chi tiết</label>
+                            <textarea id="moTaChiTiet" name="moTaChiTiet" class="form-textarea" rows="3" placeholder="Nhập thêm nhu cầu, lĩnh vực, liên hệ..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" id="btnHuyThemKhachHang">Hủy bỏ</button>
+                        <button type="submit" class="btn btn-primary" id="btnXacNhanThemKhachHang">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            Lưu Khách Hàng
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </main>
 
     <script src="${pageContext.request.contextPath}/assets/js/navigation.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/session-keep-alive.js"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/khach-hang.js"></script>
 </body>
 </html>

@@ -305,4 +305,51 @@ class PhanQuyenDuLieuServiceTest {
         assertEquals(PhamViDuLieu.CA_NHAN, vaiTroDAO.layPhamViToiDaCuaVaiTro(null));
         assertEquals(PhamViDuLieu.CA_NHAN, vaiTroDAO.layPhamViToiDaCuaVaiTro("   "));
     }
+
+    @Test
+    @DisplayName("S1-05 Service: Thêm khách hàng mới tự động gán chủ sở hữu từ user session")
+    void testServiceThemKhachHang_TuDongGanNguoiSoHuu() {
+        BanGhiNghiepVuDTO moi = service.themKhachHang(
+                nhanVienA,
+                "KH-SERVICE-TEST",
+                "Công ty Test Service S1-05",
+                "100,000,000 đ",
+                "Tiềm năng",
+                "Mô tả kiểm thử"
+        );
+        assertNotNull(moi);
+        assertEquals(nhanVienA.getId(), moi.getNguoiPhuTrachId(), "Chủ sở hữu phải là nhân viên A");
+        assertEquals("KH-SERVICE-TEST", moi.getMaBanGhi());
+        assertEquals("Công ty Test Service S1-05", moi.getTieuDe());
+
+        // Kiểm tra mã đã tồn tại
+        assertTrue(service.kiemTraTonTaiMaKhachHang("KH-SERVICE-TEST"));
+
+        // Kiểm tra danh sách của A thấy khách hàng mới
+        List<BanGhiNghiepVuDTO> listA = service.layDanhSachDuLieu(nhanVienA, PhamViDuLieu.CA_NHAN, "KH-SERVICE-TEST", "KHACH_HANG");
+        assertFalse(listA.isEmpty(), "Khách hàng mới tạo phải xuất hiện trong danh sách Của tôi");
+
+        // Nhân viên B không được thấy khách hàng mới của A
+        List<BanGhiNghiepVuDTO> listB = service.layDanhSachDuLieu(nhanVienB, PhamViDuLieu.CA_NHAN, "KH-SERVICE-TEST", "KHACH_HANG");
+        assertTrue(listB.isEmpty(), "Nhân viên B không được thấy khách hàng của A");
+    }
+
+    @Test
+    @DisplayName("S1-05 Service Validation: Tên công ty rỗng hoặc trùng mã ném ngoại lệ")
+    void testServiceThemKhachHang_Validation() {
+        // Tên công ty rỗng
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.themKhachHang(nhanVienA, "KH-VALID-01", "", "0 đ", "Tiềm năng", "");
+        });
+
+        // Trùng mã đã có (KH-001)
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.themKhachHang(nhanVienA, "KH-001", "Công ty Trùng", "0 đ", "Tiềm năng", "");
+        });
+
+        // Chưa đăng nhập (user null)
+        assertThrows(SecurityException.class, () -> {
+            service.themKhachHang((NguoiDungDTO) null, "KH-VALID-02", "Công ty Hợp Lệ", "0 đ", "Tiềm năng", "");
+        });
+    }
 }

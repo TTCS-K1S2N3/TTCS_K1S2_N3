@@ -262,6 +262,63 @@ public class PhanQuyenDuLieuDAO {
         }
     }
 
+    /**
+     * Kiểm tra xem mã khách hàng đã tồn tại trong database hay chưa.
+     */
+    public boolean kiemTraTonTaiMaKhachHang(String maKhachHang) throws SQLException {
+        if (maKhachHang == null || maKhachHang.trim().isEmpty()) {
+            return false;
+        }
+        String sql = "SELECT 1 FROM khach_hang WHERE LOWER(ma_khach_hang) = LOWER(?) LIMIT 1";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, maKhachHang.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    /**
+     * Thêm mới khách hàng vào database với người sở hữu và nhóm kinh doanh được xác thực.
+     */
+    public Long themKhachHang(String maKhachHang,
+                              String tenCongTy,
+                              Long nguoiSoHuuId,
+                              Long nhomKinhDoanhId,
+                              java.math.BigDecimal doanhThuUocTinh,
+                              String trangThai,
+                              String moTaChiTiet) throws SQLException {
+        String sql = "INSERT INTO khach_hang (ma_khach_hang, ten_cong_ty, nguoi_so_huu_id, nhom_kinh_doanh_id, " +
+                     "doanh_thu_uoc_tinh, trang_thai, mo_ta_chi_tiet, ngay_tao) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, maKhachHang);
+            ps.setString(2, tenCongTy);
+            ps.setLong(3, nguoiSoHuuId);
+            if (nhomKinhDoanhId != null) {
+                ps.setLong(4, nhomKinhDoanhId);
+            } else {
+                ps.setNull(4, java.sql.Types.BIGINT);
+            }
+            ps.setBigDecimal(5, doanhThuUocTinh != null ? doanhThuUocTinh : java.math.BigDecimal.ZERO);
+            ps.setString(6, trangThai != null && !trangThai.trim().isEmpty() ? trangThai.trim() : "Tiềm năng");
+            ps.setString(7, moTaChiTiet != null ? moTaChiTiet.trim() : "");
+            ps.setDate(8, Date.valueOf(LocalDate.now()));
+
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        return rs.getLong(1);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     private String layCotTieuDe(LoaiNghiepVu loai) {
         switch (loai) {
             case KHACH_HANG:
