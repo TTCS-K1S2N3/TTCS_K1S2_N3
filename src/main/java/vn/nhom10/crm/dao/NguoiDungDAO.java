@@ -202,6 +202,44 @@ public class NguoiDungDAO {
         }
     }
 
+    /**
+     * Cập nhật mật khẩu mới của người dùng trong transaction đặt lại mật khẩu (S1-03).
+     *
+     * @param nguoiDungId ID người dùng
+     * @param matKhauHash Mật khẩu đã băm BCrypt
+     * @param conn        Connection JDBC đang quản lý transaction
+     * @return true nếu cập nhật thành công
+     * @throws SQLException khi truy vấn gặp lỗi
+     */
+    public boolean capNhatMatKhau(long nguoiDungId, String matKhauHash, Connection conn) throws SQLException {
+        String sql = "UPDATE nguoi_dung SET mat_khau = ?, so_lan_sai = 0, thoi_gian_khoa = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, matKhauHash);
+            ps.setLong(2, nguoiDungId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Cập nhật mật khẩu mới của người dùng (tự mở kết nối).
+     *
+     * @param nguoiDungId ID người dùng
+     * @param matKhauHash Mật khẩu đã băm BCrypt
+     * @return true nếu cập nhật thành công
+     */
+    public boolean capNhatMatKhau(long nguoiDungId, String matKhauHash) {
+        String sql = "UPDATE nguoi_dung SET mat_khau = ?, so_lan_sai = 0, thoi_gian_khoa = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, matKhauHash);
+            ps.setLong(2, nguoiDungId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi cập nhật mật khẩu cho user: " + nguoiDungId, e);
+            return false;
+        }
+    }
+
     private NguoiDung mapResultSetToNguoiDung(ResultSet rs) throws SQLException {
         NguoiDung nd = new NguoiDung();
         nd.setId(rs.getLong("id"));

@@ -49,6 +49,12 @@ Không sử dụng file này để ghi tiến độ Story.
 - jBCrypt: 0.4 (theo `pom.xml`)
 - Mục đích: Băm mật khẩu người dùng theo chuẩn BCrypt an toàn.
 
+## Email
+
+- Jakarta Mail API: 2.1.3 (theo `pom.xml`)
+- Angus Mail: 2.0.3 (theo `pom.xml`)
+- Mục đích: Gửi email khôi phục mật khẩu và thông báo qua giao thức SMTP.
+
 ## Kiểm thử
 
 - JUnit Jupiter: 5.11.4 (theo `pom.xml`)
