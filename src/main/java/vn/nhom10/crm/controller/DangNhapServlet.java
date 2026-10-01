@@ -9,25 +9,41 @@ import jakarta.servlet.http.HttpSession;
 import vn.nhom10.crm.dto.KetQuaDangNhapDTO;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.service.DangNhapService;
+import vn.nhom10.crm.service.PhienService;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controller tiếp nhận và xử lý yêu cầu đăng nhập vào hệ thống CRM.
+ * Hỗ trợ xác thực bảo mật (S1-01) và quản lý phiên an toàn (S1-02).
  * URL: /dang-nhap, /login
  */
 @WebServlet(name = "DangNhapServlet", urlPatterns = {"/dang-nhap", "/login"})
 public class DangNhapServlet extends HttpServlet {
 
+    private static final Logger LOGGER = Logger.getLogger(DangNhapServlet.class.getName());
+
     private DangNhapService dangNhapService;
+    private PhienService phienService;
 
     @Override
     public void init() throws ServletException {
-        this.dangNhapService = new DangNhapService();
+        if (this.dangNhapService == null) {
+            this.dangNhapService = new DangNhapService();
+        }
+        if (this.phienService == null) {
+            this.phienService = new PhienService();
+        }
     }
 
     public void setDangNhapService(DangNhapService dangNhapService) {
         this.dangNhapService = dangNhapService;
+    }
+
+    public void setPhienService(PhienService phienService) {
+        this.phienService = phienService;
     }
 
     @Override
@@ -40,22 +56,27 @@ public class DangNhapServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("nguoiDung") != null) {
             NguoiDung user = (NguoiDung) session.getAttribute("nguoiDung");
-            String trangChu = dangNhapService.xacDinhTrangChu(user);
-            response.sendRedirect(request.getContextPath() + trangChu);
-            return;
+            String maPhien = (String) session.getAttribute(PhienService.SESSION_TOKEN_KEY);
+            if (phienService == null || maPhien == null || phienService.kiemTraPhienHopLe(maPhien)) {
+                String trangChu = dangNhapService != null ? dangNhapService.xacDinhTrangChu(user) : "/khach-hang";
+                response.sendRedirect(request.getContextPath() + trangChu);
+                return;
+            }
         }
 
         // Xử lý thông báo từ các luồng khác chuyển tới
         String error = request.getParameter("error");
-        if ("auth_required".equalsIgnoreCase(error)) {
-            request.setAttribute("thongBaoLoi", "Vui lòng đăng nhập để truy cập chức năng này.");
-        } else if ("session_expired".equalsIgnoreCase(error)) {
-            request.setAttribute("thongBaoLoi", "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        if ("session_expired".equalsIgnoreCase(error)) {
+            // AC3 (S1-02): Phiên hết hạn đưa về trang đăng nhập kèm thông báo rõ ràng
+            request.setAttribute("thongBaoLoi", "Phiên làm việc của bạn đã hết hạn do không có hoạt động. Vui lòng đăng nhập lại để tiếp tục làm việc an toàn.");
+            request.setAttribute("maLoi", "SESSION_EXPIRED");
+        } else if ("auth_required".equalsIgnoreCase(error) || "chua_dang_nhap".equalsIgnoreCase(error)) {
+            request.setAttribute("thongBaoLoi", "Vui lòng đăng nhập để truy cập hệ thống CRM.");
         }
 
         String thongBao = request.getParameter("thongBao");
         if ("dang_xuat".equalsIgnoreCase(thongBao)) {
-            request.setAttribute("thongBaoThanhCong", "Bạn đã đăng xuất khỏi hệ thống thành công.");
+            request.setAttribute("thongBaoThanhCong", "Bạn đã đăng xuất an toàn khỏi hệ thống CRM.");
         }
 
         request.getRequestDispatcher("/WEB-INF/views/auth/dang-nhap.jsp").forward(request, response);
@@ -70,12 +91,25 @@ public class DangNhapServlet extends HttpServlet {
         String email = request.getParameter("email");
         String matKhau = request.getParameter("matKhau");
 
+        if (dangNhapService == null) {
+            dangNhapService = new DangNhapService();
+        }
+
         KetQuaDangNhapDTO ketQua = dangNhapService.dangNhap(email, matKhau);
 
         if (ketQua.isThanhCong()) {
-            // Đăng nhập đúng: Lưu thông tin người dùng vào HttpSession
+            NguoiDung user = ketQua.getNguoiDung();
             HttpSession session = request.getSession(true);
-            session.setAttribute("nguoiDung", ketQua.getNguoiDung());
+            session.setAttribute("nguoiDung", user);
+
+            // S1-02: Khởi tạo phiên làm việc bảo mật trên server và database
+            if (phienService != null) {
+                try {
+                    phienService.taoPhienMoi(user, session, request.getRemoteAddr(), request.getHeader("User-Agent"));
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Không thể lưu phiên đăng nhập vào DB: " + e.getMessage());
+                }
+            }
 
             // Chuyển hướng tới trang chủ tương ứng với vai trò
             response.sendRedirect(request.getContextPath() + ketQua.getTrangChuUrl());

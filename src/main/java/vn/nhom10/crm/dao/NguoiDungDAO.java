@@ -35,7 +35,7 @@ public class NguoiDungDAO {
 
         String sql = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, "
                 + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
-                + "FROM nguoi_dung WHERE LOWER(email) = LOWER(?)";
+                + "FROM nguoi_dung WHERE LOWER(email) = LOWER(?) LIMIT 1";
 
         try (Connection conn = DatabaseConnection.layKetNoi();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -64,7 +64,7 @@ public class NguoiDungDAO {
     public NguoiDung timTheoId(long id) {
         String sql = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, "
                 + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
-                + "FROM nguoi_dung WHERE id = ?";
+                + "FROM nguoi_dung WHERE id = ? LIMIT 1";
 
         try (Connection conn = DatabaseConnection.layKetNoi();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -79,7 +79,7 @@ public class NguoiDungDAO {
                 }
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi truy vấn người dùng theo ID: " + id, e);
+            LOGGER.log(Level.SEVERE, "Lỗi truy vấn người dùng theo id: " + id, e);
         }
         return null;
     }
@@ -175,6 +175,31 @@ public class NguoiDungDAO {
             LOGGER.log(Level.SEVERE, "Lỗi lấy danh sách vai trò cho user id: " + nguoiDungId, e);
         }
         return danhSach;
+    }
+
+    public void capNhatDangNhapThanhCong(long nguoiDungId, Timestamp lanDangNhapCuoi) {
+        String sql = "UPDATE nguoi_dung SET so_lan_sai = 0, thoi_gian_khoa = NULL, updated_at = ? WHERE id = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, lanDangNhapCuoi != null ? lanDangNhapCuoi : new Timestamp(System.currentTimeMillis()));
+            ps.setLong(2, nguoiDungId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi cập nhật đăng nhập thành công cho user: " + nguoiDungId, e);
+        }
+    }
+
+    public void capNhatDangNhapThatBai(long nguoiDungId, int soLanSai, Timestamp thoiGianKhoa) {
+        String sql = "UPDATE nguoi_dung SET so_lan_sai = ?, thoi_gian_khoa = ?, updated_at = NOW() WHERE id = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, soLanSai);
+            ps.setTimestamp(2, thoiGianKhoa);
+            ps.setLong(3, nguoiDungId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi cập nhật đăng nhập thất bại cho user: " + nguoiDungId, e);
+        }
     }
 
     private NguoiDung mapResultSetToNguoiDung(ResultSet rs) throws SQLException {

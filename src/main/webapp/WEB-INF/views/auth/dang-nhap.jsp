@@ -34,10 +34,17 @@
             <!-- AC 2 & AC 3: Thông báo lỗi xác thực hoặc Khóa tạm 15 phút sau 5 lần sai -->
             <c:if test="${not empty thongBaoLoi}">
                 <c:set var="isLockout" value="${fn:containsIgnoreCase(thongBaoLoi, 'khóa') or fn:containsIgnoreCase(thongBaoLoi, 'phút')}" />
-                <div id="alertMessage" class="alert-box ${isLockout ? 'alert-lockout' : 'alert-danger'}" role="alert">
+                <c:set var="isSessionExpired" value="${fn:containsIgnoreCase(thongBaoLoi, 'hết hạn') or param.error eq 'session_expired'}" />
+                <div id="alertMessage" class="alert-box ${isLockout ? 'alert-lockout' : (isSessionExpired ? 'alert-warning' : 'alert-danger')}" role="alert">
                     <div class="alert-icon-wrapper">
                         <c:choose>
                             <c:when test="${isLockout}">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                            </c:when>
+                            <c:when test="${isSessionExpired}">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="12" cy="12" r="10"></circle>
                                     <polyline points="12 6 12 12 16 14"></polyline>
@@ -54,7 +61,11 @@
                     </div>
                     <div class="alert-body">
                         <div class="alert-title">
-                            <c:out value="${isLockout ? 'Tài Khoản Tạm Thời Bị Khóa' : 'Đăng Nhập Thất Bại'}" />
+                            <c:choose>
+                                <c:when test="${isLockout}">Tài Khoản Tạm Thời Bị Khóa</c:when>
+                                <c:when test="${isSessionExpired}">Phiên Làm Việc Hết Hạn</c:when>
+                                <c:otherwise>Đăng Nhập Thất Bại</c:otherwise>
+                            </c:choose>
                         </div>
                         <div class="alert-desc">
                             <c:out value="${thongBaoLoi}"/>

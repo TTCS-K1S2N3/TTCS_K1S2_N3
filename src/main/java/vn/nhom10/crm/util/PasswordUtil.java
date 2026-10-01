@@ -3,7 +3,8 @@ package vn.nhom10.crm.util;
 import org.mindrot.jbcrypt.BCrypt;
 
 /**
- * Tiện ích băm và kiểm tra mật khẩu sử dụng BCrypt.
+ * Tiện ích mã hóa và kiểm tra mật khẩu bằng thuật toán BCrypt.
+ * Tuân thủ yêu cầu bảo mật tài khoản người dùng CRM.
  */
 public class PasswordUtil {
 
@@ -22,6 +23,10 @@ public class PasswordUtil {
         return BCrypt.hashpw(rawPassword, BCrypt.gensalt(LOG_ROUNDS));
     }
 
+    public static String bamMatKhau(String matKhauTho) {
+        return hashPassword(matKhauTho);
+    }
+
     /**
      * So khớp mật khẩu thô với hash BCrypt đã lưu trong database.
      *
@@ -35,9 +40,13 @@ public class PasswordUtil {
         }
         try {
             return BCrypt.checkpw(rawPassword, hashedPassword);
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             return false;
         }
+    }
+
+    public static boolean kiemTraMatKhau(String matKhauTho, String matKhauHash) {
+        return checkPassword(matKhauTho, matKhauHash);
     }
 
     /**
@@ -53,16 +62,16 @@ public class PasswordUtil {
         if (password == null || password.length() < 8) {
             return false;
         }
-        boolean coChu = false;
-        boolean coSo = false;
+        boolean hasLetter = false;
+        boolean hasDigit = false;
 
         for (char c : password.toCharArray()) {
             if (Character.isLetter(c)) {
-                coChu = true;
+                hasLetter = true;
             } else if (Character.isDigit(c)) {
-                coSo = true;
+                hasDigit = true;
             }
-            if (coChu && coSo) {
+            if (hasLetter && hasDigit) {
                 return true;
             }
         }
