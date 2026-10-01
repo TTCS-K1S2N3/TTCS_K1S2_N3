@@ -62,6 +62,30 @@ class SessionSecurityFilterTest {
     }
 
     @Test
+    @DisplayName("S1-03: Đường dẫn công khai /quen-mat-khau được bỏ qua filter khi chưa đăng nhập")
+    void testQuenMatKhauChuaDangNhapTruyCapThanhCong() throws IOException, ServletException {
+        when(request.getRequestURI()).thenReturn("/crm/quen-mat-khau");
+        when(request.getContextPath()).thenReturn("/crm");
+
+        filter.doFilter(request, response, chain);
+
+        verify(chain).doFilter(request, response);
+        verifyNoInteractions(phienService);
+    }
+
+    @Test
+    @DisplayName("S1-03: Đường dẫn công khai /dat-lai-mat-khau được bỏ qua filter khi chưa đăng nhập")
+    void testDatLaiMatKhauChuaDangNhapTruyCapThanhCong() throws IOException, ServletException {
+        when(request.getRequestURI()).thenReturn("/crm/dat-lai-mat-khau");
+        when(request.getContextPath()).thenReturn("/crm");
+
+        filter.doFilter(request, response, chain);
+
+        verify(chain).doFilter(request, response);
+        verifyNoInteractions(phienService);
+    }
+
+    @Test
     @DisplayName("AC3: Truy cập trang bảo vệ khi chưa đăng nhập hoặc phiên hết hạn thì chuyển hướng về trang đăng nhập")
     void testTrangBaoVeKhongCoPhienChuyenHuongDangNhap() throws IOException, ServletException {
         when(request.getRequestURI()).thenReturn("/crm/khach-hang");
