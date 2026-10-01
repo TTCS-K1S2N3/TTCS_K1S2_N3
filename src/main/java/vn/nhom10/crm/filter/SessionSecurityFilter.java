@@ -51,16 +51,14 @@ public class SessionSecurityFilter implements Filter {
         datHeaderChongCache(httpResponse);
 
         HttpSession session = httpRequest.getSession(false);
-        boolean coPhien = (session != null && (session.getAttribute(PhienService.SESSION_USER_KEY) != null || session.getAttribute("nguoiDung") != null));
+        boolean coPhien = (session != null && session.getAttribute(PhienService.SESSION_USER_KEY) != null);
 
         if (!coPhien) {
             xuLyPhienKhongHopLe(httpRequest, httpResponse, "session_expired");
             return;
         }
 
-        NguoiDung nguoiDung = (NguoiDung) (session.getAttribute(PhienService.SESSION_USER_KEY) != null
-                ? session.getAttribute(PhienService.SESSION_USER_KEY)
-                : session.getAttribute("nguoiDung"));
+        NguoiDung nguoiDung = (NguoiDung) session.getAttribute(PhienService.SESSION_USER_KEY);
         String maPhien = (String) session.getAttribute(PhienService.SESSION_TOKEN_KEY);
         if (maPhien == null) {
             maPhien = session.getId();

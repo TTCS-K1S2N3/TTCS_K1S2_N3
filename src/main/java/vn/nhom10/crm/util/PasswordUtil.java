@@ -23,10 +23,6 @@ public class PasswordUtil {
         return BCrypt.hashpw(rawPassword, BCrypt.gensalt(LOG_ROUNDS));
     }
 
-    public static String bamMatKhau(String matKhauTho) {
-        return hashPassword(matKhauTho);
-    }
-
     /**
      * So khớp mật khẩu thô với hash BCrypt đã lưu trong database.
      *
@@ -43,10 +39,6 @@ public class PasswordUtil {
         } catch (IllegalArgumentException e) {
             return false;
         }
-    }
-
-    public static boolean kiemTraMatKhau(String matKhauTho, String matKhauHash) {
-        return checkPassword(matKhauTho, matKhauHash);
     }
 
     /**

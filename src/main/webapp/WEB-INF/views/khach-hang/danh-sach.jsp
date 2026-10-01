@@ -34,19 +34,16 @@
             </div>
 
             <div class="user-avatar" title="Tài khoản cá nhân">
-                <c:out value="${not empty nguoiDung ? nguoiDung.tenVietTat : (not empty nguoiDungHienTai ? nguoiDungHienTai.tenVietTat : 'CRM')}" />
+                <c:out value="${not empty nguoiDung ? nguoiDung.tenVietTat : 'CRM'}" />
             </div>
             <div class="user-info">
                 <span class="user-name">
-                    <c:out value="${not empty nguoiDung ? nguoiDung.hoTen : (not empty nguoiDungHienTai ? nguoiDungHienTai.hoTen : 'Nhân viên kinh doanh')}" />
+                    <c:out value="${not empty nguoiDung ? nguoiDung.hoTen : 'Nhân viên kinh doanh'}" />
                 </span>
                 <span class="user-role">
                     <c:choose>
                         <c:when test="${not empty nguoiDung and not empty nguoiDung.tenNhomKinhDoanh}">
                             <c:out value="${nguoiDung.tenNhomKinhDoanh}" />
-                        </c:when>
-                        <c:when test="${not empty nguoiDungHienTai and not empty nguoiDungHienTai.tenNhomKinhDoanh}">
-                            <c:out value="${nguoiDungHienTai.tenNhomKinhDoanh}" />
                         </c:when>
                         <c:otherwise>Khối Kinh Doanh</c:otherwise>
                     </c:choose>

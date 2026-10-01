@@ -19,7 +19,7 @@ import java.sql.Timestamp;
  */
 public class PhienService {
 
-    public static final String SESSION_USER_KEY = "nguoiDungHienTai";
+    public static final String SESSION_USER_KEY = "nguoiDung";
     public static final String SESSION_TOKEN_KEY = "maPhienDangNhap";
     public static final int THOI_GIAN_HET_HAN_MAC_DINH_PHUT = 30;
 
@@ -63,7 +63,6 @@ public class PhienService {
         } catch (Exception ignored) {}
 
         httpSession.setAttribute(SESSION_USER_KEY, nguoiDung);
-        httpSession.setAttribute("nguoiDung", nguoiDung);
         httpSession.setAttribute(SESSION_TOKEN_KEY, maPhien);
 
         return phien;
@@ -145,7 +144,6 @@ public class PhienService {
                 }
 
                 session.removeAttribute(SESSION_USER_KEY);
-                session.removeAttribute("nguoiDung");
                 session.removeAttribute(SESSION_TOKEN_KEY);
                 session.invalidate();
             } catch (IllegalStateException e) {
