@@ -6,7 +6,7 @@
 <%@ page import="java.util.List" %>
 <%
     NguoiDung currentUser = (NguoiDung) session.getAttribute("nguoiDung");
-    int currentAdminId = (currentUser != null) ? currentUser.getId() : 1;
+    long currentAdminId = (currentUser != null) ? currentUser.getId() : 1L;
 
     ThongTinBanGiaoDTO thongTin = (ThongTinBanGiaoDTO) request.getAttribute("thongTinBanGiao");
     KetQuaKhoaVaBanGiaoDTO ketQua = (KetQuaKhoaVaBanGiaoDTO) request.getAttribute("ketQua");
@@ -125,6 +125,7 @@
             <!-- Khối nội dung chính khi đã chọn nhân viên cần khoá -->
             <% if (thongTin != null && thongTin.getNguoiBiKhoa() != null) {
                 NguoiDung u = thongTin.getNguoiBiKhoa();
+                boolean isLocked = NguoiDung.TRANG_THAI_KHOA.equalsIgnoreCase(u.getTrangThai());
             %>
 
                 <!-- Cảnh báo nếu là chính tài khoản của Quản trị viên đang đăng nhập -->
@@ -137,7 +138,7 @@
                             <strong>Cảnh báo an ninh:</strong> Bạn không thể tự khoá tài khoản quản trị của <strong>chính mình</strong>. Vui lòng nhờ một Quản trị viên khác thực hiện nếu cần bàn giao tài khoản này.
                         </div>
                     </div>
-                <% } else if (u.daKhoa()) { %>
+                <% } else if (isLocked) { %>
                     <div class="alert alert-warning" role="alert">
                         <div class="alert-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -174,7 +175,7 @@
                                 </div>
                                 <div class="user-meta-item">
                                     <strong>Trạng thái:</strong>
-                                    <% if (u.daKhoa()) { %>
+                                    <% if (isLocked) { %>
                                         <span class="crm-pill" style="background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; font-size: 11px;">ĐÃ KHOÁ</span>
                                     <% } else { %>
                                         <span class="crm-pill" style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; font-size: 11px;">ĐANG HOẠT ĐỘNG</span>
@@ -215,7 +216,7 @@
                                 <label class="form-label" for="nguoiTiepNhanId">
                                     Người tiếp nhận toàn bộ dữ liệu <span class="required">*</span>
                                 </label>
-                                <select id="nguoiTiepNhanId" name="nguoiTiepNhanId" class="form-control" required <%= (isSelf || u.daKhoa()) ? "disabled" : "" %>>
+                                <select id="nguoiTiepNhanId" name="nguoiTiepNhanId" class="form-control" required <%= (isSelf || isLocked) ? "disabled" : "" %>>
                                     <option value="">-- Chọn nhân sự đang hoạt động tiếp nhận --</option>
                                     <%
                                         List<NguoiDung> dsNhan = thongTin.getDanhSachNguoiTiepNhan();
@@ -255,7 +256,7 @@
                                 <label class="form-label" for="lyDo">
                                     Lý do khoá & Ghi chú bàn giao
                                 </label>
-                                <textarea id="lyDo" name="lyDo" class="form-control" placeholder="Nhập lý do nghỉ việc hoặc quyết định bàn giao công tác..." <%= (isSelf || u.daKhoa()) ? "disabled" : "" %>></textarea>
+                                <textarea id="lyDo" name="lyDo" class="form-control" placeholder="Nhập lý do nghỉ việc hoặc quyết định bàn giao công tác..." <%= (isSelf || isLocked) ? "disabled" : "" %>></textarea>
 
                                 <!-- Gợi ý lý do nhanh (Quick Reason Chips) -->
                                 <div class="crm-reason-chips-wrapper">
@@ -271,7 +272,7 @@
                             </div>
 
                             <div class="form-actions">
-                                <button type="button" class="btn btn-danger" id="btnXacNhanKhoa" <%= (isSelf || u.daKhoa()) ? "disabled" : "" %>>
+                                <button type="button" class="btn btn-danger" id="btnXacNhanKhoa" <%= (isSelf || isLocked) ? "disabled" : "" %>>
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                                     Khoá Tài Khoản & Bàn Giao Dữ Liệu
                                 </button>
