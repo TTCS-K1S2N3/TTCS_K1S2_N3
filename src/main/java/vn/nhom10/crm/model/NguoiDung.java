@@ -28,11 +28,18 @@ public class NguoiDung implements Serializable {
     private Timestamp thoiGianKhoa;
     private Integer nhomKinhDoanhId;
     private String tenNhomKinhDoanh;
+    private NhomKinhDoanh nhomKinhDoanh;
     private Set<VaiTro> danhSachVaiTro = new HashSet<>();
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
     public NguoiDung() {
+    }
+
+    public NguoiDung(long id, String hoTen, String email) {
+        this.id = id;
+        this.hoTen = hoTen;
+        this.email = email;
     }
 
     public NguoiDung(long id, String hoTen, String email, String matKhau, String soDienThoai, String trangThai) {
@@ -116,8 +123,26 @@ public class NguoiDung implements Serializable {
         this.nhomKinhDoanhId = nhomKinhDoanhId;
     }
 
+    public NhomKinhDoanh getNhomKinhDoanh() {
+        return nhomKinhDoanh;
+    }
+
+    public void setNhomKinhDoanh(NhomKinhDoanh nhomKinhDoanh) {
+        this.nhomKinhDoanh = nhomKinhDoanh;
+        if (nhomKinhDoanh != null) {
+            this.nhomKinhDoanhId = nhomKinhDoanh.getId();
+            this.tenNhomKinhDoanh = nhomKinhDoanh.getTenNhom();
+        }
+    }
+
     public String getTenNhomKinhDoanh() {
-        return tenNhomKinhDoanh;
+        if (nhomKinhDoanh != null && nhomKinhDoanh.getTenNhom() != null && !nhomKinhDoanh.getTenNhom().isBlank()) {
+            return nhomKinhDoanh.getTenNhom();
+        }
+        if (tenNhomKinhDoanh != null && !tenNhomKinhDoanh.isBlank()) {
+            return tenNhomKinhDoanh;
+        }
+        return "Chưa phân nhóm";
     }
 
     public void setTenNhomKinhDoanh(String tenNhomKinhDoanh) {
@@ -142,6 +167,42 @@ public class NguoiDung implements Serializable {
         if (vaiTroEnum != null) {
             this.danhSachVaiTro.add(new VaiTro(vaiTroEnum));
         }
+    }
+
+    /**
+     * Lấy chuỗi hiển thị các vai trò cách nhau bởi dấu phẩy.
+     */
+    public String getChuoiVaiTroHienThi() {
+        if (danhSachVaiTro == null || danhSachVaiTro.isEmpty()) {
+            return "Chưa phân vai trò";
+        }
+        return danhSachVaiTro.stream()
+                .map(vt -> vt.getTenHienThi() != null ? vt.getTenHienThi() : vt.getMaVaiTro())
+                .filter(java.util.Objects::nonNull)
+                .collect(java.util.stream.Collectors.joining(", "));
+    }
+
+    /**
+     * Lấy danh sách VaiTroEnum của người dùng.
+     */
+    public Set<VaiTroEnum> getDanhSachVaiTroEnum() {
+        Set<VaiTroEnum> ketQua = new HashSet<>();
+        if (danhSachVaiTro != null) {
+            for (VaiTro vt : danhSachVaiTro) {
+                if (vt != null) {
+                    VaiTroEnum vte = vt.getVaiTroEnum();
+                    if (vte != null) {
+                        ketQua.add(vte);
+                    } else if (vt.getMaVaiTro() != null) {
+                        VaiTroEnum e = VaiTroEnum.tuMa(vt.getMaVaiTro());
+                        if (e != null) {
+                            ketQua.add(e);
+                        }
+                    }
+                }
+            }
+        }
+        return ketQua;
     }
 
     /**

@@ -1,0 +1,1299 @@
+/* ====================================================================
+   CRM BÁN HÀNG - NAVIGATION CSS (STORY S1-06)
+   Tối ưu hiển thị menu phân quyền, hồ sơ người dùng (tên, vai trò, nhóm)
+   và trải nghiệm vuốt chạm thuận tiện trên màn hình nhỏ 360px.
+   ==================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --crm-font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    /* Theme Primary */
+    --crm-primary: #2563eb;
+    --crm-primary-hover: #1d4ed8;
+    --crm-primary-light: #eff6ff;
+    --crm-primary-border: #bfdbfe;
+    --crm-primary-text: #1d4ed8;
+
+    /* Sidebar Dark Theme (Modern Deep Slate) */
+    --crm-bg-sidebar: #090d16;
+    --crm-sidebar-surface: #111827;
+    --crm-sidebar-border: #1e293b;
+    --crm-sidebar-border-subtle: rgba(255, 255, 255, 0.07);
+    --crm-sidebar-text: #94a3b8;
+    --crm-sidebar-text-bright: #f8fafc;
+    --crm-sidebar-hover-bg: rgba(255, 255, 255, 0.05);
+    --crm-sidebar-hover-text: #ffffff;
+    --crm-sidebar-active-bg: rgba(37, 99, 235, 0.18);
+    --crm-sidebar-active-text: #60a5fa;
+
+    /* Light Content Surface */
+    --crm-bg-body: #f8fafc;
+    --crm-bg-card: #ffffff;
+    --crm-text-main: #0f172a;
+    --crm-text-muted: #64748b;
+    --crm-border: #e2e8f0;
+    --crm-border-light: #f1f5f9;
+
+    /* Badge Role Colors */
+    --crm-role-badge-bg: rgba(245, 158, 11, 0.15);
+    --crm-role-badge-text: #fbbf24;
+    --crm-team-badge-bg: rgba(56, 189, 248, 0.15);
+    --crm-team-badge-text: #38bdf8;
+
+    /* Layout metrics */
+    --crm-sidebar-width: 270px;
+    --crm-navbar-height: 56px;
+    --crm-radius-sm: 8px;
+    --crm-radius-md: 12px;
+    --crm-radius-lg: 16px;
+    --crm-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --crm-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.07);
+    --crm-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+    --crm-shadow-drawer: 8px 0 24px rgba(0, 0, 0, 0.25);
+}
+
+/* ====================================================================
+   RESET & CƠ BẢN
+   ==================================================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body.crm-body {
+    font-family: var(--crm-font);
+    background-color: var(--crm-bg-body);
+    color: var(--crm-text-main);
+    line-height: 1.5;
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Khóa cuộn trang khi drawer mở trên mobile */
+body.crm-drawer-open {
+    overflow: hidden !important;
+    touch-action: none;
+}
+
+/* ====================================================================
+   1. TOP NAVBAR (MOBILE & MÀN HÌNH 360PX)
+   ==================================================================== */
+.crm-top-navbar {
+    display: none;
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--crm-navbar-height);
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--crm-border);
+    z-index: 900;
+    padding: 0 14px;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--crm-shadow-sm);
+}
+
+.crm-nav-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Nút Hamburger: chuẩn touch target tối thiểu 44x44px */
+.crm-btn-hamburger {
+    background: transparent;
+    border: none;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: var(--crm-radius-sm);
+    color: var(--crm-text-main);
+    transition: background-color 0.15s ease, transform 0.1s ease;
+    touch-action: manipulation;
+}
+
+.crm-btn-hamburger:hover {
+    background-color: #f1f5f9;
+}
+
+.crm-btn-hamburger:active {
+    transform: scale(0.94);
+    background-color: #e2e8f0;
+}
+
+.crm-btn-hamburger svg {
+    width: 24px;
+    height: 24px;
+}
+
+.crm-brand-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    font-size: 15px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.crm-brand-logo-badge {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    padding: 3px 7px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+}
+
+.crm-brand-name {
+    color: #0f172a;
+    letter-spacing: -0.3px;
+}
+
+.crm-nav-right {
+    display: flex;
+    align-items: center;
+}
+
+/* Nút avatar trên mobile: chuẩn touch target 44x44px */
+.crm-mobile-user-avatar-btn {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    touch-action: manipulation;
+}
+
+.crm-mobile-user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(37, 99, 235, 0.25);
+}
+
+/* ====================================================================
+   2. SIDEBAR DRAWER (DESKTOP & RESPONSIVE DRAWER)
+   ==================================================================== */
+.crm-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--crm-sidebar-width);
+    height: 100vh;
+    background-color: var(--crm-bg-sidebar);
+    color: var(--crm-sidebar-text);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    border-right: 1px solid var(--crm-sidebar-border);
+    overflow: hidden;
+    will-change: transform;
+}
+
+.crm-sidebar-header {
+    padding: 18px 18px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--crm-sidebar-border-subtle);
+    background: rgba(17, 24, 39, 0.6);
+}
+
+.crm-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.crm-brand-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+}
+
+.crm-brand-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.crm-app-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.2px;
+    line-height: 1.2;
+}
+
+.crm-app-subtitle {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* Nút đóng sidebar trên drawer mobile: touch target 44x44px */
+.crm-btn-close-sidebar {
+    display: none;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--crm-radius-sm);
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.crm-btn-close-sidebar:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.crm-btn-close-sidebar:active {
+    transform: scale(0.92);
+}
+
+.crm-btn-close-sidebar svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* ====================================================================
+   USER PROFILE BOX (AC 2: TÊN, VAI TRÒ VÀ NHÓM KINH DOANH)
+   ==================================================================== */
+.crm-user-profile-box {
+    padding: 14px;
+    margin: 12px 12px 6px;
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.7) 100%);
+    border-radius: var(--crm-radius-md);
+    border: 1px solid var(--crm-sidebar-border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.crm-user-avatar-wrap {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: fit-content;
+}
+
+.crm-user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.crm-status-dot {
+    position: absolute;
+    bottom: -1px;
+    right: -1px;
+    width: 12px;
+    height: 12px;
+    background-color: #10b981;
+    border: 2px solid #090d16;
+    border-radius: 50%;
+    animation: crmPulse 2.5s infinite;
+}
+
+@keyframes crmPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0);
+    }
+}
+
+.crm-user-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.crm-user-name {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #f8fafc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+.crm-user-roles, .crm-user-team {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.crm-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    line-height: 1.3;
+    max-width: 100%;
+    word-break: break-word;
+}
+
+.crm-badge-icon {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+}
+
+.crm-badge-role {
+    background-color: var(--crm-role-badge-bg);
+    color: var(--crm-role-badge-text);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.crm-badge-team {
+    background-color: var(--crm-team-badge-bg);
+    color: var(--crm-team-badge-text);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+/* ====================================================================
+   NAVIGATION MENU ITEMS (AC 1: PHÂN QUYỀN HIỂN THỊ MENU)
+   ==================================================================== */
+.crm-nav-menu {
+    flex: 1;
+    padding: 10px 10px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #1e293b transparent;
+}
+
+.crm-nav-menu::-webkit-scrollbar {
+    width: 4px;
+}
+
+.crm-nav-menu::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 4px;
+}
+
+.crm-menu-section-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #64748b;
+    padding: 8px 10px 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.crm-menu-count-badge {
+    background: rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+    padding: 1px 6px;
+    border-radius: 9999px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.crm-menu-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.crm-menu-item {
+    width: 100%;
+}
+
+/* Menu link: đảm bảo touch target tối thiểu 44px */
+.crm-menu-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    min-height: 44px;
+    color: var(--crm-sidebar-text);
+    text-decoration: none;
+    border-radius: var(--crm-radius-sm);
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+    position: relative;
+    touch-action: manipulation;
+}
+
+.crm-menu-link:hover {
+    background-color: var(--crm-sidebar-hover-bg);
+    color: var(--crm-sidebar-hover-text);
+}
+
+.crm-menu-link:active {
+    background-color: rgba(255, 255, 255, 0.08);
+    transform: scale(0.98);
+}
+
+.crm-menu-link.active {
+    background: var(--crm-sidebar-active-bg);
+    color: var(--crm-sidebar-active-text);
+    font-weight: 600;
+}
+
+.crm-menu-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: inherit;
+}
+
+.crm-menu-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.crm-menu-title {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.crm-active-indicator {
+    width: 3px;
+    height: 18px;
+    background-color: #60a5fa;
+    border-radius: 2px;
+    position: absolute;
+    right: 8px;
+}
+
+/* Empty state menu */
+.crm-menu-empty {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--crm-radius-sm);
+    color: #64748b;
+    font-size: 12.5px;
+}
+
+.crm-menu-empty-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: #94a3b8;
+}
+
+/* Sidebar Footer */
+.crm-sidebar-footer {
+    padding: 10px 12px;
+    border-top: 1px solid var(--crm-sidebar-border-subtle);
+    background-color: rgba(9, 13, 22, 0.7);
+}
+
+.crm-logout-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    min-height: 44px;
+    color: #f87171;
+    text-decoration: none;
+    border-radius: var(--crm-radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    touch-action: manipulation;
+}
+
+.crm-logout-link:hover {
+    background-color: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+}
+
+.crm-logout-link:active {
+    background-color: rgba(239, 68, 68, 0.2);
+}
+
+.crm-logout-icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* Backdrop Overlay */
+.crm-sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 950;
+    opacity: 0;
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    touch-action: none;
+}
+
+.crm-sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* ====================================================================
+   3. MAIN CONTENT LAYOUT & DEMO COMPONENTS
+   ==================================================================== */
+.crm-main-content {
+    margin-left: var(--crm-sidebar-width);
+    padding: 28px 32px;
+    min-height: 100vh;
+}
+
+.crm-container {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Cards */
+.crm-story-card, .crm-ac-card, .crm-role-switcher-card, .crm-summary-card, .crm-matrix-card, .crm-simulator-section {
+    background: var(--crm-bg-card);
+    border: 1px solid var(--crm-border);
+    border-radius: var(--crm-radius-lg);
+    padding: 24px;
+    box-shadow: var(--crm-shadow-sm);
+}
+
+.crm-story-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.crm-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    text-transform: uppercase;
+}
+
+.crm-pill-epic {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.crm-pill-story {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.crm-pill-fe {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.crm-pill-role {
+    background: #ffedd5;
+    color: #9a3412;
+}
+
+.crm-story-title {
+    font-size: 23px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.3;
+    margin-bottom: 8px;
+}
+
+.crm-story-desc {
+    color: var(--crm-text-muted);
+    font-size: 14.5px;
+    line-height: 1.6;
+}
+
+.crm-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 6px;
+}
+
+.crm-card-header-flex {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.crm-badge-live {
+    background: #dcfce7;
+    color: #15803d;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 9999px;
+}
+
+.crm-badge-matrix {
+    background: #e0e7ff;
+    color: #4338ca;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 9999px;
+}
+
+.crm-sub-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #334155;
+    margin: 20px 0 10px;
+}
+
+/* Acceptance Criteria Grid */
+.crm-ac-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.crm-ac-item {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: var(--crm-radius-md);
+    background-color: #f8fafc;
+    border: 1px solid var(--crm-border);
+}
+
+.crm-ac-item.pass {
+    border-color: #bbf7d0;
+    background-color: #f0fdf4;
+}
+
+.crm-ac-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #22c55e;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.crm-ac-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.crm-ac-info strong {
+    display: block;
+    font-size: 13.5px;
+    color: #14532d;
+    margin-bottom: 4px;
+}
+
+.crm-ac-info p {
+    font-size: 12.5px;
+    color: #166534;
+    line-height: 1.4;
+}
+
+/* Role Switcher */
+.crm-switcher-help {
+    font-size: 13.5px;
+    color: var(--crm-text-muted);
+}
+
+.crm-role-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.crm-btn-role {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 14px;
+    min-height: 52px;
+    background-color: #f8fafc;
+    border: 1px solid var(--crm-border);
+    border-radius: var(--crm-radius-sm);
+    text-decoration: none;
+    color: #334155;
+    transition: all 0.2s ease;
+    touch-action: manipulation;
+}
+
+.crm-btn-role:hover {
+    border-color: #93c5fd;
+    background-color: #eff6ff;
+}
+
+.crm-btn-role:active {
+    transform: scale(0.98);
+}
+
+.crm-btn-role.active {
+    background-color: #1e40af;
+    border-color: #1e40af;
+    color: #ffffff;
+    box-shadow: 0 4px 8px rgba(30, 64, 175, 0.25);
+}
+
+.crm-btn-role .role-title {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.crm-btn-role .role-code {
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+/* Summary Grid */
+.crm-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--crm-border);
+}
+
+.crm-meta-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.crm-meta-label {
+    font-size: 12px;
+    color: var(--crm-text-muted);
+    font-weight: 600;
+}
+
+.crm-meta-value {
+    font-size: 14px;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.crm-meta-value.highlight {
+    color: #1e40af;
+}
+
+.crm-menu-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.crm-menu-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #f1f5f9;
+    border: 1px solid var(--crm-border);
+    border-radius: var(--crm-radius-sm);
+    padding: 6px 10px;
+    font-size: 13px;
+}
+
+.tag-order {
+    background-color: #cbd5e1;
+    color: #0f172a;
+    font-size: 11px;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tag-name {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.tag-url {
+    background-color: #e2e8f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #475569;
+}
+
+/* ====================================================================
+   MATRIX TABLE (CHỨNG MINH AC 1: PHÂN QUYỀN TRỰC TIẾP)
+   ==================================================================== */
+.crm-table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--crm-border);
+    border-radius: var(--crm-radius-sm);
+    margin-top: 10px;
+}
+
+.crm-matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+}
+
+.crm-matrix-table th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--crm-border);
+    white-space: nowrap;
+}
+
+.crm-matrix-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--crm-border-light);
+    vertical-align: middle;
+}
+
+.crm-matrix-table tr:last-child td {
+    border-bottom: none;
+}
+
+.crm-matrix-table tr.row-permitted {
+    background-color: #ffffff;
+}
+
+.crm-matrix-table tr.row-denied {
+    background-color: #fafafa;
+}
+
+.crm-matrix-table tr:hover {
+    background-color: #f1f5f9;
+}
+
+.crm-badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 9999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.crm-badge-status svg {
+    width: 13px;
+    height: 13px;
+}
+
+.badge-visible {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.badge-hidden {
+    background-color: #f1f5f9;
+    color: #64748b;
+}
+
+.crm-text-success {
+    color: #15803d;
+    font-weight: 600;
+}
+
+.crm-text-denied {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.crm-btn-table-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    min-height: 32px;
+    touch-action: manipulation;
+}
+
+.crm-btn-table-action.btn-allowed {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.crm-btn-table-action.btn-allowed:hover {
+    background-color: #dbeafe;
+}
+
+.crm-btn-table-action.btn-test-denied {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.crm-btn-table-action.btn-test-denied:hover {
+    background-color: #fee2e2;
+}
+
+/* ====================================================================
+   SIMULATOR SECTION (CHỨNG MINH AC 3: MÀN HÌNH 360PX)
+   ==================================================================== */
+.crm-simulator-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.crm-simulator-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.crm-dimensions-badge {
+    background-color: #1e293b;
+    color: #38bdf8;
+    font-family: monospace;
+    font-weight: 700;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 9999px;
+    border: 1px solid #334155;
+}
+
+.crm-btn-sim-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+    min-height: 40px;
+}
+
+.crm-btn-sim-action:hover {
+    background-color: #1d4ed8;
+}
+
+.crm-btn-sim-action:active {
+    transform: scale(0.96);
+}
+
+.crm-btn-sim-action svg {
+    width: 16px;
+    height: 16px;
+}
+
+.crm-simulator-presets {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.crm-btn-size-preset {
+    background: #f8fafc;
+    border: 1px solid var(--crm-border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.crm-btn-size-preset:hover {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+}
+
+.crm-btn-size-preset.active {
+    background: #1e40af;
+    border-color: #1e40af;
+    color: #ffffff;
+}
+
+.crm-simulator-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 24px 12px;
+    background-color: #0f172a;
+    border-radius: var(--crm-radius-md);
+    background-image: radial-gradient(#1e293b 1px, transparent 1px);
+    background-size: 16px 16px;
+}
+
+.crm-simulator-phone {
+    width: 360px;
+    height: 640px;
+    background: #ffffff;
+    border: 12px solid #1e293b;
+    border-radius: 36px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+.crm-simulator-notch {
+    width: 110px;
+    height: 18px;
+    background-color: #1e293b;
+    border-radius: 0 0 10px 10px;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+}
+
+.crm-simulator-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    flex: 1;
+}
+
+/* ====================================================================
+   4. RESPONSIVE MEDIA QUERIES (TỐI ƯU MẠNH CHO < 768PX VÀ 360PX)
+   ==================================================================== */
+
+/* Tablet & Mobile (< 768px) */
+@media screen and (max-width: 768px) {
+    .crm-top-navbar {
+        display: flex;
+    }
+
+    .crm-btn-close-sidebar {
+        display: inline-flex;
+    }
+
+    /* Sidebar Drawer dạng trượt mượt mà bằng transform */
+    .crm-sidebar {
+        left: 0;
+        transform: translateX(-100%);
+        width: 290px;
+        max-width: 85vw;
+        box-shadow: var(--crm-shadow-drawer);
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .crm-sidebar.crm-sidebar-open {
+        transform: translateX(0);
+    }
+
+    .crm-main-content {
+        margin-left: 0;
+        padding: 16px 12px;
+    }
+
+    .crm-story-title {
+        font-size: 20px;
+    }
+
+    .crm-ac-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .crm-role-buttons {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Màn hình nhỏ 360px (Small Mobile Screen Standard) */
+@media screen and (max-width: 360px) {
+    :root {
+        --crm-navbar-height: 52px;
+    }
+
+    .crm-top-navbar {
+        padding: 0 10px;
+    }
+
+    .crm-btn-hamburger {
+        width: 44px; /* Giữ chuẩn ngón tay bấm 44px */
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .crm-brand-title {
+        font-size: 13.5px;
+        gap: 6px;
+    }
+
+    .crm-brand-logo-badge {
+        font-size: 10px;
+        padding: 2px 5px;
+    }
+
+    /* Đảm bảo drawer chiếm tối đa 300px hoặc chừa 44px bên phải để người dùng bấm backdrop dễ dàng */
+    .crm-sidebar {
+        width: 300px;
+        max-width: calc(100vw - 44px);
+    }
+
+    .crm-sidebar-header {
+        padding: 12px 12px;
+    }
+
+    .crm-user-profile-box {
+        margin: 8px 8px 4px;
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .crm-user-avatar {
+        width: 38px;
+        height: 38px;
+        font-size: 14px;
+    }
+
+    .crm-user-name {
+        font-size: 13.5px;
+        max-width: 180px;
+    }
+
+    .crm-badge {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+
+    .crm-nav-menu {
+        padding: 6px 8px;
+    }
+
+    .crm-menu-link {
+        padding: 10px 10px;
+        font-size: 13px;
+        min-height: 44px; /* Bấm ngón tay thuận tiện */
+    }
+
+    .crm-menu-icon svg {
+        width: 17px;
+        height: 17px;
+    }
+
+    .crm-main-content {
+        padding: 8px;
+    }
+
+    .crm-story-card, .crm-ac-card, .crm-role-switcher-card, .crm-summary-card, .crm-matrix-card {
+        padding: 14px;
+        border-radius: var(--crm-radius-md);
+    }
+
+    .crm-story-title {
+        font-size: 17px;
+    }
+
+    .crm-story-desc {
+        font-size: 12.5px;
+    }
+
+    .crm-role-buttons {
+        grid-template-columns: 1fr;
+    }
+
+    /* Ẩn mô phỏng khi đang thực tế mở trên thiết bị màn hình nhỏ 360px */
+    .crm-simulator-section {
+        display: none;
+    }
+}

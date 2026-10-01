@@ -21,6 +21,11 @@ public class NhomKinhDoanh implements Serializable {
     public NhomKinhDoanh() {
     }
 
+    public NhomKinhDoanh(int id, String tenNhom) {
+        this.id = id;
+        this.tenNhom = tenNhom;
+    }
+
     public NhomKinhDoanh(int id, String maNhom, String tenNhom, String moTa, Integer nhomChaId) {
         this.id = id;
         this.maNhom = maNhom;

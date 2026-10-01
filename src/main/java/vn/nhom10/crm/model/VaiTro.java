@@ -98,6 +98,14 @@ public class VaiTro implements Serializable {
         this.phamViToiDa = (p != null) ? p : PhamViDuLieu.CA_NHAN;
     }
 
+    public VaiTroEnum getVaiTroEnum() {
+        return VaiTroEnum.tuMa(maVaiTro);
+    }
+
+    public String getTenHienThi() {
+        return (tenVaiTro != null && !tenVaiTro.isBlank()) ? tenVaiTro : maVaiTro;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
