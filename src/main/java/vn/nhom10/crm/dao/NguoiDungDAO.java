@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -642,5 +643,96 @@ public class NguoiDungDAO {
         nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
 
         return nd;
+    }
+    /**
+     * Lấy danh sách toàn bộ người dùng (phục vụ trang phân quyền S1-09).
+     */
+    public List<NguoiDung> layTatCa() {
+        List<NguoiDung> danhSach = new ArrayList<>();
+        String sql = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, "
+                + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
+                + "FROM nguoi_dung ORDER BY id ASC";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                NguoiDung nd = mapResultSetToNguoiDung(rs);
+                danhSach.add(nd);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi truy vấn danh sách người dùng: " + e.getMessage(), e);
+        }
+        return danhSach;
+    }
+
+    /**
+     * Gán danh sách vai trò và nhóm kinh doanh cho người dùng trong một TRANSACTION an toàn.
+     * Nếu xảy ra bất kỳ lỗi nào, toàn bộ thay đổi sẽ được ROLLBACK (Story S1-09).
+     */
+    public boolean capNhatVaiTroVaNhomTransaction(int nguoiDungId, List<Integer> danhSachVaiTroId, Integer nhomKinhDoanhId) throws SQLException {
+        String sqlCapNhatNhom = "UPDATE nguoi_dung SET nhom_kinh_doanh_id = ? WHERE id = ?";
+        String sqlXoaVaiTroCu = "DELETE FROM nguoi_dung_vai_tro WHERE nguoi_dung_id = ?";
+        String sqlThemVaiTro = "INSERT INTO nguoi_dung_vai_tro (nguoi_dung_id, vai_tro_id) VALUES (?, ?)";
+
+        Connection conn = null;
+        try {
+            conn = DatabaseConnection.layKetNoi();
+            conn.setAutoCommit(false);
+
+            // 1. Cập nhật nhóm kinh doanh
+            try (PreparedStatement psNhom = conn.prepareStatement(sqlCapNhatNhom)) {
+                if (nhomKinhDoanhId != null && nhomKinhDoanhId > 0) {
+                    psNhom.setInt(1, nhomKinhDoanhId);
+                } else {
+                    psNhom.setNull(1, Types.INTEGER);
+                }
+                psNhom.setInt(2, nguoiDungId);
+                psNhom.executeUpdate();
+            }
+
+            // 2. Xoá tất cả vai trò cũ của người dùng
+            try (PreparedStatement psXoa = conn.prepareStatement(sqlXoaVaiTroCu)) {
+                psXoa.setInt(1, nguoiDungId);
+                psXoa.executeUpdate();
+            }
+
+            // 3. Chèn các vai trò mới
+            if (danhSachVaiTroId != null && !danhSachVaiTroId.isEmpty()) {
+                try (PreparedStatement psThem = conn.prepareStatement(sqlThemVaiTro)) {
+                    for (Integer vaiTroId : danhSachVaiTroId) {
+                        if (vaiTroId != null) {
+                            psThem.setInt(1, nguoiDungId);
+                            psThem.setInt(2, vaiTroId);
+                            psThem.addBatch();
+                        }
+                    }
+                    psThem.executeBatch();
+                }
+            }
+
+            conn.commit();
+            return true;
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    LOGGER.log(Level.WARNING, "Lỗi khi gán vai trò & nhóm, đang rollback: " + e.getMessage());
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    LOGGER.log(Level.SEVERE, "Lỗi khi rollback: " + ex.getMessage(), ex);
+                }
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    LOGGER.log(Level.WARNING, "Lỗi đóng connection: " + e.getMessage());
+                }
+            }
+        }
     }
 }

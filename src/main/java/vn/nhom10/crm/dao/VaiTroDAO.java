@@ -174,4 +174,50 @@ public class VaiTroDAO {
     public Set<VaiTro> layVaiTroTheoNguoiDungId(int nguoiDungId) {
         return layVaiTroTheoNguoiDungId((long) nguoiDungId);
     }
+
+    /**
+     * Tìm vai trò theo khóa chính ID (phục vụ S1-09 phân quyền).
+     */
+    public VaiTro timTheoId(int vaiTroId) {
+        String sql = "SELECT id, ma_vai_tro, ten_vai_tro, mo_ta, pham_vi_toi_da FROM vai_tro WHERE id = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, vaiTroId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    VaiTro vt = new VaiTro();
+                    vt.setId(rs.getInt("id"));
+                    vt.setMaVaiTro(rs.getString("ma_vai_tro"));
+                    vt.setTenVaiTro(rs.getString("ten_vai_tro"));
+                    vt.setMoTa(rs.getString("mo_ta"));
+                    vt.setPhamViToiDa(rs.getString("pham_vi_toi_da"));
+                    return vt;
+                }
+            }
+        } catch (SQLException e) {
+            return timTheoIdCoBan(vaiTroId);
+        }
+        return null;
+    }
+
+    private VaiTro timTheoIdCoBan(int vaiTroId) {
+        String sql = "SELECT id, ma_vai_tro, ten_vai_tro, mo_ta FROM vai_tro WHERE id = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, vaiTroId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    VaiTro vt = new VaiTro();
+                    vt.setId(rs.getInt("id"));
+                    vt.setMaVaiTro(rs.getString("ma_vai_tro"));
+                    vt.setTenVaiTro(rs.getString("ten_vai_tro"));
+                    vt.setMoTa(rs.getString("mo_ta"));
+                    return vt;
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi tìm vai trò cơ bản ID=" + vaiTroId + ": " + e.getMessage(), e);
+        }
+        return null;
+    }
 }
