@@ -35,4 +35,5 @@ temp/
 
 # Database backups
 *.sql
+!src/main/resources/db/001_crm_ban_hang_full_schema_8_sprints.sql
 *.sql.gz
