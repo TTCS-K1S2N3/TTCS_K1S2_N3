@@ -262,10 +262,19 @@ public class NguoiDungServlet extends HttpServlet {
         }
         nguoiDung.setDanhSachVaiTro(dsVT);
 
-        KetQuaNguoiDungDTO ketQua = nguoiDungService.capNhatTaiKhoan(nguoiDung, dsVaiTroIds);
+        Integer nguoiThucHienId = null;
+        HttpSession session = request.getSession(false);
+        if (session != null && session.getAttribute("nguoiDung") != null) {
+            NguoiDung loggedIn = (NguoiDung) session.getAttribute("nguoiDung");
+            nguoiThucHienId = (int) loggedIn.getId();
+        }
+
+        KetQuaNguoiDungDTO ketQua = nguoiDungService.capNhatTaiKhoan(nguoiDung, dsVaiTroIds, nguoiThucHienId);
 
         if (ketQua.isThanhCong()) {
-            HttpSession session = request.getSession();
+            if (session == null) {
+                session = request.getSession();
+            }
             session.setAttribute("thongBaoThanhCong", ketQua.getThongBao());
             response.sendRedirect(request.getContextPath() + "/nguoi-dung");
         } else {

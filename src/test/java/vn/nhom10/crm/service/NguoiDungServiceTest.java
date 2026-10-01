@@ -11,6 +11,8 @@ import vn.nhom10.crm.dao.NhomKinhDoanhDAO;
 import vn.nhom10.crm.dao.VaiTroDAO;
 import vn.nhom10.crm.dto.KetQuaNguoiDungDTO;
 import vn.nhom10.crm.model.NguoiDung;
+import vn.nhom10.crm.model.NhomKinhDoanh;
+import vn.nhom10.crm.model.VaiTro;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -160,5 +162,94 @@ class NguoiDungServiceTest {
         // Kiểm tra phân trang trang 2 với số dòng mặc định 20
         nguoiDungService.layDanhSachNguoiDung(null, null, null, null, 2, 0); // 0 -> tự động dùng mặc định 20
         verify(nguoiDungDAO).timKiemVaPhanTrang(null, null, null, null, 20, 20);
+    }
+
+    @Test
+    @DisplayName("S1-09 Regression: SALES_REP + TEAM_LEAD + nhom=null -> thất bại, dữ liệu cũ giữ nguyên hoàn toàn")
+    void testCapNhatTaiKhoan_TeamLead_KhongCoNhom_ThatBai() throws Exception {
+        NguoiDung nd = new NguoiDung();
+        nd.setId(10);
+        nd.setHoTen("Nguyễn Văn Test");
+        nd.setEmail("kienteu123@gmail.com");
+        nd.setNhomKinhDoanhId(null); // Chọn -- Chưa gán nhóm --
+
+        List<Integer> dsVaiTroIds = Arrays.asList(4, 3); // SALES_REP + TEAM_LEAD
+
+        when(vaiTroDAO.timTheoId(4)).thenReturn(new VaiTro(4, "SALES_REP", "Nhân viên kinh doanh", "Sales Rep"));
+        when(vaiTroDAO.timTheoId(3)).thenReturn(new VaiTro(3, "TEAM_LEAD", "Trưởng nhóm kinh doanh", "Team Lead"));
+
+        KetQuaNguoiDungDTO ketQua = nguoiDungService.capNhatTaiKhoan(nd, dsVaiTroIds);
+
+        assertFalse(ketQua.isThanhCong(), "Gán TEAM_LEAD mà không có nhóm phải thất bại");
+        assertTrue(ketQua.getDanhSachLoi().containsKey("nhomId"));
+        assertTrue(ketQua.getDanhSachLoi().get("nhomId").contains("Trưởng nhóm kinh doanh bắt buộc phải được gán vào một nhóm kinh doanh cụ thể"));
+
+        // Tuyệt đối không gọi DAO cập nhật DB
+        verify(nguoiDungDAO, never()).capNhatNguoiDung(any(), any());
+    }
+
+    @Test
+    @DisplayName("S1-09 Regression: SALES_REP + TEAM_LEAD + nhom hợp lệ -> lưu cả 2 role và nhóm")
+    void testCapNhatTaiKhoan_TeamLead_CoNhomHopLe_ThanhCong() throws Exception {
+        NguoiDung nd = new NguoiDung();
+        nd.setId(10);
+        nd.setHoTen("Nguyễn Văn Test");
+        nd.setEmail("kienteu123@gmail.com");
+        nd.setNhomKinhDoanhId(2);
+
+        List<Integer> dsVaiTroIds = Arrays.asList(4, 3);
+
+        when(vaiTroDAO.timTheoId(4)).thenReturn(new VaiTro(4, "SALES_REP", "Nhân viên kinh doanh", "Sales Rep"));
+        when(vaiTroDAO.timTheoId(3)).thenReturn(new VaiTro(3, "TEAM_LEAD", "Trưởng nhóm kinh doanh", "Team Lead"));
+        when(nhomKinhDoanhDAO.timTheoId(2)).thenReturn(new NhomKinhDoanh(2, "KD_BAC", "Nhóm Miền Bắc", "...", 1));
+        when(nguoiDungDAO.kiemTraEmailTonTai(eq("kienteu123@gmail.com"), eq(10))).thenReturn(false);
+        when(nguoiDungDAO.capNhatNguoiDung(any(), any())).thenReturn(true);
+
+        KetQuaNguoiDungDTO ketQua = nguoiDungService.capNhatTaiKhoan(nd, dsVaiTroIds);
+
+        assertTrue(ketQua.isThanhCong(), "Gán TEAM_LEAD với nhóm hợp lệ phải thành công");
+        verify(nguoiDungDAO).capNhatNguoiDung(eq(nd), eq(dsVaiTroIds));
+    }
+
+    @Test
+    @DisplayName("S1-09 Regression: Admin tự bỏ ADMIN -> bị từ chối và dữ liệu giữ nguyên")
+    void testCapNhatTaiKhoan_AdminTuBoAdmin_BiTuChoi() throws Exception {
+        NguoiDung admin = new NguoiDung();
+        admin.setId(1);
+        admin.setHoTen("Admin Hệ Thống");
+        admin.setEmail("admin@crm.vn");
+        admin.themVaiTro(new VaiTro(1, "ADMIN", "Quản trị hệ thống", "Admin"));
+
+        when(nguoiDungDAO.timTheoId(1L)).thenReturn(admin);
+        when(vaiTroDAO.timTheoId(4)).thenReturn(new VaiTro(4, "SALES_REP", "Nhân viên kinh doanh", "Sales Rep"));
+
+        // Admin 1 tự sửa chính mình (nguoiThucHienId = 1), bỏ ADMIN chỉ chọn SALES_REP (4)
+        KetQuaNguoiDungDTO ketQua = nguoiDungService.capNhatTaiKhoan(admin, Collections.singletonList(4), 1);
+
+        assertFalse(ketQua.isThanhCong(), "Admin tự bỏ ADMIN của chính mình phải bị từ chối");
+        assertTrue(ketQua.getDanhSachLoi().containsKey("vaiTro"));
+        assertTrue(ketQua.getDanhSachLoi().get("vaiTro").contains("Không thể tự thu hồi vai trò quản trị"));
+
+        verify(nguoiDungDAO, never()).capNhatNguoiDung(any(), any());
+    }
+
+    @Test
+    @DisplayName("S1-09 Regression: Admin sửa user khác -> hoạt động bình thường")
+    void testCapNhatTaiKhoan_AdminSuaUserKhac_ThanhCong() throws Exception {
+        NguoiDung other = new NguoiDung();
+        other.setId(8);
+        other.setHoTen("Nhân Viên Khác");
+        other.setEmail("other@crm.vn");
+        other.setNhomKinhDoanhId(2);
+
+        when(vaiTroDAO.timTheoId(4)).thenReturn(new VaiTro(4, "SALES_REP", "Nhân viên kinh doanh", "Sales Rep"));
+        when(nguoiDungDAO.kiemTraEmailTonTai(eq("other@crm.vn"), eq(8))).thenReturn(false);
+        when(nguoiDungDAO.capNhatNguoiDung(any(), any())).thenReturn(true);
+
+        // Admin 1 sửa User 8
+        KetQuaNguoiDungDTO ketQua = nguoiDungService.capNhatTaiKhoan(other, Collections.singletonList(4), 1);
+
+        assertTrue(ketQua.isThanhCong(), "Admin sửa user khác phải thành công");
+        verify(nguoiDungDAO).capNhatNguoiDung(eq(other), eq(Collections.singletonList(4)));
     }
 }

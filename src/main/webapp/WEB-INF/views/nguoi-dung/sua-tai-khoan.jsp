@@ -139,6 +139,10 @@
                             </option>
                         </c:forEach>
                     </select>
+                    <span class="form-error-msg <c:if test='${not empty formError["nhomId"]}'>visible</c:if>"
+                          id="nhomId-error">
+                        <c:out value="${formError['nhomId']}"/>
+                    </span>
                 </div>
 
                 <!-- Vai trò -->
@@ -154,6 +158,7 @@
                                         <input type="checkbox"
                                                name="vaiTroIds"
                                                value="${vt.id}"
+                                               data-code="${vt.maVaiTro}"
                                                <c:if test="${not empty nguoiDung.dsVaiTroIds and nguoiDung.dsVaiTroIds.contains(vt.id)}">checked</c:if>>
                                         <span><c:out value="${vt.tenVaiTro}"/></span>
                                     </label>

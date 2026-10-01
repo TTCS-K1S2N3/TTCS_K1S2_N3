@@ -671,15 +671,16 @@ public class NguoiDungDAO {
      * Gán danh sách vai trò và nhóm kinh doanh cho người dùng trong một TRANSACTION an toàn.
      * Nếu xảy ra bất kỳ lỗi nào, toàn bộ thay đổi sẽ được ROLLBACK (Story S1-09).
      */
-    public boolean capNhatVaiTroVaNhomTransaction(int nguoiDungId, List<Integer> danhSachVaiTroId, Integer nhomKinhDoanhId) throws SQLException {
-        String sqlCapNhatNhom = "UPDATE nguoi_dung SET nhom_kinh_doanh_id = ? WHERE id = ?";
-        String sqlXoaVaiTroCu = "DELETE FROM nguoi_dung_vai_tro WHERE nguoi_dung_id = ?";
-        String sqlThemVaiTro = "INSERT INTO nguoi_dung_vai_tro (nguoi_dung_id, vai_tro_id) VALUES (?, ?)";
-
-        Connection conn = null;
+    public boolean capNhatVaiTroVaNhomTransaction(int nguoiDungId, List<Integer> danhSachVaiTroId, Integer nhomKinhDoanhId, Connection conn) throws SQLException {
+        boolean autoCommit = conn.getAutoCommit();
         try {
-            conn = DatabaseConnection.layKetNoi();
-            conn.setAutoCommit(false);
+            if (autoCommit) {
+                conn.setAutoCommit(false);
+            }
+
+            String sqlCapNhatNhom = "UPDATE nguoi_dung SET nhom_kinh_doanh_id = ? WHERE id = ?";
+            String sqlXoaVaiTroCu = "DELETE FROM nguoi_dung_vai_tro WHERE nguoi_dung_id = ?";
+            String sqlThemVaiTro = "INSERT INTO nguoi_dung_vai_tro (nguoi_dung_id, vai_tro_id) VALUES (?, ?)";
 
             // 1. Cập nhật nhóm kinh doanh
             try (PreparedStatement psNhom = conn.prepareStatement(sqlCapNhatNhom)) {
@@ -689,7 +690,11 @@ public class NguoiDungDAO {
                     psNhom.setNull(1, Types.INTEGER);
                 }
                 psNhom.setInt(2, nguoiDungId);
-                psNhom.executeUpdate();
+                int aff = psNhom.executeUpdate();
+                if (aff == 0) {
+                    conn.rollback();
+                    return false;
+                }
             }
 
             // 2. Xoá tất cả vai trò cũ của người dùng
@@ -712,27 +717,31 @@ public class NguoiDungDAO {
                 }
             }
 
-            conn.commit();
+            if (autoCommit) {
+                conn.commit();
+            }
             return true;
         } catch (SQLException e) {
-            if (conn != null) {
-                try {
-                    LOGGER.log(Level.WARNING, "Lỗi khi gán vai trò & nhóm, đang rollback: " + e.getMessage());
-                    conn.rollback();
-                } catch (SQLException ex) {
-                    LOGGER.log(Level.SEVERE, "Lỗi khi rollback: " + ex.getMessage(), ex);
-                }
+            try {
+                LOGGER.log(Level.WARNING, "Lỗi khi gán vai trò & nhóm, đang rollback: " + e.getMessage());
+                conn.rollback();
+            } catch (SQLException ex) {
+                LOGGER.log(Level.SEVERE, "Lỗi khi rollback: " + ex.getMessage(), ex);
             }
             throw e;
         } finally {
-            if (conn != null) {
+            if (autoCommit) {
                 try {
                     conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException e) {
-                    LOGGER.log(Level.WARNING, "Lỗi đóng connection: " + e.getMessage());
+                } catch (SQLException ignored) {
                 }
             }
+        }
+    }
+
+    public boolean capNhatVaiTroVaNhomTransaction(int nguoiDungId, List<Integer> danhSachVaiTroId, Integer nhomKinhDoanhId) throws SQLException {
+        try (Connection conn = DatabaseConnection.layKetNoi()) {
+            return capNhatVaiTroVaNhomTransaction(nguoiDungId, danhSachVaiTroId, nhomKinhDoanhId, conn);
         }
     }
 

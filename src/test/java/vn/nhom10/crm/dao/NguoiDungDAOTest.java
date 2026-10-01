@@ -236,4 +236,60 @@ class NguoiDungDAOTest {
         NguoiDung vanKhoa = nguoiDungDAO.timTheoId(newId);
         assertEquals(NguoiDung.TRANG_THAI_KHOA, vanKhoa.getTrangThai(), "Trạng thái KHOA phải được bảo toàn");
     }
+
+    @Test
+    @DisplayName("S1-09 Regression DAO: Cập nhật thành công cả 2 role và nhóm kinh doanh trong cùng transaction")
+    void testCapNhatVaiTroVaNhomTransaction_ThanhCong() throws Exception {
+        // User 1 ban đầu có nhom=1, vai tro=[ADMIN(1)]
+        NguoiDung truoc = nguoiDungDAO.timTheoId(1);
+        assertEquals(1, truoc.getNhomKinhDoanhId());
+        assertEquals(1, truoc.getDsVaiTro().size());
+
+        // Cập nhật sang nhom=2, vai tro=[ADMIN(1), SALES_REP(4)]
+        boolean kq = nguoiDungDAO.capNhatVaiTroVaNhomTransaction(1, Arrays.asList(1, 4), 2);
+        assertTrue(kq, "Cập nhật thành công");
+
+        NguoiDung sau = nguoiDungDAO.timTheoId(1);
+        assertEquals(2, sau.getNhomKinhDoanhId(), "Nhóm kinh doanh phải được cập nhật sang 2");
+        assertEquals(2, sau.getDsVaiTro().size(), "Phải có đủ 2 vai trò");
+        assertTrue(sau.coVaiTro("ADMIN"));
+        assertTrue(sau.coVaiTro("SALES_REP"));
+    }
+
+    @Test
+    @DisplayName("S1-09 Regression DAO: Lỗi khi cập nhật role sau khi update nhóm -> rollback nhóm")
+    void testCapNhatVaiTroVaNhomTransaction_LoiCapNhatRole_RollbackNhom() throws Exception {
+        // User 1 ban đầu: nhom=1, vai tro=[1]
+        NguoiDung truoc = nguoiDungDAO.timTheoId(1);
+        assertEquals(1, truoc.getNhomKinhDoanhId());
+
+        // Thêm vai_tro_id không hợp lệ hoặc gây lỗi SQLException
+        // Bảng nguoi_dung_vai_tro có foreign key hoặc ta cố tình kích hoạt lỗi SQL bằng connection hoặc invalid input
+        // Ở đây ta thêm foreign key constraint để trigger SQLException khi chèn role không tồn tại
+        try (Statement st = connection.createStatement()) {
+            st.execute("ALTER TABLE nguoi_dung_vai_tro ADD CONSTRAINT fk_test_vaitro FOREIGN KEY (vai_tro_id) REFERENCES vai_tro(id)");
+        }
+
+        try {
+            // Cố tình gán vai_tro_id = 999999 không tồn tại trong bảng vai_tro -> executeBatch() sẽ ném SQLException
+            assertThrows(SQLException.class, () -> {
+                nguoiDungDAO.capNhatVaiTroVaNhomTransaction(1, Arrays.asList(1, 999999), 2);
+            }, "Phải ném SQLException khi cập nhật role lỗi");
+
+            // Kiểm tra tính nguyên tử của Transaction: nhóm kinh doanh không được partial update thành 2 mà phải rollback về 1
+            NguoiDung sauLoi = nguoiDungDAO.timTheoId(1);
+            assertEquals(1, sauLoi.getNhomKinhDoanhId(), "Nhóm kinh doanh phải rollback về giá trị ban đầu (1)");
+        } finally {
+            try (Statement st = connection.createStatement()) {
+                st.execute("ALTER TABLE nguoi_dung_vai_tro DROP CONSTRAINT fk_test_vaitro");
+            } catch (Exception ignored) {}
+        }
+    }
+
+    @Test
+    @DisplayName("S1-09 Regression DAO: Lỗi khi update nhóm (user không tồn tại) -> không thay đổi role")
+    void testCapNhatVaiTroVaNhomTransaction_UserKhongTonTai_KhongDoiRole() throws Exception {
+        boolean kq = nguoiDungDAO.capNhatVaiTroVaNhomTransaction(99999, Arrays.asList(1, 4), 2);
+        assertFalse(kq, "Cập nhật với user không tồn tại phải trả về false");
+    }
 }

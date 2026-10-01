@@ -364,7 +364,7 @@
                         </label>
                         <div class="crm-select-wrapper">
                             <select name="nhomKinhDoanhId" id="select-nhom-kd" class="crm-select">
-                                <option value="">-- Chưa phân nhóm kinh doanh --</option>
+                                <option value="">-- Chưa gán nhóm --</option>
                                 <% if (dsNhomKinhDoanh != null) {
                                     for (NhomKinhDoanh nkd : dsNhomKinhDoanh) {
                                         boolean isSelected = selectedUser.getNhomKinhDoanhId() != null && selectedUser.getNhomKinhDoanhId().equals(nkd.getId());

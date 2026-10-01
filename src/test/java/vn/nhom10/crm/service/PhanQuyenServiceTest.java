@@ -233,4 +233,92 @@ class PhanQuyenServiceTest {
         assertTrue(ketQua.getThongBao().contains("Lỗi hệ thống khi cập nhật"));
         assertEquals(1, fakeNguoiDungDAO.callCount);
     }
+
+    @Test
+    @DisplayName("S1-09 Regression: SALES_REP + TEAM_LEAD + nhom=null -> thất bại, dữ liệu cũ giữ nguyên hoàn toàn")
+    void testPhanQuyen_SalesRepVaTeamLead_KhongCoNhom_ThatBai_GiuNguyenDuLieu() {
+        // User 10 ban đầu có nhom=2, vai trò=SALES_REP
+        NguoiDung user10 = new NguoiDung(10, "Nguyễn Văn Test", "kienteu123@gmail.com");
+        user10.setNhomKinhDoanhId(2);
+        user10.themVaiTro(vaiTroSalesRep);
+        fakeNguoiDungDAO.users.put(10, user10);
+
+        // Thao tác: Giữ SALES_REP (4), tick thêm TEAM_LEAD (3), chọn không có nhóm (null)
+        List<Integer> roles = Arrays.asList(4, 3);
+        GanVaiTroNhomDTO ketQua = phanQuyenService.ganVaiTroVaNhomKinhDoanh(10, roles, null, 1);
+
+        assertFalse(ketQua.isThanhCong(), "Gán TEAM_LEAD mà không chọn nhóm phải thất bại");
+        assertTrue(ketQua.getThongBao().contains("Trưởng nhóm kinh doanh bắt buộc phải được gán vào một nhóm kinh doanh cụ thể"));
+
+        // Dữ liệu cũ giữ nguyên hoàn toàn: DAO không được gọi ghi DB
+        assertEquals(0, fakeNguoiDungDAO.callCount, "Không được gọi DAO ghi DB khi validation thất bại");
+        assertEquals(2, user10.getNhomKinhDoanhId(), "Nhóm kinh doanh cũ phải giữ nguyên (2)");
+        assertEquals(1, user10.getDanhSachVaiTro().size(), "Danh sách vai trò cũ phải giữ nguyên");
+        assertTrue(user10.coVaiTro("SALES_REP"), "Vai trò cũ vẫn là SALES_REP");
+        assertFalse(user10.coVaiTro("TEAM_LEAD"), "Chưa được thêm vai trò TEAM_LEAD");
+    }
+
+    @Test
+    @DisplayName("S1-09 Regression: SALES_REP + TEAM_LEAD + nhom hợp lệ -> lưu cả 2 role và nhóm")
+    void testPhanQuyen_SalesRepVaTeamLead_NhomHopLe_LuuThanhCong() {
+        NguoiDung user10 = new NguoiDung(10, "Nguyễn Văn Test", "kienteu123@gmail.com");
+        user10.setNhomKinhDoanhId(2);
+        user10.themVaiTro(vaiTroSalesRep);
+        fakeNguoiDungDAO.users.put(10, user10);
+
+        List<Integer> roles = Arrays.asList(4, 3);
+        GanVaiTroNhomDTO ketQua = phanQuyenService.ganVaiTroVaNhomKinhDoanh(10, roles, 2, 1);
+
+        assertTrue(ketQua.isThanhCong(), "Gán SALES_REP và TEAM_LEAD với nhóm hợp lệ phải thành công");
+        assertEquals(1, fakeNguoiDungDAO.callCount);
+        assertEquals(10, fakeNguoiDungDAO.lastUpdatedUserId);
+        assertEquals(roles, fakeNguoiDungDAO.lastUpdatedRoles);
+        assertEquals(2, fakeNguoiDungDAO.lastUpdatedTeamId);
+    }
+
+    @Test
+    @DisplayName("S1-09 Regression: Nhiều vai trò hợp lệ được lưu đầy đủ")
+    void testPhanQuyen_NhieuVaiTroHopLe_LuuDayDu() {
+        NguoiDung user = new NguoiDung(10, "Nguyễn Đa Năng", "danang@crm.vn");
+        fakeNguoiDungDAO.users.put(10, user);
+
+        // Gán 3 vai trò: TEAM_LEAD (3), SALES_REP (4), MARKETING (5) cùng nhóm 2
+        List<Integer> roles = Arrays.asList(3, 4, 5);
+        GanVaiTroNhomDTO ketQua = phanQuyenService.ganVaiTroVaNhomKinhDoanh(10, roles, 2, 1);
+
+        assertTrue(ketQua.isThanhCong());
+        assertEquals(1, fakeNguoiDungDAO.callCount);
+        assertEquals(roles, fakeNguoiDungDAO.lastUpdatedRoles);
+        assertEquals(2, fakeNguoiDungDAO.lastUpdatedTeamId);
+    }
+
+    @Test
+    @DisplayName("S1-09 Regression: Admin tự bỏ ADMIN -> bị từ chối và dữ liệu giữ nguyên")
+    void testPhanQuyen_AdminTuBoAdmin_BiTuChoi_GiuNguyenDuLieu() {
+        NguoiDung admin = new NguoiDung(1, "Admin Tong", "admin@crm.vn");
+        admin.themVaiTro(vaiTroAdmin);
+        fakeNguoiDungDAO.users.put(1, admin);
+
+        // Admin (ID 1) tự sửa chính mình, bỏ vai trò 1 chỉ để lại 4
+        GanVaiTroNhomDTO ketQua = phanQuyenService.ganVaiTroVaNhomKinhDoanh(1, Collections.singletonList(4), null, 1);
+
+        assertFalse(ketQua.isThanhCong(), "Admin không được tự thu hồi ADMIN của chính mình");
+        assertTrue(ketQua.getThongBao().contains("Không thể tự thu hồi vai trò quản trị"));
+        assertEquals(0, fakeNguoiDungDAO.callCount, "Không được ghi DB khi vi phạm AC3");
+        assertTrue(admin.coVaiTro("ADMIN"), "Vai trò ADMIN của admin vẫn được giữ nguyên");
+    }
+
+    @Test
+    @DisplayName("S1-09 Regression: Admin sửa user khác -> hoạt động bình thường")
+    void testPhanQuyen_AdminSuaUserKhac_HoatDongBinhThuong() {
+        NguoiDung otherUser = new NguoiDung(8, "Nhân Viên Khác", "other@crm.vn");
+        fakeNguoiDungDAO.users.put(8, otherUser);
+
+        // Admin 1 sửa vai trò cho User 8 thành SALES_REP
+        GanVaiTroNhomDTO ketQua = phanQuyenService.ganVaiTroVaNhomKinhDoanh(8, Collections.singletonList(4), null, 1);
+
+        assertTrue(ketQua.isThanhCong(), "Admin sửa user khác phải hoạt động bình thường");
+        assertEquals(1, fakeNguoiDungDAO.callCount);
+        assertEquals(8, fakeNguoiDungDAO.lastUpdatedUserId);
+    }
 }

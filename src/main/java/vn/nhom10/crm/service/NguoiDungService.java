@@ -7,6 +7,7 @@ import vn.nhom10.crm.dto.KetQuaNguoiDungDTO;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.NhomKinhDoanh;
 import vn.nhom10.crm.model.VaiTro;
+import vn.nhom10.crm.model.VaiTroEnum;
 import vn.nhom10.crm.util.PasswordUtil;
 
 import java.sql.SQLException;
@@ -95,6 +96,31 @@ public class NguoiDungService {
             ketQua.themLoi("vaiTro", "Vui lòng chọn ít nhất một vai trò cho người dùng.");
         }
 
+        // Kiểm tra ràng buộc TEAM_LEAD bắt buộc có nhóm (Story S1-09)
+        boolean coVaiTroTruongNhom = false;
+        if (dsVaiTroIds != null) {
+            for (Integer vtId : dsVaiTroIds) {
+                if (vtId == null) continue;
+                VaiTro vt = vaiTroDAO.timTheoId(vtId);
+                if (vt != null && VaiTroEnum.TEAM_LEAD.getMaVaiTro().equalsIgnoreCase(vt.getMaVaiTro())) {
+                    coVaiTroTruongNhom = true;
+                    break;
+                }
+            }
+        }
+
+        if (coVaiTroTruongNhom) {
+            Integer nhomId = nguoiDung.getNhomKinhDoanhId();
+            if (nhomId == null || nhomId <= 0) {
+                ketQua.themLoi("nhomId", "Người giữ vai trò Trưởng nhóm kinh doanh bắt buộc phải được gán vào một nhóm kinh doanh cụ thể.");
+            } else {
+                NhomKinhDoanh nhom = nhomKinhDoanhDAO.timTheoId(nhomId);
+                if (nhom == null) {
+                    ketQua.themLoi("nhomId", "Nhóm kinh doanh được chọn không tồn tại trong hệ thống.");
+                }
+            }
+        }
+
         if (!ketQua.getDanhSachLoi().isEmpty()) {
             ketQua.setThanhCong(false);
             ketQua.setThongBao("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.");
@@ -150,9 +176,20 @@ public class NguoiDungService {
      * Kiểm tra không cho phép sửa email trùng với tài khoản khác.
      */
     public KetQuaNguoiDungDTO capNhatTaiKhoan(NguoiDung nguoiDung, List<Integer> dsVaiTroIds) {
+        return capNhatTaiKhoan(nguoiDung, dsVaiTroIds, null);
+    }
+
+    /**
+     * Cập nhật thông tin tài khoản người dùng và vai trò có xác thực người thực hiện.
+     * Ràng buộc nghiệp vụ S1-09:
+     * 1. Validate toàn bộ trước khi ghi DB: nếu vai trò có TEAM_LEAD thì nhóm bắt buộc khác null.
+     * 2. Admin không được tự thu hồi vai trò ADMIN của chính mình.
+     * 3. Nếu validation fail: không update nhóm, không sửa role, dữ liệu giữ nguyên 100%.
+     */
+    public KetQuaNguoiDungDTO capNhatTaiKhoan(NguoiDung nguoiDung, List<Integer> dsVaiTroIds, Integer nguoiThucHienId) {
         KetQuaNguoiDungDTO ketQua = new KetQuaNguoiDungDTO();
 
-        if (nguoiDung.getId() <= 0) {
+        if (nguoiDung == null || nguoiDung.getId() <= 0) {
             return KetQuaNguoiDungDTO.thatBai("Tài khoản không tồn tại hoặc ID không hợp lệ.");
         }
 
@@ -173,6 +210,46 @@ public class NguoiDungService {
             ketQua.themLoi("vaiTro", "Vui lòng chọn ít nhất một vai trò cho người dùng.");
         }
 
+        // Kiểm tra ràng buộc TEAM_LEAD và ADMIN (Story S1-09)
+        boolean coVaiTroTruongNhom = false;
+        boolean coVaiTroAdminMoi = false;
+        if (dsVaiTroIds != null) {
+            for (Integer vtId : dsVaiTroIds) {
+                if (vtId == null) continue;
+                VaiTro vt = vaiTroDAO.timTheoId(vtId);
+                if (vt != null) {
+                    if (VaiTroEnum.TEAM_LEAD.getMaVaiTro().equalsIgnoreCase(vt.getMaVaiTro())) {
+                        coVaiTroTruongNhom = true;
+                    }
+                    if (VaiTroEnum.ADMIN.getMaVaiTro().equalsIgnoreCase(vt.getMaVaiTro())) {
+                        coVaiTroAdminMoi = true;
+                    }
+                }
+            }
+        }
+
+        // AC2 S1-09: TEAM_LEAD bắt buộc phải có nhóm kinh doanh cụ thể
+        if (coVaiTroTruongNhom) {
+            Integer nhomId = nguoiDung.getNhomKinhDoanhId();
+            if (nhomId == null || nhomId <= 0) {
+                ketQua.themLoi("nhomId", "Người giữ vai trò Trưởng nhóm kinh doanh bắt buộc phải được gán vào một nhóm kinh doanh cụ thể.");
+            } else {
+                NhomKinhDoanh nhom = nhomKinhDoanhDAO.timTheoId(nhomId);
+                if (nhom == null) {
+                    ketQua.themLoi("nhomId", "Nhóm kinh doanh được chọn không tồn tại trong hệ thống.");
+                }
+            }
+        }
+
+        // AC3 S1-09: Admin không được tự thu hồi ADMIN của chính mình
+        if (nguoiThucHienId != null && nguoiThucHienId.intValue() == (int) nguoiDung.getId()) {
+            NguoiDung hienTai = nguoiDungDAO.timTheoId(nguoiDung.getId());
+            if (hienTai != null && hienTai.coVaiTro(VaiTroEnum.ADMIN) && !coVaiTroAdminMoi) {
+                ketQua.themLoi("vaiTro", "Không thể tự thu hồi vai trò quản trị (Admin) của chính mình.");
+            }
+        }
+
+        // Nếu có bất kỳ lỗi validation nào -> dừng ngay, TUYỆT ĐỐI KHÔNG GHI DATABASE
         if (!ketQua.getDanhSachLoi().isEmpty()) {
             ketQua.setThanhCong(false);
             ketQua.setThongBao("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.");

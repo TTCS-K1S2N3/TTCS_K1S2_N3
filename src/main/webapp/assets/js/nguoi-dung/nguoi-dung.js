@@ -52,14 +52,40 @@ const NguoiDungForm = {
 
         // Kiểm tra ít nhất 1 vai trò được chọn
         const roleCheckboxes = form.querySelectorAll('input[name="vaiTroIds"]');
+        let atLeastOne = false;
+        let isTeamLead = false;
+
         if (roleCheckboxes.length > 0) {
-            const atLeastOne = Array.from(roleCheckboxes).some(cb => cb.checked);
+            roleCheckboxes.forEach(cb => {
+                if (cb.checked) {
+                    atLeastOne = true;
+                    const code = cb.getAttribute('data-code');
+                    if (code === 'TEAM_LEAD' || cb.value === '3') {
+                        isTeamLead = true;
+                    }
+                }
+            });
+
             if (!atLeastOne) {
                 const roleError = document.getElementById('vaiTro-error');
                 if (roleError) {
                     roleError.textContent = 'Phải chọn ít nhất một vai trò.';
                     roleError.classList.add('visible');
                 }
+                valid = false;
+            }
+        }
+
+        // Ràng buộc S1-09: Trưởng nhóm kinh doanh bắt buộc phải gán nhóm
+        if (isTeamLead) {
+            const selectNhom = form.querySelector('select[name="nhomId"]') || form.querySelector('select[name="nhomKinhDoanhId"]');
+            if (selectNhom && (!selectNhom.value || parseInt(selectNhom.value, 10) <= 0)) {
+                const nhomError = document.getElementById('nhomId-error') || document.getElementById('nhom-error');
+                if (nhomError) {
+                    nhomError.textContent = 'Người giữ vai trò Trưởng nhóm kinh doanh bắt buộc phải được gán vào một nhóm kinh doanh cụ thể.';
+                    nhomError.classList.add('visible');
+                }
+                selectNhom.classList.add('input-error');
                 valid = false;
             }
         }
@@ -129,10 +155,7 @@ const NguoiDungForm = {
             // Set trạng thái ban đầu
             if (cb.checked) item.classList.add('checked');
 
-            item.addEventListener('click', (e) => {
-                if (e.target !== cb) {
-                    cb.checked = !cb.checked;
-                }
+            cb.addEventListener('change', () => {
                 item.classList.toggle('checked', cb.checked);
 
                 // Xóa lỗi vai trò khi chọn ít nhất 1
@@ -141,8 +164,34 @@ const NguoiDungForm = {
                     roleError.textContent = '';
                     roleError.classList.remove('visible');
                 }
+
+                // Xóa lỗi nhóm nếu bỏ chọn TEAM_LEAD
+                const nhomError = document.getElementById('nhomId-error') || document.getElementById('nhom-error');
+                if (nhomError && (!cb.checked && (cb.getAttribute('data-code') === 'TEAM_LEAD' || cb.value === '3'))) {
+                    const hasOtherTeamLead = Array.from(document.querySelectorAll('input[name="vaiTroIds"]'))
+                        .some(other => other.checked && (other.getAttribute('data-code') === 'TEAM_LEAD' || other.value === '3'));
+                    if (!hasOtherTeamLead) {
+                        nhomError.textContent = '';
+                        nhomError.classList.remove('visible');
+                    }
+                }
             });
         });
+
+        // Xóa lỗi nhóm khi chọn nhóm hợp lệ
+        const selectNhom = document.querySelector('select[name="nhomId"]') || document.querySelector('select[name="nhomKinhDoanhId"]');
+        if (selectNhom) {
+            selectNhom.addEventListener('change', () => {
+                if (selectNhom.value) {
+                    selectNhom.classList.remove('input-error');
+                    const nhomError = document.getElementById('nhomId-error') || document.getElementById('nhom-error');
+                    if (nhomError) {
+                        nhomError.textContent = '';
+                        nhomError.classList.remove('visible');
+                    }
+                }
+            });
+        }
     }
 };
 
