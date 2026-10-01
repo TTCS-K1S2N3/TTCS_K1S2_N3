@@ -12,6 +12,7 @@ import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.PhamViDuLieu;
 import vn.nhom10.crm.model.VaiTro;
 import vn.nhom10.crm.model.VaiTroEnum;
+import vn.nhom10.crm.service.PhanQuyenDuLieuService;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,7 +35,7 @@ class KhachHangServletTest {
 
     @BeforeEach
     void setUp() {
-        servlet = new KhachHangServlet();
+        servlet = new KhachHangServlet(new PhanQuyenDuLieuService(null));
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
         session = mock(HttpSession.class);

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import vn.nhom10.crm.dto.NguoiDungDTO;
 import vn.nhom10.crm.model.PhamViDuLieu;
 import vn.nhom10.crm.model.VaiTroEnum;
+import vn.nhom10.crm.service.PhanQuyenDuLieuService;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -31,7 +32,7 @@ class PhanQuyenDuLieuServletTest {
 
     @BeforeEach
     void setUp() {
-        servlet = new PhanQuyenDuLieuServlet();
+        servlet = new PhanQuyenDuLieuServlet(new PhanQuyenDuLieuService(null));
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
         session = mock(HttpSession.class);
