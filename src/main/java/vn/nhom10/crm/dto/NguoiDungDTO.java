@@ -22,24 +22,33 @@ public class NguoiDungDTO implements Serializable {
     private VaiTroEnum vaiTro;
     private Long nhomKinhDoanhId;
     private String tenNhom;
+    private PhamViDuLieu phamViToiDa;
     private PhamViDuLieu phamViHienTai;
 
     public NguoiDungDTO() {
+        this.phamViToiDa = PhamViDuLieu.CA_NHAN;
+        this.phamViHienTai = PhamViDuLieu.CA_NHAN;
     }
 
-    public NguoiDungDTO(Long id, String hoTen, String email, VaiTroEnum vaiTro, Long nhomKinhDoanhId, String tenNhom) {
+    public NguoiDungDTO(Long id, String hoTen, String email, VaiTroEnum vaiTro, Long nhomKinhDoanhId, String tenNhom, PhamViDuLieu phamViToiDa) {
         this.id = id;
         this.hoTen = hoTen;
         this.email = email;
         this.vaiTro = vaiTro;
         this.nhomKinhDoanhId = nhomKinhDoanhId;
         this.tenNhom = tenNhom;
-        // Mặc định ban đầu chọn phạm vi tối đa user được phép hoặc CA_NHAN
-        this.phamViHienTai = (vaiTro != null) ? vaiTro.getPhamViToiDa() : PhamViDuLieu.CA_NHAN;
+        // Fail-closed: Mặc định tối thiểu CA_NHAN nếu phamViToiDa null
+        this.phamViToiDa = (phamViToiDa != null) ? phamViToiDa : PhamViDuLieu.CA_NHAN;
+        this.phamViHienTai = this.phamViToiDa;
+    }
+
+    public NguoiDungDTO(Long id, String hoTen, String email, VaiTroEnum vaiTro, Long nhomKinhDoanhId, String tenNhom) {
+        this(id, hoTen, email, vaiTro, nhomKinhDoanhId, tenNhom, PhamViDuLieu.CA_NHAN);
     }
 
     /**
      * Chuyển đổi từ model NguoiDung chuẩn trong session sang NguoiDungDTO.
+     * Nguồn sự thật phamViToiDa được lấy từ danh sách VaiTro đã nạp từ DB (Fail-Closed).
      */
     public static NguoiDungDTO tuNguoiDung(NguoiDung nd) {
         if (nd == null) {
@@ -65,35 +74,36 @@ public class NguoiDungDTO implements Serializable {
 
         Long nhomId = nd.getNhomKinhDoanhId() != null ? nd.getNhomKinhDoanhId().longValue() : null;
         String tenNhom = nd.getTenNhomKinhDoanh() != null ? nd.getTenNhomKinhDoanh() : "Khối Kinh Doanh";
+        PhamViDuLieu phamViDb = nd.layPhamViToiDa(); // Nạp từ DB (Fail-closed)
 
-        return new NguoiDungDTO(nd.getId(), nd.getHoTen(), nd.getEmail(), vaiTro, nhomId, tenNhom);
+        return new NguoiDungDTO(nd.getId(), nd.getHoTen(), nd.getEmail(), vaiTro, nhomId, tenNhom, phamViDb);
     }
 
     /**
-     * Danh sách các phạm vi dữ liệu mà vai trò người dùng được phép chọn.
-     * - SALES_REP / MARKETING / CUST_SUCCESS: Chỉ được chọn CA_NHAN ("Của tôi")
-     * - TEAM_LEAD: Được chọn CA_NHAN và NHOM ("Nhóm của tôi")
-     * - DIRECTOR / ADMIN / ACCOUNTANT: Được chọn cả CA_NHAN, NHOM và TOAN_BO ("Tất cả")
+     * Danh sách các phạm vi dữ liệu được phép chọn dựa trên phamViToiDa từ DB (Fail-Closed).
+     * Tuyệt đối không tự nâng quyền theo tên vai trò nếu DB không cho phép.
      */
     public List<PhamViDuLieu> getDanhSachPhamViChoPhep() {
-        if (vaiTro == null) {
-            return Collections.singletonList(PhamViDuLieu.CA_NHAN);
-        }
-
         List<PhamViDuLieu> list = new ArrayList<>();
         list.add(PhamViDuLieu.CA_NHAN);
 
-        if (vaiTro == VaiTroEnum.TEAM_LEAD || vaiTro == VaiTroEnum.DIRECTOR 
-                || vaiTro == VaiTroEnum.ADMIN || vaiTro == VaiTroEnum.ACCOUNTANT) {
+        PhamViDuLieu max = getPhamViToiDa();
+        if (max == PhamViDuLieu.NHOM || max == PhamViDuLieu.TOAN_BO) {
             list.add(PhamViDuLieu.NHOM);
         }
-
-        if (vaiTro == VaiTroEnum.DIRECTOR || vaiTro == VaiTroEnum.ADMIN 
-                || vaiTro == VaiTroEnum.ACCOUNTANT) {
+        if (max == PhamViDuLieu.TOAN_BO) {
             list.add(PhamViDuLieu.TOAN_BO);
         }
 
         return list;
+    }
+
+    public PhamViDuLieu getPhamViToiDa() {
+        return (phamViToiDa != null) ? phamViToiDa : PhamViDuLieu.CA_NHAN;
+    }
+
+    public void setPhamViToiDa(PhamViDuLieu phamViToiDa) {
+        this.phamViToiDa = (phamViToiDa != null) ? phamViToiDa : PhamViDuLieu.CA_NHAN;
     }
 
     /**

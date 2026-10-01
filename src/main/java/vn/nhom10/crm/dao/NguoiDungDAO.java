@@ -151,7 +151,7 @@ public class NguoiDungDAO {
      */
     public Set<VaiTro> layDanhSachVaiTroTheoNguoiDungId(long nguoiDungId) {
         Set<VaiTro> danhSach = new HashSet<>();
-        String sql = "SELECT vt.id, vt.ma_vai_tro, vt.ten_vai_tro, vt.mo_ta "
+        String sql = "SELECT vt.id, vt.ma_vai_tro, vt.ten_vai_tro, vt.mo_ta, vt.pham_vi_toi_da "
                 + "FROM vai_tro vt "
                 + "INNER JOIN nguoi_dung_vai_tro ndvt ON vt.id = ndvt.vai_tro_id "
                 + "WHERE ndvt.nguoi_dung_id = ?";
@@ -168,11 +168,40 @@ public class NguoiDungDAO {
                     vt.setMaVaiTro(rs.getString("ma_vai_tro"));
                     vt.setTenVaiTro(rs.getString("ten_vai_tro"));
                     vt.setMoTa(rs.getString("mo_ta"));
+                    vt.setPhamViToiDa(rs.getString("pham_vi_toi_da"));
                     danhSach.add(vt);
                 }
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi lấy danh sách vai trò cho user id: " + nguoiDungId, e);
+            LOGGER.log(Level.FINE, "Lỗi hoặc bảng vai_tro chưa có pham_vi_toi_da, dùng truy vấn cơ bản: " + e.getMessage());
+            return layDanhSachVaiTroTheoNguoiDungIdCoBan(nguoiDungId);
+        }
+        return danhSach;
+    }
+
+    private Set<VaiTro> layDanhSachVaiTroTheoNguoiDungIdCoBan(long nguoiDungId) {
+        Set<VaiTro> danhSach = new HashSet<>();
+        String sql = "SELECT vt.id, vt.ma_vai_tro, vt.ten_vai_tro, vt.mo_ta "
+                + "FROM vai_tro vt "
+                + "INNER JOIN nguoi_dung_vai_tro ndvt ON vt.id = ndvt.vai_tro_id "
+                + "WHERE ndvt.nguoi_dung_id = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, nguoiDungId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    VaiTro vt = new VaiTro();
+                    vt.setId(rs.getInt("id"));
+                    vt.setMaVaiTro(rs.getString("ma_vai_tro"));
+                    vt.setTenVaiTro(rs.getString("ten_vai_tro"));
+                    vt.setMoTa(rs.getString("mo_ta"));
+                    // Mặc định fail-closed: CA_NHAN
+                    vt.setPhamViToiDa(vn.nhom10.crm.model.PhamViDuLieu.CA_NHAN);
+                    danhSach.add(vt);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi lấy danh sách vai trò cơ bản cho user id: " + nguoiDungId, e);
         }
         return danhSach;
     }

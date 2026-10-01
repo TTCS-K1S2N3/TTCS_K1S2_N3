@@ -73,12 +73,13 @@ public class PhanQuyenDuLieuService {
         if (user == null) {
             return PhamViDuLieu.CA_NHAN;
         }
+        PhamViDuLieu maxScope = user.getPhamViToiDa() != null ? user.getPhamViToiDa() : PhamViDuLieu.CA_NHAN;
         if (phamViYeuCau == null) {
-            return user.getPhamViHienTai() != null ? user.getPhamViHienTai() : PhamViDuLieu.CA_NHAN;
+            return user.getPhamViHienTai() != null ? user.getPhamViHienTai() : maxScope;
         }
-        // Nếu người dùng không có quyền chọn phạm vi yêu cầu, ép về phạm vi an toàn cao nhất của họ
+        // Nếu người dùng không có quyền chọn phạm vi yêu cầu, ép về maxScope (Fail-closed)
         if (!user.coQuyenChonPhamVi(phamViYeuCau)) {
-            return user.getVaiTro() != null ? user.getVaiTro().getPhamViToiDa() : PhamViDuLieu.CA_NHAN;
+            return maxScope;
         }
         return phamViYeuCau;
     }
@@ -171,20 +172,20 @@ public class PhanQuyenDuLieuService {
             return new KetQuaKiemTra(false, "Bản ghi yêu cầu không tồn tại trong hệ thống.", null);
         }
 
-        VaiTroEnum vaiTro = user.getVaiTro() != null ? user.getVaiTro() : VaiTroEnum.SALES_REP;
+        PhamViDuLieu phamViToiDa = user.getPhamViToiDa() != null ? user.getPhamViToiDa() : PhamViDuLieu.CA_NHAN;
 
-        // Giám đốc (Director), Admin hoặc Kế toán có quyền xem toàn bộ
-        if (vaiTro == VaiTroEnum.DIRECTOR || vaiTro == VaiTroEnum.ADMIN || vaiTro == VaiTroEnum.ACCOUNTANT) {
-            return new KetQuaKiemTra(true, "Truy cập hợp lệ với quyền " + vaiTro.getTenHienThi() + ".", banGhi);
+        // 1. Giám đốc, Admin (nếu có quyền TOAN_BO xác thực từ DB): xem toàn bộ
+        if (phamViToiDa == PhamViDuLieu.TOAN_BO) {
+            return new KetQuaKiemTra(true, "Truy cập hợp lệ với phạm vi toàn bộ hệ thống.", banGhi);
         }
 
-        // Bản ghi do chính user phụ trách trực tiếp -> luôn có quyền xem
+        // 2. Bản ghi do chính user phụ trách trực tiếp -> luôn có quyền xem
         if (banGhi.getNguoiPhuTrachId() != null && banGhi.getNguoiPhuTrachId().equals(user.getId())) {
             return new KetQuaKiemTra(true, "Truy cập hợp lệ với tư cách người phụ trách trực tiếp.", banGhi);
         }
 
-        // Trưởng nhóm (Team Lead): được xem dữ liệu của thành viên trong nhóm mình
-        if (vaiTro == VaiTroEnum.TEAM_LEAD) {
+        // 3. Trưởng nhóm (nếu có quyền NHOM xác thực từ DB): được xem dữ liệu của thành viên trong nhóm mình
+        if (phamViToiDa == PhamViDuLieu.NHOM) {
             if (banGhi.getNhomKinhDoanhId() != null && banGhi.getNhomKinhDoanhId().equals(user.getNhomKinhDoanhId())) {
                 return new KetQuaKiemTra(true, "Truy cập hợp lệ với tư cách Trưởng nhóm quản lý " + user.getTenNhom() + ".", banGhi);
             } else {
@@ -196,8 +197,7 @@ public class PhanQuyenDuLieuService {
             }
         }
 
-        // Nhân viên kinh doanh (Sales Rep): chỉ được xem bản ghi của chính mình.
-        // Cố tình truy cập bản ghi của nhân viên khác (kể cả cùng nhóm hoặc khác nhóm) đều bị chặn (AC4).
+        // 4. Mặc định (CA_NHAN, hoặc khi DB lỗi): FAIL-CLOSED - từ chối truy cập bản ghi của người khác
         String thongBao = String.format(
                 "Từ chối truy cập: Bản ghi '%s' (Mã: %s) hiện do %s (%s) phụ trách. Tài khoản của bạn (%s) chỉ có quyền xem dữ liệu cá nhân của chính mình.",
                 banGhi.getTieuDe(), banGhi.getMaBanGhi(), banGhi.getTenNguoiPhuTrach(), banGhi.getTenNhom(), user.getHoTen()

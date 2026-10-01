@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import vn.nhom10.crm.dto.BanGhiNghiepVuDTO;
 import vn.nhom10.crm.model.NguoiDung;
+import vn.nhom10.crm.model.PhamViDuLieu;
 import vn.nhom10.crm.model.VaiTro;
 import vn.nhom10.crm.model.VaiTroEnum;
 
@@ -50,16 +51,16 @@ class KhachHangServletTest {
         userA.setEmail("sales.a@crm.vn");
         userA.setNhomKinhDoanhId(1);
         userA.setTenNhomKinhDoanh("Nhóm Miền Bắc");
-        userA.setDanhSachVaiTro(Collections.singleton(new VaiTro(VaiTroEnum.SALES_REP)));
+        userA.setDanhSachVaiTro(Collections.singleton(new VaiTro(VaiTroEnum.SALES_REP, PhamViDuLieu.CA_NHAN)));
 
-        // User Lead: Trưởng nhóm kinh doanh (Team Lead - Nhóm Miền Bắc, ID = 100)
+        // User Lead: Trưởng nhóm kinh doanh (Team Lead - Nhóm Miền Bắc, ID = 100, scope NHOM)
         userLeadBac = new NguoiDung();
         userLeadBac.setId(100L);
         userLeadBac.setHoTen("Lê Thị Trưởng Nhóm");
         userLeadBac.setEmail("lead.bac@crm.vn");
         userLeadBac.setNhomKinhDoanhId(1);
         userLeadBac.setTenNhomKinhDoanh("Nhóm Miền Bắc");
-        userLeadBac.setDanhSachVaiTro(Collections.singleton(new VaiTro(VaiTroEnum.TEAM_LEAD)));
+        userLeadBac.setDanhSachVaiTro(Collections.singleton(new VaiTro(VaiTroEnum.TEAM_LEAD, PhamViDuLieu.NHOM)));
     }
 
     @Test

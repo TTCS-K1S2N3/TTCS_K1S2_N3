@@ -1,5 +1,6 @@
 package vn.nhom10.crm.dao;
 
+import vn.nhom10.crm.model.PhamViDuLieu;
 import vn.nhom10.crm.model.VaiTro;
 import vn.nhom10.crm.util.DatabaseConnection;
 
@@ -111,5 +112,33 @@ public class VaiTroDAO {
             LOGGER.log(Level.SEVERE, "Lỗi tìm vai trò cơ bản theo mã: " + maVaiTro, e);
         }
         return null;
+    }
+
+    /**
+     * Truy vấn phạm vi dữ liệu tối đa từ cơ sở dữ liệu cho một vai trò (Single Source of Truth).
+     * Áp dụng nguyên tắc FAIL-CLOSED:
+     * Nếu lỗi kết nối, bảng chưa có cột, hoặc vai trò không tồn tại trong DB,
+     * LUÔN trả về PhamViDuLieu.CA_NHAN.
+     * TUYỆT ĐỐI không fallback dựa trên role hardcode (ngăn chặn rủi ro fail-open).
+     */
+    public PhamViDuLieu layPhamViToiDaCuaVaiTro(String maVaiTro) {
+        if (maVaiTro == null || maVaiTro.isBlank()) {
+            return vn.nhom10.crm.model.PhamViDuLieu.CA_NHAN;
+        }
+        String sql = "SELECT pham_vi_toi_da FROM vai_tro WHERE UPPER(ma_vai_tro) = UPPER(?)";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, maVaiTro.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String pv = rs.getString("pham_vi_toi_da");
+                    vn.nhom10.crm.model.PhamViDuLieu res = vn.nhom10.crm.model.PhamViDuLieu.tuMa(pv);
+                    return res != null ? res : vn.nhom10.crm.model.PhamViDuLieu.CA_NHAN;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Lỗi truy vấn phạm vi tối đa cho vai trò [" + maVaiTro + "], fail-closed về CA_NHAN: " + e.getMessage());
+        }
+        return vn.nhom10.crm.model.PhamViDuLieu.CA_NHAN;
     }
 }

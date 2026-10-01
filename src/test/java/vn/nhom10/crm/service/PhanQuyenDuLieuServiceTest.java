@@ -39,21 +39,21 @@ class PhanQuyenDuLieuServiceTest {
         service = new PhanQuyenDuLieuService();
         danhSachMau = service.layDanhSachDuLieuMau();
 
-        // 1. Khởi tạo người dùng kiểm thử
+        // 1. Khởi tạo người dùng kiểm thử (với phamViToiDa nạp từ DB)
         nhanVienA = new NguoiDungDTO(101L, "Nguyễn Văn A", "sales.a@crm.vn",
-                VaiTroEnum.SALES_REP, 1L, "Nhóm Miền Bắc");
+                VaiTroEnum.SALES_REP, 1L, "Nhóm Miền Bắc", PhamViDuLieu.CA_NHAN);
 
         nhanVienB = new NguoiDungDTO(102L, "Trần Thị B", "sales.b@crm.vn",
-                VaiTroEnum.SALES_REP, 1L, "Nhóm Miền Bắc");
+                VaiTroEnum.SALES_REP, 1L, "Nhóm Miền Bắc", PhamViDuLieu.CA_NHAN);
 
         nhanVienC = new NguoiDungDTO(201L, "Lê Văn C", "sales.c@crm.vn",
-                VaiTroEnum.SALES_REP, 2L, "Nhóm Miền Nam");
+                VaiTroEnum.SALES_REP, 2L, "Nhóm Miền Nam", PhamViDuLieu.CA_NHAN);
 
         truongNhomBac = new NguoiDungDTO(100L, "Lê Thị Trưởng Nhóm", "lead.bac@crm.vn",
-                VaiTroEnum.TEAM_LEAD, 1L, "Nhóm Miền Bắc");
+                VaiTroEnum.TEAM_LEAD, 1L, "Nhóm Miền Bắc", PhamViDuLieu.NHOM);
 
         giamDoc = new NguoiDungDTO(1L, "Bàn Thị Linh", "linh.ban@crm.vn",
-                VaiTroEnum.DIRECTOR, null, "Toàn công ty");
+                VaiTroEnum.DIRECTOR, null, "Toàn công ty", PhamViDuLieu.TOAN_BO);
 
         // 2. Bản ghi mẫu của A
         khachHangA = new BanGhiNghiepVuDTO(
@@ -261,5 +261,48 @@ class PhanQuyenDuLieuServiceTest {
 
         // Giám đốc sửa được toàn bộ
         assertTrue(service.kiemTraQuyenSua(giamDoc, khachHangC).isCoQuyen(), "Giám đốc có quyền sửa tất cả");
+    }
+
+    @Test
+    @DisplayName("Security Fail-Closed: Lỗi DB không bao giờ làm tăng Data Scope cho Admin hay Director")
+    void testFailClosed_KhiLoiDB_KhongBaoGioTangPhamViDuLieu() {
+        // Giả lập người dùng có role DIRECTOR nhưng truy vấn DB bị lỗi/không lấy được scope (Fail-closed về CA_NHAN)
+        NguoiDungDTO directorFailClosed = new NguoiDungDTO(999L, "Giám đốc DB Error", "director.err@crm.vn",
+                VaiTroEnum.DIRECTOR, 1L, "Nhóm Miền Bắc", PhamViDuLieu.CA_NHAN);
+
+        // 1. Phạm vi tối đa của user phải là CA_NHAN, tuyệt đối không được tự nâng thành TOAN_BO
+        assertEquals(PhamViDuLieu.CA_NHAN, directorFailClosed.getPhamViToiDa(),
+                "Khi DB không cấp TOAN_BO, hệ thống phải fail-closed về CA_NHAN");
+
+        // 2. Danh sách phạm vi cho phép chỉ chứa CA_NHAN
+        List<PhamViDuLieu> choPhep = directorFailClosed.getDanhSachPhamViChoPhep();
+        assertEquals(1, choPhep.size());
+        assertTrue(choPhep.contains(PhamViDuLieu.CA_NHAN));
+        assertFalse(choPhep.contains(PhamViDuLieu.TOAN_BO), "Tuyệt đối không có TOAN_BO khi DB chưa xác thực");
+
+        // 3. Nếu gửi request yêu cầu TOAN_BO, hệ thống ép về CA_NHAN
+        PhamViDuLieu hieuLuc = service.xacDinhPhamViHieuLuc(directorFailClosed, PhamViDuLieu.TOAN_BO);
+        assertEquals(PhamViDuLieu.CA_NHAN, hieuLuc, "Yêu cầu TOAN_BO phải bị ép về CA_NHAN");
+
+        // 4. Truy cập bản ghi của người khác (khachHangB của user 102) phải bị TỪ CHỐI (fail-closed)
+        PhanQuyenDuLieuService.KetQuaKiemTra kqTruyCap = service.kiemTraQuyenTruyCap(directorFailClosed, khachHangB);
+        assertFalse(kqTruyCap.isCoQuyen(), "Director khi bị lỗi DB chỉ có quyền CA_NHAN, không được xem bản ghi của người khác");
+
+        // 5. Thao tác sửa bản ghi của người khác cũng phải bị TỪ CHỐI
+        PhanQuyenDuLieuService.KetQuaKiemTra kqSua = service.kiemTraQuyenSua(directorFailClosed, khachHangB);
+        assertFalse(kqSua.isCoQuyen(), "Director khi bị lỗi DB không được sửa bản ghi của người khác");
+    }
+
+    @Test
+    @DisplayName("Security Fail-Closed: VaiTroDAO trả về CA_NHAN khi truy vấn DB lỗi hoặc vai trò lạ")
+    void testVaiTroDAO_FailClosed_KhiLoiDB() {
+        vn.nhom10.crm.dao.VaiTroDAO vaiTroDAO = new vn.nhom10.crm.dao.VaiTroDAO();
+        // Kiểm tra mã vai trò không tồn tại trong DB -> Phải fail-closed về CA_NHAN
+        PhamViDuLieu pv = vaiTroDAO.layPhamViToiDaCuaVaiTro("NON_EXISTENT_ROLE");
+        assertEquals(PhamViDuLieu.CA_NHAN, pv, "Vai trò không có trong DB phải fail-closed về CA_NHAN");
+
+        // Kiểm tra null / blank -> CA_NHAN
+        assertEquals(PhamViDuLieu.CA_NHAN, vaiTroDAO.layPhamViToiDaCuaVaiTro(null));
+        assertEquals(PhamViDuLieu.CA_NHAN, vaiTroDAO.layPhamViToiDaCuaVaiTro("   "));
     }
 }

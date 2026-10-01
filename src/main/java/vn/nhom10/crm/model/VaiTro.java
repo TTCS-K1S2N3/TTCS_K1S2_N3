@@ -24,7 +24,7 @@ public class VaiTro implements Serializable {
         this.maVaiTro = maVaiTro;
         this.tenVaiTro = tenVaiTro;
         this.moTa = moTa;
-        this.phamViToiDa = (VaiTroEnum.tuMa(maVaiTro) != null) ? VaiTroEnum.tuMa(maVaiTro).getPhamViToiDa() : PhamViDuLieu.CA_NHAN;
+        this.phamViToiDa = PhamViDuLieu.CA_NHAN; // Fail-closed: Mặc định tối thiểu CA_NHAN trừ khi DB chỉ định
     }
 
     public VaiTro(int id, String maVaiTro, String tenVaiTro, String moTa, PhamViDuLieu phamViToiDa) {
@@ -32,7 +32,7 @@ public class VaiTro implements Serializable {
         this.maVaiTro = maVaiTro;
         this.tenVaiTro = tenVaiTro;
         this.moTa = moTa;
-        this.phamViToiDa = phamViToiDa;
+        this.phamViToiDa = (phamViToiDa != null) ? phamViToiDa : PhamViDuLieu.CA_NHAN;
     }
 
     public VaiTro(VaiTroEnum vaiTroEnum) {
@@ -40,7 +40,16 @@ public class VaiTro implements Serializable {
             this.maVaiTro = vaiTroEnum.getMaVaiTro();
             this.tenVaiTro = vaiTroEnum.getTenTiengViet();
             this.moTa = vaiTroEnum.getTenTiengAnh();
-            this.phamViToiDa = vaiTroEnum.getPhamViToiDa();
+            this.phamViToiDa = PhamViDuLieu.CA_NHAN; // Fail-closed
+        }
+    }
+
+    public VaiTro(VaiTroEnum vaiTroEnum, PhamViDuLieu phamViToiDa) {
+        if (vaiTroEnum != null) {
+            this.maVaiTro = vaiTroEnum.getMaVaiTro();
+            this.tenVaiTro = vaiTroEnum.getTenTiengViet();
+            this.moTa = vaiTroEnum.getTenTiengAnh();
+            this.phamViToiDa = (phamViToiDa != null) ? phamViToiDa : PhamViDuLieu.CA_NHAN;
         }
     }
 
@@ -77,19 +86,16 @@ public class VaiTro implements Serializable {
     }
 
     public PhamViDuLieu getPhamViToiDa() {
-        if (phamViToiDa != null) {
-            return phamViToiDa;
-        }
-        VaiTroEnum en = VaiTroEnum.tuMa(maVaiTro);
-        return en != null ? en.getPhamViToiDa() : PhamViDuLieu.CA_NHAN;
+        return (phamViToiDa != null) ? phamViToiDa : PhamViDuLieu.CA_NHAN; // Fail-closed: Luôn là CA_NHAN nếu thiếu dữ liệu DB
     }
 
     public void setPhamViToiDa(PhamViDuLieu phamViToiDa) {
-        this.phamViToiDa = phamViToiDa;
+        this.phamViToiDa = (phamViToiDa != null) ? phamViToiDa : PhamViDuLieu.CA_NHAN;
     }
 
     public void setPhamViToiDa(String phamViToiDaStr) {
-        this.phamViToiDa = PhamViDuLieu.tuMa(phamViToiDaStr);
+        PhamViDuLieu p = PhamViDuLieu.tuMa(phamViToiDaStr);
+        this.phamViToiDa = (p != null) ? p : PhamViDuLieu.CA_NHAN;
     }
 
     @Override

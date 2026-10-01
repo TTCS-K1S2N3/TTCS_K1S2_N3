@@ -51,26 +51,26 @@ class PhanQuyenDuLieuDAOTest {
 
             st.execute("CREATE TABLE IF NOT EXISTS khach_hang (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
-                    "ma_ban_ghi VARCHAR(50), tieu_de VARCHAR(255), nguoi_phu_trach_id BIGINT, " +
-                    "nhom_kinh_doanh_id BIGINT, doanh_thu_uoc_tinh DECIMAL(15, 2), trang_thai VARCHAR(50), " +
-                    "mo_ta_chi_tiet TEXT, ngay_tao DATE)");
+                    "ma_ban_ghi VARCHAR(50), ten_cong_ty VARCHAR(255), tieu_de VARCHAR(255), " +
+                    "nguoi_phu_trach_id BIGINT, nguoi_so_huu_id BIGINT, nhom_kinh_doanh_id BIGINT, " +
+                    "doanh_thu_uoc_tinh DECIMAL(15, 2), trang_thai VARCHAR(50), mo_ta_chi_tiet TEXT, ngay_tao DATE)");
 
             st.execute("CREATE TABLE IF NOT EXISTS co_hoi (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
-                    "ma_ban_ghi VARCHAR(50), tieu_de VARCHAR(255), khach_hang_id BIGINT, " +
-                    "nguoi_phu_trach_id BIGINT, nhom_kinh_doanh_id BIGINT, gia_tri_du_kien DECIMAL(15, 2), " +
-                    "trang_thai VARCHAR(50), mo_ta_chi_tiet TEXT, ngay_tao DATE)");
+                    "ma_ban_ghi VARCHAR(50), ma_co_hoi VARCHAR(50), ten_co_hoi VARCHAR(255), tieu_de VARCHAR(255), " +
+                    "khach_hang_id BIGINT, nguoi_phu_trach_id BIGINT, nhom_kinh_doanh_id BIGINT, " +
+                    "gia_tri_du_kien DECIMAL(15, 2), xac_suat INT, trang_thai VARCHAR(50), mo_ta_chi_tiet TEXT, ngay_tao DATE)");
 
             st.execute("CREATE TABLE IF NOT EXISTS bao_gia (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
-                    "ma_ban_ghi VARCHAR(50), tieu_de VARCHAR(255), co_hoi_id BIGINT, " +
-                    "khach_hang_id BIGINT, nguoi_phu_trach_id BIGINT, nhom_kinh_doanh_id BIGINT, " +
+                    "ma_ban_ghi VARCHAR(50), ma_bao_gia VARCHAR(50), tieu_de VARCHAR(255), co_hoi_id BIGINT, " +
+                    "khach_hang_id BIGINT, nguoi_phu_trach_id BIGINT, nhom_kinh_doanh_id BIGINT, phien_ban INT, " +
                     "tong_tien DECIMAL(15, 2), trang_thai VARCHAR(50), mo_ta_chi_tiet TEXT, ngay_tao DATE)");
 
             st.execute("CREATE TABLE IF NOT EXISTS hoat_dong (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
                     "ma_ban_ghi VARCHAR(50), tieu_de VARCHAR(255), loai_hoat_dong VARCHAR(50), " +
-                    "khach_hang_id BIGINT, nguoi_phu_trach_id BIGINT, nhom_kinh_doanh_id BIGINT, " +
+                    "khach_hang_id BIGINT, co_hoi_id BIGINT, nguoi_phu_trach_id BIGINT, nhom_kinh_doanh_id BIGINT, " +
                     "chi_phi DECIMAL(15, 2), trang_thai VARCHAR(50), mo_ta_chi_tiet TEXT, ngay_tao DATE)");
 
             // Nạp dữ liệu mẫu

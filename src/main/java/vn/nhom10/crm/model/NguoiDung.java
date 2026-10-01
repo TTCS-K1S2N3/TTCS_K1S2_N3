@@ -144,6 +144,27 @@ public class NguoiDung implements Serializable {
         }
     }
 
+    /**
+     * Xác định phạm vi dữ liệu tối đa của người dùng dựa trên các vai trò thực tế nạp từ DB (Fail-Closed).
+     * Mặc định là CA_NHAN nếu không có vai trò hoặc DB lỗi.
+     */
+    public PhamViDuLieu layPhamViToiDa() {
+        if (danhSachVaiTro == null || danhSachVaiTro.isEmpty()) {
+            return PhamViDuLieu.CA_NHAN;
+        }
+        PhamViDuLieu maxScope = PhamViDuLieu.CA_NHAN;
+        for (VaiTro vt : danhSachVaiTro) {
+            PhamViDuLieu p = vt.getPhamViToiDa();
+            if (p == PhamViDuLieu.TOAN_BO) {
+                return PhamViDuLieu.TOAN_BO;
+            }
+            if (p == PhamViDuLieu.NHOM) {
+                maxScope = PhamViDuLieu.NHOM;
+            }
+        }
+        return maxScope;
+    }
+
     public Timestamp getCreatedAt() {
         return createdAt;
     }
