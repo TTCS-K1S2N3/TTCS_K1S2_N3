@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Model đại diện cho người dùng hệ thống CRM.
@@ -40,6 +41,14 @@ public class NguoiDung implements Serializable {
         this.id = id;
         this.hoTen = hoTen;
         this.email = email;
+    }
+
+    public NguoiDung(long id, String hoTen, String email, String trangThai, Integer nhomKinhDoanhId) {
+        this.id = id;
+        this.hoTen = hoTen;
+        this.email = email;
+        this.trangThai = trangThai;
+        this.nhomKinhDoanhId = nhomKinhDoanhId;
     }
 
     public NguoiDung(long id, String hoTen, String email, String matKhau, String soDienThoai, String trangThai) {
@@ -123,6 +132,14 @@ public class NguoiDung implements Serializable {
         this.nhomKinhDoanhId = nhomKinhDoanhId;
     }
 
+    public Integer getNhomId() {
+        return nhomKinhDoanhId;
+    }
+
+    public void setNhomId(Integer nhomId) {
+        this.nhomKinhDoanhId = nhomId;
+    }
+
     public NhomKinhDoanh getNhomKinhDoanh() {
         return nhomKinhDoanh;
     }
@@ -133,6 +150,10 @@ public class NguoiDung implements Serializable {
             this.nhomKinhDoanhId = nhomKinhDoanh.getId();
             this.tenNhomKinhDoanh = nhomKinhDoanh.getTenNhom();
         }
+    }
+
+    public String getTenNhom() {
+        return getTenNhomKinhDoanh();
     }
 
     public String getTenNhomKinhDoanh() {
@@ -155,6 +176,21 @@ public class NguoiDung implements Serializable {
 
     public void setDanhSachVaiTro(Set<VaiTro> danhSachVaiTro) {
         this.danhSachVaiTro = (danhSachVaiTro != null) ? danhSachVaiTro : new HashSet<>();
+    }
+
+    public Set<VaiTro> getDsVaiTro() {
+        return danhSachVaiTro;
+    }
+
+    public void setDsVaiTro(Set<VaiTro> dsVaiTro) {
+        setDanhSachVaiTro(dsVaiTro);
+    }
+
+    public Set<Integer> getDsVaiTroIds() {
+        if (danhSachVaiTro == null) {
+            return new HashSet<>();
+        }
+        return danhSachVaiTro.stream().map(VaiTro::getId).collect(Collectors.toSet());
     }
 
     public void themVaiTro(VaiTro vaiTro) {
@@ -232,6 +268,17 @@ public class NguoiDung implements Serializable {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getNgayTao() {
+        if (createdAt != null) {
+            return createdAt.toLocalDateTime().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        }
+        return "";
+    }
+
+    public void setNgayTao(String ngayTao) {
+        // Hỗ trợ trường hợp gán từ view nếu có
     }
 
     public Timestamp getUpdatedAt() {

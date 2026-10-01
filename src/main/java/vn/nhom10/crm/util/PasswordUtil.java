@@ -2,6 +2,11 @@ package vn.nhom10.crm.util;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Tiện ích mã hóa và kiểm tra mật khẩu bằng thuật toán BCrypt.
  * Tuân thủ yêu cầu bảo mật tài khoản người dùng CRM.
@@ -9,6 +14,13 @@ import org.mindrot.jbcrypt.BCrypt;
 public class PasswordUtil {
 
     private static final int LOG_ROUNDS = 12;
+
+    private static final String CHU_HOA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final String CHU_THUONG = "abcdefghijklmnopqrstuvwxyz";
+    private static final String CHU_SO = "0123456789";
+    private static final String KY_TU_DAC_BIET = "@#$%&*!";
+
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     /**
      * Băm mật khẩu người dùng bằng BCrypt.
@@ -68,5 +80,36 @@ public class PasswordUtil {
             }
         }
         return false;
+    }
+
+    /**
+     * Tự động sinh mật khẩu tạm ngẫu nhiên mạnh (10 ký tự) gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt.
+     * Phục vụ AC: "Tạo tài khoản gửi email kích hoạt kèm mật khẩu tạm"
+     *
+     * @return mật khẩu tạm ngẫu nhiên
+     */
+    public static String taoMatKhauTam() {
+        List<Character> kyTuList = new ArrayList<>();
+
+        kyTuList.add(CHU_HOA.charAt(RANDOM.nextInt(CHU_HOA.length())));
+        kyTuList.add(CHU_HOA.charAt(RANDOM.nextInt(CHU_HOA.length())));
+        kyTuList.add(CHU_THUONG.charAt(RANDOM.nextInt(CHU_THUONG.length())));
+        kyTuList.add(CHU_THUONG.charAt(RANDOM.nextInt(CHU_THUONG.length())));
+        kyTuList.add(CHU_SO.charAt(RANDOM.nextInt(CHU_SO.length())));
+        kyTuList.add(CHU_SO.charAt(RANDOM.nextInt(CHU_SO.length())));
+        kyTuList.add(KY_TU_DAC_BIET.charAt(RANDOM.nextInt(KY_TU_DAC_BIET.length())));
+
+        String tatCaKyTu = CHU_HOA + CHU_THUONG + CHU_SO + KY_TU_DAC_BIET;
+        while (kyTuList.size() < 10) {
+            kyTuList.add(tatCaKyTu.charAt(RANDOM.nextInt(tatCaKyTu.length())));
+        }
+
+        Collections.shuffle(kyTuList, RANDOM);
+
+        StringBuilder sb = new StringBuilder();
+        for (char c : kyTuList) {
+            sb.append(c);
+        }
+        return sb.toString();
     }
 }

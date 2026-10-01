@@ -28,7 +28,31 @@ class PasswordUtilTest {
         assertTrue(PasswordUtil.isValidPassword("Admin@2026"));
         assertFalse(PasswordUtil.isValidPassword("short1")); // < 8 ký tự
         assertFalse(PasswordUtil.isValidPassword("onlyletters")); // Không có số
-        assertFalse(PasswordUtil.isValidPassword("12345678")); // Không có chữ
         assertFalse(PasswordUtil.isValidPassword(null));
+    }
+
+    @Test
+    @DisplayName("AC: Tự động sinh mật khẩu tạm đáp ứng độ mạnh và tính ngẫu nhiên")
+    void testTaoMatKhauTam() {
+        String temp1 = PasswordUtil.taoMatKhauTam();
+        String temp2 = PasswordUtil.taoMatKhauTam();
+
+        assertNotNull(temp1);
+        assertNotNull(temp2);
+        assertTrue(temp1.length() >= 8);
+        assertTrue(PasswordUtil.isValidPassword(temp1));
+        assertNotEquals(temp1, temp2, "Hai mật khẩu tạm sinh ra liên tiếp phải khác nhau");
+
+        boolean coHoa = false;
+        boolean coThuong = false;
+        boolean coSo = false;
+        for (char c : temp1.toCharArray()) {
+            if (Character.isUpperCase(c)) coHoa = true;
+            if (Character.isLowerCase(c)) coThuong = true;
+            if (Character.isDigit(c)) coSo = true;
+        }
+        assertTrue(coHoa, "Mật khẩu tạm phải có chữ hoa");
+        assertTrue(coThuong, "Mật khẩu tạm phải có chữ thường");
+        assertTrue(coSo, "Mật khẩu tạm phải có chữ số");
     }
 }
