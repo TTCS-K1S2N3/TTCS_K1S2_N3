@@ -97,6 +97,46 @@ public class SessionRegistry implements HttpSessionListener {
     }
 
     /**
+     * Thu hồi TẤT CẢ các phiên đăng nhập của một người dùng trong bộ nhớ container.
+     * Phục vụ Story S1-10 khi tài khoản nhân viên bị khoá.
+     *
+     * @param nguoiDungId ID người dùng bị khoá
+     * @return số lượng phiên đã thu hồi (invalidated)
+     */
+    public int thuHoiTatCaPhien(Long nguoiDungId) {
+        if (nguoiDungId == null) {
+            return 0;
+        }
+
+        Set<HttpSession> sessions = userSessionsMap.get(nguoiDungId);
+        if (sessions == null || sessions.isEmpty()) {
+            return 0;
+        }
+
+        int count = 0;
+        for (HttpSession s : sessions) {
+            try {
+                String sId = s.getId();
+                sessionIdToUserMap.remove(sId);
+                sessions.remove(s);
+                s.invalidate();
+                count++;
+                LOGGER.info(() -> String.format("Đã thu hồi phiên [ID: %s] của người dùng bị khoá [ID: %d]", sId, nguoiDungId));
+            } catch (IllegalStateException ignored) {
+                sessions.remove(s);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Lỗi khi thu hồi phiên", e);
+            }
+        }
+        userSessionsMap.remove(nguoiDungId);
+        return count;
+    }
+
+    public int thuHoiTatCaPhien(int nguoiDungId) {
+        return thuHoiTatCaPhien((long) nguoiDungId);
+    }
+
+    /**
      * Hủy đăng ký phiên khi người dùng đăng xuất hoặc phiên hết hạn.
      *
      * @param session đối tượng HttpSession

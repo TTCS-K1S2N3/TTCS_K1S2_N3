@@ -213,4 +213,40 @@ public class PhienDangNhapDAO {
             return 0;
         }
     }
+
+    /**
+     * Thu hồi TẤT CẢ các phiên của người dùng trong bảng phien_dang_nhap (kể cả phiên hiện tại).
+     * Phục vụ Story S1-10 khi khoá tài khoản nhân viên.
+     * Thực hiện trong connection/transaction đã được truyền vào.
+     *
+     * @param nguoiDungId ID người dùng bị khoá
+     * @param conn Kết nối JDBC đang quản lý transaction
+     * @return số lượng phiên đã thu hồi trong DB
+     * @throws SQLException khi lỗi truy vấn SQL
+     */
+    public int thuHoiTatCaPhien(long nguoiDungId, Connection conn) throws SQLException {
+        String sql = "UPDATE phien_dang_nhap "
+                   + "SET trang_thai = ?, thoi_gian_thu_hoi = ? "
+                   + "WHERE nguoi_dung_id = ? AND trang_thai = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, PhienDangNhap.TRANG_THAI_DA_DANG_XUAT);
+            ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+            ps.setLong(3, nguoiDungId);
+            ps.setString(4, PhienDangNhap.TRANG_THAI_HOAT_DONG);
+            return ps.executeUpdate();
+        }
+    }
+
+    /**
+     * Overload thu hồi tất cả phiên tự mở kết nối (khi không dùng transaction riêng).
+     */
+    public int thuHoiTatCaPhien(long nguoiDungId) {
+        try (Connection conn = DatabaseConnection.layKetNoi()) {
+            return thuHoiTatCaPhien(nguoiDungId, conn);
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi thu hồi tất cả phiên cho user: " + nguoiDungId, e);
+            return 0;
+        }
+    }
 }

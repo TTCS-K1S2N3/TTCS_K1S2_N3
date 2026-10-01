@@ -735,4 +735,56 @@ public class NguoiDungDAO {
             }
         }
     }
+
+    /**
+     * Khoá tài khoản người dùng theo ID trong Connection được cung cấp (thuộc Transaction).
+     * Đặt trang_thai = KHOA (Story S1-10).
+     */
+    public boolean khoaTaiKhoan(Connection conn, int userId) throws SQLException {
+        String sql = "UPDATE nguoi_dung SET trang_thai = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, NguoiDung.TRANG_THAI_KHOA);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Khoá tài khoản người dùng tự mở kết nối riêng.
+     */
+    public boolean khoaTaiKhoan(int userId) {
+        try (Connection conn = DatabaseConnection.layKetNoi()) {
+            return khoaTaiKhoan(conn, userId);
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi khoá tài khoản ID=" + userId + ": " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Lấy danh sách người dùng khả dụng để tiếp nhận dữ liệu bàn giao (Story S1-10).
+     * Chỉ những tài khoản đang hoạt động (HOAT_DONG) và khác nhân viên bị khoá mới được chọn.
+     */
+    public List<NguoiDung> layDanhSachNguoiDungKhaDungTiepNhan(int excludeUserId) {
+        List<NguoiDung> danhSach = new ArrayList<>();
+        String sql = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, "
+                + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
+                + "FROM nguoi_dung WHERE trang_thai = ? AND id != ? ORDER BY ho_ten ASC";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, NguoiDung.TRANG_THAI_HOAT_DONG);
+            ps.setInt(2, excludeUserId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    danhSach.add(mapResultSetToNguoiDung(rs));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi truy vấn danh sách người dùng khả dụng tiếp nhận: " + e.getMessage(), e);
+        }
+        return danhSach;
+    }
 }
