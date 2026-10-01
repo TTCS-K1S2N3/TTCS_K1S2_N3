@@ -6,14 +6,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import vn.nhom10.crm.model.NguoiDung;
-import vn.nhom10.crm.model.PhienDangNhap;
 import vn.nhom10.crm.service.PhienService;
 
 import java.io.IOException;
 
 /**
  * Filter bảo vệ phiên đăng nhập và tự động gia hạn khi còn hoạt động (AC1, AC2, AC3).
- * Kiểm tra và xử lý phiên bị thu hồi khi đổi mật khẩu (S1-04).
+ * Mọi phiên không còn ở trạng thái HOAT_DONG trong database (hết hạn, đăng xuất hoặc bị thu hồi)
+ * đều sẽ bị từ chối truy cập và chuyển hướng về đăng nhập an toàn.
  * Áp dụng cho toàn bộ ứng dụng CRM.
  */
 @WebFilter(filterName = "SessionSecurityFilter", urlPatterns = {"/*"})
@@ -66,17 +66,8 @@ public class SessionSecurityFilter implements Filter {
             maPhien = session.getId();
         }
 
-        // S1-04: Kiểm tra xem phiên đã bị thu hồi trong DB do đổi mật khẩu hay chưa
-        if (phienService != null) {
-            PhienDangNhap phien = phienService.layPhienTheoMa(maPhien);
-            if (phien != null && phien.isDaThuHoi()) {
-                phienService.dangXuat(httpRequest, httpResponse);
-                xuLyPhienKhongHopLe(httpRequest, httpResponse, "session_revoked");
-                return;
-            }
-        }
-
-        // Kiểm tra tính hợp lệ của phiên trong DB (AC3)
+        // Kiểm tra tính hợp lệ của phiên trong DB (AC3).
+        // Mọi phiên không còn HOAT_DONG (hết hạn, đăng xuất hoặc đã bị thu hồi) đều không hợp lệ.
         boolean phienHopLe = phienService.kiemTraPhienHopLe(maPhien);
         if (!phienHopLe) {
             // Hủy phiên server ngay lập tức

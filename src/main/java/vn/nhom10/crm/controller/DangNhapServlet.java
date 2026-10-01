@@ -71,10 +71,6 @@ public class DangNhapServlet extends HttpServlet {
             // AC3 (S1-02): Phiên hết hạn đưa về trang đăng nhập kèm thông báo rõ ràng
             request.setAttribute("thongBaoLoi", "Phiên làm việc của bạn đã hết hạn do không có hoạt động. Vui lòng đăng nhập lại để tiếp tục làm việc an toàn.");
             request.setAttribute("maLoi", "SESSION_EXPIRED");
-        } else if ("session_revoked".equalsIgnoreCase(error)) {
-            // S1-04: Phiên bị thu hồi do đổi mật khẩu ở thiết bị khác
-            request.setAttribute("thongBaoLoi", "Phiên đăng nhập đã bị thu hồi do tài khoản đã đổi mật khẩu trên thiết bị khác. Vui lòng đăng nhập lại với mật khẩu mới.");
-            request.setAttribute("maLoi", "SESSION_REVOKED");
         } else if ("auth_required".equalsIgnoreCase(error) || "chua_dang_nhap".equalsIgnoreCase(error)) {
             request.setAttribute("thongBaoLoi", "Vui lòng đăng nhập để truy cập hệ thống CRM.");
         }

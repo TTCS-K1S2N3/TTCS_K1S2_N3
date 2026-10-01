@@ -7,7 +7,7 @@
 -- Toàn bộ cấu trúc bảng `nguoi_dung` và `phien_dang_nhap` đã được khởi tạo
 -- và quản lý tập trung từ các Story trước (s1_01, s1_02).
 -- Bảng `phien_dang_nhap` đã có đầy đủ các trường `trang_thai`, `thoi_gian_thu_hoi`
--- và hỗ trợ các trạng thái: 'HOAT_DONG', 'DA_DANG_XUAT', 'HET_HAN', 'DA_THU_HOI'.
+-- và hỗ trợ các trạng thái: 'HOAT_DONG', 'DA_DANG_XUAT', 'HET_HAN'.
 -- Bảng `nguoi_dung` đã có cột `mat_khau`, `updated_at`.
 -- Không tạo lại bảng, không tạo demo user trùng lặp, không chạy DDL phá hủy.
 --

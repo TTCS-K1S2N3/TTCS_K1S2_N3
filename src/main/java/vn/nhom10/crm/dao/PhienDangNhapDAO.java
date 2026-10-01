@@ -127,7 +127,7 @@ public class PhienDangNhapDAO {
      * Đáp ứng AC2: "Đăng xuất làm mất hiệu lực phiên ngay lập tức phía server".
      *
      * @param maPhien       Mã phiên đăng nhập
-     * @param trangThaiMoi  Trạng thái mới (ví dụ DA_DANG_XUAT, HET_HAN, DA_THU_HOI)
+     * @param trangThaiMoi  Trạng thái mới (ví dụ DA_DANG_XUAT, HET_HAN)
      */
     public void voHieuHoaPhien(String maPhien, String trangThaiMoi) {
         if (maPhien == null || maPhien.isBlank()) {
@@ -178,6 +178,7 @@ public class PhienDangNhapDAO {
 
     /**
      * AC 3 (S1-04): Thu hồi toàn bộ các phiên khác của người dùng ngoại trừ phiên hiện tại.
+     * Cập nhật trạng thái về TRANG_THAI_DA_DANG_XUAT và ghi nhận thoi_gian_thu_hoi.
      * Thực hiện trong connection/transaction đã được truyền vào.
      *
      * @param nguoiDungId     ID người dùng đổi mật khẩu
@@ -192,7 +193,7 @@ public class PhienDangNhapDAO {
                    + "WHERE nguoi_dung_id = ? AND ma_phien <> ? AND trang_thai = ?";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, PhienDangNhap.TRANG_THAI_DA_THU_HOI);
+            ps.setString(1, PhienDangNhap.TRANG_THAI_DA_DANG_XUAT);
             ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
             ps.setLong(3, nguoiDungId);
             ps.setString(4, maPhienHienTai != null ? maPhienHienTai : "");

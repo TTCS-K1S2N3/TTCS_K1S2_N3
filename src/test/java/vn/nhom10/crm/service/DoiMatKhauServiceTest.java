@@ -170,7 +170,8 @@ class DoiMatKhauServiceTest {
 
         PhienDangNhap revokedSession = phienDangNhapDAO.timTheoMaPhien(otherSessionId1);
         assertNotNull(revokedSession);
-        assertTrue(revokedSession.isDaThuHoi());
+        assertEquals(PhienDangNhap.TRANG_THAI_DA_DANG_XUAT, revokedSession.getTrangThai());
+        assertFalse(revokedSession.isDangHoatDong());
         assertNotNull(revokedSession.getThoiGianThuHoi());
     }
 
