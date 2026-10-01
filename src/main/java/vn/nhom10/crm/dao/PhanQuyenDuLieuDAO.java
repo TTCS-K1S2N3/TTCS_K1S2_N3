@@ -64,10 +64,12 @@ public class PhanQuyenDuLieuDAO {
                                                        PhamViDuLieu phamVi,
                                                        String tuKhoa) throws SQLException {
         String tenBang = layTenBang(loaiNghiepVu);
+        String cotGiaTri = layCotGiaTri(loaiNghiepVu);
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT t.id, t.ma_ban_ghi, t.tieu_de, t.nguoi_phu_trach_id, ")
            .append("nd.ho_ten AS ten_nguoi_phu_trach, t.nhom_kinh_doanh_id, ")
-           .append("nkd.ten_nhom, t.gia_tri, t.trang_thai, t.ngay_tao, t.mo_ta_chi_tiet ")
+           .append("nkd.ten_nhom, t.").append(cotGiaTri).append(" AS gia_tri, ")
+           .append("t.trang_thai, t.ngay_tao, t.mo_ta_chi_tiet ")
            .append("FROM ").append(tenBang).append(" t ")
            .append("LEFT JOIN nguoi_dung nd ON t.nguoi_phu_trach_id = nd.id ")
            .append("LEFT JOIN nhom_kinh_doanh nkd ON t.nhom_kinh_doanh_id = nkd.id ")
@@ -140,9 +142,11 @@ public class PhanQuyenDuLieuDAO {
 
     private BanGhiNghiepVuDTO timTrongBangTheoId(Long id, LoaiNghiepVu loai) throws SQLException {
         String tenBang = layTenBang(loai);
+        String cotGiaTri = layCotGiaTri(loai);
         String sql = "SELECT t.id, t.ma_ban_ghi, t.tieu_de, t.nguoi_phu_trach_id, " +
                 "nd.ho_ten AS ten_nguoi_phu_trach, t.nhom_kinh_doanh_id, " +
-                "nkd.ten_nhom, t.gia_tri, t.trang_thai, t.ngay_tao, t.mo_ta_chi_tiet " +
+                "nkd.ten_nhom, t." + cotGiaTri + " AS gia_tri, " +
+                "t.trang_thai, t.ngay_tao, t.mo_ta_chi_tiet " +
                 "FROM " + tenBang + " t " +
                 "LEFT JOIN nguoi_dung nd ON t.nguoi_phu_trach_id = nd.id " +
                 "LEFT JOIN nhom_kinh_doanh nkd ON t.nhom_kinh_doanh_id = nkd.id " +
@@ -195,6 +199,36 @@ public class PhanQuyenDuLieuDAO {
         }
     }
 
+    private String layCotGiaTri(LoaiNghiepVu loai) {
+        switch (loai) {
+            case KHACH_HANG:
+                return "doanh_thu_uoc_tinh";
+            case CO_HOI:
+                return "gia_tri_du_kien";
+            case BAO_GIA:
+                return "tong_tien";
+            case HOAT_DONG:
+                return "chi_phi";
+            default:
+                throw new IllegalArgumentException("Loại nghiệp vụ không hợp lệ: " + loai);
+        }
+    }
+
+    private java.math.BigDecimal parseGiaTri(String giaTri) {
+        if (giaTri == null || giaTri.trim().isEmpty()) {
+            return java.math.BigDecimal.ZERO;
+        }
+        try {
+            String clean = giaTri.replaceAll("[^0-9.]", "");
+            if (clean.isEmpty()) {
+                return java.math.BigDecimal.ZERO;
+            }
+            return new java.math.BigDecimal(clean);
+        } catch (Exception e) {
+            return java.math.BigDecimal.ZERO;
+        }
+    }
+
     /**
      * Cập nhật bản ghi nghiệp vụ (yêu cầu phân quyền kiểm tra trước khi gọi).
      */
@@ -203,11 +237,12 @@ public class PhanQuyenDuLieuDAO {
             return false;
         }
         String tenBang = layTenBang(banGhi.getLoaiNghiepVu());
-        String sql = "UPDATE " + tenBang + " SET tieu_de = ?, gia_tri = ?, trang_thai = ?, mo_ta_chi_tiet = ? WHERE id = ?";
+        String cotGiaTri = layCotGiaTri(banGhi.getLoaiNghiepVu());
+        String sql = "UPDATE " + tenBang + " SET tieu_de = ?, " + cotGiaTri + " = ?, trang_thai = ?, mo_ta_chi_tiet = ? WHERE id = ?";
         try (Connection conn = DatabaseConnection.layKetNoi();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, banGhi.getTieuDe());
-            ps.setString(2, banGhi.getGiaTri());
+            ps.setBigDecimal(2, parseGiaTri(banGhi.getGiaTri()));
             ps.setString(3, banGhi.getTrangThai());
             ps.setString(4, banGhi.getMoTaChiTiet());
             ps.setLong(5, banGhi.getId());

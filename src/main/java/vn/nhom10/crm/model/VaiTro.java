@@ -14,6 +14,7 @@ public class VaiTro implements Serializable {
     private String maVaiTro;
     private String tenVaiTro;
     private String moTa;
+    private PhamViDuLieu phamViToiDa;
 
     public VaiTro() {
     }
@@ -23,6 +24,15 @@ public class VaiTro implements Serializable {
         this.maVaiTro = maVaiTro;
         this.tenVaiTro = tenVaiTro;
         this.moTa = moTa;
+        this.phamViToiDa = (VaiTroEnum.tuMa(maVaiTro) != null) ? VaiTroEnum.tuMa(maVaiTro).getPhamViToiDa() : PhamViDuLieu.CA_NHAN;
+    }
+
+    public VaiTro(int id, String maVaiTro, String tenVaiTro, String moTa, PhamViDuLieu phamViToiDa) {
+        this.id = id;
+        this.maVaiTro = maVaiTro;
+        this.tenVaiTro = tenVaiTro;
+        this.moTa = moTa;
+        this.phamViToiDa = phamViToiDa;
     }
 
     public VaiTro(VaiTroEnum vaiTroEnum) {
@@ -30,6 +40,7 @@ public class VaiTro implements Serializable {
             this.maVaiTro = vaiTroEnum.getMaVaiTro();
             this.tenVaiTro = vaiTroEnum.getTenTiengViet();
             this.moTa = vaiTroEnum.getTenTiengAnh();
+            this.phamViToiDa = vaiTroEnum.getPhamViToiDa();
         }
     }
 
@@ -63,6 +74,22 @@ public class VaiTro implements Serializable {
 
     public void setMoTa(String moTa) {
         this.moTa = moTa;
+    }
+
+    public PhamViDuLieu getPhamViToiDa() {
+        if (phamViToiDa != null) {
+            return phamViToiDa;
+        }
+        VaiTroEnum en = VaiTroEnum.tuMa(maVaiTro);
+        return en != null ? en.getPhamViToiDa() : PhamViDuLieu.CA_NHAN;
+    }
+
+    public void setPhamViToiDa(PhamViDuLieu phamViToiDa) {
+        this.phamViToiDa = phamViToiDa;
+    }
+
+    public void setPhamViToiDa(String phamViToiDaStr) {
+        this.phamViToiDa = PhamViDuLieu.tuMa(phamViToiDaStr);
     }
 
     @Override

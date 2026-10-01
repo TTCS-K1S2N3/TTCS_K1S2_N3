@@ -7,7 +7,7 @@ import vn.nhom10.crm.dto.BanGhiNghiepVuDTO;
 import vn.nhom10.crm.dto.BanGhiNghiepVuDTO.LoaiNghiepVu;
 import vn.nhom10.crm.dto.NguoiDungDTO;
 import vn.nhom10.crm.model.PhamViDuLieu;
-import vn.nhom10.crm.model.VaiTroNguoiDung;
+import vn.nhom10.crm.model.VaiTroEnum;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -41,19 +41,19 @@ class PhanQuyenDuLieuServiceTest {
 
         // 1. Khởi tạo người dùng kiểm thử
         nhanVienA = new NguoiDungDTO(101L, "Nguyễn Văn A", "sales.a@crm.vn",
-                VaiTroNguoiDung.SALES_REP, 1L, "Nhóm Miền Bắc");
+                VaiTroEnum.SALES_REP, 1L, "Nhóm Miền Bắc");
 
         nhanVienB = new NguoiDungDTO(102L, "Trần Thị B", "sales.b@crm.vn",
-                VaiTroNguoiDung.SALES_REP, 1L, "Nhóm Miền Bắc");
+                VaiTroEnum.SALES_REP, 1L, "Nhóm Miền Bắc");
 
         nhanVienC = new NguoiDungDTO(201L, "Lê Văn C", "sales.c@crm.vn",
-                VaiTroNguoiDung.SALES_REP, 2L, "Nhóm Miền Nam");
+                VaiTroEnum.SALES_REP, 2L, "Nhóm Miền Nam");
 
         truongNhomBac = new NguoiDungDTO(100L, "Lê Thị Trưởng Nhóm", "lead.bac@crm.vn",
-                VaiTroNguoiDung.TEAM_LEAD, 1L, "Nhóm Miền Bắc");
+                VaiTroEnum.TEAM_LEAD, 1L, "Nhóm Miền Bắc");
 
         giamDoc = new NguoiDungDTO(1L, "Bàn Thị Linh", "linh.ban@crm.vn",
-                VaiTroNguoiDung.DIRECTOR, null, "Toàn công ty");
+                VaiTroEnum.DIRECTOR, null, "Toàn công ty");
 
         // 2. Bản ghi mẫu của A
         khachHangA = new BanGhiNghiepVuDTO(

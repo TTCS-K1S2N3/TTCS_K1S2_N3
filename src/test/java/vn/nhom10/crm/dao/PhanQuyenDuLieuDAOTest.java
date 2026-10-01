@@ -52,26 +52,26 @@ class PhanQuyenDuLieuDAOTest {
             st.execute("CREATE TABLE IF NOT EXISTS khach_hang (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
                     "ma_ban_ghi VARCHAR(50), tieu_de VARCHAR(255), nguoi_phu_trach_id BIGINT, " +
-                    "nhom_kinh_doanh_id BIGINT, gia_tri VARCHAR(100), trang_thai VARCHAR(50), " +
+                    "nhom_kinh_doanh_id BIGINT, doanh_thu_uoc_tinh DECIMAL(15, 2), trang_thai VARCHAR(50), " +
                     "mo_ta_chi_tiet TEXT, ngay_tao DATE)");
 
             st.execute("CREATE TABLE IF NOT EXISTS co_hoi (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
                     "ma_ban_ghi VARCHAR(50), tieu_de VARCHAR(255), khach_hang_id BIGINT, " +
-                    "nguoi_phu_trach_id BIGINT, nhom_kinh_doanh_id BIGINT, gia_tri VARCHAR(100), " +
+                    "nguoi_phu_trach_id BIGINT, nhom_kinh_doanh_id BIGINT, gia_tri_du_kien DECIMAL(15, 2), " +
                     "trang_thai VARCHAR(50), mo_ta_chi_tiet TEXT, ngay_tao DATE)");
 
             st.execute("CREATE TABLE IF NOT EXISTS bao_gia (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
                     "ma_ban_ghi VARCHAR(50), tieu_de VARCHAR(255), co_hoi_id BIGINT, " +
                     "khach_hang_id BIGINT, nguoi_phu_trach_id BIGINT, nhom_kinh_doanh_id BIGINT, " +
-                    "gia_tri VARCHAR(100), trang_thai VARCHAR(50), mo_ta_chi_tiet TEXT, ngay_tao DATE)");
+                    "tong_tien DECIMAL(15, 2), trang_thai VARCHAR(50), mo_ta_chi_tiet TEXT, ngay_tao DATE)");
 
             st.execute("CREATE TABLE IF NOT EXISTS hoat_dong (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
                     "ma_ban_ghi VARCHAR(50), tieu_de VARCHAR(255), loai_hoat_dong VARCHAR(50), " +
                     "khach_hang_id BIGINT, nguoi_phu_trach_id BIGINT, nhom_kinh_doanh_id BIGINT, " +
-                    "gia_tri VARCHAR(100), trang_thai VARCHAR(50), mo_ta_chi_tiet TEXT, ngay_tao DATE)");
+                    "chi_phi DECIMAL(15, 2), trang_thai VARCHAR(50), mo_ta_chi_tiet TEXT, ngay_tao DATE)");
 
             // Nạp dữ liệu mẫu
             st.execute("INSERT INTO nhom_kinh_doanh (id, ma_nhom, ten_nhom) VALUES " +
@@ -85,25 +85,25 @@ class PhanQuyenDuLieuDAOTest {
                     "(201, 'Lê Văn C (Sales HCM)', 'sales.c@crm.vn', 'SALES_REP', 2)");
 
             // Khách hàng
-            st.execute("INSERT INTO khach_hang (id, ma_ban_ghi, tieu_de, nguoi_phu_trach_id, nhom_kinh_doanh_id, gia_tri, trang_thai, mo_ta_chi_tiet, ngay_tao) VALUES " +
-                    "(1, 'KH-001', 'Công ty FPT', 101, 1, 'VIP', 'Đang hợp tác', 'Khách FPT', CURRENT_DATE), " +
-                    "(5, 'KH-002', 'Tập đoàn Viettel', 102, 1, 'VIP', 'Tiềm năng', 'Khách Viettel', CURRENT_DATE), " +
-                    "(9, 'KH-003', 'Công ty VNG', 201, 2, 'VIP', 'Đang hợp tác', 'Khách VNG', CURRENT_DATE)");
+            st.execute("INSERT INTO khach_hang (id, ma_ban_ghi, tieu_de, nguoi_phu_trach_id, nhom_kinh_doanh_id, doanh_thu_uoc_tinh, trang_thai, mo_ta_chi_tiet, ngay_tao) VALUES " +
+                    "(1, 'KH-001', 'Công ty FPT', 101, 1, 50000000.00, 'Đang hợp tác', 'Khách FPT', CURRENT_DATE), " +
+                    "(5, 'KH-002', 'Tập đoàn Viettel', 102, 1, 150000000.00, 'Tiềm năng', 'Khách Viettel', CURRENT_DATE), " +
+                    "(9, 'KH-003', 'Công ty VNG', 201, 2, 80000000.00, 'Đang hợp tác', 'Khách VNG', CURRENT_DATE)");
 
             // Cơ hội
-            st.execute("INSERT INTO co_hoi (id, ma_ban_ghi, tieu_de, khach_hang_id, nguoi_phu_trach_id, nhom_kinh_doanh_id, gia_tri, trang_thai, mo_ta_chi_tiet, ngay_tao) VALUES " +
-                    "(2, 'CH-101', 'CRM cho FPT', 1, 101, 1, '850M', 'Đàm phán', 'Cơ hội FPT', CURRENT_DATE), " +
-                    "(6, 'CH-102', 'CRM Viettel IDC', 5, 102, 1, '1.2B', 'Khảo sát', 'Cơ hội Viettel', CURRENT_DATE)");
+            st.execute("INSERT INTO co_hoi (id, ma_ban_ghi, tieu_de, khach_hang_id, nguoi_phu_trach_id, nhom_kinh_doanh_id, gia_tri_du_kien, trang_thai, mo_ta_chi_tiet, ngay_tao) VALUES " +
+                    "(2, 'CH-101', 'CRM cho FPT', 1, 101, 1, 850000000.00, 'Đàm phán', 'Cơ hội FPT', CURRENT_DATE), " +
+                    "(6, 'CH-102', 'CRM Viettel IDC', 5, 102, 1, 1200000000.00, 'Khảo sát', 'Cơ hội Viettel', CURRENT_DATE)");
 
             // Báo giá
-            st.execute("INSERT INTO bao_gia (id, ma_ban_ghi, tieu_de, co_hoi_id, khach_hang_id, nguoi_phu_trach_id, nhom_kinh_doanh_id, gia_tri, trang_thai, mo_ta_chi_tiet, ngay_tao) VALUES " +
-                    "(3, 'BG-201', 'Báo giá FPT 100 User', 2, 1, 101, 1, '850M', 'Đã gửi', 'Báo giá FPT', CURRENT_DATE), " +
-                    "(7, 'BG-202', 'Báo giá Viettel IDC', 6, 5, 102, 1, '1.2B', 'Chờ duyệt', 'Báo giá Viettel', CURRENT_DATE)");
+            st.execute("INSERT INTO bao_gia (id, ma_ban_ghi, tieu_de, co_hoi_id, khach_hang_id, nguoi_phu_trach_id, nhom_kinh_doanh_id, tong_tien, trang_thai, mo_ta_chi_tiet, ngay_tao) VALUES " +
+                    "(3, 'BG-201', 'Báo giá FPT 100 User', 2, 1, 101, 1, 850000000.00, 'Đã gửi', 'Báo giá FPT', CURRENT_DATE), " +
+                    "(7, 'BG-202', 'Báo giá Viettel IDC', 6, 5, 102, 1, 1200000000.00, 'Chờ duyệt', 'Báo giá Viettel', CURRENT_DATE)");
 
             // Hoạt động
-            st.execute("INSERT INTO hoat_dong (id, ma_ban_ghi, tieu_de, loai_hoat_dong, khach_hang_id, nguoi_phu_trach_id, nhom_kinh_doanh_id, gia_tri, trang_thai, mo_ta_chi_tiet, ngay_tao) VALUES " +
-                    "(4, 'HD-301', 'Demo bảo mật FPT', 'HOP', 1, 101, 1, 'Họp', 'Hoàn thành', 'Demo FPT', CURRENT_DATE), " +
-                    "(8, 'HD-302', 'Gọi Viettel IDC', 'GOI', 5, 102, 1, 'Gọi', 'Hoàn thành', 'Gọi Viettel', CURRENT_DATE)");
+            st.execute("INSERT INTO hoat_dong (id, ma_ban_ghi, tieu_de, loai_hoat_dong, khach_hang_id, nguoi_phu_trach_id, nhom_kinh_doanh_id, chi_phi, trang_thai, mo_ta_chi_tiet, ngay_tao) VALUES " +
+                    "(4, 'HD-301', 'Demo bảo mật FPT', 'HOP', 1, 101, 1, 500000.00, 'Hoàn thành', 'Demo FPT', CURRENT_DATE), " +
+                    "(8, 'HD-302', 'Gọi Viettel IDC', 'GOI', 5, 102, 1, 0.00, 'Hoàn thành', 'Gọi Viettel', CURRENT_DATE)");
         }
     }
 
@@ -195,5 +195,24 @@ class PhanQuyenDuLieuDAOTest {
         assertEquals("KH-001", kh.getMaBanGhi());
         assertEquals("Công ty FPT", kh.getTieuDe());
         assertEquals(101L, kh.getNguoiPhuTrachId());
+    }
+
+    @Test
+    @DisplayName("Cập nhật bản ghi với giá trị tiền tệ DECIMAL")
+    void testDAO_CapNhatBanGhi_Decimal() throws SQLException {
+        BanGhiNghiepVuDTO ch = dao.timBanGhiTheoId(2L, LoaiNghiepVu.CO_HOI);
+        assertNotNull(ch);
+        ch.setTieuDe("CRM cho FPT - Gói Enterprise");
+        ch.setGiaTri("990000000.00");
+        ch.setTrangThai("Thành công");
+
+        boolean ok = dao.capNhatBanGhi(ch);
+        assertTrue(ok);
+
+        BanGhiNghiepVuDTO updated = dao.timBanGhiTheoId(2L, LoaiNghiepVu.CO_HOI);
+        assertNotNull(updated);
+        assertEquals("CRM cho FPT - Gói Enterprise", updated.getTieuDe());
+        assertEquals("990000000.00", updated.getGiaTri());
+        assertEquals("Thành công", updated.getTrangThai());
     }
 }

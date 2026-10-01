@@ -163,53 +163,59 @@
             </div>
         </div>
 
-        <!-- Bảng danh sách khách hàng -->
+        <!-- Bảng danh sách khách hàng lọc theo Data Scope -->
         <div class="table-container">
+            <div style="padding: 12px 16px; background: #f8fafc; border-bottom: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 13px; color: var(--slate-600);">
+                    Phạm vi dữ liệu: <strong><c:out value="${not empty phamViHienTai ? phamViHienTai.tenHienThi : 'Của tôi'}" /></strong>
+                    • Đang hiển thị: <strong><c:out value="${not empty tongSoKhachHang ? tongSoKhachHang : 0}" /></strong> khách hàng
+                </span>
+                <a href="${pageContext.request.contextPath}/phan-quyen-du-lieu" style="font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 600;">
+                    🛡️ Quản lý 4 nghiệp vụ Data Scope &rarr;
+                </a>
+            </div>
             <table class="data-table">
                 <thead>
                     <tr>
                         <th style="width: 100px;">Mã KH</th>
-                        <th>Tên Khách Hàng</th>
-                        <th>Người Liên Hệ</th>
-                        <th>Số Điện Thoại</th>
-                        <th>Email</th>
+                        <th>Tên Khách Hàng / Công Ty</th>
+                        <th>Người Phụ Trách</th>
+                        <th>Nhóm Kinh Doanh</th>
+                        <th>Phân Loại</th>
                         <th>Trạng Thái</th>
                         <th style="width: 120px; text-align: center;">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="font-mono">KH-001</td>
-                        <td>
-                            <div class="customer-name">Công ty Cổ phần Công nghệ ABC</div>
-                            <div class="customer-sub">Hà Nội • CNTT</div>
-                        </td>
-                        <td>Nguyễn Văn An</td>
-                        <td>0912 345 678</td>
-                        <td>an.nguyen@abc-tech.vn</td>
-                        <td><span class="badge badge-success">Đang Chăm Sóc</span></td>
-                        <td style="text-align: center;">
-                            <a href="#" class="btn-action" title="Xem chi tiết">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="font-mono">KH-002</td>
-                        <td>
-                            <div class="customer-name">Tập đoàn Viễn thông & Bán lẻ XYZ</div>
-                            <div class="customer-sub">TP. Hồ Chí Minh • Bán lẻ</div>
-                        </td>
-                        <td>Trần Thị Bích</td>
-                        <td>0988 765 432</td>
-                        <td>bich.tran@xyzcorp.com</td>
-                        <td><span class="badge badge-warning">Tiềm Năng Cao</span></td>
-                        <td style="text-align: center;">
-                            <a href="#" class="btn-action" title="Xem chi tiết">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            </a>
-                        </td>
-                    </tr>
+                    <c:choose>
+                        <c:when test="${not empty danhSachKhachHang}">
+                            <c:forEach var="kh" items="${danhSachKhachHang}">
+                                <tr>
+                                    <td class="font-mono"><c:out value="${kh.maBanGhi}" /></td>
+                                    <td>
+                                        <div class="customer-name"><c:out value="${kh.tieuDe}" /></div>
+                                        <div class="customer-sub"><c:out value="${kh.moTaChiTiet}" /></div>
+                                    </td>
+                                    <td><c:out value="${kh.tenNguoiPhuTrach}" /></td>
+                                    <td><c:out value="${kh.tenNhom}" /></td>
+                                    <td><c:out value="${kh.giaTri}" /></td>
+                                    <td><span class="badge badge-success"><c:out value="${kh.trangThai}" /></span></td>
+                                    <td style="text-align: center;">
+                                        <a href="${pageContext.request.contextPath}/khach-hang?id=${kh.id}" class="btn-action" title="Xem chi tiết khách hàng (kiểm tra Data Scope)">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 32px; color: var(--slate-500);">
+                                    Không tìm thấy khách hàng nào trong phạm vi dữ liệu tài khoản của bạn.
+                                </td>
+                            </tr>
+                        </c:otherwise>
+                    </c:choose>
                 </tbody>
             </table>
         </div>

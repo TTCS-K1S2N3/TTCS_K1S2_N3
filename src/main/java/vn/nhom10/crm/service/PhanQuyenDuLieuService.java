@@ -6,7 +6,7 @@ import vn.nhom10.crm.dto.BanGhiNghiepVuDTO.LoaiNghiepVu;
 import vn.nhom10.crm.dto.NguoiDungDTO;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.PhamViDuLieu;
-import vn.nhom10.crm.model.VaiTroNguoiDung;
+import vn.nhom10.crm.model.VaiTroEnum;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -171,10 +171,10 @@ public class PhanQuyenDuLieuService {
             return new KetQuaKiemTra(false, "Bản ghi yêu cầu không tồn tại trong hệ thống.", null);
         }
 
-        VaiTroNguoiDung vaiTro = user.getVaiTro() != null ? user.getVaiTro() : VaiTroNguoiDung.SALES_REP;
+        VaiTroEnum vaiTro = user.getVaiTro() != null ? user.getVaiTro() : VaiTroEnum.SALES_REP;
 
         // Giám đốc (Director), Admin hoặc Kế toán có quyền xem toàn bộ
-        if (vaiTro == VaiTroNguoiDung.DIRECTOR || vaiTro == VaiTroNguoiDung.ADMIN || vaiTro == VaiTroNguoiDung.ACCOUNTANT) {
+        if (vaiTro == VaiTroEnum.DIRECTOR || vaiTro == VaiTroEnum.ADMIN || vaiTro == VaiTroEnum.ACCOUNTANT) {
             return new KetQuaKiemTra(true, "Truy cập hợp lệ với quyền " + vaiTro.getTenHienThi() + ".", banGhi);
         }
 
@@ -184,7 +184,7 @@ public class PhanQuyenDuLieuService {
         }
 
         // Trưởng nhóm (Team Lead): được xem dữ liệu của thành viên trong nhóm mình
-        if (vaiTro == VaiTroNguoiDung.TEAM_LEAD) {
+        if (vaiTro == VaiTroEnum.TEAM_LEAD) {
             if (banGhi.getNhomKinhDoanhId() != null && banGhi.getNhomKinhDoanhId().equals(user.getNhomKinhDoanhId())) {
                 return new KetQuaKiemTra(true, "Truy cập hợp lệ với tư cách Trưởng nhóm quản lý " + user.getTenNhom() + ".", banGhi);
             } else {

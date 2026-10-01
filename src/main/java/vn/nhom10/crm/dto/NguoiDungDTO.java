@@ -2,7 +2,7 @@ package vn.nhom10.crm.dto;
 
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.PhamViDuLieu;
-import vn.nhom10.crm.model.VaiTroNguoiDung;
+import vn.nhom10.crm.model.VaiTroEnum;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ public class NguoiDungDTO implements Serializable {
     private Long id;
     private String hoTen;
     private String email;
-    private VaiTroNguoiDung vaiTro;
+    private VaiTroEnum vaiTro;
     private Long nhomKinhDoanhId;
     private String tenNhom;
     private PhamViDuLieu phamViHienTai;
@@ -27,7 +27,7 @@ public class NguoiDungDTO implements Serializable {
     public NguoiDungDTO() {
     }
 
-    public NguoiDungDTO(Long id, String hoTen, String email, VaiTroNguoiDung vaiTro, Long nhomKinhDoanhId, String tenNhom) {
+    public NguoiDungDTO(Long id, String hoTen, String email, VaiTroEnum vaiTro, Long nhomKinhDoanhId, String tenNhom) {
         this.id = id;
         this.hoTen = hoTen;
         this.email = email;
@@ -46,21 +46,21 @@ public class NguoiDungDTO implements Serializable {
             return null;
         }
 
-        VaiTroNguoiDung vaiTro = VaiTroNguoiDung.SALES_REP;
+        VaiTroEnum vaiTro = VaiTroEnum.SALES_REP;
         if (nd.coVaiTro("ADMIN")) {
-            vaiTro = VaiTroNguoiDung.ADMIN;
+            vaiTro = VaiTroEnum.ADMIN;
         } else if (nd.coVaiTro("DIRECTOR")) {
-            vaiTro = VaiTroNguoiDung.DIRECTOR;
+            vaiTro = VaiTroEnum.DIRECTOR;
         } else if (nd.coVaiTro("ACCOUNTANT")) {
-            vaiTro = VaiTroNguoiDung.ACCOUNTANT;
+            vaiTro = VaiTroEnum.ACCOUNTANT;
         } else if (nd.coVaiTro("TEAM_LEAD")) {
-            vaiTro = VaiTroNguoiDung.TEAM_LEAD;
+            vaiTro = VaiTroEnum.TEAM_LEAD;
         } else if (nd.coVaiTro("MARKETING")) {
-            vaiTro = VaiTroNguoiDung.MARKETING;
+            vaiTro = VaiTroEnum.MARKETING;
         } else if (nd.coVaiTro("CUST_SUCCESS")) {
-            vaiTro = VaiTroNguoiDung.CUST_SUCCESS;
+            vaiTro = VaiTroEnum.CUST_SUCCESS;
         } else if (nd.coVaiTro("SALES_REP")) {
-            vaiTro = VaiTroNguoiDung.SALES_REP;
+            vaiTro = VaiTroEnum.SALES_REP;
         }
 
         Long nhomId = nd.getNhomKinhDoanhId() != null ? nd.getNhomKinhDoanhId().longValue() : null;
@@ -83,13 +83,13 @@ public class NguoiDungDTO implements Serializable {
         List<PhamViDuLieu> list = new ArrayList<>();
         list.add(PhamViDuLieu.CA_NHAN);
 
-        if (vaiTro == VaiTroNguoiDung.TEAM_LEAD || vaiTro == VaiTroNguoiDung.DIRECTOR 
-                || vaiTro == VaiTroNguoiDung.ADMIN || vaiTro == VaiTroNguoiDung.ACCOUNTANT) {
+        if (vaiTro == VaiTroEnum.TEAM_LEAD || vaiTro == VaiTroEnum.DIRECTOR 
+                || vaiTro == VaiTroEnum.ADMIN || vaiTro == VaiTroEnum.ACCOUNTANT) {
             list.add(PhamViDuLieu.NHOM);
         }
 
-        if (vaiTro == VaiTroNguoiDung.DIRECTOR || vaiTro == VaiTroNguoiDung.ADMIN 
-                || vaiTro == VaiTroNguoiDung.ACCOUNTANT) {
+        if (vaiTro == VaiTroEnum.DIRECTOR || vaiTro == VaiTroEnum.ADMIN 
+                || vaiTro == VaiTroEnum.ACCOUNTANT) {
             list.add(PhamViDuLieu.TOAN_BO);
         }
 
@@ -130,11 +130,11 @@ public class NguoiDungDTO implements Serializable {
         this.email = email;
     }
 
-    public VaiTroNguoiDung getVaiTro() {
+    public VaiTroEnum getVaiTro() {
         return vaiTro;
     }
 
-    public void setVaiTro(VaiTroNguoiDung vaiTro) {
+    public void setVaiTro(VaiTroEnum vaiTro) {
         this.vaiTro = vaiTro;
     }
 

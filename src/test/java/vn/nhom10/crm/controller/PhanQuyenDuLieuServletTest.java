@@ -11,7 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import vn.nhom10.crm.dto.NguoiDungDTO;
 import vn.nhom10.crm.model.PhamViDuLieu;
-import vn.nhom10.crm.model.VaiTroNguoiDung;
+import vn.nhom10.crm.model.VaiTroEnum;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -58,7 +58,7 @@ class PhanQuyenDuLieuServletTest {
     void testServlet_XemDanhSach_SalesA() throws Exception {
         when(request.getServletPath()).thenReturn("/phan-quyen-du-lieu");
         NguoiDungDTO salesA = new NguoiDungDTO(101L, "Nguyễn Văn A (Sales)", "sales.a@crm.vn",
-                VaiTroNguoiDung.SALES_REP, 1L, "Nhóm Miền Bắc");
+                VaiTroEnum.SALES_REP, 1L, "Nhóm Miền Bắc");
         when(session.getAttribute("nguoiDung")).thenReturn(salesA);
 
         servlet.doGet(request, response);
@@ -77,7 +77,7 @@ class PhanQuyenDuLieuServletTest {
 
         // User đang đăng nhập là Sales A
         NguoiDungDTO salesA = new NguoiDungDTO(101L, "Nguyễn Văn A (Sales)", "sales.a@crm.vn",
-                VaiTroNguoiDung.SALES_REP, 1L, "Nhóm Miền Bắc");
+                VaiTroEnum.SALES_REP, 1L, "Nhóm Miền Bắc");
         when(session.getAttribute("nguoiDung")).thenReturn(salesA);
 
         servlet.doGet(request, response);
@@ -96,7 +96,7 @@ class PhanQuyenDuLieuServletTest {
         when(request.getParameter("id")).thenReturn("1"); // ID 1 là FPT do Sales A phụ trách
 
         NguoiDungDTO salesA = new NguoiDungDTO(101L, "Nguyễn Văn A (Sales)", "sales.a@crm.vn",
-                VaiTroNguoiDung.SALES_REP, 1L, "Nhóm Miền Bắc");
+                VaiTroEnum.SALES_REP, 1L, "Nhóm Miền Bắc");
         when(session.getAttribute("nguoiDung")).thenReturn(salesA);
 
         servlet.doGet(request, response);
@@ -115,7 +115,7 @@ class PhanQuyenDuLieuServletTest {
         when(request.getParameter("tieuDe")).thenReturn("Tên mới bị hack");
 
         NguoiDungDTO salesA = new NguoiDungDTO(101L, "Nguyễn Văn A (Sales)", "sales.a@crm.vn",
-                VaiTroNguoiDung.SALES_REP, 1L, "Nhóm Miền Bắc");
+                VaiTroEnum.SALES_REP, 1L, "Nhóm Miền Bắc");
         when(session.getAttribute("nguoiDung")).thenReturn(salesA);
 
         servlet.doPost(request, response);
@@ -134,7 +134,7 @@ class PhanQuyenDuLieuServletTest {
         when(request.getParameter("tieuDe")).thenReturn("Công ty Cổ phần Công nghệ FPT - Cập nhật");
 
         NguoiDungDTO salesA = new NguoiDungDTO(101L, "Nguyễn Văn A (Sales)", "sales.a@crm.vn",
-                VaiTroNguoiDung.SALES_REP, 1L, "Nhóm Miền Bắc");
+                VaiTroEnum.SALES_REP, 1L, "Nhóm Miền Bắc");
         when(session.getAttribute("nguoiDung")).thenReturn(salesA);
 
         servlet.doPost(request, response);
@@ -152,7 +152,7 @@ class PhanQuyenDuLieuServletTest {
         when(request.getParameter("xuatExcel")).thenReturn("true");
 
         NguoiDungDTO salesA = new NguoiDungDTO(101L, "Nguyễn Văn A (Sales)", "sales.a@crm.vn",
-                VaiTroNguoiDung.SALES_REP, 1L, "Nhóm Miền Bắc");
+                VaiTroEnum.SALES_REP, 1L, "Nhóm Miền Bắc");
         when(session.getAttribute("nguoiDung")).thenReturn(salesA);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

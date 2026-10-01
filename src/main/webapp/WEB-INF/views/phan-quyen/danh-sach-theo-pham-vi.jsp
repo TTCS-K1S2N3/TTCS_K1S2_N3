@@ -2,7 +2,7 @@
 <%@ page import="vn.nhom10.crm.dto.NguoiDungDTO" %>
 <%@ page import="vn.nhom10.crm.dto.BanGhiNghiepVuDTO" %>
 <%@ page import="vn.nhom10.crm.model.PhamViDuLieu" %>
-<%@ page import="vn.nhom10.crm.model.VaiTroNguoiDung" %>
+<%@ page import="vn.nhom10.crm.model.VaiTroEnum" %>
 <%@ page import="java.util.List" %>
 <!DOCTYPE html>
 <html lang="vi">
