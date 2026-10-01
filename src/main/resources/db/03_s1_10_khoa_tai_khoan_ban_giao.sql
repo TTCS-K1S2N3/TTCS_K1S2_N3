@@ -25,17 +25,3 @@ CREATE TABLE IF NOT EXISTS `nhat_ky_ban_giao` (
     INDEX `idx_nkbg_nguoi_thuc_hien` (`nguoi_thuc_hien_id`),
     INDEX `idx_nkbg_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ====================================================================
--- SEED DATA (DỮ LIỆU MẪU KIỂM THỬ BÀN GIAO & KHOÁ TÀI KHOẢN)
--- ====================================================================
-
--- Thêm tài khoản nhân viên sắp nghỉ việc để kiểm thử nếu chưa có
-INSERT INTO `nguoi_dung` (`id`, `ho_ten`, `email`, `mat_khau`, `so_dien_thoai`, `trang_thai`, `nhom_kinh_doanh_id`) VALUES
-(9, 'Nguyễn Văn Nghỉ Việc', 'nhanvien_nghi@crm.vn', '$2a$10$wT5a02gK75aD6vQkF7kH3uM34/w7pU4kOqG8c2Y2/3hQ8E0pM5W1y', '0912345678', 'HOAT_DONG', 2)
-ON DUPLICATE KEY UPDATE `ho_ten` = VALUES(`ho_ten`);
-
--- Gán vai trò Sales Rep cho nhân viên sắp nghỉ
-INSERT INTO `nguoi_dung_vai_tro` (`nguoi_dung_id`, `vai_tro_id`) VALUES
-(9, 4)
-ON DUPLICATE KEY UPDATE `vai_tro_id` = VALUES(`vai_tro_id`);
