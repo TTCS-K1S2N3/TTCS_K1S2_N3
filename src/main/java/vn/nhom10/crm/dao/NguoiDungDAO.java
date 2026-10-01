@@ -762,6 +762,47 @@ public class NguoiDungDAO {
     }
 
     /**
+     * Kích hoạt tài khoản từ trạng thái CHO_KICH_HOAT sang HOAT_DONG trong Connection (thuộc Transaction).
+     * Chỉ kích hoạt nếu tài khoản đang ở trạng thái CHO_KICH_HOAT (Story S1-08).
+     * Tuyệt đối không thay đổi nếu tài khoản đang KHOA hoặc đã HOAT_DONG.
+     *
+     * @param nguoiDungId ID người dùng
+     * @param conn        Connection JDBC đang quản lý transaction
+     * @return true nếu có bản ghi được cập nhật sang HOAT_DONG
+     * @throws SQLException khi truy vấn gặp lỗi
+     */
+    public boolean kichHoatTaiKhoan(long nguoiDungId, Connection conn) throws SQLException {
+        String sql = "UPDATE nguoi_dung SET trang_thai = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND trang_thai = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, NguoiDung.TRANG_THAI_HOAT_DONG);
+            ps.setLong(2, nguoiDungId);
+            ps.setString(3, NguoiDung.TRANG_THAI_CHO_KICH_HOAT);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public boolean kichHoatTaiKhoan(int userId, Connection conn) throws SQLException {
+        return kichHoatTaiKhoan((long) userId, conn);
+    }
+
+    /**
+     * Kích hoạt tài khoản tự mở kết nối riêng.
+     */
+    public boolean kichHoatTaiKhoan(long nguoiDungId) {
+        String sql = "UPDATE nguoi_dung SET trang_thai = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND trang_thai = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, NguoiDung.TRANG_THAI_HOAT_DONG);
+            ps.setLong(2, nguoiDungId);
+            ps.setString(3, NguoiDung.TRANG_THAI_CHO_KICH_HOAT);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi kích hoạt tài khoản ID=" + nguoiDungId + ": " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
      * Lấy danh sách người dùng khả dụng để tiếp nhận dữ liệu bàn giao (Story S1-10).
      * Chỉ những tài khoản đang hoạt động (HOAT_DONG) và khác nhân viên bị khoá mới được chọn.
      */

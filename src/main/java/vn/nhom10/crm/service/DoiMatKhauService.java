@@ -65,7 +65,12 @@ public class DoiMatKhauService {
             return KetQuaDoiMatKhauDTO.thatBai("Tài khoản người dùng không tồn tại trong hệ thống.", "USER_NOT_FOUND");
         }
 
-        if (!nguoiDung.dangHoatDong() || nguoiDung.coBiKhoaTam()) {
+        // Cho phép HOAT_DONG và CHO_KICH_HOAT đổi mật khẩu (Story S1-08: đổi mật khẩu lần đầu để kích hoạt).
+        // Chặn tài khoản bị khóa (KHOA), ngưng hoạt động (NGUNG_HOAT_DONG) hoặc đang khóa tạm (coBiKhoaTam).
+        boolean trangThaiHopLe = NguoiDung.TRANG_THAI_HOAT_DONG.equalsIgnoreCase(nguoiDung.getTrangThai())
+                || NguoiDung.TRANG_THAI_CHO_KICH_HOAT.equalsIgnoreCase(nguoiDung.getTrangThai());
+
+        if (!trangThaiHopLe || nguoiDung.coBiKhoaTam()) {
             return KetQuaDoiMatKhauDTO.thatBai("Tài khoản đang bị khóa hoặc ngưng hoạt động. Không thể đổi mật khẩu.", "ACCOUNT_INACTIVE");
         }
 
@@ -110,6 +115,20 @@ public class DoiMatKhauService {
             if (!updated) {
                 conn.rollback();
                 return KetQuaDoiMatKhauDTO.thatBai("Không thể cập nhật mật khẩu. Vui lòng thử lại sau.", "UPDATE_FAILED");
+            }
+
+            // Kích hoạt tài khoản lần đầu (Story S1-08):
+            // Nếu trạng thái hiện tại là CHO_KICH_HOAT thì cập nhật thành HOAT_DONG.
+            // Nếu đã HOAT_DONG thì giữ nguyên.
+            // Tuyệt đối không tự mở khóa tài khoản KHOA.
+            // Nhất quán trong Transaction: nếu cập nhật trạng thái lỗi thì rollback mật khẩu.
+            if (NguoiDung.TRANG_THAI_CHO_KICH_HOAT.equalsIgnoreCase(nguoiDung.getTrangThai())) {
+                boolean activated = nguoiDungDAO.kichHoatTaiKhoan(nguoiDungId, conn);
+                if (!activated) {
+                    conn.rollback();
+                    return KetQuaDoiMatKhauDTO.thatBai("Không thể kích hoạt tài khoản. Vui lòng thử lại sau.", "ACTIVATION_FAILED");
+                }
+                nguoiDung.setTrangThai(NguoiDung.TRANG_THAI_HOAT_DONG);
             }
 
             int soPhienDbThuHoi = 0;

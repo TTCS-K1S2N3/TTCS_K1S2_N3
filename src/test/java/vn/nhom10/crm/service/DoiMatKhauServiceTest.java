@@ -325,5 +325,85 @@ class DoiMatKhauServiceTest {
 
         assertFalse(ketQua.isThanhCong());
         assertEquals("ACCOUNT_INACTIVE", ketQua.getMaLoi());
+
+        NguoiDung u = nguoiDungDAO.timTheoId(testUserId);
+        assertEquals("KHOA", u.getTrangThai(), "Tài khoản KHOA tuyệt đối không được chuyển thành HOAT_DONG");
+    }
+
+    @Test
+    @DisplayName("S1-08 Regression: Tài khoản CHO_KICH_HOAT đổi mật khẩu thành công chuyển thành HOAT_DONG")
+    void testDoiMatKhau_ChoKichHoat_ThanhCong_ChuyenSangHoatDong() throws Exception {
+        // Giả lập tài khoản vừa được Admin tạo ở Story S1-08 với trạng thái CHO_KICH_HOAT
+        try (Statement stmt = h2Connection.createStatement()) {
+            stmt.execute("UPDATE nguoi_dung SET trang_thai = 'CHO_KICH_HOAT' WHERE id = " + testUserId);
+        }
+
+        NguoiDung truocKhiDoi = nguoiDungDAO.timTheoId(testUserId);
+        assertEquals(NguoiDung.TRANG_THAI_CHO_KICH_HOAT, truocKhiDoi.getTrangThai());
+
+        String matKhauMoi = "KichHoatThanhCong@2026";
+        KetQuaDoiMatKhauDTO ketQua = doiMatKhauService.doiMatKhau(
+                testUserId,
+                currentRawPassword,
+                matKhauMoi,
+                matKhauMoi,
+                true,
+                "SESSION_ACTIVATE"
+        );
+
+        assertTrue(ketQua.isThanhCong(), "Đổi mật khẩu lần đầu phải thành công");
+
+        NguoiDung sauKhiDoi = nguoiDungDAO.timTheoId(testUserId);
+        assertEquals(NguoiDung.TRANG_THAI_HOAT_DONG, sauKhiDoi.getTrangThai(),
+                "Sau khi đổi mật khẩu lần đầu thành công, trạng thái phải tự động chuyển thành HOAT_DONG");
+        assertTrue(PasswordUtil.checkPassword(matKhauMoi, sauKhiDoi.getMatKhau()),
+                "Mật khẩu mới phải được băm và lưu chính xác trong database");
+    }
+
+    @Test
+    @DisplayName("S1-08 Regression: Tài khoản HOAT_DONG đổi mật khẩu vẫn giữ nguyên HOAT_DONG")
+    void testDoiMatKhau_HoatDong_GiuNguyenHoatDong() throws Exception {
+        NguoiDung truocKhiDoi = nguoiDungDAO.timTheoId(testUserId);
+        assertEquals(NguoiDung.TRANG_THAI_HOAT_DONG, truocKhiDoi.getTrangThai());
+
+        String matKhauMoi = "VanHoatDongTot@2026";
+        KetQuaDoiMatKhauDTO ketQua = doiMatKhauService.doiMatKhau(
+                testUserId,
+                currentRawPassword,
+                matKhauMoi,
+                matKhauMoi,
+                false,
+                "SESSION_CURRENT"
+        );
+
+        assertTrue(ketQua.isThanhCong());
+        NguoiDung sauKhiDoi = nguoiDungDAO.timTheoId(testUserId);
+        assertEquals(NguoiDung.TRANG_THAI_HOAT_DONG, sauKhiDoi.getTrangThai(),
+                "Tài khoản đã HOAT_DONG thì sau khi đổi mật khẩu vẫn giữ nguyên HOAT_DONG");
+    }
+
+    @Test
+    @DisplayName("S1-08 Regression: Đổi mật khẩu thất bại -> Trạng thái CHO_KICH_HOAT không thay đổi")
+    void testDoiMatKhau_ChoKichHoat_ThatBai_TrangThaiKhongThayDoi() throws Exception {
+        try (Statement stmt = h2Connection.createStatement()) {
+            stmt.execute("UPDATE nguoi_dung SET trang_thai = 'CHO_KICH_HOAT' WHERE id = " + testUserId);
+        }
+
+        // Nhập sai mật khẩu hiện tại
+        KetQuaDoiMatKhauDTO ketQua = doiMatKhauService.doiMatKhau(
+                testUserId,
+                "SaiMatKhauHienTai@999",
+                "MatKhauMoi@2026",
+                "MatKhauMoi@2026",
+                true,
+                "SESSION_FAIL"
+        );
+
+        assertFalse(ketQua.isThanhCong());
+        assertEquals("CURRENT_PASSWORD_INCORRECT", ketQua.getMaLoi());
+
+        NguoiDung sauThatBai = nguoiDungDAO.timTheoId(testUserId);
+        assertEquals(NguoiDung.TRANG_THAI_CHO_KICH_HOAT, sauThatBai.getTrangThai(),
+                "Khi đổi mật khẩu thất bại, trạng thái CHO_KICH_HOAT tuyệt đối không được thay đổi");
     }
 }

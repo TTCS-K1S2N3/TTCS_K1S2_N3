@@ -14,6 +14,7 @@ import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.service.DoiMatKhauService;
 import vn.nhom10.crm.util.SessionRegistry;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -137,6 +138,38 @@ class DoiMatKhauServletTest {
         servlet.doPost(request, response);
 
         verify(request).setAttribute(eq("thongBaoLoi"), contains("Mật khẩu hiện tại không chính xác"));
+        verify(requestDispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("POST /doi-mat-khau thành công cho user CHO_KICH_HOAT -> Session nhận user với HOAT_DONG")
+    void testDoPost_ThanhCong_ChoKichHoat() throws Exception {
+        NguoiDung user = taoUserTest(1L, "Khoàng Tuấn Hùng", "hung@crm.vn", "oldHash");
+        user.setTrangThai(NguoiDung.TRANG_THAI_CHO_KICH_HOAT);
+        when(request.getSession(false)).thenReturn(session);
+        when(session.getAttribute("nguoiDung")).thenReturn(user);
+        when(session.getId()).thenReturn("SESSION_123");
+
+        when(request.getParameter("matKhauHienTai")).thenReturn("CurrentPass@123");
+        when(request.getParameter("matKhauMoi")).thenReturn("NewPass@2026");
+        when(request.getParameter("xacNhanMatKhau")).thenReturn("NewPass@2026");
+        when(request.getParameter("thuHoiPhienKhac")).thenReturn("true");
+
+        KetQuaDoiMatKhauDTO ketQua = KetQuaDoiMatKhauDTO.thanhCong("Đổi mật khẩu thành công!", 1);
+        when(doiMatKhauService.doiMatKhau(eq(1L), anyString(), anyString(), anyString(), eq(true), eq("SESSION_123")))
+                .thenReturn(ketQua);
+
+        NguoiDung updatedUser = taoUserTest(1L, "Khoàng Tuấn Hùng", "hung@crm.vn", "newHash");
+        updatedUser.setTrangThai(NguoiDung.TRANG_THAI_HOAT_DONG);
+        when(nguoiDungDAO.timTheoId(1L)).thenReturn(updatedUser);
+
+        servlet.doPost(request, response);
+
+        verify(request).setAttribute(eq("thongBaoThanhCong"), contains("Đổi mật khẩu thành công"));
+        verify(session).setAttribute(eq("nguoiDung"), argThat(u -> {
+            NguoiDung nd = (NguoiDung) u;
+            return NguoiDung.TRANG_THAI_HOAT_DONG.equals(nd.getTrangThai());
+        }));
         verify(requestDispatcher).forward(request, response);
     }
 }

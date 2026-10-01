@@ -198,4 +198,42 @@ class NguoiDungDAOTest {
         assertTrue(sauCapNhat.coVaiTro("ADMIN"));
         assertTrue(sauCapNhat.coVaiTro("SALES_REP"));
     }
+
+    @Test
+    @DisplayName("DAO: Kích hoạt tài khoản từ CHO_KICH_HOAT sang HOAT_DONG và không tác động KHOA")
+    void testKichHoatTaiKhoan() throws Exception {
+        NguoiDung user = new NguoiDung();
+        user.setHoTen("User Chờ Kích Hoạt");
+        user.setEmail("cho.kichhoat@crm.vn");
+        user.setMatKhau("hash123");
+        user.setTrangThai(NguoiDung.TRANG_THAI_CHO_KICH_HOAT);
+
+        int newId = nguoiDungDAO.themNguoiDung(user, Collections.singletonList(4));
+        assertTrue(newId > 0);
+
+        NguoiDung banDau = nguoiDungDAO.timTheoId(newId);
+        assertEquals(NguoiDung.TRANG_THAI_CHO_KICH_HOAT, banDau.getTrangThai());
+
+        // 1. Kích hoạt lần đầu thành công
+        boolean daKichHoat = nguoiDungDAO.kichHoatTaiKhoan(newId);
+        assertTrue(daKichHoat, "Tài khoản CHO_KICH_HOAT phải kích hoạt thành công sang HOAT_DONG");
+
+        NguoiDung sauKichHoat = nguoiDungDAO.timTheoId(newId);
+        assertEquals(NguoiDung.TRANG_THAI_HOAT_DONG, sauKichHoat.getTrangThai());
+
+        // 2. Kích hoạt lại khi đã HOAT_DONG -> trả về false (không cập nhật bản ghi nào)
+        boolean kichHoatLai = nguoiDungDAO.kichHoatTaiKhoan(newId);
+        assertFalse(kichHoatLai, "Tài khoản đã HOAT_DONG thì không cập nhật lại");
+
+        // 3. Khóa tài khoản -> gọi kichHoatTaiKhoan không được mở khóa KHOA
+        nguoiDungDAO.khoaTaiKhoan(newId);
+        NguoiDung biKhoa = nguoiDungDAO.timTheoId(newId);
+        assertEquals(NguoiDung.TRANG_THAI_KHOA, biKhoa.getTrangThai());
+
+        boolean coMoKhoa = nguoiDungDAO.kichHoatTaiKhoan(newId);
+        assertFalse(coMoKhoa, "Tuyệt đối không tự mở khóa tài khoản KHOA");
+
+        NguoiDung vanKhoa = nguoiDungDAO.timTheoId(newId);
+        assertEquals(NguoiDung.TRANG_THAI_KHOA, vanKhoa.getTrangThai(), "Trạng thái KHOA phải được bảo toàn");
+    }
 }
