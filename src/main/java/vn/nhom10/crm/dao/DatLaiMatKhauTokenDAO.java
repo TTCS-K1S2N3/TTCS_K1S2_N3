@@ -160,6 +160,67 @@ public class DatLaiMatKhauTokenDAO {
         }
     }
 
+    /**
+     * Vô hiệu hóa tất cả các token đặt lại mật khẩu chưa sử dụng của một người dùng (tự mở kết nối).
+     * Đảm bảo khi yêu cầu liên kết mới thì toàn bộ token cũ không còn hợp lệ.
+     *
+     * @param nguoiDungId ID người dùng
+     */
+    public void invalidateTokensByNguoiDungId(Long nguoiDungId) {
+        String sql = "UPDATE dat_lai_mat_khau_token "
+                   + "SET da_su_dung = 1, thoi_gian_su_dung = ? "
+                   + "WHERE nguoi_dung_id = ? AND da_su_dung = 0";
+
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setLong(2, nguoiDungId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi vô hiệu hóa token cũ của user id: " + nguoiDungId, e);
+        }
+    }
+
+    /**
+     * Lấy token đặt lại mật khẩu gần nhất của người dùng để phục vụ kiểm tra thời gian cooldown.
+     *
+     * @param nguoiDungId ID người dùng
+     * @return DatLaiMatKhauToken gần nhất hoặc null nếu chưa có
+     */
+    public DatLaiMatKhauToken findLatestTokenByNguoiDungId(Long nguoiDungId) {
+        String sql = "SELECT id, nguoi_dung_id, token, thoi_gian_tao, thoi_gian_het_han, da_su_dung, thoi_gian_su_dung "
+                   + "FROM dat_lai_mat_khau_token WHERE nguoi_dung_id = ? ORDER BY id DESC LIMIT 1";
+
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, nguoiDungId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRowToToken(rs);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi lấy token gần nhất của user id: " + nguoiDungId, e);
+        }
+        return null;
+    }
+
+    /**
+     * Xóa token theo ID nếu gửi email thất bại để tránh token rác tồn tại.
+     *
+     * @param tokenId ID token cần xóa
+     */
+    public void deleteById(Long tokenId) {
+        String sql = "DELETE FROM dat_lai_mat_khau_token WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, tokenId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi xóa token id: " + tokenId, e);
+        }
+    }
+
     private DatLaiMatKhauToken mapRowToToken(ResultSet rs) throws SQLException {
         DatLaiMatKhauToken token = new DatLaiMatKhauToken();
         token.setId(rs.getLong("id"));

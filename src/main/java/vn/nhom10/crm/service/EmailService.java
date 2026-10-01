@@ -95,6 +95,9 @@ public class EmailService {
     public boolean guiEmailDatLaiMatKhau(String toEmail, String hoTenNguoiNhan, String resetLink) {
         lastSentLinks.put(toEmail, resetLink);
 
+        // Nạp lại cấu hình mới nhất để tránh lỗi cấu hình cũ
+        loadEmailConfig();
+
         // Kiểm tra xem cấu hình SMTP có đủ thông tin để gửi email thật không
         if (smtpUsername == null || smtpUsername.trim().isEmpty() || 
             smtpPassword == null || smtpPassword.trim().isEmpty()) {
@@ -102,25 +105,22 @@ public class EmailService {
             return true;
         }
 
+        Transport transport = null;
         try {
             Properties mailProps = new Properties();
+            mailProps.put("mail.transport.protocol", "smtp");
             mailProps.put("mail.smtp.host", smtpHost);
             mailProps.put("mail.smtp.port", String.valueOf(smtpPort));
             mailProps.put("mail.smtp.auth", String.valueOf(smtpAuth));
             mailProps.put("mail.smtp.starttls.enable", String.valueOf(startTls));
+            mailProps.put("mail.smtp.starttls.required", String.valueOf(startTls));
             mailProps.put("mail.smtp.ssl.protocols", "TLSv1.2 TLSv1.3");
+            mailProps.put("mail.smtp.ssl.trust", smtpHost);
+            mailProps.put("mail.smtp.connectiontimeout", "10000");
+            mailProps.put("mail.smtp.timeout", "10000");
+            mailProps.put("mail.smtp.writetimeout", "10000");
 
-            Session session;
-            if (smtpAuth) {
-                session = Session.getInstance(mailProps, new Authenticator() {
-                    @Override
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(smtpUsername, smtpPassword);
-                    }
-                });
-            } else {
-                session = Session.getInstance(mailProps);
-            }
+            Session session = Session.getInstance(mailProps);
 
             MimeMessage message = new MimeMessage(session);
             message.setFrom(new InternetAddress(fromEmail, fromName, StandardCharsets.UTF_8.name()));
@@ -132,13 +132,27 @@ public class EmailService {
 
             message.setContent(emailContent, "text/html; charset=UTF-8");
 
-            Transport.send(message);
-            LOGGER.info("Đã gửi email đặt lại mật khẩu thành công tới: " + toEmail);
+            transport = session.getTransport("smtp");
+            if (smtpAuth) {
+                transport.connect(smtpHost, smtpPort, smtpUsername, smtpPassword);
+            } else {
+                transport.connect();
+            }
+            transport.sendMessage(message, message.getAllRecipients());
+
+            LOGGER.info("Gửi email đặt lại mật khẩu thành công qua SMTP.");
             return true;
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi gửi email đặt lại mật khẩu tới: " + toEmail, e);
+            LOGGER.log(Level.SEVERE, "Lỗi SMTP khi gửi email đặt lại mật khẩu: " + e.getClass().getSimpleName() + " - " + e.getMessage());
             return false;
+        } finally {
+            if (transport != null) {
+                try {
+                    transport.close();
+                } catch (Exception ignored) {
+                }
+            }
         }
     }
 

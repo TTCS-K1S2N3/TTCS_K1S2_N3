@@ -51,6 +51,7 @@ public class QuenMatKhauServlet extends HttpServlet {
 
         if (ketQua.isThanhCong()) {
             request.setAttribute("thongBaoThanhCong", ketQua.getThongBao());
+            request.setAttribute("emailNhapLai", email);
         } else {
             request.setAttribute("thongBaoLoi", ketQua.getThongBao());
             request.setAttribute("emailNhapLai", email);

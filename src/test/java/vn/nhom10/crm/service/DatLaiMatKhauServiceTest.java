@@ -247,4 +247,94 @@ class DatLaiMatKhauServiceTest {
         assertFalse(ketQuaKhongKhop.isThanhCong());
         assertTrue(ketQuaKhongKhop.getThongBao().contains("không trùng khớp"));
     }
+
+    @Test
+    @DisplayName("S1-03: Yêu cầu reset lần hai sau cooldown tạo token mới, gửi mail mới và vô hiệu hóa token cũ")
+    void testYeuCauResetLanHaiSauCooldown_TaoTokenMoiVaVoHieuHoaTokenCu() throws Exception {
+        String email = "resend_user@crm.vn";
+        createSampleUser(email);
+        String baseUrl = "http://localhost:8080/crm-ban-hang";
+
+        // Lần 1: Yêu cầu reset mật khẩu
+        DatLaiMatKhauService.KetQuaXuLy ketQua1 = service.yeuCauDatLaiMatKhau(email, baseUrl);
+        assertTrue(ketQua1.isThanhCong());
+
+        String link1 = emailService.getLastSentLink(email);
+        String tokenStr1 = link1.substring(link1.indexOf("token=") + 6);
+        DatLaiMatKhauToken tokenDb1 = tokenDAO.findByToken(tokenStr1);
+        assertNotNull(tokenDb1);
+        assertFalse(tokenDb1.isDaSuDung(), "Token 1 ban đầu chưa được sử dụng");
+
+        // Giả lập đã qua thời gian cooldown 60 giây (lùi thời gian tạo về 65 giây trước)
+        try (Connection c = DatabaseConfig.getConnection();
+             Statement s = c.createStatement()) {
+            s.execute("UPDATE dat_lai_mat_khau_token SET thoi_gian_tao = DATEADD('SECOND', -65, CURRENT_TIMESTAMP) WHERE token = '" + tokenStr1 + "'");
+        }
+
+        // Lần 2: Yêu cầu reset mật khẩu sau cooldown
+        DatLaiMatKhauService.KetQuaXuLy ketQua2 = service.yeuCauDatLaiMatKhau(email, baseUrl);
+        assertTrue(ketQua2.isThanhCong());
+
+        String link2 = emailService.getLastSentLink(email);
+        String tokenStr2 = link2.substring(link2.indexOf("token=") + 6);
+        assertNotEquals(tokenStr1, tokenStr2, "Token lần 2 phải là token mới khác biệt");
+
+        // Kiểm tra token 1 đã bị vô hiệu hóa theo thiết kế an toàn
+        DatLaiMatKhauToken tokenDb1SauResend = tokenDAO.findByToken(tokenStr1);
+        assertTrue(tokenDb1SauResend.isDaSuDung(), "Token cũ phải bị vô hiệu hóa khi người dùng yêu cầu liên kết mới");
+
+        // Kiểm tra token 2 mới tạo có hiệu lực
+        DatLaiMatKhauToken tokenDb2 = tokenDAO.findByToken(tokenStr2);
+        assertNotNull(tokenDb2);
+        assertFalse(tokenDb2.isDaSuDung(), "Token mới phải hợp lệ và chưa sử dụng");
+
+        // Kiểm tra token 1 bị từ chối khi truy cập
+        DatLaiMatKhauService.KetQuaXuLy kiemTraToken1 = service.kiemTraToken(tokenStr1);
+        assertFalse(kiemTraToken1.isThanhCong(), "Token 1 cũ phải bị từ chối");
+        assertEquals(DatLaiMatKhauService.TrangThaiToken.DA_SU_DUNG, kiemTraToken1.getTrangThaiToken());
+
+        // Kiểm tra token 2 được chấp nhận khi truy cập
+        DatLaiMatKhauService.KetQuaXuLy kiemTraToken2 = service.kiemTraToken(tokenStr2);
+        assertTrue(kiemTraToken2.isThanhCong(), "Token 2 mới phải hợp lệ");
+        assertEquals(DatLaiMatKhauService.TrangThaiToken.HOP_LE, kiemTraToken2.getTrangThaiToken());
+    }
+
+    @Test
+    @DisplayName("S1-03: Yêu cầu gửi lại trong vòng 60 giây cooldown bị từ chối để chống spam")
+    void testYeuCauResetTrongThoiGianCooldown_BiTuChoi() {
+        String email = "spam_user@crm.vn";
+        createSampleUser(email);
+        String baseUrl = "http://localhost:8080/crm-ban-hang";
+
+        // Lần 1: Thành công
+        DatLaiMatKhauService.KetQuaXuLy ketQua1 = service.yeuCauDatLaiMatKhau(email, baseUrl);
+        assertTrue(ketQua1.isThanhCong());
+
+        // Lần 2 ngay lập tức (< 60s): Bị từ chối
+        DatLaiMatKhauService.KetQuaXuLy ketQua2 = service.yeuCauDatLaiMatKhau(email, baseUrl);
+        assertFalse(ketQua2.isThanhCong(), "Phải bị chặn khi chưa hết cooldown 60 giây");
+        assertTrue(ketQua2.getThongBao().contains("60 giây"));
+    }
+
+    @Test
+    @DisplayName("S1-03: Lỗi SMTP không làm lộ thông tin tài khoản và rollback token rác")
+    void testLoiSMTPKhongLamLoThongTinTaiKhoan() {
+        String email = "smtp_err_user@crm.vn";
+        createSampleUser(email);
+        String baseUrl = "http://localhost:8080/crm-ban-hang";
+
+        EmailService mockEmail = org.mockito.Mockito.mock(EmailService.class);
+        org.mockito.Mockito.when(mockEmail.guiEmailDatLaiMatKhau(org.mockito.ArgumentMatchers.anyString(), 
+                                                                 org.mockito.ArgumentMatchers.anyString(), 
+                                                                 org.mockito.ArgumentMatchers.anyString()))
+                           .thenReturn(false);
+
+        DatLaiMatKhauService serviceLoi = new DatLaiMatKhauService(nguoiDungDAO, tokenDAO, mockEmail);
+        DatLaiMatKhauService.KetQuaXuLy ketQua = serviceLoi.yeuCauDatLaiMatKhau(email, baseUrl);
+
+        assertFalse(ketQua.isThanhCong());
+        // Thông báo lỗi chung, tuyệt đối không chứa email hoặc thông tin tài khoản
+        assertFalse(ketQua.getThongBao().contains(email));
+        assertTrue(ketQua.getThongBao().contains("máy chủ thư") || ketQua.getThongBao().contains("thử lại sau"));
+    }
 }

@@ -129,7 +129,13 @@
                 resendBtn.style.pointerEvents = 'auto';
                 resendBtn.style.opacity = '1';
                 resendBtn.addEventListener('click', function () {
-                    window.location.href = window.location.pathname;
+                    if (form) {
+                        if (typeof form.requestSubmit === 'function') {
+                            form.requestSubmit();
+                        } else {
+                            form.submit();
+                        }
+                    }
                 });
             }
         }, 1000);
