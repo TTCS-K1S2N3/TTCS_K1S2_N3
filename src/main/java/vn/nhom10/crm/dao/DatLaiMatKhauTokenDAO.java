@@ -182,6 +182,29 @@ public class DatLaiMatKhauTokenDAO {
     }
 
     /**
+     * Vô hiệu hóa tất cả các token đặt lại mật khẩu chưa sử dụng của người dùng, ngoại trừ token hiện tại vừa gửi.
+     * Đảm bảo chỉ có duy nhất 1 liên kết hợp lệ tại một thời điểm mà không làm hỏng token mới.
+     *
+     * @param nguoiDungId    ID người dùng
+     * @param currentTokenId ID của token mới vừa gửi thành công cần giữ lại
+     */
+    public void invalidateTokensExcept(Long nguoiDungId, Long currentTokenId) {
+        String sql = "UPDATE dat_lai_mat_khau_token "
+                   + "SET da_su_dung = 1, thoi_gian_su_dung = ? "
+                   + "WHERE nguoi_dung_id = ? AND id != ? AND da_su_dung = 0";
+
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setLong(2, nguoiDungId);
+            ps.setLong(3, currentTokenId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi vô hiệu hóa token cũ của user id: " + nguoiDungId, e);
+        }
+    }
+
+    /**
      * Lấy token đặt lại mật khẩu gần nhất của người dùng để phục vụ kiểm tra thời gian cooldown.
      *
      * @param nguoiDungId ID người dùng

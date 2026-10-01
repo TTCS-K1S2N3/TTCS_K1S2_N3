@@ -122,13 +122,11 @@ public class DatLaiMatKhauService {
         if (latestToken != null && latestToken.getThoiGianTao() != null) {
             long secondsElapsed = java.time.Duration.between(latestToken.getThoiGianTao(), LocalDateTime.now()).getSeconds();
             if (secondsElapsed < 60 && secondsElapsed >= 0) {
-                LOGGER.info("Yêu cầu gửi lại liên kết bị từ chối do chưa hết thời gian chờ 60 giây.");
-                return new KetQuaXuLy(false, "Yêu cầu đã được tiếp nhận trước đó. Vui lòng chờ ít nhất 60 giây trước khi yêu cầu gửi lại liên kết mới.");
+                LOGGER.info("Yêu cầu gửi lại mật khẩu bị giới hạn tần suất do chưa hết thời gian chờ 60 giây.");
+                // Trả về cùng một thông báo chung để chống user enumeration
+                return new KetQuaXuLy(true, THONG_BAO_GUI_EMAIL_CHUNG);
             }
         }
-
-        // Vô hiệu hóa tất cả các token cũ chưa sử dụng của người dùng này để đảm bảo an toàn
-        tokenDAO.invalidateTokensByNguoiDungId(nguoiDung.getId());
 
         // AC1: Sinh token bảo mật ngẫu nhiên và thiết lập thời hạn 30 phút
         String tokenString = TokenUtil.generateSecureToken();
@@ -145,7 +143,7 @@ public class DatLaiMatKhauService {
         Long savedId = tokenDAO.save(token);
         if (savedId == null) {
             LOGGER.severe("Không thể lưu token đặt lại mật khẩu vào cơ sở dữ liệu");
-            return new KetQuaXuLy(false, "Hệ thống đang gặp sự cố. Vui lòng thử lại sau.");
+            return new KetQuaXuLy(true, THONG_BAO_GUI_EMAIL_CHUNG);
         }
 
         // Xây dựng liên kết đặt lại mật khẩu
@@ -155,11 +153,15 @@ public class DatLaiMatKhauService {
         // Gửi email thật qua SMTP
         boolean emailSent = emailService.guiEmailDatLaiMatKhau(nguoiDung.getEmail(), nguoiDung.getHoTen(), resetLink);
         if (!emailSent) {
-            // Rollback token vừa tạo để tránh token rác không gửi được
+            // Rollback token mới vừa tạo để tránh token rác không gửi được, giữ nguyên token cũ hợp lệ (nếu có)
             tokenDAO.deleteById(savedId);
             LOGGER.warning("Không thể gửi email đặt lại mật khẩu qua SMTP.");
-            return new KetQuaXuLy(false, "Không thể gửi email vào lúc này do sự cố kết nối máy chủ thư. Vui lòng thử lại sau.");
+            // Luôn trả về thông báo chung để không làm lộ trạng thái tài khoản hoặc lỗi SMTP ra UI
+            return new KetQuaXuLy(true, THONG_BAO_GUI_EMAIL_CHUNG);
         }
+
+        // Chỉ khi gửi email thành công mới vô hiệu hóa toàn bộ token cũ trước đó của người dùng
+        tokenDAO.invalidateTokensExcept(nguoiDung.getId(), savedId);
 
         return new KetQuaXuLy(true, THONG_BAO_GUI_EMAIL_CHUNG);
     }

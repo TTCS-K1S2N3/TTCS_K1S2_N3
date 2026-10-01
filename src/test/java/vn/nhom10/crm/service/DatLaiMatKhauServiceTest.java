@@ -300,8 +300,8 @@ class DatLaiMatKhauServiceTest {
     }
 
     @Test
-    @DisplayName("S1-03: Yêu cầu gửi lại trong vòng 60 giây cooldown bị từ chối để chống spam")
-    void testYeuCauResetTrongThoiGianCooldown_BiTuChoi() {
+    @DisplayName("S1-03: Yêu cầu gửi lại trong vòng 60 giây cooldown trả thông báo chung chống user enumeration và không sinh token mới")
+    void testYeuCauResetTrongThoiGianCooldown_ChongUserEnumerationVaKhongTaoTokenMoi() {
         String email = "spam_user@crm.vn";
         createSampleUser(email);
         String baseUrl = "http://localhost:8080/crm-ban-hang";
@@ -309,20 +309,44 @@ class DatLaiMatKhauServiceTest {
         // Lần 1: Thành công
         DatLaiMatKhauService.KetQuaXuLy ketQua1 = service.yeuCauDatLaiMatKhau(email, baseUrl);
         assertTrue(ketQua1.isThanhCong());
+        assertEquals(DatLaiMatKhauService.THONG_BAO_GUI_EMAIL_CHUNG, ketQua1.getThongBao());
 
-        // Lần 2 ngay lập tức (< 60s): Bị từ chối
+        String link1 = emailService.getLastSentLink(email);
+
+        // Lần 2 ngay lập tức (< 60s):
+        // Vẫn phải trả về thông báo chung giống hệt để kẻ tấn công không thể dò biết email tồn tại
         DatLaiMatKhauService.KetQuaXuLy ketQua2 = service.yeuCauDatLaiMatKhau(email, baseUrl);
-        assertFalse(ketQua2.isThanhCong(), "Phải bị chặn khi chưa hết cooldown 60 giây");
-        assertTrue(ketQua2.getThongBao().contains("60 giây"));
+        assertTrue(ketQua2.isThanhCong(), "Phải trả về thành công an toàn để chống user enumeration");
+        assertEquals(DatLaiMatKhauService.THONG_BAO_GUI_EMAIL_CHUNG, ketQua2.getThongBao());
+
+        // Kiểm tra link không bị ghi đè / không sinh token mới khi bị chặn bởi cooldown
+        String link2 = emailService.getLastSentLink(email);
+        assertEquals(link1, link2, "Không được gửi link mới khi chưa qua cooldown");
     }
 
     @Test
-    @DisplayName("S1-03: Lỗi SMTP không làm lộ thông tin tài khoản và rollback token rác")
-    void testLoiSMTPKhongLamLoThongTinTaiKhoan() {
+    @DisplayName("S1-03: Lỗi SMTP không làm lộ tài khoản ra UI và không làm mất token cũ còn hiệu lực")
+    void testLoiSMTPKhongLamLoThongTinTaiKhoanVaKhongMatTokenCu() throws Exception {
         String email = "smtp_err_user@crm.vn";
         createSampleUser(email);
         String baseUrl = "http://localhost:8080/crm-ban-hang";
 
+        // Lần 1: Gửi thành công với EmailService thật, sinh token 1
+        DatLaiMatKhauService.KetQuaXuLy ketQua1 = service.yeuCauDatLaiMatKhau(email, baseUrl);
+        assertTrue(ketQua1.isThanhCong());
+        String link1 = emailService.getLastSentLink(email);
+        String tokenStr1 = link1.substring(link1.indexOf("token=") + 6);
+        DatLaiMatKhauToken tokenDb1 = tokenDAO.findByToken(tokenStr1);
+        assertNotNull(tokenDb1);
+        assertFalse(tokenDb1.isDaSuDung(), "Token 1 ban đầu hợp lệ");
+
+        // Giả lập qua cooldown 60 giây
+        try (Connection c = DatabaseConfig.getConnection();
+             Statement s = c.createStatement()) {
+            s.execute("UPDATE dat_lai_mat_khau_token SET thoi_gian_tao = DATEADD('SECOND', -65, CURRENT_TIMESTAMP) WHERE token = '" + tokenStr1 + "'");
+        }
+
+        // Lần 2: Giả lập SMTP gặp lỗi
         EmailService mockEmail = org.mockito.Mockito.mock(EmailService.class);
         org.mockito.Mockito.when(mockEmail.guiEmailDatLaiMatKhau(org.mockito.ArgumentMatchers.anyString(), 
                                                                  org.mockito.ArgumentMatchers.anyString(), 
@@ -330,11 +354,57 @@ class DatLaiMatKhauServiceTest {
                            .thenReturn(false);
 
         DatLaiMatKhauService serviceLoi = new DatLaiMatKhauService(nguoiDungDAO, tokenDAO, mockEmail);
-        DatLaiMatKhauService.KetQuaXuLy ketQua = serviceLoi.yeuCauDatLaiMatKhau(email, baseUrl);
+        DatLaiMatKhauService.KetQuaXuLy ketQua2 = serviceLoi.yeuCauDatLaiMatKhau(email, baseUrl);
 
-        assertFalse(ketQua.isThanhCong());
-        // Thông báo lỗi chung, tuyệt đối không chứa email hoặc thông tin tài khoản
-        assertFalse(ketQua.getThongBao().contains(email));
-        assertTrue(ketQua.getThongBao().contains("máy chủ thư") || ketQua.getThongBao().contains("thử lại sau"));
+        // 1. Phản hồi cho UI phải là thông báo chung để không làm lộ trạng thái tài khoản
+        assertTrue(ketQua2.isThanhCong());
+        assertEquals(DatLaiMatKhauService.THONG_BAO_GUI_EMAIL_CHUNG, ketQua2.getThongBao());
+
+        // 2. Token cũ 1 KHÔNG bị vô hiệu hóa oan, người dùng vẫn có thể dùng link cũ trong hộp thư
+        DatLaiMatKhauToken tokenDb1SauLoiSmtp = tokenDAO.findByToken(tokenStr1);
+        assertNotNull(tokenDb1SauLoiSmtp);
+        assertFalse(tokenDb1SauLoiSmtp.isDaSuDung(), "Token cũ phải được giữ nguyên hợp lệ khi SMTP lỗi");
+
+        DatLaiMatKhauService.KetQuaXuLy kiemTraToken1 = service.kiemTraToken(tokenStr1);
+        assertTrue(kiemTraToken1.isThanhCong(), "Token cũ vẫn dùng được bình thường");
+    }
+
+    @Test
+    @DisplayName("S1-03: Bảo mật tuyệt đối - Phản hồi UI đồng nhất 100% giữa mọi kịch bản chống User Enumeration")
+    void testChongUserEnumeration_PhanHoiDongNhatTuyetDoi() {
+        String baseUrl = "http://localhost:8080/crm-ban-hang";
+
+        // Kịch bản A: Email không tồn tại
+        DatLaiMatKhauService.KetQuaXuLy resKhongTonTai = service.yeuCauDatLaiMatKhau("khong_ton_tai_123@crm.vn", baseUrl);
+
+        // Kịch bản B: Email tồn tại (lần 1)
+        String emailTonTai = "user_ton_tai_456@crm.vn";
+        createSampleUser(emailTonTai);
+        DatLaiMatKhauService.KetQuaXuLy resTonTaiLan1 = service.yeuCauDatLaiMatKhau(emailTonTai, baseUrl);
+
+        // Kịch bản C: Email tồn tại (đang trong cooldown < 60s)
+        DatLaiMatKhauService.KetQuaXuLy resTrongCooldown = service.yeuCauDatLaiMatKhau(emailTonTai, baseUrl);
+
+        // Kịch bản D: Email tồn tại nhưng SMTP lỗi
+        EmailService mockEmail = org.mockito.Mockito.mock(EmailService.class);
+        org.mockito.Mockito.when(mockEmail.guiEmailDatLaiMatKhau(org.mockito.ArgumentMatchers.anyString(), 
+                                                                 org.mockito.ArgumentMatchers.anyString(), 
+                                                                 org.mockito.ArgumentMatchers.anyString()))
+                           .thenReturn(false);
+        String emailSmtpLoi = "user_smtp_loi_789@crm.vn";
+        createSampleUser(emailSmtpLoi);
+        DatLaiMatKhauService serviceMock = new DatLaiMatKhauService(nguoiDungDAO, tokenDAO, mockEmail);
+        DatLaiMatKhauService.KetQuaXuLy resSmtpLoi = serviceMock.yeuCauDatLaiMatKhau(emailSmtpLoi, baseUrl);
+
+        // Xác nhận CẢ 4 KỊCH BẢN đều trả về thông báo chung giống hệt nhau
+        assertTrue(resKhongTonTai.isThanhCong());
+        assertTrue(resTonTaiLan1.isThanhCong());
+        assertTrue(resTrongCooldown.isThanhCong());
+        assertTrue(resSmtpLoi.isThanhCong());
+
+        assertEquals(DatLaiMatKhauService.THONG_BAO_GUI_EMAIL_CHUNG, resKhongTonTai.getThongBao());
+        assertEquals(DatLaiMatKhauService.THONG_BAO_GUI_EMAIL_CHUNG, resTonTaiLan1.getThongBao());
+        assertEquals(DatLaiMatKhauService.THONG_BAO_GUI_EMAIL_CHUNG, resTrongCooldown.getThongBao());
+        assertEquals(DatLaiMatKhauService.THONG_BAO_GUI_EMAIL_CHUNG, resSmtpLoi.getThongBao());
     }
 }
