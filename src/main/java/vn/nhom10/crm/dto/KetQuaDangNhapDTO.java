@@ -16,6 +16,7 @@ public class KetQuaDangNhapDTO implements Serializable {
     private String thongBaoLoi;
     private String trangChuUrl;
     private boolean biKhoaTam;
+    private boolean biKhoaAdmin;
     private long soPhutKhoaConLai;
 
     public KetQuaDangNhapDTO() {
@@ -40,6 +41,7 @@ public class KetQuaDangNhapDTO implements Serializable {
         KetQuaDangNhapDTO dto = new KetQuaDangNhapDTO();
         dto.thanhCong = false;
         dto.biKhoaTam = true;
+        dto.biKhoaAdmin = false;
         dto.soPhutKhoaConLai = soPhutKhoaConLai;
         dto.thongBaoLoi = "Tài khoản tạm thời bị khóa do nhập sai quá 5 lần liên tiếp. Vui lòng thử lại sau " 
                 + soPhutKhoaConLai + " phút.";
@@ -49,6 +51,9 @@ public class KetQuaDangNhapDTO implements Serializable {
     public static KetQuaDangNhapDTO taiKhoanBiKhoa() {
         KetQuaDangNhapDTO dto = new KetQuaDangNhapDTO();
         dto.thanhCong = false;
+        dto.biKhoaAdmin = true;
+        dto.biKhoaTam = false;
+        dto.soPhutKhoaConLai = 0;
         dto.thongBaoLoi = "Tài khoản của bạn đã bị khóa hoặc ngừng hoạt động. Vui lòng liên hệ quản trị viên.";
         return dto;
     }
@@ -91,6 +96,14 @@ public class KetQuaDangNhapDTO implements Serializable {
 
     public void setBiKhoaTam(boolean biKhoaTam) {
         this.biKhoaTam = biKhoaTam;
+    }
+
+    public boolean isBiKhoaAdmin() {
+        return biKhoaAdmin;
+    }
+
+    public void setBiKhoaAdmin(boolean biKhoaAdmin) {
+        this.biKhoaAdmin = biKhoaAdmin;
     }
 
     public long getSoPhutKhoaConLai() {

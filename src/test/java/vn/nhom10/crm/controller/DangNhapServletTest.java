@@ -106,4 +106,38 @@ class DangNhapServletTest {
         verify(requestDispatcher).forward(request, response);
         verify(response, never()).sendRedirect(anyString());
     }
+
+    @Test
+    @DisplayName("Servlet doPost: Đăng nhập thất bại do khóa tạm -> Chuyển cờ biKhoaTam và soPhutKhoaConLai cho view")
+    void testDoPost_ThatBai_KhoaTam() throws Exception {
+        when(request.getParameter("email")).thenReturn("sales@crm.vn");
+        when(request.getParameter("matKhau")).thenReturn("WrongPassword");
+        when(dangNhapService.dangNhap("sales@crm.vn", "WrongPassword"))
+                .thenReturn(KetQuaDangNhapDTO.khoaTam(15));
+        when(request.getRequestDispatcher("/WEB-INF/views/auth/dang-nhap.jsp")).thenReturn(requestDispatcher);
+
+        servlet.doPost(request, response);
+
+        verify(request).setAttribute(eq("biKhoaTam"), eq(true));
+        verify(request).setAttribute(eq("biKhoaAdmin"), eq(false));
+        verify(request).setAttribute(eq("soPhutKhoaConLai"), eq(15L));
+        verify(requestDispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("Servlet doPost: Đăng nhập thất bại do Admin khóa -> Chuyển cờ biKhoaAdmin cho view và không có countdown")
+    void testDoPost_ThatBai_KhoaAdmin() throws Exception {
+        when(request.getParameter("email")).thenReturn("locked@crm.vn");
+        when(request.getParameter("matKhau")).thenReturn("AnyPassword");
+        when(dangNhapService.dangNhap("locked@crm.vn", "AnyPassword"))
+                .thenReturn(KetQuaDangNhapDTO.taiKhoanBiKhoa());
+        when(request.getRequestDispatcher("/WEB-INF/views/auth/dang-nhap.jsp")).thenReturn(requestDispatcher);
+
+        servlet.doPost(request, response);
+
+        verify(request).setAttribute(eq("biKhoaAdmin"), eq(true));
+        verify(request).setAttribute(eq("biKhoaTam"), eq(false));
+        verify(request).setAttribute(eq("soPhutKhoaConLai"), eq(0L));
+        verify(requestDispatcher).forward(request, response);
+    }
 }

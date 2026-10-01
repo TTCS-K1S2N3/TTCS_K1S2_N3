@@ -124,6 +124,9 @@ public class DangNhapServlet extends HttpServlet {
         } else {
             // Đăng nhập thất bại: Hiển thị thông báo lỗi và giữ lại email đã nhập
             request.setAttribute("thongBaoLoi", ketQua.getThongBaoLoi());
+            request.setAttribute("biKhoaTam", ketQua.isBiKhoaTam());
+            request.setAttribute("biKhoaAdmin", ketQua.isBiKhoaAdmin());
+            request.setAttribute("soPhutKhoaConLai", ketQua.getSoPhutKhoaConLai());
             request.setAttribute("email", email != null ? email.trim() : "");
             request.getRequestDispatcher("/WEB-INF/views/auth/dang-nhap.jsp").forward(request, response);
         }

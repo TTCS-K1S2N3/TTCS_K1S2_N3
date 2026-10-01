@@ -153,6 +153,7 @@ class DangNhapServiceTest {
 
         assertFalse(result.isThanhCong());
         assertTrue(result.isBiKhoaTam());
+        assertFalse(result.isBiKhoaAdmin());
         assertEquals(15, result.getSoPhutKhoaConLai());
         assertTrue(result.getThongBaoLoi().contains("bị khóa"));
         verify(nguoiDungDAO).khoaTam(10L, 15);
@@ -171,6 +172,8 @@ class DangNhapServiceTest {
 
         assertFalse(result.isThanhCong());
         assertTrue(result.isBiKhoaTam());
+        assertFalse(result.isBiKhoaAdmin());
+        assertEquals(10, result.getSoPhutKhoaConLai());
         assertTrue(result.getThongBaoLoi().contains("khóa"));
         verify(nguoiDungDAO, never()).tangSoLanSai(anyLong());
     }
@@ -191,7 +194,7 @@ class DangNhapServiceTest {
     }
 
     @Test
-    @DisplayName("Tài khoản bị vô hiệu hóa/khóa vĩnh viễn (KHOA) -> Thông báo liên hệ quản trị viên")
+    @DisplayName("S1-10: Tài khoản trạng thái KHOA do Admin khóa -> Login bị từ chối, xác định là khóa quản trị, không có countdown")
     void testTaiKhoanBiKhoaVinhVien() {
         NguoiDung user = taoUserMau("locked@crm.vn", VaiTroEnum.SALES_REP);
         user.setTrangThai(NguoiDung.TRANG_THAI_KHOA);
@@ -200,7 +203,30 @@ class DangNhapServiceTest {
         KetQuaDangNhapDTO result = dangNhapService.dangNhap("locked@crm.vn", rawPassword);
 
         assertFalse(result.isThanhCong());
+        assertTrue(result.isBiKhoaAdmin());
+        assertFalse(result.isBiKhoaTam());
+        assertEquals(0, result.getSoPhutKhoaConLai());
+        assertEquals("Tài khoản của bạn đã bị khóa hoặc ngừng hoạt động. Vui lòng liên hệ quản trị viên.", result.getThongBaoLoi());
+        verify(nguoiDungDAO, never()).khoaTam(anyLong(), anyInt());
+        verify(nguoiDungDAO, never()).tangSoLanSai(anyLong());
+    }
+
+    @Test
+    @DisplayName("Tài khoản trạng thái NGUNG_HOAT_DONG -> Login bị từ chối, xác định là khóa quản trị")
+    void testTaiKhoanNgungHoatDong() {
+        NguoiDung user = taoUserMau("inactive@crm.vn", VaiTroEnum.SALES_REP);
+        user.setTrangThai(NguoiDung.TRANG_THAI_NGUNG_HOAT_DONG);
+        when(nguoiDungDAO.timTheoEmail("inactive@crm.vn")).thenReturn(user);
+
+        KetQuaDangNhapDTO result = dangNhapService.dangNhap("inactive@crm.vn", rawPassword);
+
+        assertFalse(result.isThanhCong());
+        assertTrue(result.isBiKhoaAdmin());
+        assertFalse(result.isBiKhoaTam());
+        assertEquals(0, result.getSoPhutKhoaConLai());
         assertTrue(result.getThongBaoLoi().contains("quản trị viên"));
+        verify(nguoiDungDAO, never()).khoaTam(anyLong(), anyInt());
+        verify(nguoiDungDAO, never()).tangSoLanSai(anyLong());
     }
 
     @Test

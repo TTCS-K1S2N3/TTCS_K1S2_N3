@@ -31,14 +31,21 @@
                 </div>
             </div>
 
-            <!-- AC 2 & AC 3: Thông báo lỗi xác thực hoặc Khóa tạm 15 phút sau 5 lần sai -->
+            <!-- AC 2 & AC 3: Thông báo lỗi xác thực, Khóa tạm 15 phút sau 5 lần sai hoặc Khóa quản trị -->
             <c:if test="${not empty thongBaoLoi}">
-                <c:set var="isLockout" value="${fn:containsIgnoreCase(thongBaoLoi, 'khóa') or fn:containsIgnoreCase(thongBaoLoi, 'phút')}" />
+                <c:set var="isAdminLock" value="${biKhoaAdmin eq true or fn:containsIgnoreCase(thongBaoLoi, 'quản trị viên') or fn:containsIgnoreCase(thongBaoLoi, 'ngừng hoạt động')}" />
+                <c:set var="isTempLock" value="${not isAdminLock and (biKhoaTam eq true or fn:containsIgnoreCase(thongBaoLoi, 'tạm thời') or (fn:containsIgnoreCase(thongBaoLoi, 'khóa') and fn:containsIgnoreCase(thongBaoLoi, 'phút')))}" />
                 <c:set var="isSessionExpired" value="${fn:containsIgnoreCase(thongBaoLoi, 'hết hạn') or param.error eq 'session_expired'}" />
-                <div id="alertMessage" class="alert-box ${isLockout ? 'alert-lockout' : (isSessionExpired ? 'alert-warning' : 'alert-danger')}" role="alert">
+                <div id="alertMessage" class="alert-box ${isTempLock ? 'alert-lockout' : (isSessionExpired ? 'alert-warning' : 'alert-danger')}" role="alert">
                     <div class="alert-icon-wrapper">
                         <c:choose>
-                            <c:when test="${isLockout}">
+                            <c:when test="${isAdminLock}">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                            </c:when>
+                            <c:when test="${isTempLock}">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="12" cy="12" r="10"></circle>
                                     <polyline points="12 6 12 12 16 14"></polyline>
@@ -62,7 +69,8 @@
                     <div class="alert-body">
                         <div class="alert-title">
                             <c:choose>
-                                <c:when test="${isLockout}">Tài Khoản Tạm Thời Bị Khóa</c:when>
+                                <c:when test="${isAdminLock}">Tài khoản đã bị khóa</c:when>
+                                <c:when test="${isTempLock}">Tài Khoản Tạm Thời Bị Khóa</c:when>
                                 <c:when test="${isSessionExpired}">Phiên Làm Việc Hết Hạn</c:when>
                                 <c:otherwise>Đăng Nhập Thất Bại</c:otherwise>
                             </c:choose>
@@ -71,11 +79,18 @@
                             <c:out value="${thongBaoLoi}"/>
                         </div>
 
-                        <!-- Countdown Timer khi bị khóa tạm 15 phút -->
-                        <c:if test="${isLockout}">
+                        <!-- Countdown Timer khi bị khóa tạm 15 phút (CHỈ áp dụng cho khóa tạm do sai mật khẩu) -->
+                        <c:if test="${isTempLock}">
                             <div class="countdown-timer-container" id="countdownTimerContainer">
                                 <span class="countdown-label">Thời gian mở khóa dự kiến:</span>
-                                <span class="countdown-badge" id="countdownTimeDisplay">15:00</span>
+                                <span class="countdown-badge" id="countdownTimeDisplay">
+                                    <c:choose>
+                                        <c:when test="${not empty soPhutKhoaConLai and soPhutKhoaConLai gt 0}">
+                                            <c:out value="${soPhutKhoaConLai < 10 ? '0' : ''}${soPhutKhoaConLai}:00"/>
+                                        </c:when>
+                                        <c:otherwise>15:00</c:otherwise>
+                                    </c:choose>
+                                </span>
                             </div>
                         </c:if>
                     </div>
