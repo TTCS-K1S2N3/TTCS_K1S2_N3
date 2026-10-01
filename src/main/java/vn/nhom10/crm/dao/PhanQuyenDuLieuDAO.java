@@ -65,19 +65,19 @@ public class PhanQuyenDuLieuDAO {
                                                        String tuKhoa) throws SQLException {
         String tenBang = layTenBang(loaiNghiepVu);
         String cotGiaTri = layCotGiaTri(loaiNghiepVu);
-        String bieuThucTieuDe = layBieuThucTieuDe(loaiNghiepVu);
-        String bieuThucMa = layBieuThucMaBanGhi(loaiNghiepVu);
-        String bieuThucOwner = layBieuThucNguoiPhuTrach(loaiNghiepVu);
+        String cotTieuDe = layCotTieuDe(loaiNghiepVu);
+        String cotMa = layCotMa(loaiNghiepVu);
+        String cotOwner = layCotOwner(loaiNghiepVu);
 
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT t.id, ").append(bieuThucMa).append(" AS ma_ban_ghi, ")
-           .append(bieuThucTieuDe).append(" AS tieu_de, ")
-           .append(bieuThucOwner).append(" AS nguoi_phu_trach_id, ")
+        sql.append("SELECT t.id, t.").append(cotMa).append(" AS ma_ban_ghi, ")
+           .append("t.").append(cotTieuDe).append(" AS tieu_de, ")
+           .append("t.").append(cotOwner).append(" AS nguoi_phu_trach_id, ")
            .append("nd.ho_ten AS ten_nguoi_phu_trach, t.nhom_kinh_doanh_id, ")
            .append("nkd.ten_nhom, t.").append(cotGiaTri).append(" AS gia_tri, ")
            .append("t.trang_thai, t.ngay_tao, t.mo_ta_chi_tiet ")
            .append("FROM ").append(tenBang).append(" t ")
-           .append("LEFT JOIN nguoi_dung nd ON (").append(bieuThucOwner).append(" = nd.id) ")
+           .append("LEFT JOIN nguoi_dung nd ON (t.").append(cotOwner).append(" = nd.id) ")
            .append("LEFT JOIN nhom_kinh_doanh nkd ON t.nhom_kinh_doanh_id = nkd.id ")
            .append("WHERE 1=1 ");
 
@@ -85,7 +85,7 @@ public class PhanQuyenDuLieuDAO {
 
         // Áp dụng điều kiện Data Scope tại tầng SQL
         if (phamVi == PhamViDuLieu.CA_NHAN) {
-            sql.append("AND ").append(bieuThucOwner).append(" = ? ");
+            sql.append("AND t.").append(cotOwner).append(" = ? ");
             thamSo.add(userId != null ? userId : -1L);
         } else if (phamVi == PhamViDuLieu.NHOM) {
             sql.append("AND t.nhom_kinh_doanh_id = ? ");
@@ -95,7 +95,7 @@ public class PhanQuyenDuLieuDAO {
 
         // Áp dụng tìm kiếm từ khóa an toàn qua PreparedStatement
         if (tuKhoa != null && !tuKhoa.trim().isEmpty()) {
-            sql.append("AND (LOWER(").append(bieuThucMa).append(") LIKE ? OR LOWER(").append(bieuThucTieuDe).append(") LIKE ? ")
+            sql.append("AND (LOWER(t.").append(cotMa).append(") LIKE ? OR LOWER(t.").append(cotTieuDe).append(") LIKE ? ")
                .append("OR LOWER(nd.ho_ten) LIKE ? OR LOWER(COALESCE(nkd.ten_nhom, '')) LIKE ?) ");
             String kwPattern = "%" + tuKhoa.trim().toLowerCase() + "%";
             thamSo.add(kwPattern);
@@ -149,17 +149,17 @@ public class PhanQuyenDuLieuDAO {
     private BanGhiNghiepVuDTO timTrongBangTheoId(Long id, LoaiNghiepVu loai) throws SQLException {
         String tenBang = layTenBang(loai);
         String cotGiaTri = layCotGiaTri(loai);
-        String bieuThucTieuDe = layBieuThucTieuDe(loai);
-        String bieuThucMa = layBieuThucMaBanGhi(loai);
-        String bieuThucOwner = layBieuThucNguoiPhuTrach(loai);
+        String cotTieuDe = layCotTieuDe(loai);
+        String cotMa = layCotMa(loai);
+        String cotOwner = layCotOwner(loai);
 
-        String sql = "SELECT t.id, " + bieuThucMa + " AS ma_ban_ghi, " + bieuThucTieuDe + " AS tieu_de, " +
-                bieuThucOwner + " AS nguoi_phu_trach_id, " +
+        String sql = "SELECT t.id, t." + cotMa + " AS ma_ban_ghi, t." + cotTieuDe + " AS tieu_de, " +
+                "t." + cotOwner + " AS nguoi_phu_trach_id, " +
                 "nd.ho_ten AS ten_nguoi_phu_trach, t.nhom_kinh_doanh_id, " +
                 "nkd.ten_nhom, t." + cotGiaTri + " AS gia_tri, " +
                 "t.trang_thai, t.ngay_tao, t.mo_ta_chi_tiet " +
                 "FROM " + tenBang + " t " +
-                "LEFT JOIN nguoi_dung nd ON (" + bieuThucOwner + " = nd.id) " +
+                "LEFT JOIN nguoi_dung nd ON (t." + cotOwner + " = nd.id) " +
                 "LEFT JOIN nhom_kinh_doanh nkd ON t.nhom_kinh_doanh_id = nkd.id " +
                 "WHERE t.id = ?";
 
@@ -249,7 +249,8 @@ public class PhanQuyenDuLieuDAO {
         }
         String tenBang = layTenBang(banGhi.getLoaiNghiepVu());
         String cotGiaTri = layCotGiaTri(banGhi.getLoaiNghiepVu());
-        String sql = "UPDATE " + tenBang + " SET tieu_de = ?, " + cotGiaTri + " = ?, trang_thai = ?, mo_ta_chi_tiet = ? WHERE id = ?";
+        String cotTieuDe = layCotTieuDe(banGhi.getLoaiNghiepVu());
+        String sql = "UPDATE " + tenBang + " SET " + cotTieuDe + " = ?, " + cotGiaTri + " = ?, trang_thai = ?, mo_ta_chi_tiet = ? WHERE id = ?";
         try (Connection conn = DatabaseConnection.layKetNoi();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, banGhi.getTieuDe());
@@ -261,33 +262,45 @@ public class PhanQuyenDuLieuDAO {
         }
     }
 
-    private String layBieuThucTieuDe(LoaiNghiepVu loai) {
-        if (loai == LoaiNghiepVu.KHACH_HANG) {
-            return "COALESCE(t.tieu_de, t.ten_cong_ty, '')";
-        }
-        if (loai == LoaiNghiepVu.CO_HOI) {
-            return "COALESCE(t.tieu_de, t.ten_co_hoi, '')";
-        }
-        return "t.tieu_de";
-    }
-
-    private String layBieuThucMaBanGhi(LoaiNghiepVu loai) {
+    private String layCotTieuDe(LoaiNghiepVu loai) {
         switch (loai) {
             case KHACH_HANG:
-                return "COALESCE(t.ma_ban_ghi, CAST(t.id AS CHAR), '')";
+                return "ten_cong_ty";
             case CO_HOI:
-                return "COALESCE(t.ma_ban_ghi, t.ma_co_hoi, CAST(t.id AS CHAR), '')";
+                return "ten_co_hoi";
             case BAO_GIA:
-                return "COALESCE(t.ma_ban_ghi, t.ma_bao_gia, CAST(t.id AS CHAR), '')";
+            case HOAT_DONG:
+                return "tieu_de";
             default:
-                return "COALESCE(t.ma_ban_ghi, CAST(t.id AS CHAR), '')";
+                throw new IllegalArgumentException("Loại nghiệp vụ không hợp lệ: " + loai);
         }
     }
 
-    private String layBieuThucNguoiPhuTrach(LoaiNghiepVu loai) {
-        if (loai == LoaiNghiepVu.KHACH_HANG) {
-            return "COALESCE(t.nguoi_phu_trach_id, t.nguoi_so_huu_id, 0)";
+    private String layCotMa(LoaiNghiepVu loai) {
+        switch (loai) {
+            case KHACH_HANG:
+                return "ma_khach_hang";
+            case CO_HOI:
+                return "ma_co_hoi";
+            case BAO_GIA:
+                return "ma_bao_gia";
+            case HOAT_DONG:
+                return "ma_hoat_dong";
+            default:
+                throw new IllegalArgumentException("Loại nghiệp vụ không hợp lệ: " + loai);
         }
-        return "t.nguoi_phu_trach_id";
+    }
+
+    private String layCotOwner(LoaiNghiepVu loai) {
+        switch (loai) {
+            case KHACH_HANG:
+                return "nguoi_so_huu_id";
+            case CO_HOI:
+            case BAO_GIA:
+            case HOAT_DONG:
+                return "nguoi_phu_trach_id";
+            default:
+                throw new IllegalArgumentException("Loại nghiệp vụ không hợp lệ: " + loai);
+        }
     }
 }

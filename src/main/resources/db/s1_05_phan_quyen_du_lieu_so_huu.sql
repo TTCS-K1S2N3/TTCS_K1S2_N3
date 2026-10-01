@@ -16,16 +16,10 @@ UPDATE `vai_tro` SET `pham_vi_toi_da` = 'CA_NHAN' WHERE `ma_vai_tro` IN ('SALES_
 -- 2. Bảng Khách Hàng Doanh Nghiệp (Customer)
 CREATE TABLE IF NOT EXISTS `khach_hang` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
-    `ma_ban_ghi` VARCHAR(50) NULL UNIQUE,
+    `ma_khach_hang` VARCHAR(50) NULL UNIQUE,
     `ten_cong_ty` VARCHAR(255) NOT NULL,
-    `tieu_de` VARCHAR(255) NULL,
     `ma_so_thue` VARCHAR(50) NULL,
-    `nganh_nghe` VARCHAR(100) NULL,
-    `quy_mo` VARCHAR(100) NULL,
-    `website` VARCHAR(255) NULL,
-    `dia_chi` VARCHAR(255) NULL,
-    `nguoi_phu_trach_id` BIGINT NULL,
-    `nguoi_so_huu_id` BIGINT NULL,
+    `nguoi_so_huu_id` BIGINT NOT NULL,
     `nhom_kinh_doanh_id` INT NULL,
     `doanh_thu_uoc_tinh` DECIMAL(15, 2) NULL DEFAULT 0.00,
     `trang_thai` VARCHAR(50) NOT NULL DEFAULT 'TIEM_NANG',
@@ -33,21 +27,18 @@ CREATE TABLE IF NOT EXISTS `khach_hang` (
     `ngay_tao` DATE NOT NULL DEFAULT (CURRENT_DATE),
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX `idx_kh_nguoi_phu_trach` (`nguoi_phu_trach_id`),
     INDEX `idx_kh_nguoi_so_huu` (`nguoi_so_huu_id`),
     INDEX `idx_kh_nhom` (`nhom_kinh_doanh_id`),
     INDEX `idx_kh_ten_cong_ty` (`ten_cong_ty`),
     INDEX `idx_kh_trang_thai` (`trang_thai`),
-    CONSTRAINT `fk_kh_nguoi_phu_trach` FOREIGN KEY (`nguoi_phu_trach_id`) REFERENCES `nguoi_dung`(`id`) ON DELETE RESTRICT,
+    CONSTRAINT `fk_kh_nguoi_so_huu` FOREIGN KEY (`nguoi_so_huu_id`) REFERENCES `nguoi_dung`(`id`) ON DELETE RESTRICT,
     CONSTRAINT `fk_kh_nhom` FOREIGN KEY (`nhom_kinh_doanh_id`) REFERENCES `nhom_kinh_doanh`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 3. Bảng Cơ Hội Bán Hàng (Opportunity)
 CREATE TABLE IF NOT EXISTS `co_hoi` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
-    `ma_ban_ghi` VARCHAR(50) NULL UNIQUE,
-    `ma_co_hoi` VARCHAR(50) NULL UNIQUE,
-    `tieu_de` VARCHAR(255) NULL,
+    `ma_co_hoi` VARCHAR(50) NOT NULL UNIQUE,
     `ten_co_hoi` VARCHAR(255) NOT NULL,
     `khach_hang_id` BIGINT NULL,
     `nguoi_phu_trach_id` BIGINT NOT NULL,
@@ -71,12 +62,11 @@ CREATE TABLE IF NOT EXISTS `co_hoi` (
 -- 4. Bảng Báo Giá (Quote)
 CREATE TABLE IF NOT EXISTS `bao_gia` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
-    `ma_ban_ghi` VARCHAR(50) NULL UNIQUE,
-    `ma_bao_gia` VARCHAR(50) NULL UNIQUE,
+    `ma_bao_gia` VARCHAR(50) NOT NULL UNIQUE,
     `tieu_de` VARCHAR(255) NOT NULL,
     `co_hoi_id` BIGINT NULL,
     `khach_hang_id` BIGINT NULL,
-    `nguoi_phu_trach_id` BIGINT NULL,
+    `nguoi_phu_trach_id` BIGINT NOT NULL,
     `nhom_kinh_doanh_id` INT NULL,
     `phien_ban` INT NOT NULL DEFAULT 1,
     `tong_tien` DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
@@ -99,7 +89,7 @@ CREATE TABLE IF NOT EXISTS `bao_gia` (
 -- 5. Bảng Hoạt Động Chăm Sóc (Activity)
 CREATE TABLE IF NOT EXISTS `hoat_dong` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
-    `ma_ban_ghi` VARCHAR(50) NULL UNIQUE,
+    `ma_hoat_dong` VARCHAR(50) NOT NULL UNIQUE,
     `tieu_de` VARCHAR(255) NOT NULL,
     `loai_hoat_dong` VARCHAR(50) NOT NULL DEFAULT 'CUOC_GOI',
     `khach_hang_id` BIGINT NULL,

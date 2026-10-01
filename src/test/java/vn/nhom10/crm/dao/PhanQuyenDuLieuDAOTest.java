@@ -8,6 +8,7 @@ import vn.nhom10.crm.config.DatabaseConfig;
 import vn.nhom10.crm.dto.BanGhiNghiepVuDTO;
 import vn.nhom10.crm.dto.BanGhiNghiepVuDTO.LoaiNghiepVu;
 import vn.nhom10.crm.model.PhamViDuLieu;
+import vn.nhom10.crm.util.DatabaseConnection;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -38,7 +39,7 @@ class PhanQuyenDuLieuDAOTest {
 
         dao = new PhanQuyenDuLieuDAO();
 
-        // Tạo cấu trúc bảng
+        // Tạo cấu trúc bảng chuẩn canonical (không duplicate cột compatibility)
         try (Statement st = h2Connection.createStatement()) {
             st.execute("CREATE TABLE IF NOT EXISTS nhom_kinh_doanh (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
@@ -51,25 +52,25 @@ class PhanQuyenDuLieuDAOTest {
 
             st.execute("CREATE TABLE IF NOT EXISTS khach_hang (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
-                    "ma_ban_ghi VARCHAR(50), ten_cong_ty VARCHAR(255), tieu_de VARCHAR(255), " +
-                    "nguoi_phu_trach_id BIGINT, nguoi_so_huu_id BIGINT, nhom_kinh_doanh_id BIGINT, " +
+                    "ma_khach_hang VARCHAR(50), ten_cong_ty VARCHAR(255), " +
+                    "nguoi_so_huu_id BIGINT, nhom_kinh_doanh_id BIGINT, " +
                     "doanh_thu_uoc_tinh DECIMAL(15, 2), trang_thai VARCHAR(50), mo_ta_chi_tiet TEXT, ngay_tao DATE)");
 
             st.execute("CREATE TABLE IF NOT EXISTS co_hoi (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
-                    "ma_ban_ghi VARCHAR(50), ma_co_hoi VARCHAR(50), ten_co_hoi VARCHAR(255), tieu_de VARCHAR(255), " +
+                    "ma_co_hoi VARCHAR(50), ten_co_hoi VARCHAR(255), " +
                     "khach_hang_id BIGINT, nguoi_phu_trach_id BIGINT, nhom_kinh_doanh_id BIGINT, " +
                     "gia_tri_du_kien DECIMAL(15, 2), xac_suat INT, trang_thai VARCHAR(50), mo_ta_chi_tiet TEXT, ngay_tao DATE)");
 
             st.execute("CREATE TABLE IF NOT EXISTS bao_gia (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
-                    "ma_ban_ghi VARCHAR(50), ma_bao_gia VARCHAR(50), tieu_de VARCHAR(255), co_hoi_id BIGINT, " +
+                    "ma_bao_gia VARCHAR(50), tieu_de VARCHAR(255), co_hoi_id BIGINT, " +
                     "khach_hang_id BIGINT, nguoi_phu_trach_id BIGINT, nhom_kinh_doanh_id BIGINT, phien_ban INT, " +
                     "tong_tien DECIMAL(15, 2), trang_thai VARCHAR(50), mo_ta_chi_tiet TEXT, ngay_tao DATE)");
 
             st.execute("CREATE TABLE IF NOT EXISTS hoat_dong (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
-                    "ma_ban_ghi VARCHAR(50), tieu_de VARCHAR(255), loai_hoat_dong VARCHAR(50), " +
+                    "ma_hoat_dong VARCHAR(50), tieu_de VARCHAR(255), loai_hoat_dong VARCHAR(50), " +
                     "khach_hang_id BIGINT, co_hoi_id BIGINT, nguoi_phu_trach_id BIGINT, nhom_kinh_doanh_id BIGINT, " +
                     "chi_phi DECIMAL(15, 2), trang_thai VARCHAR(50), mo_ta_chi_tiet TEXT, ngay_tao DATE)");
 
@@ -84,26 +85,26 @@ class PhanQuyenDuLieuDAOTest {
                     "(102, 'Trần Thị B (Sales)', 'sales.b@crm.vn', 'SALES_REP', 1), " +
                     "(201, 'Lê Văn C (Sales HCM)', 'sales.c@crm.vn', 'SALES_REP', 2)");
 
-            // Khách hàng
-            st.execute("INSERT INTO khach_hang (id, ma_ban_ghi, tieu_de, nguoi_phu_trach_id, nhom_kinh_doanh_id, doanh_thu_uoc_tinh, trang_thai, mo_ta_chi_tiet, ngay_tao) VALUES " +
+            // Khách hàng: dùng ma_khach_hang, ten_cong_ty, nguoi_so_huu_id canonical
+            st.execute("INSERT INTO khach_hang (id, ma_khach_hang, ten_cong_ty, nguoi_so_huu_id, nhom_kinh_doanh_id, doanh_thu_uoc_tinh, trang_thai, mo_ta_chi_tiet, ngay_tao) VALUES " +
                     "(1, 'KH-001', 'Công ty FPT', 101, 1, 50000000.00, 'Đang hợp tác', 'Khách FPT', CURRENT_DATE), " +
                     "(5, 'KH-002', 'Tập đoàn Viettel', 102, 1, 150000000.00, 'Tiềm năng', 'Khách Viettel', CURRENT_DATE), " +
                     "(9, 'KH-003', 'Công ty VNG', 201, 2, 80000000.00, 'Đang hợp tác', 'Khách VNG', CURRENT_DATE)");
 
-            // Cơ hội
-            st.execute("INSERT INTO co_hoi (id, ma_ban_ghi, tieu_de, khach_hang_id, nguoi_phu_trach_id, nhom_kinh_doanh_id, gia_tri_du_kien, trang_thai, mo_ta_chi_tiet, ngay_tao) VALUES " +
-                    "(2, 'CH-101', 'CRM cho FPT', 1, 101, 1, 850000000.00, 'Đàm phán', 'Cơ hội FPT', CURRENT_DATE), " +
-                    "(6, 'CH-102', 'CRM Viettel IDC', 5, 102, 1, 1200000000.00, 'Khảo sát', 'Cơ hội Viettel', CURRENT_DATE)");
+            // Cơ hội: dùng ma_co_hoi, ten_co_hoi, nguoi_phu_trach_id canonical
+            st.execute("INSERT INTO co_hoi (id, ma_co_hoi, ten_co_hoi, khach_hang_id, nguoi_phu_trach_id, nhom_kinh_doanh_id, gia_tri_du_kien, xac_suat, trang_thai, mo_ta_chi_tiet, ngay_tao) VALUES " +
+                    "(2, 'CH-101', 'CRM cho FPT', 1, 101, 1, 850000000.00, 50, 'Đàm phán', 'Cơ hội FPT', CURRENT_DATE), " +
+                    "(6, 'CH-102', 'CRM Viettel IDC', 5, 102, 1, 1200000000.00, 60, 'Khảo sát', 'Cơ hội Viettel', CURRENT_DATE)");
 
-            // Báo giá
-            st.execute("INSERT INTO bao_gia (id, ma_ban_ghi, tieu_de, co_hoi_id, khach_hang_id, nguoi_phu_trach_id, nhom_kinh_doanh_id, tong_tien, trang_thai, mo_ta_chi_tiet, ngay_tao) VALUES " +
-                    "(3, 'BG-201', 'Báo giá FPT 100 User', 2, 1, 101, 1, 850000000.00, 'Đã gửi', 'Báo giá FPT', CURRENT_DATE), " +
-                    "(7, 'BG-202', 'Báo giá Viettel IDC', 6, 5, 102, 1, 1200000000.00, 'Chờ duyệt', 'Báo giá Viettel', CURRENT_DATE)");
+            // Báo giá: dùng ma_bao_gia, tieu_de, nguoi_phu_trach_id canonical
+            st.execute("INSERT INTO bao_gia (id, ma_bao_gia, tieu_de, co_hoi_id, khach_hang_id, nguoi_phu_trach_id, nhom_kinh_doanh_id, phien_ban, tong_tien, trang_thai, mo_ta_chi_tiet, ngay_tao) VALUES " +
+                    "(3, 'BG-201', 'Báo giá FPT 100 User', 2, 1, 101, 1, 1, 850000000.00, 'Đã gửi', 'Báo giá FPT', CURRENT_DATE), " +
+                    "(7, 'BG-202', 'Báo giá Viettel IDC', 6, 5, 102, 1, 1, 1200000000.00, 'Chờ duyệt', 'Báo giá Viettel', CURRENT_DATE)");
 
-            // Hoạt động
-            st.execute("INSERT INTO hoat_dong (id, ma_ban_ghi, tieu_de, loai_hoat_dong, khach_hang_id, nguoi_phu_trach_id, nhom_kinh_doanh_id, chi_phi, trang_thai, mo_ta_chi_tiet, ngay_tao) VALUES " +
-                    "(4, 'HD-301', 'Demo bảo mật FPT', 'HOP', 1, 101, 1, 500000.00, 'Hoàn thành', 'Demo FPT', CURRENT_DATE), " +
-                    "(8, 'HD-302', 'Gọi Viettel IDC', 'GOI', 5, 102, 1, 0.00, 'Hoàn thành', 'Gọi Viettel', CURRENT_DATE)");
+            // Hoạt động: dùng ma_hoat_dong, tieu_de, nguoi_phu_trach_id canonical
+            st.execute("INSERT INTO hoat_dong (id, ma_hoat_dong, tieu_de, loai_hoat_dong, khach_hang_id, co_hoi_id, nguoi_phu_trach_id, nhom_kinh_doanh_id, chi_phi, trang_thai, mo_ta_chi_tiet, ngay_tao) VALUES " +
+                    "(4, 'HD-301', 'Demo bảo mật FPT', 'HOP', 1, 2, 101, 1, 500000.00, 'Hoàn thành', 'Demo FPT', CURRENT_DATE), " +
+                    "(8, 'HD-302', 'Gọi Viettel IDC', 'GOI', 5, 6, 102, 1, 0.00, 'Hoàn thành', 'Gọi Viettel', CURRENT_DATE)");
         }
     }
 
@@ -214,5 +215,49 @@ class PhanQuyenDuLieuDAOTest {
         assertEquals("CRM cho FPT - Gói Enterprise", updated.getTieuDe());
         assertEquals("990000000.00", updated.getGiaTri());
         assertEquals("Thành công", updated.getTrangThai());
+    }
+
+    @Test
+    @DisplayName("S1-10 Handover: Bàn giao khách hàng chuyển giao data scope CA_NHAN chính xác, không tồn tại duplicate ownership")
+    void testDAO_BanGiaoKhachHang_S1_10_ChuyenDataScopeChinhXac() throws SQLException {
+        // Ban đầu: Khách hàng ID=1 (FPT) do User A (101) sở hữu
+        List<BanGhiNghiepVuDTO> truocA = dao.layDanhSachTheoBang(LoaiNghiepVu.KHACH_HANG, 101L, 1L, PhamViDuLieu.CA_NHAN, null);
+        boolean aCoKhachFptTruoc = truocA.stream().anyMatch(k -> k.getId() == 1L);
+        assertTrue(aCoKhachFptTruoc, "Trước bàn giao, User A phải thấy khách hàng FPT trong phạm vi CA_NHAN");
+
+        List<BanGhiNghiepVuDTO> truocB = dao.layDanhSachTheoBang(LoaiNghiepVu.KHACH_HANG, 102L, 1L, PhamViDuLieu.CA_NHAN, null);
+        boolean bCoKhachFptTruoc = truocB.stream().anyMatch(k -> k.getId() == 1L);
+        assertFalse(bCoKhachFptTruoc, "Trước bàn giao, User B không được thấy khách hàng FPT trong phạm vi CA_NHAN");
+
+        // Thực hiện bàn giao kịch bản S1-10: Cập nhật duy nhất cột ownership canonical nguoi_so_huu_id từ A (101) sang B (102)
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             Statement st = conn.createStatement()) {
+            int rowsUpdated = st.executeUpdate("UPDATE khach_hang SET nguoi_so_huu_id = 102 WHERE id = 1 AND nguoi_so_huu_id = 101");
+            assertEquals(1, rowsUpdated, "Phải cập nhật thành công 1 khách hàng sang User B");
+        }
+
+        try {
+            // Sau bàn giao:
+            // 1. Data scope CA_NHAN của A không còn thấy FPT
+            List<BanGhiNghiepVuDTO> sauA = dao.layDanhSachTheoBang(LoaiNghiepVu.KHACH_HANG, 101L, 1L, PhamViDuLieu.CA_NHAN, null);
+            boolean aCoKhachFptSau = sauA.stream().anyMatch(k -> k.getId() == 1L);
+            assertFalse(aCoKhachFptSau, "Sau bàn giao, User A KHÔNG còn thấy khách hàng FPT trong phạm vi CA_NHAN");
+
+            // 2. Data scope CA_NHAN của B thấy FPT
+            List<BanGhiNghiepVuDTO> sauB = dao.layDanhSachTheoBang(LoaiNghiepVu.KHACH_HANG, 102L, 1L, PhamViDuLieu.CA_NHAN, null);
+            boolean bCoKhachFptSau = sauB.stream().anyMatch(k -> k.getId() == 1L);
+            assertTrue(bCoKhachFptSau, "Sau bàn giao, User B phải thấy khách hàng FPT trong phạm vi CA_NHAN");
+
+            // 3. Kiểm tra bản ghi chi tiết: field ownership canonical duy nhất chỉ đến User B (102)
+            BanGhiNghiepVuDTO chiTiet = dao.timBanGhiTheoId(1L, LoaiNghiepVu.KHACH_HANG);
+            assertNotNull(chiTiet);
+            assertEquals(102L, chiTiet.getNguoiPhuTrachId(), "Field ownership canonical của khách hàng phải chỉ đích danh User B");
+        } finally {
+            // Khôi phục lại trạng thái ban đầu để tránh ảnh hưởng các test khác
+            try (Connection conn = DatabaseConnection.layKetNoi();
+                 Statement st = conn.createStatement()) {
+                st.executeUpdate("UPDATE khach_hang SET nguoi_so_huu_id = 101 WHERE id = 1");
+            }
+        }
     }
 }
