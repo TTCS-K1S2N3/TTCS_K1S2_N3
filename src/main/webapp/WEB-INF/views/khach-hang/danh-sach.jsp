@@ -7,64 +7,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Danh mục khách hàng & Ghi chú cuộc gặp - Hệ thống CRM Bán Hàng">
     <title>Danh Mục Khách Hàng - CRM Bán Hàng</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/khach-hang/khach-hang.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
     <script>
         window.CONTEXT_PATH = "${pageContext.request.contextPath}";
     </script>
 </head>
-<body>
-    <!-- Top Navigation Bar -->
-    <header class="navbar">
-        <a href="${pageContext.request.contextPath}/khach-hang" class="nav-brand">
-            <div class="nav-brand-logo">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                </svg>
-            </div>
-            <span>CRM Doanh Nghiệp</span>
-        </a>
+<body class="crm-body">
+    <!-- Thanh điều hướng và Sidebar chuẩn hệ thống S1-06 -->
+    <jsp:include page="/WEB-INF/views/layout/navigation.jsp" />
 
-        <div class="nav-user-panel">
-            <!-- Story S1-02: Thanh trạng thái phiên đăng nhập bảo mật và đếm ngược -->
-            <div class="session-indicator" id="session-indicator-box" title="Trạng thái phiên đăng nhập bảo mật">
-                <span class="session-dot active" id="session-status-dot"></span>
-                <span id="session-status-text">Phiên hoạt động</span>
-                <span class="session-countdown" id="session-countdown-timer" title="Thời gian phiên còn lại">30:00</span>
-            </div>
-
-            <div class="user-avatar" title="Tài khoản cá nhân">
-                <c:out value="${not empty nguoiDung ? nguoiDung.tenVietTat : 'CRM'}" />
-            </div>
-            <div class="user-info">
-                <span class="user-name">
-                    <c:out value="${not empty nguoiDung ? nguoiDung.hoTen : 'Nhân viên kinh doanh'}" />
-                </span>
-                <span class="user-role">
-                    <c:choose>
-                        <c:when test="${not empty nguoiDung and not empty nguoiDung.tenNhomKinhDoanh}">
-                            <c:out value="${nguoiDung.tenNhomKinhDoanh}" />
-                        </c:when>
-                        <c:otherwise>Khối Kinh Doanh</c:otherwise>
-                    </c:choose>
-                </span>
-            </div>
-
-            <!-- AC2: Đăng xuất an toàn bằng POST -->
-            <form action="${pageContext.request.contextPath}/dang-xuat" method="post" style="display:inline; margin:0;" id="form-logout">
-                <button type="submit" class="btn-logout" id="btn-logout" title="Đăng xuất và hủy phiên bảo mật trên server">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
-                    </svg>
-                    <span>Đăng xuất</span>
-                </button>
-            </form>
-        </div>
-    </header>
-
-    <main class="page-container">
+    <main class="crm-main-content page-container" id="crm-main-content">
         <!-- Story S1-02: Khu vực soạn thảo ghi chú cuộc gặp (Ngồi ở quán cà phê không bị mất ghi chú) -->
         <div class="card" style="margin-bottom: 24px;">
             <div class="card-title">
@@ -78,12 +32,20 @@
                     </svg>
                     <span>Ghi chú cuộc gặp khách hàng (Duy trì phiên & Tự động lưu)</span>
                 </div>
-                <span class="badge-info">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    Auto Keep-Alive Active
-                </span>
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <!-- Story S1-02: Thanh trạng thái phiên đăng nhập bảo mật và đếm ngược -->
+                    <div class="session-indicator" id="session-indicator-box" title="Trạng thái phiên đăng nhập bảo mật">
+                        <span class="session-dot active" id="session-status-dot"></span>
+                        <span id="session-status-text">Phiên hoạt động</span>
+                        <span class="session-countdown" id="session-countdown-timer" title="Thời gian phiên còn lại">30:00</span>
+                    </div>
+                    <span class="badge-info">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        Auto Keep-Alive Active
+                    </span>
+                </div>
             </div>
 
             <p style="color: var(--slate-500); font-size: 13.5px; margin-bottom: 14px;">
@@ -221,6 +183,7 @@
         </div>
     </main>
 
+    <script src="${pageContext.request.contextPath}/assets/js/navigation.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/session-keep-alive.js"></script>
 </body>
 </html>

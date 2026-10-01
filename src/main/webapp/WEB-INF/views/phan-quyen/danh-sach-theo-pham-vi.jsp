@@ -10,11 +10,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phân Quyền Theo Dữ Liệu Sở Hữu - CRM Bán Hàng (S1-05)</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/phan-quyen/data-scope.css">
 </head>
-<body>
+<body class="crm-body">
 
-<div class="scope-container">
+    <!-- Thanh điều hướng và Sidebar chuẩn hệ thống S1-06 -->
+    <jsp:include page="/WEB-INF/views/layout/navigation.jsp" />
+
+    <main class="crm-main-content" id="crm-main-content">
+        <div class="scope-container">
 
     <%
         NguoiDungDTO currentUser = (NguoiDungDTO) request.getAttribute("currentUser");
@@ -273,9 +278,9 @@
             </a>
         </div>
     </div>
+    </main>
 
-</div>
-
+<script src="${pageContext.request.contextPath}/assets/js/navigation.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/phan-quyen/data-scope.js"></script>
 </body>
 </html>

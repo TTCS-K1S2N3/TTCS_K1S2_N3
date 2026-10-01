@@ -20,11 +20,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tạo Tài khoản Người dùng - CRM</title>
     <meta name="description" content="Tạo tài khoản mới, gán vai trò và gửi email kích hoạt cho nhân viên kinh doanh.">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/nguoi-dung/nguoi-dung.css">
 </head>
-<body>
+<body class="crm-body">
 
-<div class="nguoi-dung-container">
+    <!-- Thanh điều hướng và Sidebar chuẩn hệ thống S1-06 -->
+    <jsp:include page="/WEB-INF/views/layout/navigation.jsp" />
+
+    <main class="crm-main-content" id="crm-main-content">
+        <div class="nguoi-dung-container">
 
     <!-- ===== HEADER ===== -->
     <div class="page-header">
@@ -191,8 +196,10 @@
         </form>
     </div><%-- end form-card --%>
 
-</div><%-- end nguoi-dung-container --%>
+    </div><%-- end nguoi-dung-container --%>
+    </main>
 
+<script src="${pageContext.request.contextPath}/assets/js/navigation.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/nguoi-dung/nguoi-dung.js"></script>
 </body>
 </html>

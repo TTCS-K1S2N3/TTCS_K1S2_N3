@@ -18,7 +18,7 @@ import java.io.IOException;
  * - Chuyển hướng về trang đăng nhập với thông báo xác nhận
  * URL: /dang-xuat, /logout
  */
-@WebServlet(name = "DangXuatServlet", urlPatterns = {"/dang-xuat", "/logout"})
+@WebServlet(name = "DangXuatServlet", urlPatterns = {"/dang-xuat", "/logout", "/auth/logout"})
 public class DangXuatServlet extends HttpServlet {
 
     private PhienService phienService;
