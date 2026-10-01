@@ -7,7 +7,7 @@
 -- ====================================================================
 
 -- 1. Cập nhật phạm vi tối đa cho bảng vai_tro (đã tạo ở S1-02)
-ALTER TABLE `vai_tro` ADD COLUMN IF NOT EXISTS `pham_vi_toi_da` VARCHAR(50) NOT NULL DEFAULT 'CA_NHAN';
+ALTER TABLE `vai_tro` ADD COLUMN `pham_vi_toi_da` VARCHAR(50) NOT NULL DEFAULT 'CA_NHAN';
 
 UPDATE `vai_tro` SET `pham_vi_toi_da` = 'TOAN_BO' WHERE `ma_vai_tro` IN ('ADMIN', 'DIRECTOR', 'ACCOUNTANT');
 UPDATE `vai_tro` SET `pham_vi_toi_da` = 'NHOM' WHERE `ma_vai_tro` = 'TEAM_LEAD';
