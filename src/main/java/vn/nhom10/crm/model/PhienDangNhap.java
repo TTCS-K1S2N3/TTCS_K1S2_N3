@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 
 /**
- * Model quản lý phiên đăng nhập người dùng (Story S1-02).
+ * Model quản lý phiên đăng nhập người dùng (Story S1-02, S1-04).
  */
 public class PhienDangNhap implements Serializable {
 
@@ -12,6 +12,7 @@ public class PhienDangNhap implements Serializable {
 
     public static final String TRANG_THAI_HOAT_DONG = "HOAT_DONG";
     public static final String TRANG_THAI_DA_DANG_XUAT = "DA_DANG_XUAT";
+    public static final String TRANG_THAI_DA_THU_HOI = "DA_THU_HOI";
     public static final String TRANG_THAI_HET_HAN = "HET_HAN";
 
     private long id;
@@ -112,6 +113,10 @@ public class PhienDangNhap implements Serializable {
 
     public boolean isDangHoatDong() {
         return TRANG_THAI_HOAT_DONG.equalsIgnoreCase(trangThai);
+    }
+
+    public boolean isDaThuHoi() {
+        return TRANG_THAI_DA_THU_HOI.equalsIgnoreCase(trangThai);
     }
 
     /**

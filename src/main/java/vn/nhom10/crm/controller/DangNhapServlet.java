@@ -10,6 +10,7 @@ import vn.nhom10.crm.dto.KetQuaDangNhapDTO;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.service.DangNhapService;
 import vn.nhom10.crm.service.PhienService;
+import vn.nhom10.crm.util.SessionRegistry;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -17,7 +18,7 @@ import java.util.logging.Logger;
 
 /**
  * Controller tiếp nhận và xử lý yêu cầu đăng nhập vào hệ thống CRM.
- * Hỗ trợ xác thực bảo mật (S1-01) và quản lý phiên an toàn (S1-02).
+ * Hỗ trợ xác thực bảo mật (S1-01), quản lý phiên an toàn (S1-02), và đăng ký phiên SessionRegistry (S1-04).
  * URL: /dang-nhap, /login
  */
 @WebServlet(name = "DangNhapServlet", urlPatterns = {"/dang-nhap", "/login"})
@@ -70,6 +71,10 @@ public class DangNhapServlet extends HttpServlet {
             // AC3 (S1-02): Phiên hết hạn đưa về trang đăng nhập kèm thông báo rõ ràng
             request.setAttribute("thongBaoLoi", "Phiên làm việc của bạn đã hết hạn do không có hoạt động. Vui lòng đăng nhập lại để tiếp tục làm việc an toàn.");
             request.setAttribute("maLoi", "SESSION_EXPIRED");
+        } else if ("session_revoked".equalsIgnoreCase(error)) {
+            // S1-04: Phiên bị thu hồi do đổi mật khẩu ở thiết bị khác
+            request.setAttribute("thongBaoLoi", "Phiên đăng nhập đã bị thu hồi do tài khoản đã đổi mật khẩu trên thiết bị khác. Vui lòng đăng nhập lại với mật khẩu mới.");
+            request.setAttribute("maLoi", "SESSION_REVOKED");
         } else if ("auth_required".equalsIgnoreCase(error) || "chua_dang_nhap".equalsIgnoreCase(error)) {
             request.setAttribute("thongBaoLoi", "Vui lòng đăng nhập để truy cập hệ thống CRM.");
         }
@@ -109,6 +114,13 @@ public class DangNhapServlet extends HttpServlet {
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Không thể lưu phiên đăng nhập vào DB: " + e.getMessage());
                 }
+            }
+
+            // S1-04: Đăng ký phiên vào SessionRegistry trong bộ nhớ container
+            try {
+                SessionRegistry.getInstance().dangKyPhien(user.getId(), session);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Không thể đăng ký phiên vào SessionRegistry: " + e.getMessage());
             }
 
             // Chuyển hướng tới trang chủ tương ứng với vai trò
