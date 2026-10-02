@@ -246,6 +246,12 @@ body {
     color: var(--crm-info-text);
 }
 
+.alert-warning {
+    background-color: #fffbeb;
+    border-color: #fde68a;
+    color: #92400e;
+}
+
 /* ==========================================================================
    APP HEADER & WORKSPACE LAYOUT
    ========================================================================== */

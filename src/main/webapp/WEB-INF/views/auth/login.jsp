@@ -31,7 +31,19 @@
                 }
             %>
 
-            <%-- Thông báo đăng xuất thành công --%>
+            <%-- Thông báo phiên hết hạn do không có hoạt động (S1-02-AC3) --%>
+            <%
+                String timeoutParam = request.getParameter("timeout");
+                if ("1".equals(timeoutParam)) {
+            %>
+                <div class="alert alert-warning" role="alert" id="loginAlertTimeout">
+                    Phiên đăng nhập đã hết hạn do không có hoạt động. Vui lòng đăng nhập lại để tiếp tục làm việc.
+                </div>
+            <%
+                }
+            %>
+
+            <%-- Thông báo đăng xuất thành công (S1-02-AC2) --%>
             <%
                 String logoutParam = request.getParameter("logout");
                 if ("1".equals(logoutParam)) {

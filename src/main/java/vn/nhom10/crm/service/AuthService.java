@@ -135,4 +135,12 @@ public class AuthService {
             }
         }
     }
+
+    /**
+     * Ghi nhận phiên đăng nhập mới trong cơ sở dữ liệu.
+     */
+    public boolean ghiNhanPhienDangNhap(Long nguoiDungId, String maPhienHash, int sessionVersion,
+                                        String ip, String thietBi, int phutHetHan) {
+        return phienDangNhapDAO.taoPhien(nguoiDungId, maPhienHash, sessionVersion, ip, thietBi, phutHetHan);
+    }
 }

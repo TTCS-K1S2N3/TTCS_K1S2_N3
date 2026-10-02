@@ -112,5 +112,14 @@
         </section>
     </main>
 
+    <script>
+        // Xử lý bfcache (Back/Forward Cache): khi người dùng bấm nút Back sau khi đăng xuất,
+        // nếu DOM được khôi phục từ cache trình duyệt, ép reload để AuthFilter phía server chặn và chuyển hướng về /login.
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted || (window.performance && window.performance.navigation && window.performance.navigation.type === 2)) {
+                window.location.reload();
+            }
+        });
+    </script>
 </body>
 </html>

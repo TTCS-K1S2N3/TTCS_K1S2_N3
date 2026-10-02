@@ -89,6 +89,7 @@ class LoginServletTest {
         lenient().when(request.getContextPath()).thenReturn("/crm");
         lenient().when(request.getSession(false)).thenReturn(null);
         lenient().when(request.getSession(true)).thenReturn(session);
+        lenient().when(session.getId()).thenReturn("mock-session-id");
 
         when(authService.dangNhap(eq("director@crm.vn"), eq("Secr3t#123"), anyString(), anyString(), isNull()))
                 .thenReturn(DangNhapResult.thanhCong(user));

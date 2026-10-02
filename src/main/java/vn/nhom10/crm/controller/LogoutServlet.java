@@ -45,14 +45,29 @@ public class LogoutServlet extends HttpServlet {
     private void xuLyDangXuat(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         HttpSession session = req.getSession(false);
         if (session != null) {
-            String rawSessionId = session.getId();
+            String maPhienHash = null;
             try {
-                String maPhienHash = PasswordUtil.sha256Hex(rawSessionId);
-                phienDangNhapDAO.thuHoiPhien(maPhienHash, "Nguoi dung chu dong dang xuat");
-            } catch (Exception e) {
-                logger.warn("Không thu hồi được bản ghi phiên: {}", e.getMessage());
+                maPhienHash = (String) session.getAttribute("maPhienHash");
+                if (maPhienHash == null) {
+                    maPhienHash = PasswordUtil.sha256Hex(session.getId());
+                }
+            } catch (IllegalStateException e) {
+                // Session có thể đã bị invalidate trước đó
             }
-            session.invalidate();
+
+            if (maPhienHash != null) {
+                try {
+                    phienDangNhapDAO.thuHoiPhien(maPhienHash, "Đăng xuất chủ động");
+                } catch (Exception e) {
+                    logger.warn("Không thu hồi được bản ghi phiên: {}", e.getMessage());
+                }
+            }
+
+            try {
+                session.invalidate();
+            } catch (IllegalStateException e) {
+                // Bỏ qua nếu session đã mất hiệu lực
+            }
         }
         resp.sendRedirect(req.getContextPath() + "/login?logout=1");
     }

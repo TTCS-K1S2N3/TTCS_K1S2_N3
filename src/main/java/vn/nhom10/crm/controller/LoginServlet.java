@@ -58,12 +58,8 @@ public class LoginServlet extends HttpServlet {
 
         // Chuẩn bị session mới
         HttpSession oldSession = req.getSession(false);
-        String rawSessionId = null;
-        if (oldSession != null) {
-            rawSessionId = oldSession.getId();
-        }
 
-        DangNhapResult result = authService.dangNhap(email, matKhau, ip, thietBi, rawSessionId);
+        DangNhapResult result = authService.dangNhap(email, matKhau, ip, thietBi, null);
 
         if (result.isThanhCong()) {
             // Đăng nhập thành công: tạo phiên an toàn, chống session fixation
@@ -72,6 +68,19 @@ public class LoginServlet extends HttpServlet {
             }
             HttpSession newSession = req.getSession(true);
             newSession.setAttribute("user", result.getNguoiDung());
+            newSession.setMaxInactiveInterval(30 * 60);
+
+            String rawNewSessionId = newSession.getId();
+            String maPhienHash = vn.nhom10.crm.util.PasswordUtil.sha256Hex(rawNewSessionId);
+            newSession.setAttribute("maPhienHash", maPhienHash);
+            authService.ghiNhanPhienDangNhap(
+                    result.getNguoiDung().getId(),
+                    maPhienHash,
+                    result.getNguoiDung().getSessionVersion(),
+                    ip,
+                    thietBi,
+                    30
+            );
 
             logger.info("Đăng nhập thành công cho người dùng {}, chuyển hướng tới /home", email);
             resp.sendRedirect(req.getContextPath() + "/home");

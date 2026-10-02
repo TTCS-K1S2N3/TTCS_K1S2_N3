@@ -187,18 +187,19 @@ Sau đó người dùng tự deploy Tomcat, kiểm tra giao diện + chức năn
 
 **Acceptance Criteria — nguyên văn, không tóm tắt:**
 
-- [ ] **S1-01-AC1** — Đăng nhập đúng thì vào được trang chủ tương ứng với vai trò [READY_FOR_USER_QA]
-- [ ] **S1-01-AC2** — Sai thông tin hiển thị thông báo chung, không tiết lộ email có tồn tại hay không [READY_FOR_USER_QA]
-- [ ] **S1-01-AC3** — Khoá tạm 15 phút sau 5 lần sai liên tiếp [READY_FOR_USER_QA]
+- [x] **S1-01-AC1** — Đăng nhập đúng thì vào được trang chủ tương ứng với vai trò [PASS]
+- [x] **S1-01-AC2** — Sai thông tin hiển thị thông báo chung, không tiết lộ email có tồn tại hay không [PASS]
+- [x] **S1-01-AC3** — Khoá tạm 15 phút sau 5 lần sai liên tiếp [PASS]
 
 **Theo dõi thực thi:**
 
-- Story status: `READY_FOR_USER_QA`
-- FE: `READY_FOR_USER_QA`
-- BE: `READY_FOR_USER_QA`
-- DB integration: `READY_FOR_USER_QA`
-- Automated test: `READY_FOR_USER_QA`
-- Manual QA của người dùng: `TODO`
+- Story status: `DONE`
+- FE: `PASS`
+- BE: `PASS`
+- DB integration: `PASS`
+- Automated test: `PASS`
+- Manual QA của người dùng: `PASS`
+- User QA: PASS
 - Evidence:
   - S1-01-AC1: `AuthServiceTest.testS1_01_AC1_DangNhapDung_ThanhCongVaTraVeVaiTro` (PASS), `LoginServletTest.testDoPost_DangNhapThanhCong_ChuyenHuongTrangChu` (PASS), `AuthDatabaseIntegrationTest.testDangNhapDung_MySQL` (PASS). Đăng nhập đúng điều hướng tới `/home` với view tùy biến theo vai trò.
   - S1-01-AC2: `AuthServiceTest.testS1_01_AC2_EmailKhongTonTai_ThongBaoChung` (PASS), `AuthServiceTest.testS1_01_AC2_MatKhauSai_ThongBaoChungDongNhat` (PASS), `LoginServletTest.testDoPost_DangNhapThatBai_TraVeFormVoiThongBao` (PASS), `AuthDatabaseIntegrationTest.testSaiThongTin_MySQL` (PASS). Email không tồn tại hoặc sai mật khẩu đều trả về cùng một thông báo chung: "Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại."
@@ -208,7 +209,7 @@ Sau đó người dùng tự deploy Tomcat, kiểm tra giao diện + chức năn
 - File tạo/sửa:
   - Tạo mới: `DatabaseConfig.java`, `NguoiDung.java`, `VaiTro.java`, `DangNhapResult.java`, `CauHinhHeThongDAO.java`, `NguoiDungDAO.java`, `PhienDangNhapDAO.java`, `AuthService.java`, `EncodingFilter.java`, `AuthFilter.java`, `LoginServlet.java`, `HomeServlet.java`, `LogoutServlet.java`, `PasswordUtil.java`, `login.jsp`, `home/index.jsp`, `style.css`, `PasswordUtilTest.java`, `AuthServiceTest.java`, `LoginServletTest.java`, `AuthDatabaseIntegrationTest.java`.
   - Sửa: `pom.xml`, `PLAN/infoTechnology.md`, `MASTER_INTEGRATION/Ke_Hoach.md`.
-- Lỗi QA / ghi chú: Chờ người dùng deploy WAR lên Tomcat và tiến hành manual QA.
+- Lỗi QA / ghi chú: Người dùng đã QA và commit/push lên nhánh integration/sprint-1 thành công.
 
 ---
 
@@ -220,21 +221,30 @@ Sau đó người dùng tự deploy Tomcat, kiểm tra giao diện + chức năn
 
 **Acceptance Criteria — nguyên văn, không tóm tắt:**
 
-- [ ] **S1-02-AC1** — Phiên được gia hạn tự động khi còn hoạt động
-- [ ] **S1-02-AC2** — Đăng xuất làm mất hiệu lực phiên ngay lập tức phía server
-- [ ] **S1-02-AC3** — Phiên hết hạn đưa về trang đăng nhập kèm thông báo rõ ràng
+- [x] **S1-02-AC1** — Phiên được gia hạn tự động khi còn hoạt động [PASS]
+- [x] **S1-02-AC2** — Đăng xuất làm mất hiệu lực phiên ngay lập tức phía server [PASS]
+- [x] **S1-02-AC3** — Phiên hết hạn đưa về trang đăng nhập kèm thông báo rõ ràng [PASS]
 
 **Theo dõi thực thi:**
 
-- Story status: `TODO`
-- FE: `TODO`
-- BE: `TODO`
-- DB integration: `TODO`
-- Automated test: `TODO`
-- Manual QA của người dùng: `TODO`
-- Evidence: _chưa có_
-- File tạo/sửa: _chưa có_
-- Lỗi QA / ghi chú: _chưa có_
+- Story status: `DONE`
+- FE: `PASS`
+- BE: `PASS`
+- DB integration: `PASS`
+- Automated test: `PASS`
+- Manual QA của người dùng: `PASS`
+- User QA: PASS
+- Evidence:
+  - S1-02-AC1: `AuthFilterSessionTest.testD_DBSessionHopLe_RequestPassVaGiaHan` (PASS), `SessionListenerTest.testSessionCreated_SetsMaxInactiveInterval` (PASS), `SessionDatabaseIntegrationTest.testGiaHanPhienTuDong_MySQL` (PASS). Khi có request từ phiên còn hoạt động, tự động gia hạn 30 phút trên container và cập nhật `hoat_dong_cuoi_luc = NOW()`, `het_han_luc = NOW() + 30 phút` trong MySQL qua `PhienDangNhapDAO.giaHanPhien()`.
+  - S1-02-AC2: `LogoutServletTest.testDoGet_DangXuat_MatHieuLucPhienVaThuHoiDB` (PASS), `LogoutServletTest.testDoPost_DangXuat_MatHieuLucPhien` (PASS), `LogoutServletTest.testDangXuat_KhongCoSession_ChuyenHuongAnToan` (PASS), `SessionDatabaseIntegrationTest.testDangXuatMatHieuLucPhien_MySQL` (PASS). Đăng xuất gọi `session.invalidate()` hủy phiên ngay lập tức phía server, cập nhật `trang_thai = 'THU_HOI'` trong database và chuyển hướng về `/login?logout=1`.
+  - S1-02-AC3: `AuthFilterSessionTest.testA_HttpSessionConTonTai_NhungDBSessionHetHan_RedirectLoginTimeout` (PASS), `AuthFilterSessionTest.testB_HttpSessionCoUser_ThieuMaPhienHash_MustNotAccessHome` (PASS), `AuthFilterSessionTest.testC_DBSessionThuHoi_MustNotAccessHome` (PASS), `SessionListenerTest.testSessionDestroyed_DanhDauHetHanTrongDB` (PASS), `SessionDatabaseIntegrationTest.testPhienQuaHanVaDanhDauHetHan_MySQL` (PASS), `SessionDatabaseIntegrationTest.testE_RealMySQLEndToEnd_EpQuaHan_FilterTuChoiVaChuyenHuongLoginTimeout` (PASS). Phiên hết hạn trong DB (`het_han_luc <= NOW()`) hoặc trên browser container đều bị từ chối truy cập `/home`, tự động đánh dấu `HET_HAN` trong DB, invalidate session và đưa về `/login?timeout=1` hiển thị thông báo rõ ràng.
+  - S1-02 Hardening Cache: `AuthFilterSessionTest.testProtectedResponse_BatBuocGuiNoCacheHeaders` (PASS), `AuthFilterSessionTest.testAssets_KhongBiRedirectVaKhongApDungNoCache` (PASS). Toàn bộ protected response gửi header `Cache-Control: no-store, no-cache, must-revalidate, max-age=0`, `Pragma: no-cache`, `Expires: 0` (không áp dụng lên `/assets/**`); `index.jsp` tích hợp `pageshow` listener ép reload khi khôi phục từ bfcache.
+  - Maven tests: 35/35 tests PASS (`mvn clean test`).
+  - Maven package: WAR `target/crm-ban-hang.war` build thành công (`mvn clean package`).
+- File tạo/sửa:
+  - Tạo mới: `SessionListener.java`, `LogoutServletTest.java`, `AuthFilterSessionTest.java`, `SessionListenerTest.java`, `SessionDatabaseIntegrationTest.java`.
+  - Sửa: `PhienDangNhapDAO.java`, `AuthFilter.java`, `LoginServlet.java`, `LogoutServlet.java`, `AuthService.java`, `login.jsp`, `home/index.jsp`, `style.css`, `LoginServletTest.java`, `MASTER_INTEGRATION/Ke_Hoach.md`.
+- Lỗi QA / ghi chú: Người dùng đã QA và xác nhận PASS toàn bộ AC1, AC2, AC3.
 
 ---
 
