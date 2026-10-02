@@ -1,0 +1,892 @@
+/* ==========================================================================
+   CRM BÁN HÀNG - ERROR PAGES STYLESHEET (Story S1-07)
+   Giao diện trang báo lỗi dùng chung ứng dụng & điều hướng luồng làm việc
+   ========================================================================== */
+
+:root {
+    /* Bảng màu chính (Brand Colors) */
+    --color-primary: #2563eb;
+    --color-primary-hover: #1d4ed8;
+    --color-primary-active: #1e40af;
+    --color-primary-light: #eff6ff;
+    --color-primary-ring: rgba(37, 99, 235, 0.2);
+
+    /* Màu trung tính (Neutrals) */
+    --color-bg-page: #f8fafc;
+    --color-bg-surface: #ffffff;
+    --color-bg-subtle: #f1f5f9;
+    --color-border: #e2e8f0;
+    --color-border-subtle: #cbd5e1;
+    --color-text-main: #0f172a;
+    --color-text-body: #334155;
+    --color-text-muted: #64748b;
+    --color-text-light: #94a3b8;
+
+    /* Màu sắc theo loại lỗi (Semantic Status Colors) */
+    --color-warning: #d97706;
+    --color-warning-hover: #b45309;
+    --color-warning-bg: #fffbeb;
+    --color-warning-border: #fde68a;
+    --color-warning-ring: rgba(217, 119, 6, 0.2);
+
+    --color-danger: #dc2626;
+    --color-danger-hover: #b91c1c;
+    --color-danger-bg: #fef2f2;
+    --color-danger-border: #fecaca;
+    --color-danger-ring: rgba(220, 38, 38, 0.2);
+
+    --color-info: #0284c7;
+    --color-info-hover: #0369a1;
+    --color-info-bg: #f0f9ff;
+    --color-info-border: #bae6fd;
+    --color-info-ring: rgba(2, 132, 199, 0.2);
+
+    --color-success: #059669;
+    --color-success-bg: #ecfdf5;
+    --color-success-border: #a7f3d0;
+
+    /* Bo góc và đổ bóng (Radius & Shadows) */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+    --shadow-focus: 0 0 0 3px var(--color-primary-ring);
+
+    /* Chuyển động (Transitions) */
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.25s ease;
+}
+
+/* --------------------------------------------------------------------------
+   RESET & CƠ BẢN
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-text-body);
+    background-color: var(--color-bg-page);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+a:hover {
+    color: var(--color-primary-hover);
+}
+
+/* --------------------------------------------------------------------------
+   AC1: HEADER DÙNG CHUNG GIAO DIỆN ỨNG DỤNG (APP HEADER)
+   -------------------------------------------------------------------------- */
+.app-header {
+    background-color: var(--color-bg-surface);
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: var(--shadow-sm);
+}
+
+.app-header-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+/* Logo & Tên hệ thống */
+.brand-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    flex-shrink: 0;
+}
+
+.brand-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: -0.5px;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
+
+.brand-text-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--color-text-main);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+.brand-subtitle {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    letter-spacing: 0.02em;
+}
+
+/* Thanh điều hướng chính */
+.main-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+}
+
+.nav-link:hover {
+    color: var(--color-primary);
+    background-color: var(--color-primary-light);
+}
+
+.nav-link.active {
+    color: var(--color-primary);
+    background-color: var(--color-primary-light);
+    font-weight: 600;
+}
+
+.nav-icon {
+    font-size: 15px;
+}
+
+/* Khu vực tài khoản người dùng bên phải */
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-badge-logged {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 12px 4px 4px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+}
+
+.user-avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.user-meta {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.user-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-main);
+    line-height: 1.2;
+}
+
+.user-role-label {
+    font-size: 11px;
+    color: var(--color-text-muted);
+}
+
+.btn-header-logout {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+}
+
+.btn-header-logout:hover {
+    color: var(--color-danger);
+    background-color: var(--color-danger-bg);
+}
+
+.btn-header-login {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    background-color: var(--color-primary);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.btn-header-login:hover {
+    background-color: var(--color-primary-hover);
+    color: #ffffff;
+}
+
+/* Nút toggle menu trên thiết bị di động */
+.mobile-nav-toggle {
+    display: none;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--color-text-main);
+}
+
+.mobile-menu-drawer {
+    display: none;
+    background-color: var(--color-bg-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: 16px 24px;
+    box-shadow: var(--shadow-md);
+}
+
+.mobile-menu-drawer.open {
+    display: block;
+}
+
+.mobile-menu-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mobile-menu-list a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-body);
+}
+
+.mobile-menu-list a:hover {
+    background-color: var(--color-bg-subtle);
+    color: var(--color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   THANH BREADCRUMB (VỊ TRÍ NGƯỜI DÙNG)
+   -------------------------------------------------------------------------- */
+.breadcrumb-wrapper {
+    background-color: var(--color-bg-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: 10px 0;
+}
+
+.breadcrumb-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+.breadcrumb-item a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+    color: var(--color-primary);
+}
+
+.breadcrumb-separator {
+    color: var(--color-text-light);
+    font-size: 11px;
+}
+
+.breadcrumb-current {
+    font-weight: 600;
+    color: var(--color-text-main);
+}
+
+/* --------------------------------------------------------------------------
+   KHU VỰC NỘI DUNG CHÍNH (MAIN ERROR AREA)
+   -------------------------------------------------------------------------- */
+.error-main-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 20px;
+}
+
+.error-card-container {
+    width: 100%;
+    max-width: 720px;
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 44px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInSlideUp 0.35s ease-out;
+}
+
+@keyframes fadeInSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Đường viền nhấn màu trên đỉnh thẻ lỗi */
+.error-card-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background-color: var(--color-primary);
+}
+
+.error-card-container.theme-warning::before {
+    background-color: var(--color-warning);
+}
+
+.error-card-container.theme-danger::before {
+    background-color: var(--color-danger);
+}
+
+.error-card-container.theme-info::before {
+    background-color: var(--color-info);
+}
+
+/* Huy hiệu mã lỗi (Status Badge) */
+.error-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 24px;
+}
+
+.error-status-badge.badge-warning {
+    background-color: var(--color-warning-bg);
+    color: var(--color-warning-hover);
+    border: 1px solid var(--color-warning-border);
+}
+
+.error-status-badge.badge-danger {
+    background-color: var(--color-danger-bg);
+    color: var(--color-danger-hover);
+    border: 1px solid var(--color-danger-border);
+}
+
+.error-status-badge.badge-info {
+    background-color: var(--color-info-bg);
+    color: var(--color-info-hover);
+    border: 1px solid var(--color-info-border);
+}
+
+.badge-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background-color: currentColor;
+    display: inline-block;
+    animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* Biểu tượng đồ họa minh họa lỗi */
+.error-visual-icon {
+    font-size: 64px;
+    line-height: 1;
+    margin-bottom: 20px;
+    display: inline-block;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.06));
+}
+
+/* Tiêu đề lỗi */
+.error-main-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--color-text-main);
+    line-height: 1.3;
+    margin-bottom: 12px;
+    letter-spacing: -0.015em;
+}
+
+/* Mô tả ngắn gọn */
+.error-main-description {
+    font-size: 16px;
+    color: var(--color-text-body);
+    line-height: 1.6;
+    margin-bottom: 16px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Hướng dẫn chi tiết / lời giải thích bổ sung */
+.error-guidance-box {
+    background-color: var(--color-bg-page);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    font-size: 13.5px;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin-bottom: 28px;
+    text-align: left;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.guidance-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.guidance-text {
+    flex: 1;
+}
+
+/* --------------------------------------------------------------------------
+   AC2: KHỐI HÀNH ĐỘNG GỢI Ý ĐỂ QUAY LẠI LUỒNG LÀM VIỆC (ACTION RECOMMENDATIONS)
+   -------------------------------------------------------------------------- */
+.action-recommendation-panel {
+    background-color: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    margin-bottom: 28px;
+    text-align: left;
+}
+
+.recommendation-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.recommendation-header-icon {
+    font-size: 18px;
+}
+
+.recommendation-header-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-text-main);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Nhóm các nút hành động */
+.action-button-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Nút hành động chính (Primary Action) */
+.btn-action-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background-color: var(--color-primary);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+}
+
+.btn-action-primary:hover {
+    background-color: var(--color-primary-hover);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+}
+
+.btn-action-primary:active {
+    transform: translateY(0);
+}
+
+/* Nút hành động phụ (Secondary Action) */
+.btn-action-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 22px;
+    background-color: var(--color-bg-surface);
+    color: var(--color-text-main);
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    border: 1px solid var(--color-border-subtle);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-action-secondary:hover {
+    background-color: var(--color-bg-subtle);
+    border-color: var(--color-text-light);
+    color: var(--color-text-main);
+    transform: translateY(-1px);
+}
+
+.btn-action-secondary:active {
+    transform: translateY(0);
+}
+
+/* Nút sao chép mã sự cố (Copy Error Code Button) */
+.btn-action-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 11px 18px;
+    background-color: var(--color-bg-surface);
+    color: var(--color-text-body);
+    font-size: 13.5px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    border: 1px dashed var(--color-border-subtle);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-action-copy:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background-color: var(--color-primary-light);
+}
+
+/* --------------------------------------------------------------------------
+   ĐIỀU HƯỚNG NHANH TỚI CÁC PHÂN HỆ CRM (QUICK NAVIGATION TILES)
+   -------------------------------------------------------------------------- */
+.quick-navigation-section {
+    border-top: 1px solid var(--color-border);
+    padding-top: 24px;
+    margin-top: 8px;
+}
+
+.quick-nav-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.quick-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.quick-nav-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 14px 8px;
+    background-color: var(--color-bg-page);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--color-text-body);
+    transition: all var(--transition-fast);
+}
+
+.quick-nav-tile:hover {
+    background-color: var(--color-primary-light);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.quick-nav-tile-icon {
+    font-size: 20px;
+}
+
+.quick-nav-tile-name {
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   KHỐI THÔNG TIN KỸ THUẬT (COLLAPSIBLE TECHNICAL DETAILS)
+   -------------------------------------------------------------------------- */
+.technical-details-wrapper {
+    margin-top: 20px;
+    text-align: left;
+}
+
+.technical-toggle-btn {
+    background: none;
+    border: none;
+    font-size: 13px;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 0;
+    transition: color var(--transition-fast);
+}
+
+.technical-toggle-btn:hover {
+    color: var(--color-text-main);
+    text-decoration: underline;
+}
+
+.technical-panel-content {
+    display: none;
+    margin-top: 10px;
+    background-color: #0f172a;
+    color: #e2e8f0;
+    border-radius: var(--radius-md);
+    padding: 16px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+    overflow-x: auto;
+}
+
+.technical-panel-content.expanded {
+    display: block;
+}
+
+.tech-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.tech-label {
+    color: #94a3b8;
+    min-width: 140px;
+    flex-shrink: 0;
+}
+
+.tech-value {
+    color: #38bdf8;
+    word-break: break-all;
+}
+
+/* --------------------------------------------------------------------------
+   TOAST THÔNG BÁO SAO CHÉP (COPIED TOAST)
+   -------------------------------------------------------------------------- */
+.crm-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background-color: #0f172a;
+    color: #ffffff;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    font-size: 13.5px;
+    font-weight: 500;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+}
+
+.crm-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* --------------------------------------------------------------------------
+   FOOTER DÙNG CHUNG ỨNG DỤNG (APP FOOTER)
+   -------------------------------------------------------------------------- */
+.app-footer {
+    background-color: var(--color-bg-surface);
+    border-top: 1px solid var(--color-border);
+    padding: 20px 24px;
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+.app-footer-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.footer-contact-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 12.5px;
+}
+
+.footer-contact-link {
+    color: var(--color-text-muted);
+    text-decoration: none;
+}
+
+.footer-contact-link:hover {
+    color: var(--color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   RESPONSIVE DESIGN (TABLET & MOBILE)
+   -------------------------------------------------------------------------- */
+@media (max-width: 992px) {
+    .main-nav {
+        display: none;
+    }
+
+    .mobile-nav-toggle {
+        display: block;
+    }
+
+    .quick-nav-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .app-header-inner {
+        padding: 0 16px;
+    }
+
+    .brand-subtitle {
+        display: none;
+    }
+
+    .error-card-container {
+        padding: 32px 20px;
+    }
+
+    .error-main-title {
+        font-size: 20px;
+    }
+
+    .error-main-description {
+        font-size: 14.5px;
+    }
+
+    .action-button-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-action-primary,
+    .btn-action-secondary,
+    .btn-action-copy {
+        width: 100%;
+    }
+
+    .quick-nav-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .app-footer-inner {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .footer-contact-info {
+        flex-direction: column;
+        gap: 6px;
+    }
+}

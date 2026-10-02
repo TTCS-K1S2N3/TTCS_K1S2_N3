@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="
+            https://jakarta.ee/xml/ns/jakartaee
+            https://jakarta.ee/xml/ns/jakartaee/web-app_6_1.xsd"
+         version="6.1">
+
+    <display-name>CRM Ban Hang</display-name>
+
+    <session-config>
+        <session-timeout>30</session-timeout>
+
+        <cookie-config>
+            <http-only>true</http-only>
+        </cookie-config>
+    </session-config>
+
+    <!-- Cấu hình các trang báo lỗi dùng chung (Story S1-07) -->
+    <error-page>
+        <error-code>400</error-code>
+        <location>/loi-400</location>
+    </error-page>
+
+    <error-page>
+        <error-code>401</error-code>
+        <location>/loi-401</location>
+    </error-page>
+
+    <error-page>
+        <error-code>403</error-code>
+        <location>/loi-403</location>
+    </error-page>
+
+    <error-page>
+        <error-code>404</error-code>
+        <location>/loi-404</location>
+    </error-page>
+
+    <error-page>
+        <error-code>500</error-code>
+        <location>/loi-500</location>
+    </error-page>
+
+    <error-page>
+        <exception-type>java.lang.Throwable</exception-type>
+        <location>/loi-500</location>
+    </error-page>
+
+</web-app>
