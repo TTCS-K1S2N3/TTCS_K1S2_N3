@@ -72,6 +72,12 @@
             <artifactId>slf4j-simple</artifactId>
             <version>2.0.16</version>
         </dependency>
+        <!-- Jakarta Mail for S1-03 Email Reset Link -->
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>2.0.3</version>
+        </dependency>
 
         <!-- JUnit 5 & Mockito for testing -->
         <dependency>

@@ -48,6 +48,7 @@ Không sử dụng file này để ghi tiến độ Story.
 
 - jBCrypt: 0.4 (Băm mật khẩu an toàn)
 - SLF4J: 2.0.16 (Ghi log hệ thống)
+- Jakarta Mail / Angus Mail: 2.0.3 (Gửi email thông báo và liên kết đặt lại mật khẩu)
 
 ## Testing
 

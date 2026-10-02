@@ -229,6 +229,24 @@ public class NguoiDungDAO {
         return null;
     }
 
+    /**
+     * S1-03: Cập nhật mật khẩu mới khi đặt lại mật khẩu thành công.
+     * Reset số lần đăng nhập sai, gỡ khóa tạm (nếu có), và tăng session_version để vô hiệu hóa các phiên cũ.
+     */
+    public boolean datLaiMatKhau(Long id, String matKhauMoiHash) {
+        String sql = "UPDATE nguoi_dung SET mat_khau_hash = ?, so_lan_dang_nhap_sai = 0, khoa_den = NULL, " +
+                     "session_version = session_version + 1, ngay_doi_mat_khau = NOW() WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, matKhauMoiHash);
+            ps.setLong(2, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            logger.error("Lỗi khi đặt lại mật khẩu cho user id {}: {}", id, e.getMessage());
+            return false;
+        }
+    }
+
     private NguoiDung mapResultSetToNguoiDung(ResultSet rs) throws SQLException {
         NguoiDung nd = new NguoiDung();
         nd.setId(rs.getLong("id"));

@@ -52,7 +52,8 @@ public class AuthFilter implements Filter {
         }
 
         // 2. Cho phép các route công khai liên quan đến xác thực
-        if (path.equals("/login") || path.equals("/logout")) {
+        if (path.equals("/login") || path.equals("/logout")
+                || path.equals("/forgot-password") || path.equals("/reset-password")) {
             chain.doFilter(request, response);
             return;
         }

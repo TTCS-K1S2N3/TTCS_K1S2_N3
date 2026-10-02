@@ -256,21 +256,29 @@ Sau đó người dùng tự deploy Tomcat, kiểm tra giao diện + chức năn
 
 **Acceptance Criteria — nguyên văn, không tóm tắt:**
 
-- [ ] **S1-03-AC1** — Nhập email nhận được liên kết đặt lại có hiệu lực 30 phút
-- [ ] **S1-03-AC2** — Liên kết chỉ dùng được một lần
-- [ ] **S1-03-AC3** — Email không tồn tại vẫn hiển thị cùng một thông báo
+- [x] **S1-03-AC1** — Nhập email nhận được liên kết đặt lại có hiệu lực 30 phút [PASS]
+- [x] **S1-03-AC2** — Liên kết chỉ dùng được một lần [PASS]
+- [x] **S1-03-AC3** — Email không tồn tại vẫn hiển thị cùng một thông báo [PASS]
 
 **Theo dõi thực thi:**
 
-- Story status: `TODO`
-- FE: `TODO`
-- BE: `TODO`
-- DB integration: `TODO`
-- Automated test: `TODO`
-- Manual QA của người dùng: `TODO`
-- Evidence: _chưa có_
-- File tạo/sửa: _chưa có_
-- Lỗi QA / ghi chú: _chưa có_
+- Story status: `DONE`
+- FE: `PASS`
+- BE: `PASS`
+- DB integration: `PASS`
+- Automated test: `PASS`
+- Manual QA của người dùng: `PASS`
+- User QA: PASS
+- Evidence:
+  - S1-03-AC1: `AuthServiceResetPasswordTest.testAC1_YeuCauDatLaiMatKhau_TaoTokenVaGuiEmail` (PASS), `ForgotPasswordServletTest.testDoPost_ThanhCong_HienThiThongBaoChung` (PASS), `ResetPasswordDatabaseIntegrationTest.testAC1_TaoTokenHieuLuc30Phut` (PASS), `ResetPasswordDatabaseIntegrationTest.testAC1_TokenHetHanBiTuChoi` (PASS). Nhập email tạo token 64 ký tự hex được lưu hash SHA-256 vào `token_dat_lai_mat_khau`, thời hạn hết hạn được tính theo cấu hình `cau_hinh_he_thong` (`PHUT_HET_HAN_RESET_MAT_KHAU` = 30 phút). Nếu token quá 30 phút, hệ thống từ chối truy cập và ngăn đổi mật khẩu.
+  - S1-03-AC2: `AuthServiceResetPasswordTest.testAC2_TokenChiDungDuocMotLan` (PASS), `ResetPasswordServletTest.testDoPost_ThanhCong_RedirectLogin` (PASS), `ResetPasswordDatabaseIntegrationTest.testAC2_TokenChiDungMotLan` (PASS). Khi đặt lại mật khẩu thành công, token được gán `da_su_dung_luc = NOW()` ngay trong database; mọi lần sử dụng tiếp theo với cùng token đều bị từ chối với thông báo "Liên kết đặt lại mật khẩu này đã được sử dụng". Đồng thời, `session_version` trong `nguoi_dung` được tăng lên 1 để thu hồi các phiên đăng nhập cũ, và mật khẩu mới được băm bằng BCrypt an toàn.
+  - S1-03-AC3: `AuthServiceResetPasswordTest.testAC3_EmailKhongTonTai_HienThiCungThongBao_VaKhongGuiEmail` (PASS), `ForgotPasswordServletTest.testDoPost_ThanhCong_HienThiThongBaoChung` (PASS), `ResetPasswordDatabaseIntegrationTest.testAC3_EmailKhongTonTai_CungThongBao` (PASS). Khi nhập email không tồn tại trong hệ thống (hoặc tài khoản đã bị khóa/ngừng hoạt động), hệ thống trả về thông báo thành công thống nhất: "Nếu email tồn tại trong hệ thống, hướng dẫn đặt lại mật khẩu đã được gửi đến hộp thư của bạn. Vui lòng kiểm tra email và làm theo hướng dẫn." Không gửi email ra ngoài và không tạo bất kỳ bản ghi token nào trong DB nhằm triệt tiêu nguy cơ dò quét tài khoản (User Enumeration).
+  - Maven tests: 56/56 tests PASS (`mvn clean test`).
+  - Maven package: WAR `target/crm-ban-hang.war` build thành công (`mvn clean package`).
+- File tạo/sửa:
+  - Tạo mới: `TokenDatLaiMatKhau.java`, `TokenDatLaiMatKhauDAO.java`, `EmailService.java`, `DatLaiMatKhauResult.java`, `ForgotPasswordServlet.java`, `ResetPasswordServlet.java`, `forgot-password.jsp`, `reset-password.jsp`, `ForgotPasswordServletTest.java`, `ResetPasswordServletTest.java`, `AuthServiceResetPasswordTest.java`, `ResetPasswordDatabaseIntegrationTest.java`.
+  - Sửa: `pom.xml`, `PLAN/infoTechnology.md`, `NguoiDungDAO.java`, `AuthService.java`, `AuthFilter.java`, `login.jsp`, `MASTER_INTEGRATION/Ke_Hoach.md`.
+- Lỗi QA / ghi chú: Người dùng đã QA thực tế trên Tomcat và xác nhận PASS toàn bộ S1-03 (AC1, AC2, AC3).
 
 ---
 

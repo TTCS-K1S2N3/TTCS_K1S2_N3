@@ -55,6 +55,18 @@
                 }
             %>
 
+            <%-- Thông báo đặt lại mật khẩu thành công (S1-03) --%>
+            <%
+                String resetSuccessParam = request.getParameter("resetSuccess");
+                if ("1".equals(resetSuccessParam)) {
+            %>
+                <div class="alert alert-success" role="alert" id="loginAlertResetSuccess">
+                    Đặt lại mật khẩu thành công! Vui lòng đăng nhập bằng mật khẩu mới của bạn.
+                </div>
+            <%
+                }
+            %>
+
             <form action="${pageContext.request.contextPath}/login" method="post" id="loginForm" novalidate>
                 <div class="form-group">
                     <label class="form-label" for="emailInput">Email công ty</label>
@@ -80,7 +92,13 @@
                            autocomplete="current-password">
                 </div>
 
-                <div class="form-group" style="margin-top: 24px;">
+                <div class="form-group" style="display: flex; justify-content: flex-end; margin-top: -4px; margin-bottom: 16px;">
+                    <a href="${pageContext.request.contextPath}/forgot-password" class="auth-link" id="linkForgotPassword">
+                        Quên mật khẩu?
+                    </a>
+                </div>
+
+                <div class="form-group" style="margin-top: 20px;">
                     <button type="submit" class="btn btn-primary btn-block" id="btnLoginSubmit">
                         Đăng nhập
                     </button>
