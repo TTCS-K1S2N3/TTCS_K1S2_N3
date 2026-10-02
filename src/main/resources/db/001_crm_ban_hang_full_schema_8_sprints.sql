@@ -6,6 +6,7 @@
 -- MUC DICH:
 --   - Day la schema nen DUY NHAT cho nhanh dev khi bat dau lai du an.
 --   - Bao phu toan bo 76 User Story trong sheet "4. Product Backlog".
+--   - Da hop nhat schema/migration Sprint 1 de code S1-01 -> S1-10 chay truc tiep tren bootstrap nay.
 --   - Sau khi merge vao dev, cac feature branch KHONG DUOC tu y ALTER/DROP/RENAME
 --     table/column/foreign key/type/status dung chung.
 --   - Truong tuy chinh, cau hinh, permission, automation, notification... duoc thiet
@@ -57,8 +58,8 @@ CREATE TABLE phien_ban_schema (
 INSERT INTO phien_ban_schema
     (ma_phien_ban, so_sprint, so_user_story, tong_story_point, trang_thai, mo_ta)
 VALUES
-    ('CRM-8SPRINT-76STORY-V1', 8, 76, 350, 'DANG_SU_DUNG',
-     'Canonical schema cho toan bo Product Backlog 8 Sprint; dong bang schema dung chung tu nhanh dev.');
+    ('CRM-8SPRINT-76STORY-V2-S1-COMPAT', 8, 76, 350, 'DANG_SU_DUNG',
+     'Canonical schema 8 Sprint da dong bo contract runtime Sprint 1 (S1-01 -> S1-10) va du lieu seed local/dev.');
 
 -- =====================================================================
 -- 1. TO CHUC, TAI KHOAN, ROLE, DATA SCOPE - SPRINT 1-2
@@ -108,7 +109,7 @@ CREATE TABLE vai_tro (
     ma_vai_tro              VARCHAR(50) NOT NULL UNIQUE,
     ten_vai_tro             VARCHAR(100) NOT NULL,
     mo_ta                   VARCHAR(500) NULL,
-    pham_vi_mac_dinh        VARCHAR(20) NULL,
+    pham_vi_toi_da          VARCHAR(50) NOT NULL DEFAULT 'CA_NHAN',
     hoat_dong               TINYINT(1) NOT NULL DEFAULT 1,
     created_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -145,15 +146,15 @@ CREATE TABLE nguoi_dung (
     id                      BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     ho_ten                  VARCHAR(150) NOT NULL,
     email                   VARCHAR(255) NOT NULL,
-    mat_khau_hash           VARCHAR(255) NOT NULL,
+    mat_khau                VARCHAR(255) NOT NULL,
     so_dien_thoai           VARCHAR(20) NULL,
     chu_ky_email            TEXT NULL,
     anh_dai_dien_path       VARCHAR(500) NULL,
     anh_dai_dien_thumb_path VARCHAR(500) NULL,
-    trang_thai              VARCHAR(30) NOT NULL DEFAULT 'CHO_KICH_HOAT',
-    so_lan_dang_nhap_sai    SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-    khoa_den                DATETIME NULL,
-    bat_buoc_doi_mat_khau   TINYINT(1) NOT NULL DEFAULT 1,
+    trang_thai              VARCHAR(30) NOT NULL DEFAULT 'HOAT_DONG',
+    so_lan_sai              INT UNSIGNED NOT NULL DEFAULT 0,
+    thoi_gian_khoa          DATETIME NULL,
+    bat_buoc_doi_mat_khau   TINYINT(1) NOT NULL DEFAULT 0,
     ngay_doi_mat_khau       DATETIME NULL,
     session_version         INT UNSIGNED NOT NULL DEFAULT 1,
     nhom_kinh_doanh_id      BIGINT UNSIGNED NULL,
@@ -166,9 +167,10 @@ CREATE TABLE nguoi_dung (
         FOREIGN KEY (nhom_kinh_doanh_id) REFERENCES nhom_kinh_doanh(id)
         ON DELETE SET NULL,
     UNIQUE KEY uk_nd_email (email),
-    INDEX idx_nd_ten (ho_ten),
-    INDEX idx_nd_nhom (nhom_kinh_doanh_id),
-    INDEX idx_nd_tt (trang_thai),
+    INDEX idx_nguoi_dung_ho_ten (ho_ten),
+    INDEX idx_nguoi_dung_email (email),
+    INDEX idx_nguoi_dung_nhom (nhom_kinh_doanh_id),
+    INDEX idx_nguoi_dung_trang_thai (trang_thai),
     INDEX idx_nd_sdt (so_dien_thoai)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -207,38 +209,42 @@ CREATE TABLE nguoi_dung_vai_tro (
 CREATE TABLE phien_dang_nhap (
     id                      BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     nguoi_dung_id           BIGINT UNSIGNED NOT NULL,
-    ma_phien_hash           CHAR(64) NOT NULL,
-    session_version         INT UNSIGNED NOT NULL,
-    dia_chi_ip              VARCHAR(45) NULL,
+    ma_phien                VARCHAR(255) NOT NULL,
+    session_version         INT UNSIGNED NOT NULL DEFAULT 1,
+    dia_chi_ip              VARCHAR(50) NULL,
     thong_tin_thiet_bi      VARCHAR(500) NULL,
     trang_thai              VARCHAR(30) NOT NULL DEFAULT 'HOAT_DONG',
-    tao_luc                 DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    hoat_dong_cuoi_luc      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    het_han_luc             DATETIME NOT NULL,
-    thu_hoi_luc             DATETIME NULL,
+    thoi_gian_tao           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    thoi_gian_hoat_dong_cuoi DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    het_han_luc             DATETIME NULL,
+    thoi_gian_thu_hoi       DATETIME NULL,
     ly_do_thu_hoi           VARCHAR(255) NULL,
-    CONSTRAINT fk_pdn_nd
+    CONSTRAINT fk_phien_nguoi_dung
         FOREIGN KEY (nguoi_dung_id) REFERENCES nguoi_dung(id)
         ON DELETE CASCADE,
-    UNIQUE KEY uk_pdn_hash (ma_phien_hash),
-    INDEX idx_pdn_nd_tt (nguoi_dung_id, trang_thai),
-    INDEX idx_pdn_hh (het_han_luc)
+    UNIQUE KEY uk_phien_ma_phien (ma_phien),
+    INDEX idx_phien_nguoi_dung (nguoi_dung_id),
+    INDEX idx_phien_ma_phien (ma_phien),
+    INDEX idx_phien_trang_thai (trang_thai),
+    INDEX idx_phien_het_han (het_han_luc)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE token_dat_lai_mat_khau (
+CREATE TABLE dat_lai_mat_khau_token (
     id                      BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     nguoi_dung_id           BIGINT UNSIGNED NOT NULL,
-    token_hash              CHAR(64) NOT NULL,
-    tao_luc                 DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    het_han_luc             DATETIME NOT NULL,
-    da_su_dung_luc          DATETIME NULL,
+    token                   VARCHAR(255) NOT NULL,
+    thoi_gian_tao           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    thoi_gian_het_han       DATETIME NOT NULL,
+    da_su_dung              TINYINT(1) NOT NULL DEFAULT 0,
+    thoi_gian_su_dung       DATETIME NULL,
     dia_chi_ip_yeu_cau      VARCHAR(45) NULL,
-    CONSTRAINT fk_tdlmk_nd
+    CONSTRAINT fk_token_nguoi_dung
         FOREIGN KEY (nguoi_dung_id) REFERENCES nguoi_dung(id)
         ON DELETE CASCADE,
-    UNIQUE KEY uk_tdlmk_token (token_hash),
-    INDEX idx_tdlmk_nd (nguoi_dung_id),
-    INDEX idx_tdlmk_hh (het_han_luc)
+    UNIQUE KEY uk_token_value (token),
+    INDEX idx_token_value (token),
+    INDEX idx_token_nguoi_dung (nguoi_dung_id),
+    INDEX idx_token_het_han (thoi_gian_het_han)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE token_kich_hoat_tai_khoan (
@@ -256,38 +262,40 @@ CREATE TABLE token_kich_hoat_tai_khoan (
     INDEX idx_tkhtk_hh (het_han_luc)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE ban_giao_du_lieu (
+CREATE TABLE nhat_ky_ban_giao (
     id                      BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    nguoi_ban_giao_id       BIGINT UNSIGNED NOT NULL,
+    nguoi_bi_khoa_id        BIGINT UNSIGNED NOT NULL,
     nguoi_tiep_nhan_id      BIGINT UNSIGNED NOT NULL,
-    thuc_hien_boi_id        BIGINT UNSIGNED NOT NULL,
-    ly_do                   VARCHAR(500) NOT NULL,
-    trang_thai              VARCHAR(30) NOT NULL DEFAULT 'DANG_XU_LY',
-    tong_khach_hang         INT UNSIGNED NOT NULL DEFAULT 0,
-    tong_lead               INT UNSIGNED NOT NULL DEFAULT 0,
-    tong_co_hoi             INT UNSIGNED NOT NULL DEFAULT 0,
-    tong_cong_viec          INT UNSIGNED NOT NULL DEFAULT 0,
-    bat_dau_luc             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    nguoi_thuc_hien_id      BIGINT UNSIGNED NOT NULL,
+    so_khach_hang_chuyen    INT UNSIGNED NOT NULL DEFAULT 0,
+    so_co_hoi_chuyen        INT UNSIGNED NOT NULL DEFAULT 0,
+    so_lead_chuyen          INT UNSIGNED NOT NULL DEFAULT 0,
+    so_cong_viec_chuyen     INT UNSIGNED NOT NULL DEFAULT 0,
+    ly_do                   VARCHAR(500) NULL,
+    trang_thai              VARCHAR(30) NOT NULL DEFAULT 'HOAN_TAT',
     hoan_tat_luc            DATETIME NULL,
     ghi_chu                 TEXT NULL,
-    CONSTRAINT fk_bgdl_tu
-        FOREIGN KEY (nguoi_ban_giao_id) REFERENCES nguoi_dung(id)
+    created_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_nkbg_nguoi_bi_khoa
+        FOREIGN KEY (nguoi_bi_khoa_id) REFERENCES nguoi_dung(id)
         ON DELETE RESTRICT,
-    CONSTRAINT fk_bgdl_den
+    CONSTRAINT fk_nkbg_nguoi_tiep_nhan
         FOREIGN KEY (nguoi_tiep_nhan_id) REFERENCES nguoi_dung(id)
         ON DELETE RESTRICT,
-    CONSTRAINT fk_bgdl_th
-        FOREIGN KEY (thuc_hien_boi_id) REFERENCES nguoi_dung(id)
+    CONSTRAINT fk_nkbg_nguoi_thuc_hien
+        FOREIGN KEY (nguoi_thuc_hien_id) REFERENCES nguoi_dung(id)
         ON DELETE RESTRICT,
-    INDEX idx_bgdl_tu (nguoi_ban_giao_id, bat_dau_luc),
-    INDEX idx_bgdl_den (nguoi_tiep_nhan_id, bat_dau_luc)
+    INDEX idx_nkbg_nguoi_bi_khoa (nguoi_bi_khoa_id),
+    INDEX idx_nkbg_nguoi_tiep_nhan (nguoi_tiep_nhan_id),
+    INDEX idx_nkbg_nguoi_thuc_hien (nguoi_thuc_hien_id),
+    INDEX idx_nkbg_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Cac bang log/thong bao co cap (loai_doi_tuong, doi_tuong_id) la tham chieu da hinh.
 -- MySQL khong the tao 1 FK den nhieu table, vi vay Service phai validate doi_tuong_id theo loai_doi_tuong.
-CREATE TABLE ban_giao_du_lieu_chi_tiet (
+CREATE TABLE nhat_ky_ban_giao_chi_tiet (
     id                      BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    ban_giao_id             BIGINT UNSIGNED NOT NULL,
+    nhat_ky_ban_giao_id     BIGINT UNSIGNED NOT NULL,
     loai_doi_tuong          VARCHAR(50) NOT NULL,
     doi_tuong_id            BIGINT UNSIGNED NOT NULL,
     chu_so_huu_cu_id        BIGINT UNSIGNED NULL,
@@ -295,16 +303,16 @@ CREATE TABLE ban_giao_du_lieu_chi_tiet (
     trang_thai              VARCHAR(30) NOT NULL DEFAULT 'THANH_CONG',
     loi_rut_gon             VARCHAR(500) NULL,
     created_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_bgdct_bg
-        FOREIGN KEY (ban_giao_id) REFERENCES ban_giao_du_lieu(id)
+    CONSTRAINT fk_nkbgct_bg
+        FOREIGN KEY (nhat_ky_ban_giao_id) REFERENCES nhat_ky_ban_giao(id)
         ON DELETE CASCADE,
-    CONSTRAINT fk_bgdct_cu
+    CONSTRAINT fk_nkbgct_cu
         FOREIGN KEY (chu_so_huu_cu_id) REFERENCES nguoi_dung(id)
         ON DELETE SET NULL,
-    CONSTRAINT fk_bgdct_moi
+    CONSTRAINT fk_nkbgct_moi
         FOREIGN KEY (chu_so_huu_moi_id) REFERENCES nguoi_dung(id)
         ON DELETE RESTRICT,
-    INDEX idx_bgdct_dt (loai_doi_tuong, doi_tuong_id)
+    INDEX idx_nkbgct_dt (loai_doi_tuong, doi_tuong_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE nhat_ky_he_thong (
@@ -557,23 +565,27 @@ CREATE TABLE truong_tuy_chinh (
 
 CREATE TABLE khach_hang (
     id                      BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    ma_khach_hang           VARCHAR(50) NOT NULL UNIQUE,
+    ma_khach_hang           VARCHAR(50) NULL UNIQUE,
     ten_cong_ty             VARCHAR(255) NOT NULL,
     ten_chuan_hoa           VARCHAR(255) NULL,
-    ma_so_thue              VARCHAR(30) NULL,
+    ma_so_thue              VARCHAR(50) NULL,
     nganh_nghe_id           BIGINT UNSIGNED NULL,
     quy_mo_id               BIGINT UNSIGNED NULL,
     website                 VARCHAR(255) NULL,
     website_chuan_hoa       VARCHAR(255) NULL,
     dia_chi                 VARCHAR(500) NULL,
     khu_vuc_id              BIGINT UNSIGNED NULL,
-    nguoi_phu_trach_id      BIGINT UNSIGNED NOT NULL,
-    cong_ty_me_id           BIGINT UNSIGNED NULL,
-    trang_thai              VARCHAR(30) NOT NULL DEFAULT 'TIEM_NANG',
+    nguoi_so_huu_id         BIGINT UNSIGNED NOT NULL,
+    nhom_kinh_doanh_id      BIGINT UNSIGNED NULL,
+    doanh_thu_uoc_tinh      DECIMAL(18,2) NULL DEFAULT 0.00,
+    cong_ty_me_id            BIGINT UNSIGNED NULL,
+    trang_thai              VARCHAR(50) NOT NULL DEFAULT 'TIEM_NANG',
     co_rui_ro               TINYINT(1) NOT NULL DEFAULT 0,
     rui_ro_cap_nhat_luc     DATETIME NULL,
     lan_tuong_tac_cuoi      DATETIME NULL,
     gop_vao_khach_hang_id   BIGINT UNSIGNED NULL,
+    mo_ta_chi_tiet          TEXT NULL,
+    ngay_tao                DATE NOT NULL DEFAULT (CURRENT_DATE),
     created_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_kh_nganh
@@ -585,9 +597,12 @@ CREATE TABLE khach_hang (
     CONSTRAINT fk_kh_kv
         FOREIGN KEY (khu_vuc_id) REFERENCES khu_vuc_dia_ly(id)
         ON DELETE SET NULL,
-    CONSTRAINT fk_kh_pt
-        FOREIGN KEY (nguoi_phu_trach_id) REFERENCES nguoi_dung(id)
+    CONSTRAINT fk_kh_nguoi_so_huu
+        FOREIGN KEY (nguoi_so_huu_id) REFERENCES nguoi_dung(id)
         ON DELETE RESTRICT,
+    CONSTRAINT fk_kh_nhom
+        FOREIGN KEY (nhom_kinh_doanh_id) REFERENCES nhom_kinh_doanh(id)
+        ON DELETE SET NULL,
     CONSTRAINT fk_kh_me
         FOREIGN KEY (cong_ty_me_id) REFERENCES khach_hang(id)
         ON DELETE SET NULL,
@@ -595,7 +610,10 @@ CREATE TABLE khach_hang (
         FOREIGN KEY (gop_vao_khach_hang_id) REFERENCES khach_hang(id)
         ON DELETE SET NULL,
     UNIQUE KEY uk_kh_mst (ma_so_thue),
-    INDEX idx_kh_pt_tt (nguoi_phu_trach_id, trang_thai),
+    INDEX idx_kh_nguoi_so_huu (nguoi_so_huu_id),
+    INDEX idx_kh_nhom (nhom_kinh_doanh_id),
+    INDEX idx_kh_ten_cong_ty (ten_cong_ty),
+    INDEX idx_kh_trang_thai (trang_thai),
     INDEX idx_kh_nganh (nganh_nghe_id),
     INDEX idx_kh_qm (quy_mo_id),
     INDEX idx_kh_kv (khu_vuc_id),
@@ -976,18 +994,19 @@ CREATE TABLE co_hoi (
     id                      BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     ma_co_hoi               VARCHAR(50) NOT NULL UNIQUE,
     ten_co_hoi              VARCHAR(255) NOT NULL,
-    khach_hang_id           BIGINT UNSIGNED NOT NULL,
+    khach_hang_id           BIGINT UNSIGNED NULL,
     nguoi_lien_he_chinh_id  BIGINT UNSIGNED NULL,
     lead_id                 BIGINT UNSIGNED NULL,
     chien_dich_id           BIGINT UNSIGNED NULL,
     nguon_lead_id           BIGINT UNSIGNED NULL,
-    giai_doan_id            BIGINT UNSIGNED NOT NULL,
+    giai_doan_id            BIGINT UNSIGNED NULL,
     nguoi_phu_trach_id      BIGINT UNSIGNED NOT NULL,
-    gia_tri_du_kien         DECIMAL(18,2) NOT NULL DEFAULT 0,
-    xac_suat                DECIMAL(5,2) NOT NULL DEFAULT 0,
+    nhom_kinh_doanh_id      BIGINT UNSIGNED NULL,
+    gia_tri_du_kien         DECIMAL(18,2) NOT NULL DEFAULT 0.00,
+    xac_suat                INT UNSIGNED NOT NULL DEFAULT 0,
     ly_do_sua_xac_suat      VARCHAR(500) NULL,
-    ngay_chot_du_kien       DATE NOT NULL,
-    trang_thai              VARCHAR(30) NOT NULL DEFAULT 'DANG_MO',
+    ngay_chot_du_kien       DATE NULL,
+    trang_thai              VARCHAR(50) NOT NULL DEFAULT 'MO',
     gia_tri_chot_thuc_te    DECIMAL(18,2) NULL,
     ngay_ky                 DATE NULL,
     ly_do_thang_thua_id     BIGINT UNSIGNED NULL,
@@ -998,12 +1017,14 @@ CREATE TABLE co_hoi (
     so_lan_mo_lai           INT UNSIGNED NOT NULL DEFAULT 0,
     mo_lai_lan_cuoi         DATETIME NULL,
     ly_do_mo_lai            VARCHAR(500) NULL,
+    mo_ta_chi_tiet          TEXT NULL,
+    ngay_tao                DATE NOT NULL DEFAULT (CURRENT_DATE),
     created_by              BIGINT UNSIGNED NULL,
     created_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_ch_kh
         FOREIGN KEY (khach_hang_id) REFERENCES khach_hang(id)
-        ON DELETE RESTRICT,
+        ON DELETE SET NULL,
     CONSTRAINT fk_ch_nlh
         FOREIGN KEY (nguoi_lien_he_chinh_id) REFERENCES nguoi_lien_he(id)
         ON DELETE SET NULL,
@@ -1018,10 +1039,13 @@ CREATE TABLE co_hoi (
         ON DELETE SET NULL,
     CONSTRAINT fk_ch_gd
         FOREIGN KEY (giai_doan_id) REFERENCES giai_doan_pipeline(id)
-        ON DELETE RESTRICT,
-    CONSTRAINT fk_ch_pt
+        ON DELETE SET NULL,
+    CONSTRAINT fk_ch_nguoi_phu_trach
         FOREIGN KEY (nguoi_phu_trach_id) REFERENCES nguoi_dung(id)
         ON DELETE RESTRICT,
+    CONSTRAINT fk_ch_nhom
+        FOREIGN KEY (nhom_kinh_doanh_id) REFERENCES nhom_kinh_doanh(id)
+        ON DELETE SET NULL,
     CONSTRAINT fk_ch_ld
         FOREIGN KEY (ly_do_thang_thua_id) REFERENCES ly_do_thang_thua(id)
         ON DELETE SET NULL,
@@ -1031,8 +1055,10 @@ CREATE TABLE co_hoi (
     CONSTRAINT fk_ch_tao
         FOREIGN KEY (created_by) REFERENCES nguoi_dung(id)
         ON DELETE SET NULL,
-    INDEX idx_ch_kh (khach_hang_id, trang_thai),
-    INDEX idx_ch_pt (nguoi_phu_trach_id, trang_thai, ngay_chot_du_kien),
+    INDEX idx_ch_nguoi_phu_trach (nguoi_phu_trach_id),
+    INDEX idx_ch_nhom (nhom_kinh_doanh_id),
+    INDEX idx_ch_khach_hang (khach_hang_id),
+    INDEX idx_ch_trang_thai (trang_thai),
     INDEX idx_ch_gd (giai_doan_id, trang_thai),
     INDEX idx_ch_chot (ngay_chot_du_kien, trang_thai),
     INDEX idx_ch_dinh_tre (bi_dinh_tre, trang_thai),
@@ -1153,45 +1179,53 @@ CREATE TABLE gia_tri_truong_tuy_chinh_co_hoi (
 
 CREATE TABLE hoat_dong (
     id                      BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    loai_hoat_dong_id       BIGINT UNSIGNED NOT NULL,
+    ma_hoat_dong            VARCHAR(50) NOT NULL UNIQUE,
+    tieu_de                 VARCHAR(255) NOT NULL,
+    loai_hoat_dong          VARCHAR(50) NOT NULL DEFAULT 'CUOC_GOI',
     lead_id                 BIGINT UNSIGNED NULL,
     khach_hang_id           BIGINT UNSIGNED NULL,
     nguoi_lien_he_id        BIGINT UNSIGNED NULL,
     co_hoi_id               BIGINT UNSIGNED NULL,
-    nguoi_thuc_hien_id      BIGINT UNSIGNED NOT NULL,
-    tieu_de                 VARCHAR(255) NULL,
+    nguoi_phu_trach_id      BIGINT UNSIGNED NOT NULL,
+    nhom_kinh_doanh_id      BIGINT UNSIGNED NULL,
+    chi_phi                 DECIMAL(18,2) NULL DEFAULT 0.00,
+    thoi_gian_bat_dau       DATETIME NULL,
+    thoi_gian_ket_thuc      DATETIME NULL,
+    trang_thai              VARCHAR(50) NOT NULL DEFAULT 'HOAN_THANH',
+    mo_ta_chi_tiet          TEXT NULL,
     noi_dung                TEXT NULL,
     ket_qua                 TEXT NULL,
-    bat_dau_luc             DATETIME NOT NULL,
-    ket_thuc_luc            DATETIME NULL,
     thoi_luong_phut         INT UNSIGNED NULL,
     la_ghi_nhan_qua_khu     TINYINT(1) NOT NULL DEFAULT 0,
     la_ghi_nhan_nhanh       TINYINT(1) NOT NULL DEFAULT 0,
+    ngay_tao                DATE NOT NULL DEFAULT (CURRENT_DATE),
     created_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_hd_loai
-        FOREIGN KEY (loai_hoat_dong_id) REFERENCES loai_hoat_dong(id)
-        ON DELETE RESTRICT,
     CONSTRAINT fk_hd_lead
         FOREIGN KEY (lead_id) REFERENCES `lead`(id)
         ON DELETE SET NULL,
-    CONSTRAINT fk_hoatdong_kh
+    CONSTRAINT fk_hd_khach_hang
         FOREIGN KEY (khach_hang_id) REFERENCES khach_hang(id)
         ON DELETE SET NULL,
     CONSTRAINT fk_hd_nlh
         FOREIGN KEY (nguoi_lien_he_id) REFERENCES nguoi_lien_he(id)
         ON DELETE SET NULL,
-    CONSTRAINT fk_hoatdong_ch
+    CONSTRAINT fk_hd_co_hoi
         FOREIGN KEY (co_hoi_id) REFERENCES co_hoi(id)
         ON DELETE SET NULL,
-    CONSTRAINT fk_hd_nd
-        FOREIGN KEY (nguoi_thuc_hien_id) REFERENCES nguoi_dung(id)
+    CONSTRAINT fk_hd_nguoi_phu_trach
+        FOREIGN KEY (nguoi_phu_trach_id) REFERENCES nguoi_dung(id)
         ON DELETE RESTRICT,
-    INDEX idx_hd_kh_time (khach_hang_id, bat_dau_luc),
-    INDEX idx_hd_ch_time (co_hoi_id, bat_dau_luc),
-    INDEX idx_hd_lead_time (lead_id, bat_dau_luc),
-    INDEX idx_hd_nd_time (nguoi_thuc_hien_id, bat_dau_luc),
-    INDEX idx_hd_loai_time (loai_hoat_dong_id, bat_dau_luc)
+    CONSTRAINT fk_hd_nhom
+        FOREIGN KEY (nhom_kinh_doanh_id) REFERENCES nhom_kinh_doanh(id)
+        ON DELETE SET NULL,
+    INDEX idx_hd_nguoi_phu_trach (nguoi_phu_trach_id),
+    INDEX idx_hd_nhom (nhom_kinh_doanh_id),
+    INDEX idx_hd_khach_hang (khach_hang_id),
+    INDEX idx_hd_co_hoi (co_hoi_id),
+    INDEX idx_hd_tieu_de (tieu_de),
+    INDEX idx_hd_lead_time (lead_id, thoi_gian_bat_dau),
+    INDEX idx_hd_time (thoi_gian_bat_dau)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE cong_viec (
@@ -1241,12 +1275,15 @@ CREATE TABLE cong_viec (
 CREATE TABLE bao_gia (
     id                      BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     ma_bao_gia              VARCHAR(60) NOT NULL UNIQUE,
-    co_hoi_id               BIGINT UNSIGNED NOT NULL,
-    khach_hang_id           BIGINT UNSIGNED NOT NULL,
+    tieu_de                 VARCHAR(255) NOT NULL,
+    co_hoi_id               BIGINT UNSIGNED NULL,
+    khach_hang_id           BIGINT UNSIGNED NULL,
     nguoi_lien_he_id        BIGINT UNSIGNED NULL,
     nguoi_phu_trach_id      BIGINT UNSIGNED NOT NULL,
-    trang_thai              VARCHAR(40) NOT NULL DEFAULT 'NHAP',
-    phien_ban_hien_tai      INT UNSIGNED NOT NULL DEFAULT 1,
+    nhom_kinh_doanh_id      BIGINT UNSIGNED NULL,
+    phien_ban               INT UNSIGNED NOT NULL DEFAULT 1,
+    tong_tien               DECIMAL(18,2) NOT NULL DEFAULT 0.00,
+    trang_thai              VARCHAR(50) NOT NULL DEFAULT 'CHO_DUYET',
     ngay_het_hieu_luc       DATE NULL,
     dieu_khoan_thanh_toan   TEXT NULL,
     dieu_khoan_giao_hang    TEXT NULL,
@@ -1257,27 +1294,34 @@ CREATE TABLE bao_gia (
     cap_duyet_can_thiet     VARCHAR(30) NULL,
     gui_khach_luc           DATETIME NULL,
     het_hieu_luc_luc        DATETIME NULL,
+    mo_ta_chi_tiet          TEXT NULL,
+    ngay_tao                DATE NOT NULL DEFAULT (CURRENT_DATE),
     created_by              BIGINT UNSIGNED NULL,
     created_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_bg_ch
+    CONSTRAINT fk_bg_co_hoi
         FOREIGN KEY (co_hoi_id) REFERENCES co_hoi(id)
-        ON DELETE RESTRICT,
-    CONSTRAINT fk_bg_kh
+        ON DELETE SET NULL,
+    CONSTRAINT fk_bg_khach_hang
         FOREIGN KEY (khach_hang_id) REFERENCES khach_hang(id)
-        ON DELETE RESTRICT,
+        ON DELETE SET NULL,
     CONSTRAINT fk_bg_nlh
         FOREIGN KEY (nguoi_lien_he_id) REFERENCES nguoi_lien_he(id)
         ON DELETE SET NULL,
-    CONSTRAINT fk_bg_pt
+    CONSTRAINT fk_bg_nguoi_phu_trach
         FOREIGN KEY (nguoi_phu_trach_id) REFERENCES nguoi_dung(id)
         ON DELETE RESTRICT,
+    CONSTRAINT fk_bg_nhom
+        FOREIGN KEY (nhom_kinh_doanh_id) REFERENCES nhom_kinh_doanh(id)
+        ON DELETE SET NULL,
     CONSTRAINT fk_bg_tao
         FOREIGN KEY (created_by) REFERENCES nguoi_dung(id)
         ON DELETE SET NULL,
-    INDEX idx_bg_ch (co_hoi_id, trang_thai),
-    INDEX idx_bg_kh (khach_hang_id, created_at),
-    INDEX idx_bg_pt (nguoi_phu_trach_id, trang_thai),
+    INDEX idx_bg_nguoi_phu_trach (nguoi_phu_trach_id),
+    INDEX idx_bg_nhom (nhom_kinh_doanh_id),
+    INDEX idx_bg_co_hoi (co_hoi_id),
+    INDEX idx_bg_khach_hang (khach_hang_id),
+    INDEX idx_bg_trang_thai (trang_thai),
     INDEX idx_bg_hhl (ngay_het_hieu_luc, trang_thai)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -1726,20 +1770,35 @@ CREATE TABLE nhat_ky_sao_luu (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =====================================================================
--- 11. SEED DU LIEU NEN
--- Khong seed tai khoan/mat khau de tranh hard-code credential trong repository.
+-- 11. SEED DU LIEU NEN - LOCAL/DEV
+-- Script nay la bootstrap local/dev (co DROP DATABASE), vi vay co seed tai khoan mau
+-- de cac may trong nhom co the chay/test cung mot bo du lieu khoi tao.
+-- KHONG dung cac credential mau nay tren staging/production.
+-- Mat khau mac dinh cua cac tai khoan mau: 123456@Aa
+-- BCrypt rounds=12:
+-- $2a$12$mBj7Zkgc3Nou2Odwz/LozeNA2tJiBuksCZLzrtmGWYfmlrPa/hs2e
 -- =====================================================================
 
 INSERT INTO vai_tro
-    (id, ma_vai_tro, ten_vai_tro, mo_ta, pham_vi_mac_dinh)
+    (id, ma_vai_tro, ten_vai_tro, mo_ta, pham_vi_toi_da)
 VALUES
-    (1, 'SALES_REP', 'Nhân viên kinh doanh', 'Quản lý khách và cơ hội mình phụ trách.', 'CA_NHAN'),
-    (2, 'TEAM_LEAD', 'Trưởng nhóm kinh doanh', 'Theo dõi dữ liệu nhóm và nhóm con.', 'NHOM'),
-    (3, 'DIRECTOR', 'Giám đốc kinh doanh', 'Xem và quản lý toàn bộ dữ liệu kinh doanh.', 'TOAN_BO'),
-    (4, 'MARKETING', 'Nhân viên Marketing', 'Quản lý chiến dịch và lead.', NULL),
-    (5, 'CUST_SUCCESS', 'Chăm sóc khách hàng', 'Theo dõi lịch sử sau bán và rủi ro khách hàng.', 'CA_NHAN'),
-    (6, 'ACCOUNTANT', 'Kế toán', 'Theo dõi báo giá được chấp nhận, hợp đồng, hiệu lực và gia hạn.', NULL),
-    (7, 'ADMIN', 'Quản trị hệ thống', 'Quản lý tài khoản, quyền, cấu hình và nhật ký.', 'TOAN_BO');
+    (1, 'ADMIN', 'Quản trị hệ thống', 'Quản lý tài khoản, quyền, cấu hình và nhật ký.', 'TOAN_BO'),
+    (2, 'DIRECTOR', 'Giám đốc kinh doanh', 'Xem và quản lý toàn bộ dữ liệu kinh doanh.', 'TOAN_BO'),
+    (3, 'TEAM_LEAD', 'Trưởng nhóm kinh doanh', 'Theo dõi và quản lý dữ liệu của nhóm.', 'NHOM'),
+    (4, 'SALES_REP', 'Nhân viên kinh doanh', 'Quản lý khách và cơ hội mình phụ trách.', 'CA_NHAN'),
+    (5, 'MARKETING', 'Nhân viên Marketing', 'Quản lý chiến dịch và lead.', 'CA_NHAN'),
+    (6, 'CUST_SUCCESS', 'Chăm sóc khách hàng', 'Theo dõi lịch sử sau bán và rủi ro khách hàng.', 'CA_NHAN'),
+    (7, 'ACCOUNTANT', 'Kế toán', 'Theo dõi báo giá, hợp đồng và công nợ.', 'TOAN_BO');
+
+INSERT INTO nhom_kinh_doanh
+    (id, ma_nhom, ten_nhom, mo_ta, nhom_cha_id)
+VALUES
+    (1, 'KHOI_KD', 'Khối Kinh Doanh Tổng', 'Khối kinh doanh trực thuộc ban giám đốc', NULL),
+    (2, 'KD_MIEN_BAC', 'Nhóm Kinh Doanh Miền Bắc', 'Phụ trách thị trường phía Bắc', 1),
+    (3, 'KD_MIEN_NAM', 'Nhóm Kinh Doanh Miền Nam', 'Phụ trách thị trường phía Nam', 1),
+    (4, 'PHONG_MKT', 'Phòng Marketing', 'Bộ phận truyền thông và thu hút khách hàng', NULL),
+    (5, 'PHONG_CSKH', 'Phòng Chăm Sóc Khách Hàng', 'Bộ phận dịch vụ sau bán hàng', NULL),
+    (6, 'PHONG_KT', 'Phòng Tài Chính Kế Toán', 'Bộ phận tài chính và hợp đồng', NULL);
 
 INSERT INTO module_he_thong
     (id, ma_module, ten_module, thu_tu_hien_thi, hien_thi_menu)
@@ -1760,34 +1819,83 @@ VALUES
 INSERT INTO vai_tro_module
     (vai_tro_id, module_id, muc_quyen, pham_vi_du_lieu)
 VALUES
-    -- Sales Rep
-    (1,1,'READ',NULL),(1,2,'WRITE','CA_NHAN'),(1,3,'WRITE','CA_NHAN'),(1,4,'WRITE','CA_NHAN'),
-    (1,5,'WRITE','CA_NHAN'),(1,6,'WRITE','CA_NHAN'),(1,7,'READ','CA_NHAN'),(1,8,'READ','CA_NHAN'),
-    (1,9,'READ',NULL),(1,10,'NONE',NULL),
-    -- Team Lead
-    (2,1,'READ',NULL),(2,2,'FULL','NHOM'),(2,3,'FULL','NHOM'),(2,4,'FULL','NHOM'),
-    (2,5,'FULL','NHOM'),(2,6,'WRITE','NHOM'),(2,7,'WRITE','NHOM'),(2,8,'READ','NHOM'),
-    (2,9,'READ','NHOM'),(2,10,'NONE',NULL),
-    -- Director
-    (3,1,'FULL','TOAN_BO'),(3,2,'FULL','TOAN_BO'),(3,3,'FULL','TOAN_BO'),(3,4,'FULL','TOAN_BO'),
-    (3,5,'FULL','TOAN_BO'),(3,6,'FULL','TOAN_BO'),(3,7,'FULL','TOAN_BO'),(3,8,'FULL','TOAN_BO'),
-    (3,9,'FULL','TOAN_BO'),(3,10,'READ','TOAN_BO'),
-    -- Marketing
-    (4,1,'READ',NULL),(4,2,'WRITE','TOAN_BO'),(4,3,'FULL','TOAN_BO'),(4,4,'READ','TOAN_BO'),
-    (4,5,'WRITE','TOAN_BO'),(4,6,'NONE',NULL),(4,7,'NONE',NULL),(4,8,'READ','CA_NHAN'),
-    (4,9,'WRITE','TOAN_BO'),(4,10,'NONE',NULL),
-    -- Customer Success
-    (5,1,'READ',NULL),(5,2,'WRITE','CA_NHAN'),(5,3,'NONE',NULL),(5,4,'READ','CA_NHAN'),
-    (5,5,'WRITE','CA_NHAN'),(5,6,'READ','CA_NHAN'),(5,7,'NONE',NULL),(5,8,'READ','CA_NHAN'),
-    (5,9,'READ',NULL),(5,10,'NONE',NULL),
-    -- Accountant
-    (6,1,'READ',NULL),(6,2,'READ','TOAN_BO'),(6,3,'NONE',NULL),(6,4,'READ','TOAN_BO'),
-    (6,5,'NONE',NULL),(6,6,'WRITE','TOAN_BO'),(6,7,'READ','TOAN_BO'),(6,8,'READ','TOAN_BO'),
-    (6,9,'NONE',NULL),(6,10,'NONE',NULL),
-    -- Admin
-    (7,1,'FULL','TOAN_BO'),(7,2,'FULL','TOAN_BO'),(7,3,'FULL','TOAN_BO'),(7,4,'FULL','TOAN_BO'),
-    (7,5,'FULL','TOAN_BO'),(7,6,'FULL','TOAN_BO'),(7,7,'FULL','TOAN_BO'),(7,8,'FULL','TOAN_BO'),
-    (7,9,'FULL','TOAN_BO'),(7,10,'FULL','TOAN_BO');
+    -- Admin (id=1)
+    (1,1,'FULL','TOAN_BO'),(1,2,'FULL','TOAN_BO'),(1,3,'FULL','TOAN_BO'),(1,4,'FULL','TOAN_BO'),
+    (1,5,'FULL','TOAN_BO'),(1,6,'FULL','TOAN_BO'),(1,7,'FULL','TOAN_BO'),(1,8,'FULL','TOAN_BO'),
+    (1,9,'FULL','TOAN_BO'),(1,10,'FULL','TOAN_BO'),
+    -- Director (id=2)
+    (2,1,'FULL','TOAN_BO'),(2,2,'FULL','TOAN_BO'),(2,3,'FULL','TOAN_BO'),(2,4,'FULL','TOAN_BO'),
+    (2,5,'FULL','TOAN_BO'),(2,6,'FULL','TOAN_BO'),(2,7,'FULL','TOAN_BO'),(2,8,'FULL','TOAN_BO'),
+    (2,9,'FULL','TOAN_BO'),(2,10,'READ','TOAN_BO'),
+    -- Team Lead (id=3)
+    (3,1,'READ',NULL),(3,2,'FULL','NHOM'),(3,3,'FULL','NHOM'),(3,4,'FULL','NHOM'),
+    (3,5,'FULL','NHOM'),(3,6,'WRITE','NHOM'),(3,7,'WRITE','NHOM'),(3,8,'READ','NHOM'),
+    (3,9,'READ','NHOM'),(3,10,'NONE',NULL),
+    -- Sales Rep (id=4)
+    (4,1,'READ',NULL),(4,2,'WRITE','CA_NHAN'),(4,3,'WRITE','CA_NHAN'),(4,4,'WRITE','CA_NHAN'),
+    (4,5,'WRITE','CA_NHAN'),(4,6,'WRITE','CA_NHAN'),(4,7,'READ','CA_NHAN'),(4,8,'READ','CA_NHAN'),
+    (4,9,'READ',NULL),(4,10,'NONE',NULL),
+    -- Marketing (id=5)
+    (5,1,'READ',NULL),(5,2,'WRITE','TOAN_BO'),(5,3,'FULL','TOAN_BO'),(5,4,'READ','TOAN_BO'),
+    (5,5,'WRITE','TOAN_BO'),(5,6,'NONE',NULL),(5,7,'NONE',NULL),(5,8,'READ','CA_NHAN'),
+    (5,9,'WRITE','TOAN_BO'),(5,10,'NONE',NULL),
+    -- Customer Success (id=6)
+    (6,1,'READ',NULL),(6,2,'WRITE','CA_NHAN'),(6,3,'NONE',NULL),(6,4,'READ','CA_NHAN'),
+    (6,5,'WRITE','CA_NHAN'),(6,6,'READ','CA_NHAN'),(6,7,'NONE',NULL),(6,8,'READ','CA_NHAN'),
+    (6,9,'READ',NULL),(6,10,'NONE',NULL),
+    -- Accountant (id=7)
+    (7,1,'READ',NULL),(7,2,'READ','TOAN_BO'),(7,3,'NONE',NULL),(7,4,'READ','TOAN_BO'),
+    (7,5,'NONE',NULL),(7,6,'WRITE','TOAN_BO'),(7,7,'READ','TOAN_BO'),(7,8,'READ','TOAN_BO'),
+    (7,9,'NONE',NULL),(7,10,'NONE',NULL);
+
+INSERT INTO nguoi_dung
+    (id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, so_lan_sai,
+     thoi_gian_khoa, bat_buoc_doi_mat_khau, nhom_kinh_doanh_id)
+VALUES
+    (1, 'Nguyễn Quản Trị', 'admin@crm.vn',
+     '$2a$12$mBj7Zkgc3Nou2Odwz/LozeNA2tJiBuksCZLzrtmGWYfmlrPa/hs2e',
+     '0901234567', 'HOAT_DONG', 0, NULL, 0, NULL),
+    (2, 'Trần Giám Đốc', 'director@crm.vn',
+     '$2a$12$mBj7Zkgc3Nou2Odwz/LozeNA2tJiBuksCZLzrtmGWYfmlrPa/hs2e',
+     '0902345678', 'HOAT_DONG', 0, NULL, 0, 1),
+    (3, 'Lê Trưởng Nhóm', 'teamlead@crm.vn',
+     '$2a$12$mBj7Zkgc3Nou2Odwz/LozeNA2tJiBuksCZLzrtmGWYfmlrPa/hs2e',
+     '0903456789', 'HOAT_DONG', 0, NULL, 0, 2),
+    (4, 'Nhân Viên Kinh Doanh Mẫu', 'sales@crm.vn',
+     '$2a$12$mBj7Zkgc3Nou2Odwz/LozeNA2tJiBuksCZLzrtmGWYfmlrPa/hs2e',
+     '0904567890', 'HOAT_DONG', 0, NULL, 0, 2),
+    (5, 'Phạm Marketing', 'marketing@crm.vn',
+     '$2a$12$mBj7Zkgc3Nou2Odwz/LozeNA2tJiBuksCZLzrtmGWYfmlrPa/hs2e',
+     '0905678901', 'HOAT_DONG', 0, NULL, 0, 4),
+    (6, 'Hoàng CSKH', 'cskh@crm.vn',
+     '$2a$12$mBj7Zkgc3Nou2Odwz/LozeNA2tJiBuksCZLzrtmGWYfmlrPa/hs2e',
+     '0906789012', 'HOAT_DONG', 0, NULL, 0, 5),
+    (7, 'Đỗ Kế Toán', 'accountant@crm.vn',
+     '$2a$12$mBj7Zkgc3Nou2Odwz/LozeNA2tJiBuksCZLzrtmGWYfmlrPa/hs2e',
+     '0907890123', 'HOAT_DONG', 0, NULL, 0, 6),
+    (8, 'Tài Khoản Bị Khóa', 'locked@crm.vn',
+     '$2a$12$mBj7Zkgc3Nou2Odwz/LozeNA2tJiBuksCZLzrtmGWYfmlrPa/hs2e',
+     '0908888888', 'KHOA', 0, NULL, 0, 2),
+    (9, 'Phan Duy Hưng', 'dtc245200134@ictu.edu.vn',
+     '$2a$12$mBj7Zkgc3Nou2Odwz/LozeNA2tJiBuksCZLzrtmGWYfmlrPa/hs2e',
+     NULL, 'HOAT_DONG', 0, NULL, 0, 2);
+
+INSERT INTO nguoi_dung_vai_tro
+    (nguoi_dung_id, vai_tro_id)
+VALUES
+    (1,1), -- admin@crm.vn -> ADMIN
+    (2,2), -- director@crm.vn -> DIRECTOR
+    (3,3), -- teamlead@crm.vn -> TEAM_LEAD
+    (4,4), -- sales@crm.vn -> SALES_REP
+    (5,5), -- marketing@crm.vn -> MARKETING
+    (6,6), -- cskh@crm.vn -> CUST_SUCCESS
+    (7,7), -- accountant@crm.vn -> ACCOUNTANT
+    (8,4), -- locked@crm.vn -> SALES_REP
+    (9,4); -- dtc245200134@ictu.edu.vn -> SALES_REP
+
+UPDATE nhom_kinh_doanh
+SET truong_nhom_id = 3
+WHERE id = 2;
 
 INSERT INTO loai_hoat_dong
     (id, ma_loai, ten_loai, thu_tu_hien_thi, hoat_dong)
@@ -1868,7 +1976,7 @@ VALUES
 -- AC: • Nhập email nhận được liên kết đặt lại có hiệu lực 30 phút
 -- AC: • Liên kết chỉ dùng được một lần
 -- AC: • Email không tồn tại vẫn hiển thị cùng một thông báo
--- DB: token_dat_lai_mat_khau, email_gui, cau_hinh_he_thong
+-- DB: dat_lai_mat_khau_token, email_gui, cau_hinh_he_thong
 -- S1-04 [Must 2pt]
 -- STORY: Là người dùng của hệ thống, tôi muốn đổi mật khẩu khi đang đăng nhập, để chủ động bảo vệ danh mục khách hàng của mình.
 -- AC: • Bắt buộc nhập mật khẩu hiện tại
@@ -1911,7 +2019,7 @@ VALUES
 -- AC: • Tài khoản bị khoá không đăng nhập được và bị thu hồi phiên đang mở
 -- AC: • Bắt buộc chọn người tiếp nhận toàn bộ khách hàng và cơ hội trước khi khoá
 -- AC: • Việc bàn giao được ghi nhật ký, dữ liệu không bị mất chủ sở hữu
--- DB: nguoi_dung, phien_dang_nhap, ban_giao_du_lieu, ban_giao_du_lieu_chi_tiet, nhat_ky_he_thong, khach_hang, co_hoi, lead, cong_viec
+-- DB: nguoi_dung, phien_dang_nhap, nhat_ky_ban_giao, nhat_ky_ban_giao_chi_tiet, nhat_ky_he_thong, khach_hang, co_hoi, lead, cong_viec
 
 -- SPRINT 2
 -- S2-01 [Should 5pt]
@@ -2354,7 +2462,7 @@ SELECT
     tong_story_point,
     trang_thai
 FROM phien_ban_schema
-WHERE ma_phien_ban = 'CRM-8SPRINT-76STORY-V1';
+WHERE ma_phien_ban = 'CRM-8SPRINT-76STORY-V2-S1-COMPAT';
 
 SELECT COUNT(*) AS so_vai_tro FROM vai_tro;
 SELECT COUNT(*) AS so_module FROM module_he_thong;
