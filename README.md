@@ -28,3 +28,17 @@ Dự án sử dụng:
 Thông tin version thực tế được quản lý trong:
 
 `PLAN/infoTechnology.md`
+
+## Khởi tạo cơ sở dữ liệu (Database Bootstrap)
+
+Lần đầu / reset database dev:
+
+```powershell
+$env:DB_PASSWORD = 'mat_khau_mysql'
+.\scripts\setup-db.ps1
+```
+
+Script sử dụng:
+`src/main/resources/db/001_crm_ban_hang_full_schema_8_sprints.sql`
+
+Không yêu cầu chạy từng migration Sprint 1 riêng lẻ.
