@@ -563,13 +563,273 @@ table.ttc-table tbody tr:hover {
     box-shadow: 0 0 0 2px rgba(124,58,237,0.12);
 }
 
+/* ---- Feature indicators ---- */
+.feature-active {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #059669;
+    background: #ecfdf5;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid #a7f3d0;
+}
+
+.feature-inactive {
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.btn-excel {
+    background: #10b981;
+    color: #ffffff;
+    border: 1px solid #059669;
+}
+.btn-excel:hover {
+    background: #059669;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    color: #ffffff;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1.5px solid #cbd5e1;
+    color: #475569;
+}
+.btn-outline:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: #1e293b;
+}
+
+.alert-close {
+    margin-left: auto;
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+    opacity: 0.6;
+    padding: 0 4px;
+}
+.alert-close:hover { opacity: 1; }
+
+/* ---- Stats Overview Grid ---- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.stat-icon.primary { background: #e0e7ff; color: #4338ca; }
+.stat-icon.purple  { background: #f3e8ff; color: #7e22ce; }
+.stat-icon.warning { background: #fef3c7; color: #b45309; }
+.stat-icon.success { background: #d1fae5; color: #065f46; }
+
+.stat-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* ---- Live Field Preview Widget (Create / Edit) ---- */
+.live-preview-box {
+    margin-top: 28px;
+    padding: 20px;
+    background: #f8faff;
+    border: 1.5px solid #c7d2fe;
+    border-radius: 12px;
+}
+
+.preview-field-container {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+/* ---- Acceptance Criteria 3 Preview Tab ---- */
+.preview-mode-switch {
+    display: flex;
+    gap: 6px;
+    background: #e2e8f0;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.preview-tab-btn {
+    border: none;
+    background: transparent;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: #475569;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.preview-tab-btn:hover {
+    color: #065f46;
+}
+
+.preview-tab-btn.active {
+    background: #ffffff;
+    color: #065f46;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.preview-badge-hint {
+    padding: 12px 16px;
+    background: #f0fdf4;
+    border: 1px solid #a7f3d0;
+    border-radius: 8px;
+    color: #065f46;
+    font-size: 0.88rem;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.mock-form-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.mock-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.mock-filter-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* ---- Excel Preview Spreadsheet ---- */
+.excel-preview-box {
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.excel-ribbon {
+    background: #047857;
+    color: #ffffff;
+    padding: 10px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.excel-grid-scroll {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+.excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.excel-table th {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    padding: 9px 14px;
+    font-weight: 700;
+    color: #334155;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.excel-table td {
+    border: 1px solid #e2e8f0;
+    padding: 9px 14px;
+    color: #1e293b;
+    white-space: nowrap;
+}
+
+.excel-table tbody tr:hover td {
+    background: #f8fafc;
+}
+
+.excel-custom-col {
+    background: #ecfdf5 !important;
+    color: #065f46 !important;
+    border-bottom: 2.5px solid #10b981 !important;
+    font-weight: 700 !important;
+}
+
+.excel-custom-cell {
+    background: #f0fdf4 !important;
+    color: #047857 !important;
+    font-weight: 600;
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 768px) {
     .ttc-container { padding: 14px; }
 
-    .form-row { grid-template-columns: 1fr; }
+    .form-row, .mock-form-grid { grid-template-columns: 1fr; }
 
     .page-header { flex-direction: column; align-items: flex-start; }
+
+    .stats-grid { grid-template-columns: 1fr 1fr; }
 
     table.ttc-table { font-size: 0.82rem; }
 
@@ -580,4 +840,12 @@ table.ttc-table tbody tr:hover {
 
     .ttc-filter-group input,
     .ttc-filter-group select { min-width: 100%; }
+
+    .preview-mode-switch { width: 100%; flex-wrap: wrap; }
+    .preview-tab-btn { flex: 1; text-align: center; }
 }
+
+@media (max-width: 480px) {
+    .stats-grid { grid-template-columns: 1fr; }
+}
+

@@ -126,9 +126,15 @@ public class TruongTuyChinhServlet extends HttpServlet {
             }
         }
 
+        List<TruongTuyChinh> dsKhachHangHoatDong = service.layDanhSachTheoDoiTuong("KHACH_HANG", true);
+        List<TruongTuyChinh> dsCoHoiHoatDong = service.layDanhSachTheoDoiTuong("CO_HOI", true);
+
         request.setAttribute("dsTruongKhachHang", dsKhachHang);
         request.setAttribute("dsTruongCoHoi", dsCoHoi);
+        request.setAttribute("dsTruongKhachHangHoatDong", dsKhachHangHoatDong);
+        request.setAttribute("dsTruongCoHoiHoatDong", dsCoHoiHoatDong);
         request.setAttribute("doiTuongHienTai", doiTuong);
+        request.setAttribute("tabHienTai", doiTuong);
 
         request.getRequestDispatcher("/WEB-INF/views/truong-tuy-chinh/danh-sach.jsp").forward(request, response);
     }
@@ -139,6 +145,7 @@ public class TruongTuyChinhServlet extends HttpServlet {
         if (doiTuong == null || doiTuong.isBlank()) {
             doiTuong = "KHACH_HANG";
         }
+        request.setAttribute("doiTuongMacDinh", doiTuong);
 
         TruongTuyChinhDTO oldInput = (TruongTuyChinhDTO) request.getAttribute("oldInput");
         if (oldInput == null) {
