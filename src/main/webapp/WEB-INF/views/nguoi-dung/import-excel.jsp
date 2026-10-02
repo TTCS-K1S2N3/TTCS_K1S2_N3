@@ -7,162 +7,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nhập danh sách người dùng từ Excel - CRM Bán Hàng</title>
-    <meta name="description" content="Nhập danh sách người dùng hàng loạt từ tệp Excel, xem trước lỗi từng dòng và xuất báo cáo tổng kết.">
+    <meta name="description" content="Nhập danh sách người dùng hàng loạt từ tệp Excel, xem trước lỗi từng dòng và tự động bỏ qua dòng lỗi cho Quản trị hệ thống CRM.">
+    <!-- CSS Hệ thống -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/nguoi-dung/nguoi-dung.css">
-    <style>
-        .import-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 24px;
-        }
-
-        .card-import {
-            background: #ffffff;
-            border-radius: 8px;
-            border: 1px solid #DEE2E6;
-            padding: 20px;
-            margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-
-        .card-header-custom {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #ECEFF1;
-        }
-
-        .card-title-custom {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1B365D;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .upload-dropzone {
-            border: 2px dashed #90CAF9;
-            background-color: #F8FAFC;
-            border-radius: 8px;
-            padding: 28px;
-            text-align: center;
-            margin-bottom: 16px;
-            transition: all 0.2s ease;
-        }
-
-        .upload-dropzone:hover {
-            border-color: #1976D2;
-            background-color: #F0F7FF;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: #ffffff;
-            border: 1px solid #E0E0E0;
-            border-radius: 8px;
-            padding: 16px;
-            text-align: center;
-        }
-
-        .stat-card.total { border-top: 4px solid #1B365D; }
-        .stat-card.valid { border-top: 4px solid #2E7D32; }
-        .stat-card.error { border-top: 4px solid #C62828; }
-        .stat-card.imported { border-top: 4px solid #0288D1; }
-
-        .stat-num {
-            font-size: 26px;
-            font-weight: 800;
-            line-height: 1.2;
-            margin-top: 4px;
-        }
-
-        .stat-label {
-            font-size: 13px;
-            color: #616161;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-            border: 1px solid #E0E0E0;
-            border-radius: 6px;
-        }
-
-        .table-preview {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        .table-preview th {
-            background-color: #F5F7FA;
-            color: #37474F;
-            font-weight: 700;
-            padding: 12px;
-            text-align: left;
-            border-bottom: 2px solid #CFD8DC;
-            white-space: nowrap;
-        }
-
-        .table-preview td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #ECEFF1;
-            vertical-align: top;
-        }
-
-        .table-preview tr:hover {
-            background-color: #FAFAFA;
-        }
-
-        .badge-status {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .badge-valid { background-color: #E8F5E9; color: #2E7D32; }
-        .badge-error { background-color: #FFEBEE; color: #C62828; }
-        .badge-imported { background-color: #E1F5FE; color: #0288D1; }
-        .badge-skipped { background-color: #FFF3E0; color: #EF6C00; }
-
-        .text-error-list {
-            margin: 0;
-            padding-left: 18px;
-            color: #C62828;
-            font-size: 13px;
-        }
-
-        .btn-group-actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .credential-box {
-            font-family: monospace;
-            background: #ECEFF1;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 13px;
-            color: #263238;
-        }
-    </style>
+    <!-- CSS Chuyên biệt cho tính năng Nhập Excel S2-01 -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/nguoi-dung/import-excel.css">
 </head>
 <body class="crm-body">
 
@@ -172,118 +22,294 @@
     <main class="crm-main-content" id="crm-main-content">
         <div class="import-container">
 
-            <!-- HEADER -->
-            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                <div>
-                    <h1 style="font-size: 24px; color: #1B365D; margin-bottom: 4px;">&#128203; Nhập danh sách người dùng từ tệp Excel</h1>
-                    <p style="font-size: 14px; color: #546E7A;">Tạo tài khoản hàng loạt cho khối kinh doanh, xem trước lỗi từng dòng và tự động bỏ qua dòng lỗi.</p>
+            <!-- HEADER TRANG -->
+            <div class="import-page-header">
+                <div class="import-header-title">
+                    <h1>&#128203; Nhập danh sách người dùng từ tệp Excel</h1>
+                    <p>Tạo tài khoản hàng loạt cho khối kinh doanh, xem trước lỗi từng dòng và tự động bỏ qua dòng lỗi.</p>
                 </div>
                 <div>
-                    <a href="${pageContext.request.contextPath}/nguoi-dung" class="btn btn-secondary">
+                    <a href="${pageContext.request.contextPath}/nguoi-dung" class="btn-back-link" id="link-ve-danh-sach">
                         &larr; Về danh sách người dùng
                     </a>
                 </div>
             </div>
 
-            <!-- THÔNG BÁO LỖI HỆ THỐNG -->
-            <c:if test="${not empty thongBaoLoi}">
-                <div class="alert alert-danger" style="background-color: #FFEBEE; color: #C62828; padding: 14px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #FFCDD2;">
-                    <strong>&#9888; Thông báo:</strong> <c:out value="${thongBaoLoi}" />
+            <!-- STEPPER WIZARD -->
+            <div class="import-stepper" aria-label="Tiến trình nhập dữ liệu">
+                <div class="step-item ${empty baoCao ? 'active' : 'completed'}">
+                    <div class="step-circle">&#49;</div>
+                    <div class="step-text">
+                        <span class="step-title">Bước 1: Tệp mẫu</span>
+                        <span class="step-desc">Chuẩn bị dữ liệu chuẩn</span>
+                    </div>
                 </div>
-            </c:if>
-
-            <!-- CARD 1: HƯỚNG DẪN & TẢI TỆP MẪU -->
-            <div class="card-import">
-                <div class="card-header-custom">
-                    <div class="card-title-custom">&#128229; Bước 1: Chuẩn bị dữ liệu theo tệp mẫu chuẩn</div>
-                    <a id="btn-tai-tep-mau" href="${pageContext.request.contextPath}/nguoi-dung/tai-tep-mau" class="btn btn-outline-primary" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border: 1px solid #1B365D; color: #1B365D; border-radius: 6px; text-decoration: none; font-weight: 600;">
-                        &#11015; Tải tệp mẫu Excel (.xlsx)
-                    </a>
+                <div class="step-item ${cheDo == 'xem-truoc' ? 'active' : (cheDo == 'ket-qua' ? 'completed' : '')}">
+                    <div class="step-circle">&#50;</div>
+                    <div class="step-text">
+                        <span class="step-title">Bước 2: Xem trước</span>
+                        <span class="step-desc">Thẩm định & Báo lỗi</span>
+                    </div>
                 </div>
-                <div style="font-size: 14px; color: #455A64; line-height: 1.6;">
-                    <p><strong>Quy tắc nhập dữ liệu:</strong></p>
-                    <ul style="padding-left: 20px; margin-top: 6px;">
-                        <li>Các trường bắt buộc: <strong>Họ và tên</strong>, <strong>Email công ty</strong> và <strong>Mã vai trò</strong>.</li>
-                        <li>Mã vai trò hợp lệ: <code>ADMIN</code>, <code>DIRECTOR</code>, <code>TEAM_LEAD</code>, <code>SALES_REP</code>, <code>MARKETING</code>, <code>CUST_SUCCESS</code>, <code>ACCOUNTANT</code>.</li>
-                        <li>Người giữ vai trò Trưởng nhóm (<code>TEAM_LEAD</code>) bắt buộc phải gán nhóm kinh doanh cụ thể.</li>
-                        <li>Nếu cột mật khẩu để trống, hệ thống sẽ tự sinh mật khẩu tạm mạnh ngẫu nhiên và gửi thông tin trong báo cáo tổng kết.</li>
-                    </ul>
+                <div class="step-item ${cheDo == 'ket-qua' ? 'active' : ''}">
+                    <div class="step-circle">&#51;</div>
+                    <div class="step-text">
+                        <span class="step-title">Bước 3: Nhập dữ liệu</span>
+                        <span class="step-desc">Báo cáo tổng kết</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- CARD 2: TẢI TỆP LÊN & THAO TÁC -->
-            <div class="card-import">
-                <div class="card-header-custom">
-                    <div class="card-title-custom">&#128228; Bước 2: Tải tệp Excel lên hệ thống</div>
+            <!-- THÔNG BÁO LỖI HỆ THỐNG NẾU CÓ -->
+            <c:if test="${not empty thongBaoLoi}">
+                <div class="alert alert-error" role="alert" style="margin-bottom: 20px;">
+                    <span class="alert-icon">&#9888;</span>
+                    <div>
+                        <strong>Thông báo lỗi:</strong> <c:out value="${thongBaoLoi}" />
+                    </div>
+                </div>
+            </c:if>
+
+            <!-- CARD 1: HƯỚNG DẪN & TẢI TỆP MẪU (AC 1) -->
+            <section class="import-card" aria-labelledby="card-title-step1">
+                <div class="card-header-flex">
+                    <div>
+                        <h2 id="card-title-step1" class="card-title-lg">&#128229; Bước 1: Chuẩn bị dữ liệu theo tệp mẫu chuẩn</h2>
+                        <div class="card-subtitle-text">Tải tệp mẫu Excel có định dạng chuẩn kèm các hướng dẫn vai trò và nhóm kinh doanh.</div>
+                    </div>
+                    <div>
+                        <a id="btn-tai-tep-mau"
+                           href="${pageContext.request.contextPath}/nguoi-dung/tai-tep-mau"
+                           class="btn-download-template"
+                           title="Tải tệp mẫu Excel về máy tính">
+                            &#11015; Tải tệp mẫu Excel (.xlsx)
+                        </a>
+                    </div>
                 </div>
 
-                <form id="form-import-excel" action="${pageContext.request.contextPath}/nguoi-dung/import" method="post" enctype="multipart/form-data">
-                    <div class="upload-dropzone">
-                        <input type="file" id="fileExcel" name="fileExcel" accept=".xlsx, .xls" required style="font-size: 15px; margin-bottom: 8px;" />
-                        <div style="font-size: 13px; color: #78909C; margin-top: 6px;">
-                            Hỗ trợ định dạng Excel: <strong>.xlsx</strong> hoặc <strong>.xls</strong> (Dung lượng tối đa 10MB)
-                        </div>
+                <div class="guideline-box">
+                    <div class="guideline-title">&#128161; Quy tắc kiểm tra dữ liệu đầu vào:</div>
+                    <ul class="guideline-list">
+                        <li>Các trường thông tin bắt buộc: <strong>Họ và tên</strong>, <strong>Email công ty</strong> và <strong>Mã vai trò</strong>.</li>
+                        <li>Mã vai trò hợp lệ trong hệ thống:
+                            <span class="role-tag">ADMIN</span>
+                            <span class="role-tag">DIRECTOR</span>
+                            <span class="role-tag">TEAM_LEAD</span>
+                            <span class="role-tag">SALES_REP</span>
+                            <span class="role-tag">MARKETING</span>
+                            <span class="role-tag">CUST_SUCCESS</span>
+                            <span class="role-tag">ACCOUNTANT</span>.
+                        </li>
+                        <li><strong>Ràng buộc cơ cấu tổ chức:</strong> Người giữ vai trò Trưởng nhóm (<span class="role-tag">TEAM_LEAD</span>) bắt buộc phải được gán vào một nhóm kinh doanh cụ thể.</li>
+                        <li><strong>Mật khẩu:</strong> Nếu cột mật khẩu trong tệp để trống, hệ thống sẽ tự động sinh mật khẩu tạm mạnh ngẫu nhiên và gửi danh sách trong báo cáo tổng kết.</li>
+                        <li>Hệ thống tự động phát hiện email trùng lặp ngay trong tệp tải lên hoặc đã tồn tại trong cơ sở dữ liệu.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- CARD 2: TẢI TỆP LÊN & THAO TÁC (AC 2 & AC 3) -->
+            <section class="import-card" aria-labelledby="card-title-step2">
+                <div class="card-header-flex">
+                    <div>
+                        <h2 id="card-title-step2" class="card-title-lg">&#128228; Bước 2: Tải tệp Excel lên hệ thống</h2>
+                        <div class="card-subtitle-text">Chọn hoặc kéo thả tệp Excel chứa danh sách người dùng để hệ thống kiểm tra và xử lý.</div>
+                    </div>
+                </div>
+
+                <form id="form-import-excel"
+                      action="${pageContext.request.contextPath}/nguoi-dung/import"
+                      method="post"
+                      enctype="multipart/form-data">
+
+                    <!-- VÙNG KÉO THẢ TỆP (DROPZONE) -->
+                    <div class="dropzone-container" id="dropzone-container">
+                        <div class="dropzone-icon">&#128196;</div>
+                        <div class="dropzone-text-main">Kéo và thả tệp Excel vào đây, hoặc bấm để duyệt tệp</div>
+                        <div class="dropzone-text-sub">Chấp nhận tệp định dạng <strong>.xlsx</strong> hoặc <strong>.xls</strong> (Dung lượng tối đa 10MB)</div>
+                        <input type="file" id="fileExcel" name="fileExcel" accept=".xlsx, .xls" class="dropzone-input-hidden" required />
                     </div>
 
-                    <div class="btn-group-actions">
-                        <button type="submit" name="action" value="xem-truoc" id="btn-xem-truoc" class="btn btn-primary" style="background-color: #1B365D; color: #fff; padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer;">
+                    <!-- THẺ HIỂN THỊ THÔNG TIN TỆP ĐÃ CHỌN -->
+                    <div class="selected-file-card" id="selected-file-card">
+                        <div class="selected-file-info">
+                            <span class="file-excel-badge">EXCEL</span>
+                            <div class="file-details-text">
+                                <span class="file-name-display" id="file-name-display">tep_nguoi_dung.xlsx</span>
+                                <span class="file-size-display" id="file-size-display">0 KB</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-remove-selected-file" id="btn-remove-selected-file" title="Xóa tệp đã chọn">
+                            &#10005; Chọn tệp khác
+                        </button>
+                    </div>
+
+                    <!-- NHÓM NÚT THAO TÁC -->
+                    <div class="action-buttons-wrap" style="margin-top: 20px;">
+                        <button type="submit"
+                                name="action"
+                                value="xem-truoc"
+                                id="btn-xem-truoc"
+                                class="btn-action btn-action-preview">
                             &#128065; Xem trước và kiểm tra lỗi
                         </button>
 
-                        <button type="submit" name="action" value="nhap-du-lieu" id="btn-nhap-du-lieu" class="btn btn-success" style="background-color: #2E7D32; color: #fff; padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer;"
-                                onclick="return confirm('Hệ thống sẽ nhập các dòng hợp lệ và tự động bỏ qua các dòng bị lỗi. Bạn có chắc chắn muốn tiến hành?');">
+                        <button type="button"
+                                id="btn-nhap-du-lieu"
+                                class="btn-action btn-action-import">
                             &#9989; Tiến hành nhập dữ liệu
                         </button>
                     </div>
                 </form>
-            </div>
+            </section>
 
-            <!-- CARD 3: BÁO CÁO XEM TRƯỚC / KẾT QUẢ TỔNG KẾT -->
+            <!-- CARD 3: BÁO CÁO XEM TRƯỚC / KẾT QUẢ TỔNG KẾT (AC 2 & AC 3) -->
             <c:if test="${not empty baoCao}">
-                <div class="card-import">
-                    <div class="card-header-custom">
-                        <div class="card-title-custom">
-                            <c:choose>
-                                <c:when test="${cheDo == 'ket-qua'}">
-                                    &#128202; Báo cáo tổng kết đợt nhập người dùng: <c:out value="${tenTep}" />
-                                </c:when>
-                                <c:otherwise>
-                                    &#128065; Kết quả xem trước và thẩm định tệp: <c:out value="${tenTep}" />
-                                </c:otherwise>
-                            </c:choose>
+                <section class="import-card" id="khu-vuc-bao-cao" aria-labelledby="card-title-step3">
+                    <div class="card-header-flex">
+                        <div>
+                            <h2 id="card-title-step3" class="card-title-lg">
+                                <c:choose>
+                                    <c:when test="${cheDo == 'ket-qua'}">
+                                        &#128202; Báo cáo tổng kết đợt nhập người dùng: <c:out value="${tenTep}" />
+                                    </c:when>
+                                    <c:otherwise>
+                                        &#128065; Kết quả xem trước và kiểm tra lỗi: <c:out value="${tenTep}" />
+                                    </c:otherwise>
+                                </c:choose>
+                            </h2>
+                            <div class="card-subtitle-text">
+                                <c:choose>
+                                    <c:when test="${cheDo == 'ket-qua'}">
+                                        Hệ thống đã tự động bỏ qua các dòng lỗi và hoàn tất nhập các tài khoản hợp lệ.
+                                    </c:when>
+                                    <c:otherwise>
+                                        Kiểm tra trạng thái từng dòng dưới đây trước khi quyết định bấm "Tiến hành nhập dữ liệu".
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                        </div>
+
+                        <!-- CÁC NÚT THAO TÁC TRÊN BÁO CÁO -->
+                        <div style="display: flex; gap: 8px;">
+                            <c:if test="${cheDo == 'ket-qua' and baoCao.soDongThanhCong > 0}">
+                                <button type="button"
+                                        class="btn-action btn-action-outline"
+                                        id="btn-copy-all-credentials"
+                                        title="Sao chép toàn bộ danh sách tài khoản vừa tạo">
+                                    &#128203; Sao chép tài khoản & Mật khẩu
+                                </button>
+                            </c:if>
+                            <button type="button"
+                                    class="btn-action btn-action-outline"
+                                    id="btn-print-report"
+                                    title="In hoặc lưu báo cáo dưới dạng PDF">
+                                &#128424; In báo cáo
+                            </button>
                         </div>
                     </div>
 
-                    <!-- THỐNG KÊ TỔNG KẾT -->
-                    <div class="stats-grid">
-                        <div class="stat-card total">
-                            <div class="stat-label">Tổng số dòng</div>
-                            <div class="stat-num" style="color: #1B365D;"><c:out value="${baoCao.tongSoDong}" /></div>
+                    <!-- THỐNG KÊ TỔNG KẾT ĐỢT NHẬP -->
+                    <div class="stats-cards-grid">
+                        <div class="stat-item-box total">
+                            <div class="stat-header-sub">
+                                <span class="stat-item-label">Tổng số dòng</span>
+                                <span class="stat-item-icon">&#128196;</span>
+                            </div>
+                            <div class="stat-item-value" id="stat-num-total"><c:out value="${baoCao.tongSoDong}" /></div>
+                            <div class="stat-item-subtext">Bản ghi trong tệp Excel</div>
                         </div>
-                        <div class="stat-card valid">
-                            <div class="stat-label">Dòng hợp lệ</div>
-                            <div class="stat-num" style="color: #2E7D32;"><c:out value="${baoCao.soDongHopLe}" /></div>
+
+                        <div class="stat-item-box valid">
+                            <div class="stat-header-sub">
+                                <span class="stat-item-label">Dòng hợp lệ</span>
+                                <span class="stat-item-icon">&#9989;</span>
+                            </div>
+                            <div class="stat-item-value" id="stat-num-valid"><c:out value="${baoCao.soDongHopLe}" /></div>
+                            <div class="stat-item-subtext">Đạt chuẩn nghiệp vụ</div>
                         </div>
-                        <div class="stat-card error">
-                            <div class="stat-label">Dòng có lỗi</div>
-                            <div class="stat-num" style="color: #C62828;"><c:out value="${baoCao.soDongLoi}" /></div>
+
+                        <div class="stat-item-box error">
+                            <div class="stat-header-sub">
+                                <span class="stat-item-label">Dòng có lỗi</span>
+                                <span class="stat-item-icon">&#9888;</span>
+                            </div>
+                            <div class="stat-item-value" id="stat-num-error"><c:out value="${baoCao.soDongLoi}" /></div>
+                            <div class="stat-item-subtext">Sẽ tự động bỏ qua</div>
                         </div>
+
                         <c:if test="${cheDo == 'ket-qua'}">
-                            <div class="stat-card imported">
-                                <div class="stat-label">Đã nhập thành công</div>
-                                <div class="stat-num" style="color: #0288D1;"><c:out value="${baoCao.soDongThanhCong}" /></div>
+                            <div class="stat-item-box imported">
+                                <div class="stat-header-sub">
+                                    <span class="stat-item-label">Đã tạo thành công</span>
+                                    <span class="stat-item-icon">&#127881;</span>
+                                </div>
+                                <div class="stat-item-value" id="stat-num-imported"><c:out value="${baoCao.soDongThanhCong}" /></div>
+                                <div class="stat-item-subtext">Tài khoản sẵn sàng dùng</div>
                             </div>
                         </c:if>
                     </div>
 
-                    <!-- THÔNG ĐIỆP BÁO CÁO -->
-                    <div class="alert" style="background-color: #E3F2FD; color: #0D47A1; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #1976D2;">
-                        <strong>&#8505; Tóm tắt:</strong> <c:out value="${baoCao.thongDiep}" />
+                    <!-- THANH TIẾN TRÌNH TỶ LỆ HỢP LỆ / LỖI -->
+                    <c:if test="${baoCao.tongSoDong > 0}">
+                        <div class="progress-stacked-wrap">
+                            <div class="progress-header-info">
+                                <span>Tỷ lệ hợp lệ: <strong>${Math.round(baoCao.soDongHopLe * 100.0 / baoCao.tongSoDong)}%</strong></span>
+                                <span>Tỷ lệ lỗi: <strong>${Math.round(baoCao.soDongLoi * 100.0 / baoCao.tongSoDong)}%</strong></span>
+                            </div>
+                            <div class="progress-bar-track">
+                                <div class="progress-bar-fill-valid" style="width: ${baoCao.soDongHopLe * 100.0 / baoCao.tongSoDong}%;"></div>
+                                <div class="progress-bar-fill-error" style="width: ${baoCao.soDongLoi * 100.0 / baoCao.tongSoDong}%;"></div>
+                            </div>
+                        </div>
+                    </c:if>
+
+                    <!-- THÔNG ĐIỆP TỔNG KẾT HỆ THỐNG -->
+                    <div class="alert alert-info" style="margin-bottom: 20px; background-color: #EBF8FF; color: #2B6CB0; border: 1px solid #BEE3F8; border-radius: 8px; padding: 14px 18px;">
+                        <strong>&#8505; Tóm tắt đợt xử lý:</strong> <c:out value="${baoCao.thongDiep}" />
                     </div>
 
-                    <!-- BẢNG CHI TIẾT TỪNG DÒNG -->
-                    <div class="table-responsive">
-                        <table class="table-preview" id="bang-ket-qua-excel">
+                    <!-- TOOLBAR: BỘ LỌC THEO TAB VÀ TÌM KIẾM NHANH -->
+                    <div class="table-toolbar-box">
+                        <div class="tab-filter-container">
+                            <button type="button" class="tab-filter-btn active" data-filter="all" id="tab-tat-ca">
+                                Tất cả <span class="tab-count-badge"><c:out value="${baoCao.tongSoDong}" /></span>
+                            </button>
+                            <button type="button" class="tab-filter-btn" data-filter="valid" id="tab-hop-le">
+                                <c:choose>
+                                    <c:when test="${cheDo == 'ket-qua'}">
+                                        Đã nhập thành công <span class="tab-count-badge"><c:out value="${baoCao.soDongThanhCong}" /></span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        Hợp lệ <span class="tab-count-badge"><c:out value="${baoCao.soDongHopLe}" /></span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </button>
+                            <button type="button" class="tab-filter-btn" data-filter="error" id="tab-loi">
+                                <c:choose>
+                                    <c:when test="${cheDo == 'ket-qua'}">
+                                        Bị bỏ qua do lỗi <span class="tab-count-badge"><c:out value="${baoCao.soDongLoi}" /></span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        Có lỗi <span class="tab-count-badge"><c:out value="${baoCao.soDongLoi}" /></span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </button>
+                        </div>
+
+                        <!-- Ô TÌM KIẾM TRONG BẢNG -->
+                        <div class="table-search-wrapper">
+                            <span class="table-search-icon">&#128269;</span>
+                            <input type="text"
+                                   id="timKiemBang"
+                                   class="table-search-input"
+                                   placeholder="Lọc theo tên, email, vai trò hoặc lỗi..."
+                                   aria-label="Tìm kiếm trong bảng xem trước" />
+                        </div>
+                    </div>
+
+                    <!-- BẢNG CHI TIẾT TỪNG DÒNG (AC 2 & AC 3) -->
+                    <div class="preview-table-container">
+                        <table class="import-preview-table" id="bang-ket-qua-excel">
                             <thead>
                                 <tr>
                                     <th style="width: 60px; text-align: center;">Dòng</th>
@@ -292,38 +318,49 @@
                                     <th>Số điện thoại</th>
                                     <th>Vai trò</th>
                                     <th>Nhóm kinh doanh</th>
-                                    <th style="width: 130px; text-align: center;">Trạng thái</th>
-                                    <th>Chi tiết lỗi / Mật khẩu tạm</th>
+                                    <th style="width: 150px; text-align: center;">Trạng thái</th>
+                                    <th>Chi tiết thẩm định / Mật khẩu tạm</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <c:forEach var="dong" items="${baoCao.danhSachTatCaDong}">
-                                    <tr>
-                                        <td style="text-align: center; font-weight: 600; color: #546E7A;"><c:out value="${dong.soDong}" /></td>
-                                        <td style="font-weight: 600;"><c:out value="${dong.hoTen}" /></td>
-                                        <td><code><c:out value="${dong.email}" /></code></td>
-                                        <td><c:out value="${dong.soDienThoai}" /></td>
-                                        <td><c:out value="${dong.chuoiVaiTroHienThi}" /></td>
-                                        <td><c:out value="${dong.tenNhomGiaiQuyet}" /></td>
+                                    <c:set var="statusKey" value="${cheDo == 'ket-qua' ? (dong.daNhap ? 'imported' : 'skipped') : (dong.hopLe ? 'valid' : 'error')}" />
+                                    <tr data-status="${statusKey}" class="${not dong.hopLe ? 'row-error-highlight' : ''}">
+                                        <td class="row-index-cell"><c:out value="${dong.soDong}" /></td>
+                                        <td class="user-name-cell"><c:out value="${dong.hoTen}" /></td>
+                                        <td class="user-email-cell"><code><c:out value="${dong.email}" /></code></td>
+                                        <td><c:out value="${empty dong.soDienThoai ? '-' : dong.soDienThoai}" /></td>
+                                        <td>
+                                            <span class="role-tag"><c:out value="${dong.chuoiVaiTroHienThi}" /></span>
+                                        </td>
+                                        <td><c:out value="${empty dong.tenNhomGiaiQuyet ? '-' : dong.tenNhomGiaiQuyet}" /></td>
                                         <td style="text-align: center;">
                                             <c:choose>
                                                 <c:when test="${cheDo == 'ket-qua'}">
                                                     <c:choose>
                                                         <c:when test="${dong.daNhap}">
-                                                            <span class="badge-status badge-imported">&#10003; Đã nhập (ID: ${dong.idNguoiDung})</span>
+                                                            <span class="badge-state badge-state-imported" title="Đã lưu vào cơ sở dữ liệu với ID: ${dong.idNguoiDung}">
+                                                                &#10003; Đã tạo (ID: ${dong.idNguoiDung})
+                                                            </span>
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <span class="badge-status badge-skipped">&#10007; Bị bỏ qua</span>
+                                                            <span class="badge-state badge-state-skipped" title="Dòng bị lỗi đã được tự động bỏ qua">
+                                                                &#10007; Bị bỏ qua
+                                                            </span>
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </c:when>
                                                 <c:otherwise>
                                                     <c:choose>
                                                         <c:when test="${dong.hopLe}">
-                                                            <span class="badge-status badge-valid">&#10003; Hợp lệ</span>
+                                                            <span class="badge-state badge-state-valid" title="Dữ liệu đáp ứng tất cả quy tắc">
+                                                                &#10003; Hợp lệ
+                                                            </span>
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <span class="badge-status badge-error">&#9888; Lỗi</span>
+                                                            <span class="badge-state badge-state-error" title="Dữ liệu vi phạm quy tắc">
+                                                                &#9888; Dòng lỗi
+                                                            </span>
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </c:otherwise>
@@ -332,18 +369,31 @@
                                         <td>
                                             <c:choose>
                                                 <c:when test="${not empty dong.danhSachLoi}">
-                                                    <ul class="text-error-list">
+                                                    <ul class="error-list-pill">
                                                         <c:forEach var="loi" items="${dong.danhSachLoi}">
-                                                            <li><c:out value="${loi}" /></li>
+                                                            <li class="error-item-tag">
+                                                                <span>&#9888;</span>
+                                                                <span><c:out value="${loi}" /></span>
+                                                            </li>
                                                         </c:forEach>
                                                     </ul>
                                                 </c:when>
                                                 <c:when test="${dong.daNhap and not empty dong.matKhauTam}">
-                                                    <span style="font-size: 13px; color: #2E7D32;">Mật khẩu:</span>
-                                                    <span class="credential-box"><c:out value="${dong.matKhauTam}" /></span>
+                                                    <div class="credential-display-wrap">
+                                                        <span style="font-size: 0.8rem; color: #475569;">Mật khẩu:</span>
+                                                        <span class="credential-code"><c:out value="${dong.matKhauTam}" /></span>
+                                                        <button type="button"
+                                                                class="btn-copy-mini btn-copy-pwd"
+                                                                data-pwd="<c:out value='${dong.matKhauTam}' />"
+                                                                title="Sao chép mật khẩu tạm">
+                                                            &#128203;
+                                                        </button>
+                                                    </div>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <span style="color: #689F38; font-size: 13px;">Dữ liệu sẵn sàng</span>
+                                                    <span class="success-ready-tag">
+                                                        &#10003; Dữ liệu sẵn sàng nhập
+                                                    </span>
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
@@ -351,13 +401,59 @@
                                 </c:forEach>
                             </tbody>
                         </table>
+
+                        <!-- THÔNG BÁO KHI TÌM KIẾM HOẶC LỌC KHÔNG CÓ KẾT QUẢ -->
+                        <div id="empty-filter-notice" class="empty-filter-state" style="display: none;">
+                            <div class="empty-filter-icon">&#128269;</div>
+                            <div style="font-weight: 600; font-size: 0.95rem;">Không tìm thấy dòng dữ liệu nào phù hợp</div>
+                            <div style="font-size: 0.85rem;">Vui lòng thử tìm với từ khóa khác hoặc chuyển tab lọc.</div>
+                        </div>
                     </div>
 
-                </div>
+                </section>
             </c:if>
 
         </div>
     </main>
 
+    <!-- MODAL XÁC NHẬN NHẬP DỮ LIỆU THÔNG MINH -->
+    <div class="crm-modal-backdrop" id="modal-xac-nhan-nhap" role="dialog" aria-modal="true" aria-labelledby="modal-confirm-title">
+        <div class="crm-modal-box">
+            <div class="modal-header-flex">
+                <div class="modal-icon-alert">&#9888;</div>
+                <div>
+                    <h3 class="modal-title-text" id="modal-confirm-title">Xác nhận nhập danh sách người dùng</h3>
+                    <div style="font-size: 0.84rem; color: #64748B;">Hệ thống sẽ thực hiện theo quy tắc Acceptance Criteria</div>
+                </div>
+            </div>
+
+            <div class="modal-body-desc">
+                Bạn đang chuẩn bị tạo tài khoản hàng loạt từ tệp Excel vào cơ sở dữ liệu CRM.
+            </div>
+
+            <div class="modal-summary-box">
+                <div class="modal-summary-row">
+                    <span style="color: #2E7D32; font-weight: 600;">&#10003; Số dòng hợp lệ sẽ được nhập:</span>
+                    <strong id="modal-count-valid" style="color: #2E7D32;">${empty baoCao ? '-' : baoCao.soDongHopLe}</strong>
+                </div>
+                <div class="modal-summary-row">
+                    <span style="color: #C62828; font-weight: 600;">&#10007; Số dòng lỗi sẽ tự động bỏ qua:</span>
+                    <strong id="modal-count-error" style="color: #C62828;">${empty baoCao ? '-' : baoCao.soDongLoi}</strong>
+                </div>
+            </div>
+
+            <div class="modal-actions-flex">
+                <button type="button" class="btn-action btn-action-outline" id="modal-btn-cancel">
+                    Hủy bỏ
+                </button>
+                <button type="button" class="btn-action btn-action-import" id="modal-btn-confirm">
+                    &#9989; Đồng ý và Tiếp tục nhập
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript chuyên biệt cho tính năng S2-01 -->
+    <script src="${pageContext.request.contextPath}/assets/js/nguoi-dung/import-excel.js"></script>
 </body>
 </html>
