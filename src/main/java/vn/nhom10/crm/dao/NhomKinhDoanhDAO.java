@@ -67,4 +67,39 @@ public class NhomKinhDoanhDAO {
         }
         return danhSach;
     }
+
+    /**
+     * Tìm nhóm kinh doanh theo mã nhóm (không phân biệt chữ hoa/thường).
+     *
+     * @param maNhom Mã nhóm kinh doanh (vd: KD_MIEN_BAC)
+     * @return NhomKinhDoanh nếu tìm thấy, hoặc null
+     */
+    public NhomKinhDoanh timTheoMa(String maNhom) {
+        if (maNhom == null || maNhom.isBlank()) {
+            return null;
+        }
+
+        String sql = "SELECT id, ma_nhom, ten_nhom, mo_ta, nhom_cha_id FROM nhom_kinh_doanh WHERE UPPER(ma_nhom) = UPPER(?) LIMIT 1";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, maNhom.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Integer nhomChaId = rs.getObject("nhom_cha_id") != null ? rs.getInt("nhom_cha_id") : null;
+                    return new NhomKinhDoanh(
+                            rs.getInt("id"),
+                            rs.getString("ma_nhom"),
+                            rs.getString("ten_nhom"),
+                            rs.getString("mo_ta"),
+                            nhomChaId
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi tìm nhóm kinh doanh theo mã=" + maNhom + ": " + e.getMessage(), e);
+        }
+        return null;
+    }
 }
