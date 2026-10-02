@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import vn.nhom10.crm.dto.MucMenuDTO;
 import vn.nhom10.crm.dto.ThongTinDieuHuongDTO;
-import vn.nhom10.crm.model.ModuleHeThong;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.NhomKinhDoanh;
 import vn.nhom10.crm.model.VaiTro;
@@ -17,7 +16,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("Kiểm thử Menu điều hướng và phân quyền (Story S1-06)")
+@DisplayName("Kiểm thử Menu điều hướng và phân quyền (Story S1-06 & S2-03)")
 class MenuServiceTest {
 
     private MenuService menuService;
@@ -121,7 +120,6 @@ class MenuServiceTest {
     @Test
     @DisplayName("AC1: Người dùng có nhiều vai trò được gộp quyền của các vai trò đó")
     void testNguoiDungNhieuVaiTro() {
-        // Kết hợp Marketing + Accountant: thấy cả Lead (của MKT) và Hợp đồng/Báo giá (của Accountant)
         NguoiDung multi = taoNguoiDung("Nguyễn Hỗn Hợp", "Khối Tổng Hợp", VaiTroEnum.MARKETING, VaiTroEnum.ACCOUNTANT);
         List<MucMenuDTO> dsMenu = menuService.layDanhSachMenuChoNguoiDung(multi, "/tong-quan");
 
@@ -168,6 +166,22 @@ class MenuServiceTest {
         assertEquals("Chưa phân nhóm", dto.getTenNhomKinhDoanh());
         assertTrue(dto.getVaiTroHienThi().contains("Trưởng nhóm kinh doanh"));
         assertTrue(dto.getVaiTroHienThi().contains("Nhân viên kinh doanh"));
+    }
+
+    @Test
+    @DisplayName("AC2: Hiển thị đầy đủ Tên, Vai trò, Nhóm kinh doanh và Avatar nếu có")
+    void testHienThiAvatarVaThongTin() {
+        NguoiDung nd = taoNguoiDung("Thào A Khua", "Nhóm Kinh Doanh Miền Bắc", VaiTroEnum.SALES_REP);
+        nd.setAnhDaiDienPath("user_1/avatar.png");
+        nd.setAnhDaiDienThumbPath("user_1/thumb.png");
+        ThongTinDieuHuongDTO dto = menuService.layThongTinDieuHuong(nd, "/khach-hang", "/crm");
+
+        assertEquals("Thào A Khua", dto.getHoTen());
+        assertEquals("Nhân viên kinh doanh", dto.getVaiTroHienThi());
+        assertEquals("Nhóm Kinh Doanh Miền Bắc", dto.getTenNhomKinhDoanh());
+        assertTrue(dto.isCoAnhDaiDien());
+        assertEquals("/crm/avatar?id=1", dto.getAnhDaiDienUrl());
+        assertEquals("/crm/avatar?id=1&thumb=true", dto.getAnhDaiDienThumbUrl());
     }
 
     @Test

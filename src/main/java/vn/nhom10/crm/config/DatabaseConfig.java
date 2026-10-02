@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 /**
  * Quản lý cấu hình và cấp phát kết nối JDBC MySQL 8.4 LTS.
  * Hỗ trợ nạp cấu hình từ database.properties, biến môi trường và supplier cho test tự động.
+ * Tuân thủ CODING_RULES.md và DATABASE_RULES.md.
  */
 public class DatabaseConfig {
 
@@ -21,6 +22,7 @@ public class DatabaseConfig {
     private static String url;
     private static String user;
     private static String password;
+    private static String avatarUploadDir;
 
     private static Supplier<Connection> connectionSupplier;
 
@@ -57,10 +59,13 @@ public class DatabaseConfig {
         password = System.getenv("DB_PASSWORD") != null ? System.getenv("DB_PASSWORD")
                 : props.getProperty("db.password", "123456");
 
+        avatarUploadDir = System.getenv("AVATAR_UPLOAD_DIR") != null ? System.getenv("AVATAR_UPLOAD_DIR")
+                : props.getProperty("avatar.upload.dir", "uploads/avatars");
+
         try {
             Class.forName(driver);
         } catch (ClassNotFoundException e) {
-            LOGGER.log(Level.SEVERE, "Không tìm thấy JDBC Driver: " + driver, e);
+            LOGGER.log(Level.WARNING, "Chưa tìm thấy JDBC Driver khi load: " + driver);
         }
     }
 
@@ -85,6 +90,10 @@ public class DatabaseConfig {
      */
     public static Connection layKetNoi() throws SQLException {
         return getConnection();
+    }
+
+    public static String getAvatarUploadDir() {
+        return avatarUploadDir;
     }
 
     /**
