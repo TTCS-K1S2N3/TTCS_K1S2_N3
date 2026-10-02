@@ -61,7 +61,7 @@
     </div>
 
     <!-- User Profile Box (AC: Hiển thị Tên, Vai trò và Nhóm kinh doanh) -->
-    <div class="crm-user-profile-box" id="crm-user-profile-card">
+    <a href="<%= request.getContextPath() %>/ho-so" class="crm-user-profile-box" id="crm-user-profile-card" style="text-decoration: none; display: block; color: inherit;">
         <div class="crm-user-avatar-wrap">
             <div class="crm-user-avatar" title="<%= navData.getHoTen() %>">
                 <%= navData.getTenVietTat() %>
@@ -97,7 +97,7 @@
                 </span>
             </div>
         </div>
-    </div>
+    </a>
 
     <!-- Navigation Menu Items (AC: Mục menu không thuộc quyền thì không hiển thị) -->
     <nav class="crm-nav-menu" id="crm-nav-menu" aria-label="Danh mục chức năng">
