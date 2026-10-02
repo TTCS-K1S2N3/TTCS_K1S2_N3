@@ -65,6 +65,16 @@ public class DanhMucBanHangServlet extends HttpServlet {
             session.removeAttribute("thongBaoLoi");
         }
 
+        NguoiDung currentUser = null;
+        if (session != null) {
+            Object u = session.getAttribute("nguoiDung");
+            if (u == null) u = session.getAttribute("user");
+            if (u instanceof NguoiDung) {
+                currentUser = (NguoiDung) u;
+            }
+        }
+
+        request.setAttribute("nguoiDungHienTai", currentUser);
         request.setAttribute("loaiHienTai", loai);
         request.setAttribute("danhSachLoaiDanhMuc", LoaiDanhMuc.values());
         request.setAttribute("danhSachMuc", danhSachMuc);
@@ -166,12 +176,16 @@ public class DanhMucBanHangServlet extends HttpServlet {
     private boolean kiemTraQuyenTruyCap(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("nguoiDung") == null) {
+        Object userObj = (session != null) ? session.getAttribute("nguoiDung") : null;
+        if (userObj == null && session != null) {
+            userObj = session.getAttribute("user");
+        }
+        if (userObj == null) {
             response.sendRedirect(request.getContextPath() + "/dang-nhap?error=auth_required");
             return false;
         }
 
-        NguoiDung currentUser = (NguoiDung) session.getAttribute("nguoiDung");
+        NguoiDung currentUser = (NguoiDung) userObj;
         boolean coQuyen = currentUser.coVaiTro(VaiTroEnum.DIRECTOR)
                 || currentUser.coVaiTro(VaiTroEnum.ADMIN)
                 || currentUser.coVaiTro("DIRECTOR")
