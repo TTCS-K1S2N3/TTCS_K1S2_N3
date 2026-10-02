@@ -29,14 +29,20 @@ public class PhanQuyenDuLieuService {
     private static final Logger LOGGER = Logger.getLogger(PhanQuyenDuLieuService.class.getName());
 
     private final PhanQuyenDuLieuDAO dao;
+    private final CoCauToChucService coCauToChucService;
     private final List<BanGhiNghiepVuDTO> danhSachBoNho;
 
     public PhanQuyenDuLieuService() {
-        this(new PhanQuyenDuLieuDAO());
+        this(new PhanQuyenDuLieuDAO(), new CoCauToChucService());
     }
 
     public PhanQuyenDuLieuService(PhanQuyenDuLieuDAO dao) {
+        this(dao, new CoCauToChucService());
+    }
+
+    public PhanQuyenDuLieuService(PhanQuyenDuLieuDAO dao, CoCauToChucService coCauToChucService) {
         this.dao = dao;
+        this.coCauToChucService = coCauToChucService != null ? coCauToChucService : new CoCauToChucService();
         this.danhSachBoNho = new java.util.concurrent.CopyOnWriteArrayList<>(layDanhSachDuLieuMau());
     }
 
@@ -107,9 +113,20 @@ public class PhanQuyenDuLieuService {
         // 1. Thử truy vấn qua DAO từ cơ sở dữ liệu
         if (dao != null) {
             try {
-                List<BanGhiNghiepVuDTO> dbList = dao.layDanhSachTongHopTheoPhamVi(
+                java.util.Set<Long> dsNhomIds = new java.util.HashSet<>();
+                if (user.getNhomKinhDoanhId() != null && user.getNhomKinhDoanhId() > 0) {
+                    dsNhomIds.add(user.getNhomKinhDoanhId());
+                }
+                if (phamViHieuLuc == PhamViDuLieu.NHOM && coCauToChucService != null && user.getId() != null) {
+                    java.util.Set<Long> cayNhom = coCauToChucService.layDsIdNhomDuocXemBoiTruongNhom(user.getId());
+                    if (cayNhom != null && !cayNhom.isEmpty()) {
+                        dsNhomIds.addAll(cayNhom);
+                    }
+                }
+
+                List<BanGhiNghiepVuDTO> dbList = dao.layDanhSachTongHopTheoTapHopNhom(
                         user.getId(),
-                        user.getNhomKinhDoanhId(),
+                        dsNhomIds,
                         phamViHieuLuc,
                         tuKhoa,
                         loaiEnum
@@ -185,10 +202,21 @@ public class PhanQuyenDuLieuService {
             return new KetQuaKiemTra(true, "Truy cập hợp lệ với tư cách người phụ trách trực tiếp.", banGhi);
         }
 
-        // 3. Trưởng nhóm (nếu có quyền NHOM xác thực từ DB): được xem dữ liệu của thành viên trong nhóm mình
+        // 3. Trưởng nhóm (nếu có quyền NHOM xác thực từ DB): được xem dữ liệu của thành viên trong nhóm mình và các nhóm con cháu (Story S2-06, AC3)
         if (phamViToiDa == PhamViDuLieu.NHOM) {
+            boolean coQuyenNhom = false;
             if (banGhi.getNhomKinhDoanhId() != null && banGhi.getNhomKinhDoanhId().equals(user.getNhomKinhDoanhId())) {
-                return new KetQuaKiemTra(true, "Truy cập hợp lệ với tư cách Trưởng nhóm quản lý " + user.getTenNhom() + ".", banGhi);
+                coQuyenNhom = true;
+            } else if (coCauToChucService != null && banGhi.getNhomKinhDoanhId() != null && user.getId() != null) {
+                try {
+                    coQuyenNhom = coCauToChucService.kiemTraThuocPhamViCayToChuc(user.getId(), banGhi.getNhomKinhDoanhId());
+                } catch (Exception e) {
+                    LOGGER.log(Level.FINE, "Lỗi kiểm tra phạm vi cây tổ chức: " + e.getMessage());
+                }
+            }
+
+            if (coQuyenNhom) {
+                return new KetQuaKiemTra(true, "Truy cập hợp lệ với tư cách Trưởng nhóm quản lý " + user.getTenNhom() + " (theo cây tổ chức).", banGhi);
             } else {
                 String thongBao = String.format(
                         "Từ chối truy cập: Bản ghi '%s' (Mã: %s) thuộc về %s (%s), không nằm trong phạm vi nhóm quản lý của bạn (%s).",
@@ -372,8 +400,18 @@ public class PhanQuyenDuLieuService {
                         return true;
                     }
                     if (phamViThucTe == PhamViDuLieu.NHOM) {
-                        return bg.getNhomKinhDoanhId() != null
-                                && bg.getNhomKinhDoanhId().equals(user.getNhomKinhDoanhId());
+                        if (bg.getNhomKinhDoanhId() == null) {
+                            return false;
+                        }
+                        if (bg.getNhomKinhDoanhId().equals(user.getNhomKinhDoanhId())) {
+                            return true;
+                        }
+                        if (coCauToChucService != null && user.getId() != null) {
+                            try {
+                                return coCauToChucService.kiemTraThuocPhamViCayToChuc(user.getId(), bg.getNhomKinhDoanhId());
+                            } catch (Exception ignored) {}
+                        }
+                        return false;
                     }
                     // Mặc định: CA_NHAN
                     return bg.getNguoiPhuTrachId() != null
