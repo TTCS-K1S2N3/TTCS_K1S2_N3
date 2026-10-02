@@ -1,0 +1,443 @@
+/**
+ * JavaScript cho module Cấu hình Giai đoạn Pipeline & Dự báo Doanh số (Story S2-09 - FE Hoàng văn kim).
+ * Cung cấp:
+ * 1. Đồng bộ thanh trượt Slider & Input số cho Xác suất thắng (%) (AC 2)
+ * 2. Bộ mô phỏng tính nhanh dự báo doanh số trực tiếp thời gian thực (Live Forecast Simulator - AC 2)
+ * 3. Client-side Form Validation chặt chẽ, hiển thị lỗi inline và chống double-submit
+ * 4. Modal kiểm tra điều kiện rời giai đoạn qua AJAX API với checklist trực quan (AC 3)
+ * 5. Modal cảnh báo & xác nhận xoá an toàn, bảo vệ cơ hội đang chạy (AC 4)
+ * 6. Bộ lọc / Tìm kiếm nhanh giai đoạn trong bảng cấu hình
+ */
+
+document.addEventListener("DOMContentLoaded", function () {
+    khoiTaoThongBaoTuDong();
+    khoiTaoDongBoXacSuat();
+    khoiTaoFormValidation();
+    khoiTaoBoLocGiaiDoan();
+    khoiTaoSimDuBao();
+});
+
+/**
+ * 1. Tự động ẩn thông báo flash sau 5 giây với hiệu ứng mờ dần
+ */
+function khoiTaoThongBaoTuDong() {
+    const alerts = document.querySelectorAll(".alert");
+    alerts.forEach(function (alert) {
+        setTimeout(function () {
+            alert.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+            alert.style.opacity = "0";
+            alert.style.transform = "translateY(-6px)";
+            setTimeout(function () {
+                alert.style.display = "none";
+            }, 400);
+        }, 5000);
+    });
+}
+
+function dongThongBao(btn) {
+    const alertBox = btn.closest(".alert");
+    if (alertBox) {
+        alertBox.style.transition = "opacity 0.25s ease";
+        alertBox.style.opacity = "0";
+        setTimeout(function () {
+            alertBox.style.display = "none";
+        }, 250);
+    }
+}
+
+/**
+ * 2. Đồng bộ thanh trượt Slider và ô nhập số cho Xác suất thắng (%) (AC 2)
+ */
+function khoiTaoDongBoXacSuat() {
+    const inputXacSuat = document.getElementById("xacSuatThang");
+    const sliderXacSuat = document.getElementById("sliderXacSuat");
+    const previewBox = document.getElementById("probLivePreview");
+
+    if (!inputXacSuat || !sliderXacSuat) return;
+
+    function capNhatPreview(val) {
+        if (previewBox) {
+            const num = parseInt(val, 10) || 0;
+            const duBaoMau = (100000000 * (num / 100));
+            previewBox.innerHTML = "Doanh số dự báo cho cơ hội 100.000.000 ₫: <strong style='color: var(--primary-600);'>" +
+                dinhDangTienTe(duBaoMau) + "</strong> (" + num + "%)";
+        }
+    }
+
+    sliderXacSuat.addEventListener("input", function () {
+        inputXacSuat.value = this.value;
+        capNhatPreview(this.value);
+    });
+
+    inputXacSuat.addEventListener("input", function () {
+        let val = parseInt(this.value, 10);
+        if (isNaN(val)) val = 0;
+        if (val < 0) val = 0;
+        if (val > 100) val = 100;
+        this.value = val;
+        sliderXacSuat.value = val;
+        capNhatPreview(val);
+    });
+
+    // Khởi tạo ban đầu
+    capNhatPreview(inputXacSuat.value || 0);
+}
+
+/**
+ * 3. Client-side Form Validation chặt chẽ cho Tạo và Sửa giai đoạn
+ */
+function khoiTaoFormValidation() {
+    const form = document.getElementById("formGiaiDoan");
+    if (!form) return;
+
+    const maGiaiDoan = document.getElementById("maGiaiDoan");
+    const tenGiaiDoan = document.getElementById("tenGiaiDoan");
+    const thuTu = document.getElementById("thuTu");
+    const xacSuatThang = document.getElementById("xacSuatThang");
+    const btnSubmit = document.getElementById("btnSubmitForm");
+
+    // Real-time clean maGiaiDoan
+    if (maGiaiDoan) {
+        maGiaiDoan.addEventListener("input", function () {
+            // Tự động chuyển hoa và thay ký tự đặc biệt thành gạch dưới
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9_-]/g, "");
+            xoaLoiField(this);
+        });
+    }
+
+    if (tenGiaiDoan) {
+        tenGiaiDoan.addEventListener("input", function () {
+            xoaLoiField(this);
+        });
+    }
+
+    form.addEventListener("submit", function (e) {
+        let hopLe = true;
+        let firstInvalid = null;
+
+        // Reset all error states
+        document.querySelectorAll(".field-error").forEach(el => el.remove());
+        document.querySelectorAll(".is-invalid").forEach(el => el.classList.remove("is-invalid"));
+
+        // 1. Kiểm tra Mã giai đoạn
+        if (maGiaiDoan) {
+            const val = maGiaiDoan.value.trim();
+            const regex = /^[A-Z0-9_-]{2,50}$/;
+            if (!val) {
+                hienLoiField(maGiaiDoan, "Vui lòng nhập mã giai đoạn.");
+                hopLe = false;
+                if (!firstInvalid) firstInvalid = maGiaiDoan;
+            } else if (!regex.test(val)) {
+                hienLoiField(maGiaiDoan, "Mã giai đoạn từ 2-50 ký tự, chỉ gồm chữ cái in hoa, số, gạch ngang (-) hoặc gạch dưới (_).");
+                hopLe = false;
+                if (!firstInvalid) firstInvalid = maGiaiDoan;
+            }
+        }
+
+        // 2. Kiểm tra Tên giai đoạn
+        if (tenGiaiDoan) {
+            const val = tenGiaiDoan.value.trim();
+            if (!val) {
+                hienLoiField(tenGiaiDoan, "Vui lòng nhập tên giai đoạn.");
+                hopLe = false;
+                if (!firstInvalid) firstInvalid = tenGiaiDoan;
+            } else if (val.length < 2 || val.length > 100) {
+                hienLoiField(tenGiaiDoan, "Tên giai đoạn từ 2 đến 100 ký tự.");
+                hopLe = false;
+                if (!firstInvalid) firstInvalid = tenGiaiDoan;
+            }
+        }
+
+        // 3. Kiểm tra Thứ tự
+        if (thuTu) {
+            const val = parseInt(thuTu.value, 10);
+            if (isNaN(val) || val <= 0) {
+                hienLoiField(thuTu, "Thứ tự giai đoạn phải là số nguyên dương lớn hơn 0.");
+                hopLe = false;
+                if (!firstInvalid) firstInvalid = thuTu;
+            }
+        }
+
+        // 4. Kiểm tra Xác suất thắng (%)
+        if (xacSuatThang) {
+            const val = parseInt(xacSuatThang.value, 10);
+            if (isNaN(val) || val < 0 || val > 100) {
+                hienLoiField(xacSuatThang, "Xác suất thắng phải từ 0% đến 100%.");
+                hopLe = false;
+                if (!firstInvalid) firstInvalid = xacSuatThang;
+            }
+        }
+
+        if (!hopLe) {
+            e.preventDefault();
+            if (firstInvalid) {
+                firstInvalid.focus();
+            }
+            return false;
+        }
+
+        // Hiển thị trạng thái loading khi submit để chống double-click
+        if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = "⏳ Đang lưu cấu hình...";
+            btnSubmit.classList.add("btn-disabled");
+        }
+        return true;
+    });
+}
+
+function hienLoiField(inputEl, msg) {
+    inputEl.classList.add("is-invalid");
+    const errSpan = document.createElement("span");
+    errSpan.className = "field-error";
+    errSpan.innerHTML = "⚠️ " + msg;
+    inputEl.parentElement.appendChild(errSpan);
+}
+
+function xoaLoiField(inputEl) {
+    inputEl.classList.remove("is-invalid");
+    const existing = inputEl.parentElement.querySelector(".field-error");
+    if (existing) existing.remove();
+}
+
+/**
+ * 4. Bộ mô phỏng tính nhanh dự báo doanh số thời gian thực (Live Forecast Simulator - AC 2)
+ */
+function khoiTaoSimDuBao() {
+    const inputGiaTri = document.getElementById("simGiaTriCoHoi");
+    const selectGiaiDoan = document.getElementById("simGiaiDoan");
+    const sliderProb = document.getElementById("simSliderProb");
+    const valProb = document.getElementById("simValProb");
+
+    if (!inputGiaTri || !selectGiaiDoan) return;
+
+    // Khi chọn giai đoạn từ dropdown, cập nhật xác suất tương ứng
+    selectGiaiDoan.addEventListener("change", function () {
+        const prob = parseInt(this.value, 10) || 0;
+        if (sliderProb) sliderProb.value = prob;
+        if (valProb) valProb.textContent = prob + "%";
+        tinhNhanhDuBao();
+    });
+
+    if (sliderProb && valProb) {
+        sliderProb.addEventListener("input", function () {
+            valProb.textContent = this.value + "%";
+            tinhNhanhDuBao();
+        });
+    }
+
+    inputGiaTri.addEventListener("input", function () {
+        tinhNhanhDuBao();
+    });
+
+    // Tính lần đầu
+    tinhNhanhDuBao();
+}
+
+function datPresetGiaTri(soTien) {
+    const inputGiaTri = document.getElementById("simGiaTriCoHoi");
+    if (inputGiaTri) {
+        inputGiaTri.value = soTien;
+        tinhNhanhDuBao();
+    }
+}
+
+function tinhNhanhDuBao() {
+    const inputGiaTri = document.getElementById("simGiaTriCoHoi");
+    const selectGiaiDoan = document.getElementById("simGiaiDoan");
+    const sliderProb = document.getElementById("simSliderProb");
+    const outResult = document.getElementById("simKetQuaDuBao");
+    const outFormula = document.getElementById("simFormulaText");
+
+    if (!inputGiaTri || !outResult) return;
+
+    let giaTri = parseFloat(inputGiaTri.value) || 0;
+    let xacSuat = 0;
+
+    if (sliderProb) {
+        xacSuat = parseInt(sliderProb.value, 10) || 0;
+    } else if (selectGiaiDoan) {
+        xacSuat = parseInt(selectGiaiDoan.value, 10) || 0;
+    }
+
+    const duBao = giaTri * (xacSuat / 100);
+
+    outResult.textContent = dinhDangTienTe(duBao);
+    if (outFormula) {
+        outFormula.innerHTML = "Công thức: " + dinhDangTienTe(giaTri) + " &times; " + xacSuat + "% = " + dinhDangTienTe(duBao);
+    }
+}
+
+/**
+ * 5. AC 3: Modal Kiểm tra Điều kiện Rời Giai đoạn (AJAX API)
+ */
+function kiemTraDieuKienGiaiDoan(id, ten, soGap, soGoi, coBaoGia, coNhuCau, moTa) {
+    const modal = document.getElementById("modalKiemTraDieuKien");
+    if (!modal) return;
+
+    document.getElementById("modalTenGiaiDoan").textContent = ten;
+    document.getElementById("modalMoTaDieuKien").textContent = moTa || "Chưa thiết lập mô tả cụ thể";
+    document.getElementById("modalGiaiDoanId").value = id;
+
+    // Reset inputs
+    document.getElementById("testSoGap").value = 0;
+    document.getElementById("testSoGoi").value = 0;
+    document.getElementById("testBaoGia").checked = false;
+    document.getElementById("testNhuCau").checked = false;
+
+    // Checklist preview các điều kiện cần đạt của giai đoạn này
+    let checklistHtml = "<div style='font-size: 12px; color: var(--gray-600); margin-top: 6px; line-height: 1.5;'>";
+    checklistHtml += "<strong>Tiêu chí bắt buộc của bước này:</strong><ul style='margin-left: 18px; margin-top: 4px;'>";
+    if (soGap > 0) checklistHtml += "<li>Số cuộc gặp tối thiểu: <strong>&ge; " + soGap + "</strong></li>";
+    if (soGoi > 0) checklistHtml += "<li>Số cuộc gọi tối thiểu: <strong>&ge; " + soGoi + "</strong></li>";
+    if (coBaoGia) checklistHtml += "<li>Bắt buộc: <strong>Đã gửi báo giá chính thức</strong></li>";
+    if (coNhuCau) checklistHtml += "<li>Bắt buộc: <strong>Đã xác nhận bảng khảo sát nhu cầu</strong></li>";
+    if (soGap === 0 && soGoi === 0 && !coBaoGia && !coNhuCau) {
+        checklistHtml += "<li>Không có điều kiện định lượng đặc biệt</li>";
+    }
+    checklistHtml += "</ul></div>";
+
+    const boxQuyDinh = document.getElementById("modalChecklistQuyDinh");
+    if (boxQuyDinh) {
+        boxQuyDinh.innerHTML = checklistHtml;
+    }
+
+    document.getElementById("modalKetQuaDieuKien").innerHTML = "";
+    modal.style.display = "flex";
+}
+
+function dongModalDieuKien() {
+    const modal = document.getElementById("modalKiemTraDieuKien");
+    if (modal) modal.style.display = "none";
+}
+
+function thucHienKiemTraDieuKien() {
+    const id = document.getElementById("modalGiaiDoanId").value;
+    const soGap = document.getElementById("testSoGap").value || 0;
+    const soGoi = document.getElementById("testSoGoi").value || 0;
+    const coBaoGia = document.getElementById("testBaoGia").checked;
+    const coNhuCau = document.getElementById("testNhuCau").checked;
+    const resultBox = document.getElementById("modalKetQuaDieuKien");
+
+    resultBox.innerHTML = "<div style='padding: 10px; color: var(--gray-500); text-align: center;'>⏳ Đang xác minh điều kiện...</div>";
+
+    const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf("/", 2));
+    const basePath = contextPath.startsWith("/pipeline") ? "" : contextPath;
+    const url = basePath + "/pipeline/giai-doan/kiem-tra-dieu-kien?giaiDoanId=" + id +
+        "&soCuocGap=" + encodeURIComponent(soGap) +
+        "&soCuocGoi=" + encodeURIComponent(soGoi) +
+        "&daCoBaoGia=" + encodeURIComponent(coBaoGia) +
+        "&daKhaoSatNhuCau=" + encodeURIComponent(coNhuCau);
+
+    fetch(url)
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.thoaDieuKien) {
+                resultBox.innerHTML =
+                    "<div class='alert alert-success' style='margin-top:14px; display:block;'>" +
+                    "<div style='font-weight: 700; margin-bottom: 4px;'>✅ THỎA MÃN ĐIỀU KIỆN RỜI GIAI ĐOẠN</div>" +
+                    "<div>Cơ hội này đã đáp ứng đầy đủ tiêu chuẩn quy định để chuyển sang bước kế tiếp trong quy trình bán hàng.</div>" +
+                    "</div>";
+            } else {
+                let listHtml = "<ul style='margin-left: 20px; margin-top: 6px; line-height: 1.6;'>";
+                data.danhSachYeuCauThieu.forEach(function (req) {
+                    listHtml += "<li>" + req + "</li>";
+                });
+                listHtml += "</ul>";
+
+                resultBox.innerHTML =
+                    "<div class='alert alert-danger' style='margin-top:14px; display:block;'>" +
+                    "<div style='font-weight: 700; margin-bottom: 4px;'>⚠️ CHƯA ĐỦ ĐIỀU KIỆN RỜI GIAI ĐOẠN (AC 3)</div>" +
+                    "<div style='font-size: 13px;'>Hệ thống ngăn không cho chuyển giai đoạn nhằm đảm bảo tính xác thực của dữ liệu:</div>" +
+                    listHtml +
+                    "</div>";
+            }
+        })
+        .catch(function (err) {
+            resultBox.innerHTML = "<div class='alert alert-danger'>Lỗi kết nối kiểm tra: " + err.message + "</div>";
+        });
+}
+
+/**
+ * 6. AC 4: Modal Xóa An toàn & Cảnh báo bảo vệ cơ hội đang chạy
+ */
+let formXoaHienTai = null;
+
+function xacNhanXoaGiaiDoan(formEl, tenGiaiDoan, soCoHoi) {
+    if (soCoHoi > 0) {
+        // Cấm xóa cứng - hiển thị modal giải thích quy định AC 4
+        hienModalBaoVeCoHoi(tenGiaiDoan, soCoHoi);
+        return false;
+    }
+
+    // Nếu không có cơ hội đang chạy, mở modal xác nhận xóa
+    formXoaHienTai = formEl;
+    const modalXacNhan = document.getElementById("modalXacNhanXoa");
+    if (modalXacNhan) {
+        document.getElementById("tenGiaiDoanCanXoa").textContent = tenGiaiDoan;
+        modalXacNhan.style.display = "flex";
+    } else {
+        if (confirm("Bạn có chắc chắn muốn xoá vĩnh viễn giai đoạn '" + tenGiaiDoan + "' khỏi chuỗi quy trình pipeline?")) {
+            formEl.submit();
+        }
+    }
+    return false;
+}
+
+function dongModalXacNhanXoa() {
+    const modal = document.getElementById("modalXacNhanXoa");
+    if (modal) modal.style.display = "none";
+    formXoaHienTai = null;
+}
+
+function dongYThucHienXoa() {
+    if (formXoaHienTai) {
+        formXoaHienTai.submit();
+    }
+}
+
+function hienModalBaoVeCoHoi(tenGiaiDoan, soCoHoi) {
+    const modal = document.getElementById("modalBaoVeCoHoi");
+    if (modal) {
+        document.getElementById("tenGiaiDoanBaoVe").textContent = tenGiaiDoan;
+        document.getElementById("soCoHoiBaoVe").textContent = soCoHoi;
+        modal.style.display = "flex";
+    } else {
+        alert("KHÔNG THỂ XOÁ: Giai đoạn '" + tenGiaiDoan + "' đang có " + soCoHoi + " cơ hội đang chạy. Hãy sử dụng chức năng 'Ngừng áp dụng' để bảo toàn dữ liệu.");
+    }
+}
+
+function dongModalBaoVeCoHoi() {
+    const modal = document.getElementById("modalBaoVeCoHoi");
+    if (modal) modal.style.display = "none";
+}
+
+/**
+ * 7. Bộ lọc / Tìm kiếm nhanh giai đoạn trong bảng
+ */
+function khoiTaoBoLocGiaiDoan() {
+    const inputSearch = document.getElementById("timKiemGiaiDoan");
+    if (!inputSearch) return;
+
+    inputSearch.addEventListener("input", function () {
+        const query = this.value.toLowerCase().trim();
+        const rows = document.querySelectorAll("#bangGiaiDoanBody tr");
+
+        rows.forEach(function (row) {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(query)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    });
+}
+
+/**
+ * Hàm tiện ích: Định dạng số tiền tệ VNĐ (ví dụ: 100.000.000 ₫)
+ */
+function dinhDangTienTe(soTien) {
+    if (isNaN(soTien)) soTien = 0;
+    return Number(Math.round(soTien)).toLocaleString("vi-VN") + " ₫";
+}
