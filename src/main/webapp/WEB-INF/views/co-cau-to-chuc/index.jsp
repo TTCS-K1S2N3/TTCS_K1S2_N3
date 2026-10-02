@@ -185,6 +185,15 @@
         .tree-indent {
             display: inline-block;
         }
+        .tree-indent-box {
+            display: inline-block;
+        }
+        .tree-level-1 { padding-left: 0px; }
+        .tree-level-2 { padding-left: 20px; }
+        .tree-level-3 { padding-left: 40px; }
+        .tree-level-4 { padding-left: 60px; }
+        .tree-level-5 { padding-left: 80px; }
+        .tree-level-6 { padding-left: 100px; }
         .tree-branch-icon {
             color: #94a3b8;
             margin-right: 6px;
@@ -345,7 +354,7 @@
                                             <c:forEach var="nhom" items="${dsNhom}">
                                                 <tr>
                                                     <td>
-                                                        <div style="padding-left: ${(nhom.capDo - 1) * 20}px;">
+                                                        <div class="tree-indent-box tree-level-${nhom.capDo}">
                                                             <c:if test="${nhom.capDo > 1}">
                                                                 <span class="tree-branch-icon">&#8627;</span>
                                                             </c:if>
@@ -376,7 +385,11 @@
                                                         </c:choose>
                                                     </td>
                                                     <td>
-                                                        <a href="javascript:void(0)" onclick="xemThanhVien(${nhom.idLong}, '${nhom.tenNhom}')" style="color: #2563eb; text-decoration: none; font-weight: 600;">
+                                                        <a href="javascript:void(0)"
+                                                           data-id="${nhom.idLong}"
+                                                           data-ten="${fn:escapeXml(nhom.tenNhom)}"
+                                                           onclick="xemThanhVien(this)"
+                                                           style="color: #2563eb; text-decoration: none; font-weight: 600;">
                                                             ${nhom.soLuongThanhVien} thành viên
                                                         </a>
                                                     </td>
@@ -392,7 +405,15 @@
                                                     </td>
                                                     <td style="text-align: right; white-space: nowrap;">
                                                         <button class="btn-cctc btn-cctc-secondary btn-cctc-sm"
-                                                                onclick="moModalSuaNhom(${nhom.idLong}, '${nhom.maNhom}', '${nhom.tenNhom}', '${nhom.moTa}', '${nhom.nhomChaIdLong}', '${nhom.khuVucId}', '${nhom.truongNhomId}', ${nhom.hoatDong})">
+                                                                data-id="${nhom.idLong}"
+                                                                data-ma-nhom="${fn:escapeXml(nhom.maNhom)}"
+                                                                data-ten-nhom="${fn:escapeXml(nhom.tenNhom)}"
+                                                                data-mo-ta="${fn:escapeXml(nhom.moTa)}"
+                                                                data-nhom-cha-id="${nhom.nhomChaIdLong}"
+                                                                data-khu-vuc-id="${nhom.khuVucId}"
+                                                                data-truong-nhom-id="${nhom.truongNhomId}"
+                                                                data-hoat-dong="${nhom.hoatDong}"
+                                                                onclick="moModalSuaNhom(this)">
                                                             Sửa
                                                         </button>
                                                     </td>
@@ -448,7 +469,14 @@
                                                     <td><strong>${kv.soLuongNhom}</strong></td>
                                                     <td>
                                                         <button class="btn-cctc btn-cctc-secondary btn-cctc-sm"
-                                                                onclick="moModalSuaKhuVuc(${kv.id}, '${kv.maKhuVuc}', '${kv.tenKhuVuc}', '${kv.loaiKhuVuc}', '${kv.khuVucChaId}', ${kv.thuTuHienThi}, ${kv.hoatDong})">
+                                                                data-id="${kv.id}"
+                                                                data-ma-khu-vuc="${fn:escapeXml(kv.maKhuVuc)}"
+                                                                data-ten-khu-vuc="${fn:escapeXml(kv.tenKhuVuc)}"
+                                                                data-loai-khu-vuc="${fn:escapeXml(kv.loaiKhuVuc)}"
+                                                                data-khu-vuc-cha-id="${kv.khuVucChaId}"
+                                                                data-thu-tu="${kv.thuTuHienThi}"
+                                                                data-hoat-dong="${kv.hoatDong}"
+                                                                onclick="moModalSuaKhuVuc(this)">
                                                             Sửa
                                                         </button>
                                                     </td>
@@ -492,7 +520,9 @@
                                                     <td><span style="font-size: 12px; color: #64748b;">${nv.email}</span></td>
                                                     <td>
                                                         <button class="btn-cctc btn-cctc-primary btn-cctc-sm"
-                                                                onclick="moModalChuyenNhomChoNhanVien(${nv.id}, '${nv.hoTen}')">
+                                                                data-id="${nv.id}"
+                                                                data-ho-ten="${fn:escapeXml(nv.hoTen)}"
+                                                                onclick="moModalChuyenNhomChoNhanVien(this)">
                                                             Gán nhóm
                                                         </button>
                                                     </td>
@@ -717,13 +747,25 @@
             document.getElementById('modalNhom').classList.add('active');
         }
 
-        function moModalSuaNhom(id, maNhom, tenNhom, moTa, nhomChaId, khuVucId, truongNhomId, hoatDong) {
+        function moModalSuaNhom(elementOrId, maNhom, tenNhom, moTa, nhomChaId, khuVucId, truongNhomId, hoatDong) {
+            let id = elementOrId;
+            if (elementOrId && typeof elementOrId === 'object' && elementOrId.getAttribute) {
+                id = elementOrId.getAttribute('data-id');
+                maNhom = elementOrId.getAttribute('data-ma-nhom');
+                tenNhom = elementOrId.getAttribute('data-ten-nhom');
+                moTa = elementOrId.getAttribute('data-mo-ta');
+                nhomChaId = elementOrId.getAttribute('data-nhom-cha-id');
+                khuVucId = elementOrId.getAttribute('data-khu-vuc-id');
+                truongNhomId = elementOrId.getAttribute('data-truong-nhom-id');
+                hoatDong = elementOrId.getAttribute('data-hoat-dong');
+            }
+
             document.getElementById('modalNhomTitle').innerText = 'Chỉnh sửa nhóm kinh doanh';
             document.getElementById('formNhomAction').value = 'cap-nhat-nhom';
-            document.getElementById('formNhomId').value = id;
-            document.getElementById('maNhom').value = maNhom;
+            document.getElementById('formNhomId').value = id || '';
+            document.getElementById('maNhom').value = maNhom || '';
             document.getElementById('maNhom').readOnly = true;
-            document.getElementById('tenNhom').value = tenNhom;
+            document.getElementById('tenNhom').value = tenNhom || '';
             document.getElementById('nhomChaId').value = nhomChaId || '';
             document.getElementById('khuVucId').value = khuVucId || '';
             document.getElementById('truongNhomId').value = truongNhomId || '';
@@ -747,13 +789,24 @@
             document.getElementById('modalKhuVuc').classList.add('active');
         }
 
-        function moModalSuaKhuVuc(id, maKhuVuc, tenKhuVuc, loaiKhuVuc, khuVucChaId, thuTu, hoatDong) {
+        function moModalSuaKhuVuc(elementOrId, maKhuVuc, tenKhuVuc, loaiKhuVuc, khuVucChaId, thuTu, hoatDong) {
+            let id = elementOrId;
+            if (elementOrId && typeof elementOrId === 'object' && elementOrId.getAttribute) {
+                id = elementOrId.getAttribute('data-id');
+                maKhuVuc = elementOrId.getAttribute('data-ma-khu-vuc');
+                tenKhuVuc = elementOrId.getAttribute('data-ten-khu-vuc');
+                loaiKhuVuc = elementOrId.getAttribute('data-loai-khu-vuc');
+                khuVucChaId = elementOrId.getAttribute('data-khu-vuc-cha-id');
+                thuTu = elementOrId.getAttribute('data-thu-tu');
+                hoatDong = elementOrId.getAttribute('data-hoat-dong');
+            }
+
             document.getElementById('modalKhuVucTitle').innerText = 'Chỉnh sửa khu vực địa lý';
             document.getElementById('formKhuVucAction').value = 'cap-nhat-khu-vuc';
-            document.getElementById('formKhuVucId').value = id;
-            document.getElementById('maKhuVuc').value = maKhuVuc;
+            document.getElementById('formKhuVucId').value = id || '';
+            document.getElementById('maKhuVuc').value = maKhuVuc || '';
             document.getElementById('maKhuVuc').readOnly = true;
-            document.getElementById('tenKhuVuc').value = tenKhuVuc;
+            document.getElementById('tenKhuVuc').value = tenKhuVuc || '';
             document.getElementById('loaiKhuVuc').value = loaiKhuVuc || 'TINH_THANH';
             document.getElementById('khuVucChaId').value = khuVucChaId || '';
             document.getElementById('thuTuHienThi').value = thuTu || 0;
@@ -768,19 +821,29 @@
             document.getElementById('modalChuyenNhom').classList.add('active');
         }
 
-        function moModalChuyenNhomChoNhanVien(userId, userName) {
-            document.getElementById('chuyenNguoiDungId').value = userId;
+        function moModalChuyenNhomChoNhanVien(elementOrId, userName) {
+            let userId = elementOrId;
+            if (elementOrId && typeof elementOrId === 'object' && elementOrId.getAttribute) {
+                userId = elementOrId.getAttribute('data-id');
+            }
+            document.getElementById('chuyenNguoiDungId').value = userId || '';
             document.getElementById('chuyenNhomId').value = '';
             document.getElementById('modalChuyenNhom').classList.add('active');
         }
 
-        function xemThanhVien(nhomId, tenNhom) {
-            document.getElementById('modalThanhVienTitle').innerText = 'Danh sách thành viên: ' + tenNhom;
+        function xemThanhVien(elementOrId, tenNhom) {
+            let nhomId = elementOrId;
+            if (elementOrId && typeof elementOrId === 'object' && elementOrId.getAttribute) {
+                nhomId = elementOrId.getAttribute('data-id');
+                tenNhom = elementOrId.getAttribute('data-ten');
+            }
+
+            document.getElementById('modalThanhVienTitle').innerText = 'Danh sách thành viên: ' + (tenNhom || '');
             const container = document.getElementById('modalThanhVienContent');
             container.innerHTML = '<p style="color: #64748b; text-align: center;">Đang tải danh sách thành viên...</p>';
             document.getElementById('modalThanhVien').classList.add('active');
 
-            fetch('${pageContext.request.contextPath}/co-cau-to-chuc/api/nhom?id=' + nhomId)
+            fetch('${pageContext.request.contextPath}/co-cau-to-chuc/api/nhom?id=' + encodeURIComponent(nhomId))
                 .then(res => res.json())
                 .then(data => {
                     if (data.error) {
