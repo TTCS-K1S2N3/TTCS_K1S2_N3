@@ -187,21 +187,28 @@ Sau đó người dùng tự deploy Tomcat, kiểm tra giao diện + chức năn
 
 **Acceptance Criteria — nguyên văn, không tóm tắt:**
 
-- [ ] **S1-01-AC1** — Đăng nhập đúng thì vào được trang chủ tương ứng với vai trò
-- [ ] **S1-01-AC2** — Sai thông tin hiển thị thông báo chung, không tiết lộ email có tồn tại hay không
-- [ ] **S1-01-AC3** — Khoá tạm 15 phút sau 5 lần sai liên tiếp
+- [ ] **S1-01-AC1** — Đăng nhập đúng thì vào được trang chủ tương ứng với vai trò [READY_FOR_USER_QA]
+- [ ] **S1-01-AC2** — Sai thông tin hiển thị thông báo chung, không tiết lộ email có tồn tại hay không [READY_FOR_USER_QA]
+- [ ] **S1-01-AC3** — Khoá tạm 15 phút sau 5 lần sai liên tiếp [READY_FOR_USER_QA]
 
 **Theo dõi thực thi:**
 
-- Story status: `TODO`
-- FE: `TODO`
-- BE: `TODO`
-- DB integration: `TODO`
-- Automated test: `TODO`
+- Story status: `READY_FOR_USER_QA`
+- FE: `READY_FOR_USER_QA`
+- BE: `READY_FOR_USER_QA`
+- DB integration: `READY_FOR_USER_QA`
+- Automated test: `READY_FOR_USER_QA`
 - Manual QA của người dùng: `TODO`
-- Evidence: _chưa có_
-- File tạo/sửa: _chưa có_
-- Lỗi QA / ghi chú: _chưa có_
+- Evidence:
+  - S1-01-AC1: `AuthServiceTest.testS1_01_AC1_DangNhapDung_ThanhCongVaTraVeVaiTro` (PASS), `LoginServletTest.testDoPost_DangNhapThanhCong_ChuyenHuongTrangChu` (PASS), `AuthDatabaseIntegrationTest.testDangNhapDung_MySQL` (PASS). Đăng nhập đúng điều hướng tới `/home` với view tùy biến theo vai trò.
+  - S1-01-AC2: `AuthServiceTest.testS1_01_AC2_EmailKhongTonTai_ThongBaoChung` (PASS), `AuthServiceTest.testS1_01_AC2_MatKhauSai_ThongBaoChungDongNhat` (PASS), `LoginServletTest.testDoPost_DangNhapThatBai_TraVeFormVoiThongBao` (PASS), `AuthDatabaseIntegrationTest.testSaiThongTin_MySQL` (PASS). Email không tồn tại hoặc sai mật khẩu đều trả về cùng một thông báo chung: "Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại."
+  - S1-01-AC3: `AuthServiceTest.testS1_01_AC3_DangNhapSai5Lan_KhoaTam15Phut` (PASS), `AuthServiceTest.testS1_01_AC3_DangBiKhoaTam_TuChoiDangNhap` (PASS), `AuthServiceTest.testS1_01_AC3_SauKhiHetHanKhoa_DangNhapDung_ThanhCongVaReset` (PASS), `AuthDatabaseIntegrationTest.testKhoaTam15PhutSau5LanSai_MySQL` (PASS). Sau 5 lần nhập sai liên tiếp, ghi nhận `khoa_den = NOW() + 15 phút` vào MySQL và từ chối các phiên đăng nhập trong thời gian khóa.
+  - Maven tests: 16/16 test PASS (`mvn clean test`).
+  - Maven package: WAR `target/crm-ban-hang.war` build thành công (`mvn clean package`).
+- File tạo/sửa:
+  - Tạo mới: `DatabaseConfig.java`, `NguoiDung.java`, `VaiTro.java`, `DangNhapResult.java`, `CauHinhHeThongDAO.java`, `NguoiDungDAO.java`, `PhienDangNhapDAO.java`, `AuthService.java`, `EncodingFilter.java`, `AuthFilter.java`, `LoginServlet.java`, `HomeServlet.java`, `LogoutServlet.java`, `PasswordUtil.java`, `login.jsp`, `home/index.jsp`, `style.css`, `PasswordUtilTest.java`, `AuthServiceTest.java`, `LoginServletTest.java`, `AuthDatabaseIntegrationTest.java`.
+  - Sửa: `pom.xml`, `PLAN/infoTechnology.md`, `MASTER_INTEGRATION/Ke_Hoach.md`.
+- Lỗi QA / ghi chú: Chờ người dùng deploy WAR lên Tomcat và tiến hành manual QA.
 
 ---
 

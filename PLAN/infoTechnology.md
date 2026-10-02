@@ -40,9 +40,20 @@ Không sử dụng file này để ghi tiến độ Story.
 
 ## Database Access
 
-- JDBC / MySQL Connector/J
-- Version: kiểm tra theo `pom.xml`.
-- Mục đích: Kết nối Java với MySQL.
+- JDBC / MySQL Connector/J: 8.4.0
+- HikariCP: 6.2.0
+- Mục đích: Kết nối và quản lý connection pool Java với MySQL.
+
+## Security & Utilities
+
+- jBCrypt: 0.4 (Băm mật khẩu an toàn)
+- SLF4J: 2.0.16 (Ghi log hệ thống)
+
+## Testing
+
+- JUnit Jupiter: 5.11.4
+- Mockito: 5.14.2
+- Mục đích: Kiểm thử đơn vị và tích hợp tự động.
 
 ## Frontend
 
