@@ -19,9 +19,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/nhat-ky-thay-doi/nhat-ky-thay-doi.css">
 </head>
 <body class="crm-body">
+
+    <!-- Thanh điều hướng và Sidebar chuẩn hệ thống S1-06 -->
+    <jsp:include page="/WEB-INF/views/layout/navigation.jsp" />
+
+    <main class="crm-main-content" id="crm-main-content">
 
 <%
     BoLocNhatKyDTO boLoc = (BoLocNhatKyDTO) request.getAttribute("boLoc");
@@ -332,7 +338,7 @@
     </section>
 
     <!-- 4. BẢNG DỮ LIỆU NHẬT KÝ THAY ĐỔI (AC 1 & AC 2) -->
-    <main class="crm-table-card" aria-label="Bảng nhật ký thay đổi">
+    <section class="crm-table-card" aria-label="Bảng nhật ký thay đổi">
 
         <div class="table-card-header">
             <div class="table-title-group">
@@ -535,7 +541,7 @@
 
         <% } %>
 
-    </main>
+    </section>
 
     <!-- FOOTER HỆ THỐNG -->
     <footer class="crm-footer">
@@ -543,6 +549,7 @@
     </footer>
 
 </div>
+</main>
 
 <!-- 6. MODAL CHI TIẾT TRUY VẾT SO SÁNH TRỰC QUAN (SIDE-BY-SIDE DIFF INSPECTOR) -->
 <div class="crm-modal-backdrop" id="audit-detail-modal" aria-hidden="true" role="dialog" aria-labelledby="modal-log-title">
@@ -688,6 +695,10 @@
 <!-- TOAST THÔNG BÁO COPY -->
 <div class="crm-toast" id="crm-toast" aria-live="polite">Đã sao chép vào bộ nhớ tạm!</div>
 
+<script>
+    window.CRM_CONTEXT_PATH = '<%= contextPath %>';
+</script>
+<script src="${pageContext.request.contextPath}/assets/js/navigation.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/nhat-ky-thay-doi/nhat-ky-thay-doi.js"></script>
 
 <%!

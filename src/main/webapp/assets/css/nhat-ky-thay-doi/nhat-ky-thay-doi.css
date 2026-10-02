@@ -59,10 +59,8 @@
 }
 
 /* Thiết lập cơ bản */
-* {
+*, *::before, *::after {
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
 }
 
 body.crm-body {
@@ -76,7 +74,7 @@ body.crm-body {
 .crm-app-container {
     max-width: 1440px;
     margin: 0 auto;
-    padding: 24px 32px 48px;
+    padding: 0 0 48px;
 }
 
 /* ==========================================================================

@@ -141,7 +141,9 @@ function moModalChiTiet(logId) {
     if (realContent) realContent.style.display = 'none';
 
     // Gọi API lấy dữ liệu JSON chi tiết
-    const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1)) || '';
+    const contextPath = (typeof window.CRM_CONTEXT_PATH !== 'undefined')
+        ? window.CRM_CONTEXT_PATH
+        : (window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1)) || '');
     const fetchUrl = `${contextPath}/nhat-ky-thay-doi/chi-tiet?id=${logId}`;
 
     fetch(fetchUrl, {
