@@ -469,6 +469,39 @@ document.addEventListener('DOMContentLoaded', function () {
                     simResultBox.textContent = 'Đã xảy ra lỗi khi kiểm tra quy tắc đóng cơ hội.';
                 }
             });
+    // Nút nạp nhanh dữ liệu mẫu vào form kiểm thử
+    const btnSimulateAutofill = document.getElementById('btn-simulate-autofill');
+    if (btnSimulateAutofill) {
+        btnSimulateAutofill.addEventListener('click', function () {
+            const isThang = simRadioThang && simRadioThang.checked;
+            if (isThang) {
+                const selectThang = document.getElementById('sim-select-ly-do-thang');
+                if (selectThang && selectThang.options.length > 1) {
+                    selectThang.selectedIndex = 1;
+                }
+                const inputGiaTri = document.getElementById('sim-input-gia-tri');
+                if (inputGiaTri) inputGiaTri.value = '150000000';
+
+                const inputNgayKy = document.getElementById('sim-input-ngay-ky');
+                if (inputNgayKy) {
+                    const today = new Date().toISOString().split('T')[0];
+                    inputNgayKy.value = today;
+                }
+            } else {
+                const selectThua = document.getElementById('sim-select-ly-do-thua');
+                if (selectThua && selectThua.options.length > 1) {
+                    selectThua.selectedIndex = 1;
+                }
+                const selectDoiThu = document.getElementById('sim-select-doi-thu');
+                if (selectDoiThu && selectDoiThu.options.length > 1) {
+                    selectDoiThu.selectedIndex = 1;
+                }
+            }
+
+            // Tự động kích hoạt kiểm tra tính hợp lệ
+            if (btnSimulateValidate) {
+                btnSimulateValidate.click();
+            }
         });
     }
 

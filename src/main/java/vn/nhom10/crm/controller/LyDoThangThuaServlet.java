@@ -12,6 +12,7 @@ import vn.nhom10.crm.model.LyDoThangThua;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.VaiTroEnum;
 import vn.nhom10.crm.service.LyDoThangThuaService;
+import vn.nhom10.crm.util.LoiPhanQuyenException;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -131,12 +132,11 @@ public class LyDoThangThuaServlet extends HttpServlet {
 
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("nguoiDung") == null) {
-            phanHoiLoi(request, response, "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+            phanHoiLoi(request, response, "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
         NguoiDung user = (NguoiDung) session.getAttribute("nguoiDung");
-        boolean coQuyenQuanLy = kiemTraQuyenQuanLy(user);
 
         String action = request.getParameter("action");
         if (action == null || action.isBlank()) {
@@ -151,8 +151,10 @@ public class LyDoThangThuaServlet extends HttpServlet {
         }
 
         // 2. Các thao tác thêm, sửa, xóa, bật/tắt yêu cầu quyền Giám đốc kinh doanh hoặc Quản trị viên
-        if (!coQuyenQuanLy) {
-            phanHoiLoi(request, response, "Bạn không có quyền thực hiện thao tác này. Chức năng chỉ dành cho Giám đốc kinh doanh hoặc Quản trị viên.");
+        try {
+            lyDoService.kiemTraQuyenQuanLy(user);
+        } catch (LoiPhanQuyenException e) {
+            phanHoiLoi(request, response, e.getMessage(), HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
@@ -181,6 +183,9 @@ public class LyDoThangThuaServlet extends HttpServlet {
                 case "xoa-doi-thu":
                     xuLyXoaDoiThu(request, response);
                     break;
+                case "nap-du-lieu-mau":
+                    xuLyNapDuLieuMau(request, response);
+                    break;
                 default:
                     phanHoiLoi(request, response, "Hành động '" + action + "' không được hỗ trợ.");
                     break;
@@ -195,6 +200,18 @@ public class LyDoThangThuaServlet extends HttpServlet {
     // =========================================================================
     // XỬ LÝ NGUỒN DỮ LIỆU & NGIỆP VỤ
     // =========================================================================
+
+    private void xuLyNapDuLieuMau(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        int count = lyDoService.napDuLieuMauNeuTrong();
+        String tab = request.getParameter("tab");
+        if (tab == null || tab.isBlank()) tab = "thang";
+        if (count > 0) {
+            phanHoiThanhCong(request, response, "Đã nạp thành công " + count + " bản ghi danh mục mẫu chuẩn doanh nghiệp.", tab);
+        } else {
+            phanHoiThanhCong(request, response, "Danh mục đã có dữ liệu từ trước, không cần nạp lại.", tab);
+        }
+    }
 
     private void xuLyLuuLyDo(HttpServletRequest request, HttpServletResponse response, boolean isUpdate)
             throws IOException {
@@ -448,9 +465,14 @@ public class LyDoThangThuaServlet extends HttpServlet {
 
     private void phanHoiLoi(HttpServletRequest request, HttpServletResponse response, String errorMsg)
             throws IOException {
+        phanHoiLoi(request, response, errorMsg, HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    private void phanHoiLoi(HttpServletRequest request, HttpServletResponse response, String errorMsg, int statusCode)
+            throws IOException {
         String isAjax = request.getHeader("X-Requested-With");
         if ("XMLHttpRequest".equalsIgnoreCase(isAjax) || "1".equals(request.getParameter("ajax"))) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setStatus(statusCode);
             response.setContentType("application/json;charset=UTF-8");
             PrintWriter out = response.getWriter();
             out.print("{\"thanhCong\":false,\"thongBao\":\"" + escapeJson(errorMsg) + "\"}");

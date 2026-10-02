@@ -9,10 +9,14 @@ import vn.nhom10.crm.dao.LyDoThangThuaDAO;
 import vn.nhom10.crm.dto.KetQuaKiemTraDongCoHoiDTO;
 import vn.nhom10.crm.model.DoiThu;
 import vn.nhom10.crm.model.LyDoThangThua;
+import vn.nhom10.crm.model.NguoiDung;
+import vn.nhom10.crm.model.VaiTro;
+import vn.nhom10.crm.model.VaiTroEnum;
+import vn.nhom10.crm.util.LoiPhanQuyenException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,6 +35,45 @@ class LyDoThangThuaServiceTest {
         lyDoDAO = Mockito.mock(LyDoThangThuaDAO.class);
         doiThuDAO = Mockito.mock(DoiThuDAO.class);
         service = new LyDoThangThuaService(lyDoDAO, doiThuDAO);
+    }
+
+    // =========================================================================
+    // PHÂN QUYỀN SERVER-SIDE
+    // =========================================================================
+
+    @Test
+    @DisplayName("Kiểm tra phân quyền server-side: Cho phép Giám đốc và Admin, chặn các vai trò khác")
+    void testKiemTraQuyenQuanLy() {
+        // Null user -> Lỗi
+        assertThrows(LoiPhanQuyenException.class, () -> service.kiemTraQuyenQuanLy(null));
+
+        // User bị khóa -> Lỗi
+        NguoiDung lockedUser = new NguoiDung();
+        lockedUser.setId(1L);
+        lockedUser.setTrangThai(NguoiDung.TRANG_THAI_KHOA);
+        lockedUser.setDanhSachVaiTro(Collections.singleton(new VaiTro(VaiTroEnum.DIRECTOR)));
+        assertThrows(LoiPhanQuyenException.class, () -> service.kiemTraQuyenQuanLy(lockedUser));
+
+        // Sales Rep -> Lỗi
+        NguoiDung sales = new NguoiDung();
+        sales.setId(2L);
+        sales.setTrangThai(NguoiDung.TRANG_THAI_HOAT_DONG);
+        sales.setDanhSachVaiTro(Collections.singleton(new VaiTro(VaiTroEnum.SALES_REP)));
+        assertThrows(LoiPhanQuyenException.class, () -> service.kiemTraQuyenQuanLy(sales));
+
+        // Director -> Hợp lệ
+        NguoiDung director = new NguoiDung();
+        director.setId(3L);
+        director.setTrangThai(NguoiDung.TRANG_THAI_HOAT_DONG);
+        director.setDanhSachVaiTro(Collections.singleton(new VaiTro(VaiTroEnum.DIRECTOR)));
+        assertDoesNotThrow(() -> service.kiemTraQuyenQuanLy(director));
+
+        // Admin -> Hợp lệ
+        NguoiDung admin = new NguoiDung();
+        admin.setId(4L);
+        admin.setTrangThai(NguoiDung.TRANG_THAI_HOAT_DONG);
+        admin.setDanhSachVaiTro(Collections.singleton(new VaiTro(VaiTroEnum.ADMIN)));
+        assertDoesNotThrow(() -> service.kiemTraQuyenQuanLy(admin));
     }
 
     // =========================================================================
@@ -199,5 +242,23 @@ class LyDoThangThuaServiceTest {
         assertTrue(kq3.isHopLe());
         assertTrue(kq3.getDanhSachLoi().isEmpty());
         assertTrue(kq3.getThongBaoChiTiet().contains("Đối thủ thắng thầu: Công ty MISA"));
+    }
+
+    @Test
+    @DisplayName("Nạp dữ liệu mẫu chuẩn khi danh mục trống")
+    void testNapDuLieuMauNeuTrong() {
+        when(lyDoDAO.layTheoLoai(LyDoThangThua.LOAI_THANG)).thenReturn(List.of());
+        when(lyDoDAO.layTheoLoai(LyDoThangThua.LOAI_THUA)).thenReturn(List.of());
+        when(doiThuDAO.layTatCa()).thenReturn(List.of());
+
+        when(lyDoDAO.tonTaiMa(anyString(), any())).thenReturn(false);
+        when(lyDoDAO.taoMoi(any(LyDoThangThua.class))).thenReturn(1L);
+        when(doiThuDAO.tonTaiMa(anyString(), any())).thenReturn(false);
+        when(doiThuDAO.taoMoi(any(DoiThu.class))).thenReturn(1L);
+
+        int dem = service.napDuLieuMauNeuTrong();
+        assertEquals(12, dem);
+        verify(lyDoDAO, times(8)).taoMoi(any(LyDoThangThua.class));
+        verify(doiThuDAO, times(4)).taoMoi(any(DoiThu.class));
     }
 }

@@ -5,10 +5,14 @@ import vn.nhom10.crm.dao.LyDoThangThuaDAO;
 import vn.nhom10.crm.dto.KetQuaKiemTraDongCoHoiDTO;
 import vn.nhom10.crm.model.DoiThu;
 import vn.nhom10.crm.model.LyDoThangThua;
+import vn.nhom10.crm.model.NguoiDung;
+import vn.nhom10.crm.model.VaiTroEnum;
+import vn.nhom10.crm.util.LoiPhanQuyenException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -24,7 +28,6 @@ public class LyDoThangThuaService {
     private final DoiThuDAO doiThuDAO;
 
     private static final Pattern MA_PATTERN = Pattern.compile("^[A-Za-z0-9_-]{2,50}$");
-    private static final Pattern URL_PATTERN = Pattern.compile("^(https?://)?[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}(/.*)?$");
 
     public LyDoThangThuaService() {
         this.lyDoDAO = new LyDoThangThuaDAO();
@@ -34,6 +37,24 @@ public class LyDoThangThuaService {
     public LyDoThangThuaService(LyDoThangThuaDAO lyDoDAO, DoiThuDAO doiThuDAO) {
         this.lyDoDAO = lyDoDAO;
         this.doiThuDAO = doiThuDAO;
+    }
+
+    // =========================================================================
+    // PHÂN QUYỀN SERVER-SIDE
+    // =========================================================================
+
+    /**
+     * Kiểm tra người dùng có quyền Giám đốc kinh doanh hoặc Quản trị viên để cấu hình danh mục.
+     * Ném ra LoiPhanQuyenException (HTTP 403) nếu không đủ quyền hạn.
+     */
+    public void kiemTraQuyenQuanLy(NguoiDung nguoiDung) {
+        if (nguoiDung == null || !nguoiDung.dangHoatDong()) {
+            throw new LoiPhanQuyenException("Người dùng chưa đăng nhập hoặc tài khoản không ở trạng thái hoạt động.");
+        }
+        Set<VaiTroEnum> danhSachVaiTro = nguoiDung.getDanhSachVaiTroEnum();
+        if (danhSachVaiTro == null || (!danhSachVaiTro.contains(VaiTroEnum.DIRECTOR) && !danhSachVaiTro.contains(VaiTroEnum.ADMIN))) {
+            throw new LoiPhanQuyenException("Chỉ Giám đốc kinh doanh (DIRECTOR) hoặc Quản trị viên (ADMIN) mới có quyền khai báo danh mục.");
+        }
     }
 
     // =========================================================================
@@ -285,6 +306,62 @@ public class LyDoThangThuaService {
         if (!ok) {
             throw new IllegalStateException("Không thể xóa đối thủ khỏi cơ sở dữ liệu");
         }
+    }
+
+    // =========================================================================
+    // NẠP DỮ LIỆU MẪU CHUẨN KHI BẢNG TRỐNG
+    // =========================================================================
+
+    /**
+     * Nạp dữ liệu danh mục mẫu chuẩn doanh nghiệp nếu bảng dữ liệu đang trống.
+     * Hỗ trợ cài đặt ban đầu hoặc kiểm thử nhanh quy trình Sprint 5.
+     *
+     * @return số lượng bản ghi đã được nạp
+     */
+    public int napDuLieuMauNeuTrong() {
+        int dem = 0;
+        List<LyDoThangThua> dsThang = lyDoDAO.layTheoLoai(LyDoThangThua.LOAI_THANG);
+        if (dsThang.isEmpty()) {
+            dem += napLyDoMau("WIN_PRICE", "Giá thành cạnh tranh và chính sách thanh toán linh hoạt", LyDoThangThua.LOAI_THANG, 1);
+            dem += napLyDoMau("WIN_FEATURE", "Tính năng sản phẩm đáp ứng xuất sắc nhu cầu của khách hàng", LyDoThangThua.LOAI_THANG, 2);
+            dem += napLyDoMau("WIN_BRAND", "Uy tín thương hiệu và năng lực triển khai đã được khẳng định", LyDoThangThua.LOAI_THANG, 3);
+            dem += napLyDoMau("WIN_SERVICE", "Dịch vụ hỗ trợ kỹ thuật và chăm sóc khách hàng 24/7", LyDoThangThua.LOAI_THANG, 4);
+        }
+
+        List<LyDoThangThua> dsThua = lyDoDAO.layTheoLoai(LyDoThangThua.LOAI_THUA);
+        if (dsThua.isEmpty()) {
+            dem += napLyDoMau("LOSS_PRICE", "Giá chào thầu cao hơn ngân sách dự kiến của khách hàng", LyDoThangThua.LOAI_THUA, 1);
+            dem += napLyDoMau("LOSS_FEATURE", "Thiếu tính năng chuyên biệt hoặc khả năng tích hợp hệ sinh thái", LyDoThangThua.LOAI_THUA, 2);
+            dem += napLyDoMau("LOSS_COMPETITOR", "Khách hàng lựa chọn đối thủ cạnh tranh có ưu thế vượt trội", LyDoThangThua.LOAI_THUA, 3);
+            dem += napLyDoMau("LOSS_TIMING", "Khách hàng hoãn hoặc hủy kế hoạch đầu tư/ngân sách", LyDoThangThua.LOAI_THUA, 4);
+        }
+
+        List<DoiThu> dsDoiThu = doiThuDAO.layTatCa();
+        if (dsDoiThu.isEmpty()) {
+            dem += napDoiThuMau("DT_MISA", "Công ty Cổ phần MISA", "https://www.misa.vn", "Thế mạnh về kế toán và mạng lưới SME rộng khắp");
+            dem += napDoiThuMau("DT_FAST", "Công ty Phần mềm FAST", "https://fast.com.vn", "Sản phẩm ERP và kế toán quản trị linh hoạt");
+            dem += napDoiThuMau("DT_BRAVO", "Công ty Cổ phần Phần mềm BRAVO", "https://www.bravo.com.vn", "Phần mềm quản trị doanh nghiệp cho doanh nghiệp vừa và lớn");
+            dem += napDoiThuMau("DT_AMIS", "MISA AMIS CRM", "https://amis.misa.vn", "Giải pháp quản trị bán hàng đồng bộ tài chính kế toán");
+        }
+        return dem;
+    }
+
+    private int napLyDoMau(String ma, String ten, String loai, int thuTu) {
+        if (!lyDoDAO.tonTaiMa(ma, null)) {
+            LyDoThangThua item = new LyDoThangThua(ma, ten, loai, thuTu, true);
+            Long id = lyDoDAO.taoMoi(item);
+            return id != null ? 1 : 0;
+        }
+        return 0;
+    }
+
+    private int napDoiThuMau(String ma, String ten, String web, String ghiChu) {
+        if (!doiThuDAO.tonTaiMa(ma, null)) {
+            DoiThu item = new DoiThu(ma, ten, web, ghiChu, true);
+            Long id = doiThuDAO.taoMoi(item);
+            return id != null ? 1 : 0;
+        }
+        return 0;
     }
 
     // =========================================================================

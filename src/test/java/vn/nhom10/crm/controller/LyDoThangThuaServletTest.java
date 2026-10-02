@@ -13,6 +13,7 @@ import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.VaiTro;
 import vn.nhom10.crm.model.VaiTroEnum;
 import vn.nhom10.crm.service.LyDoThangThuaService;
+import vn.nhom10.crm.util.LoiPhanQuyenException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -111,6 +112,7 @@ class LyDoThangThuaServletTest {
 
         servlet.doPost(request, response);
 
+        verify(service).kiemTraQuyenQuanLy(directorUser);
         verify(service).luuLyDo(any(LyDoThangThua.class));
         verify(response).sendRedirect(contains("/crm/danh-muc/ly-do-thang-thua?tab=thang&msg=success"));
     }
@@ -120,6 +122,7 @@ class LyDoThangThuaServletTest {
     void testDoPostTuChoiKhiKhongCoQuyen() throws Exception {
         when(session.getAttribute("nguoiDung")).thenReturn(salesUser);
         when(request.getParameter("action")).thenReturn("sua-ly-do");
+        doThrow(new LoiPhanQuyenException("Chỉ Giám đốc kinh doanh mới có quyền")).when(service).kiemTraQuyenQuanLy(salesUser);
 
         servlet.doPost(request, response);
 
@@ -153,5 +156,20 @@ class LyDoThangThuaServletTest {
         String json = sw.toString();
         assertTrue(json.contains("\"hopLe\":true"));
         assertTrue(json.contains("HỢP LỆ THEO SPRINT 5"));
+    }
+
+    @Test
+    @DisplayName("doPost nạp dữ liệu mẫu với Giám đốc kinh doanh -> Nạp thành công")
+    void testDoPostNapDuLieuMauDirector() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(directorUser);
+        when(request.getParameter("action")).thenReturn("nap-du-lieu-mau");
+        when(request.getParameter("tab")).thenReturn("thang");
+        when(service.napDuLieuMauNeuTrong()).thenReturn(12);
+
+        servlet.doPost(request, response);
+
+        verify(service).kiemTraQuyenQuanLy(directorUser);
+        verify(service).napDuLieuMauNeuTrong();
+        verify(response).sendRedirect(contains("msg=success"));
     }
 }

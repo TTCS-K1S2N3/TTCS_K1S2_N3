@@ -60,7 +60,19 @@
                 </div>
                 <div class="crm-header-actions">
                     <c:if test="${coQuyenQuanLy}">
-                        <button type="button" class="crm-btn crm-btn-primary" id="btn-add-new-record" id="btn-add-new">
+                        <form method="POST" action="${pageContext.request.contextPath}/danh-muc/ly-do-thang-thua" style="display:inline;">
+                            <input type="hidden" name="action" value="nap-du-lieu-mau">
+                            <input type="hidden" name="tab" value="${currentTab}">
+                            <button type="submit" class="crm-btn crm-btn-outline" id="btn-seed-sample" title="Tự động nạp danh mục lý do và đối thủ mẫu chuẩn">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Nạp dữ liệu mẫu
+                            </button>
+                        </form>
+                        <button type="button" class="crm-btn crm-btn-primary" id="btn-add-new-record">
                             <svg class="crm-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -697,13 +709,22 @@
                             </div>
                         </div>
 
-                        <div>
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
                             <button type="button" class="crm-btn crm-btn-primary" id="btn-simulate-validate">
                                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                                     <polyline points="9 11 12 14 22 4"></polyline>
                                     <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
                                 </svg>
                                 Kiểm tra tính hợp lệ đóng cơ hội
+                            </button>
+                            <button type="button" class="crm-btn crm-btn-outline" id="btn-simulate-autofill" title="Tự động điền dữ liệu mẫu để kiểm thử nhanh quy tắc Sprint 5">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                                    <line x1="9" y1="15" x2="15" y2="15"></line>
+                                </svg>
+                                Nạp dữ liệu kiểm thử nhanh
                             </button>
                         </div>
 
