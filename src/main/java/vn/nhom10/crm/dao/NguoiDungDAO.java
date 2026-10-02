@@ -51,20 +51,34 @@ public class NguoiDungDAO {
             return null;
         }
 
-        String sql = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, "
+        String sql = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, chu_ky_email, trang_thai, "
                 + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
                 + "FROM nguoi_dung WHERE LOWER(email) = LOWER(?) LIMIT 1";
 
-        try (Connection conn = DatabaseConnection.layKetNoi();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, email.trim());
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    NguoiDung nd = mapResultSetToNguoiDung(rs);
-                    nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
-                    return nd;
+        try (Connection conn = DatabaseConnection.layKetNoi()) {
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, email.trim());
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        NguoiDung nd = mapResultSetToNguoiDung(rs);
+                        nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
+                        return nd;
+                    }
+                }
+            } catch (SQLException e) {
+                // Fallback nếu bảng chưa có cột chu_ky_email
+                String sqlFallback = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, "
+                        + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
+                        + "FROM nguoi_dung WHERE LOWER(email) = LOWER(?) LIMIT 1";
+                try (PreparedStatement ps = conn.prepareStatement(sqlFallback)) {
+                    ps.setString(1, email.trim());
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            NguoiDung nd = mapResultSetToNguoiDung(rs);
+                            nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
+                            return nd;
+                        }
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -80,20 +94,34 @@ public class NguoiDungDAO {
      * @return NguoiDung nếu tìm thấy, hoặc null
      */
     public NguoiDung timTheoId(long id) {
-        String sql = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, "
+        String sql = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, chu_ky_email, trang_thai, "
                 + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
                 + "FROM nguoi_dung WHERE id = ? LIMIT 1";
 
-        try (Connection conn = DatabaseConnection.layKetNoi();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setLong(1, id);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    NguoiDung nd = mapResultSetToNguoiDung(rs);
-                    nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
-                    return nd;
+        try (Connection conn = DatabaseConnection.layKetNoi()) {
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setLong(1, id);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        NguoiDung nd = mapResultSetToNguoiDung(rs);
+                        nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
+                        return nd;
+                    }
+                }
+            } catch (SQLException e) {
+                // Fallback nếu bảng chưa có cột chu_ky_email
+                String sqlFallback = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, "
+                        + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
+                        + "FROM nguoi_dung WHERE id = ? LIMIT 1";
+                try (PreparedStatement ps = conn.prepareStatement(sqlFallback)) {
+                    ps.setLong(1, id);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            NguoiDung nd = mapResultSetToNguoiDung(rs);
+                            nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
+                            return nd;
+                        }
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -595,6 +623,30 @@ public class NguoiDungDAO {
         }
     }
 
+    /**
+     * Cập nhật hồ sơ cá nhân người dùng (Story S2-02).
+     * AC1: Sửa được họ tên, số điện thoại, chữ ký email.
+     * AC2: Không tự đổi được email, nhóm và vai trò (phương thức này tuyệt đối không chạm vào email, nhóm, role).
+     *
+     * @param id          ID người dùng
+     * @param hoTen       Họ và tên mới
+     * @param soDienThoai Số điện thoại mới
+     * @param chuKyEmail  Chữ ký email mới
+     * @return true nếu cập nhật thành công, false nếu không tìm thấy bản ghi
+     * @throws SQLException khi có lỗi kết nối hoặc truy vấn DB
+     */
+    public boolean capNhatHoSo(long id, String hoTen, String soDienThoai, String chuKyEmail) throws SQLException {
+        String sql = "UPDATE nguoi_dung SET ho_ten = ?, so_dien_thoai = ?, chu_ky_email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, hoTen != null ? hoTen.trim() : null);
+            ps.setString(2, soDienThoai != null ? soDienThoai.trim() : null);
+            ps.setString(3, chuKyEmail != null ? chuKyEmail.trim() : null);
+            ps.setLong(4, id);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
     private NguoiDung mapResultSetToNguoiDung(ResultSet rs) throws SQLException {
         NguoiDung nd = new NguoiDung();
         nd.setId(rs.getLong("id"));
@@ -636,6 +688,21 @@ public class NguoiDungDAO {
 
         try {
             nd.setUpdatedAt(rs.getTimestamp("updated_at"));
+        } catch (SQLException ignored) {
+        }
+
+        try {
+            nd.setChuKyEmail(rs.getString("chu_ky_email"));
+        } catch (SQLException ignored) {
+        }
+
+        try {
+            nd.setAnhDaiDienPath(rs.getString("anh_dai_dien_path"));
+        } catch (SQLException ignored) {
+        }
+
+        try {
+            nd.setAnhDaiDienThumbPath(rs.getString("anh_dai_dien_thumb_path"));
         } catch (SQLException ignored) {
         }
 

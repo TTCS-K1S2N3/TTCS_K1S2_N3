@@ -24,6 +24,9 @@ public class NguoiDung implements Serializable {
     private String email;
     private String matKhau;
     private String soDienThoai;
+    private String chuKyEmail;
+    private String anhDaiDienPath;
+    private String anhDaiDienThumbPath;
     private String trangThai = TRANG_THAI_HOAT_DONG;
     private int soLanSai = 0;
     private Timestamp thoiGianKhoa;
@@ -98,6 +101,30 @@ public class NguoiDung implements Serializable {
 
     public void setSoDienThoai(String soDienThoai) {
         this.soDienThoai = soDienThoai;
+    }
+
+    public String getChuKyEmail() {
+        return chuKyEmail;
+    }
+
+    public void setChuKyEmail(String chuKyEmail) {
+        this.chuKyEmail = chuKyEmail;
+    }
+
+    public String getAnhDaiDienPath() {
+        return anhDaiDienPath;
+    }
+
+    public void setAnhDaiDienPath(String anhDaiDienPath) {
+        this.anhDaiDienPath = anhDaiDienPath;
+    }
+
+    public String getAnhDaiDienThumbPath() {
+        return anhDaiDienThumbPath;
+    }
+
+    public void setAnhDaiDienThumbPath(String anhDaiDienThumbPath) {
+        this.anhDaiDienThumbPath = anhDaiDienThumbPath;
     }
 
     public String getTrangThai() {
