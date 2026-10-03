@@ -1,0 +1,583 @@
+/* ================================================
+   Trường tuỳ chỉnh (Custom Fields) - S2-08 FE
+   CSS Module: truong-tuy-chinh
+================================================ */
+
+/* ---- Layout chung ---- */
+.ttc-container {
+    padding: 24px;
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.page-header h1 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+}
+
+/* ---- Thông báo ---- */
+.alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.alert-success { background: #d1fae5; border: 1px solid #6ee7b7; color: #065f46; }
+.alert-error   { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
+.alert-info    { background: #dbeafe; border: 1px solid #93c5fd; color: #1e40af; }
+
+/* ---- Tabs đối tượng ---- */
+.tab-bar {
+    display: flex;
+    gap: 4px;
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.15s, border-color 0.15s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.tab-btn:hover { color: #6366f1; }
+
+.tab-btn.active {
+    color: #6366f1;
+    border-bottom-color: #6366f1;
+}
+
+/* ---- Nút ---- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: 7px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: background 0.18s, box-shadow 0.18s, transform 0.1s;
+    white-space: nowrap;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+    background: #6366f1;
+    color: #fff;
+}
+.btn-primary:hover {
+    background: #4f46e5;
+    box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+.btn-secondary:hover { background: #e2e8f0; }
+
+.btn-danger {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+}
+.btn-danger:hover { background: #fca5a5; }
+
+.btn-sm { padding: 5px 12px; font-size: 0.8rem; }
+.btn-xs { padding: 3px 9px; font-size: 0.75rem; }
+
+/* ---- Bảng danh sách ---- */
+.table-wrapper {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    margin-bottom: 28px;
+}
+
+.table-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.table-header-bar h2 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #334155;
+    margin: 0;
+}
+
+.table-count {
+    font-size: 0.8rem;
+    color: #64748b;
+    background: #e2e8f0;
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-weight: 600;
+}
+
+table.ttc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+table.ttc-table thead tr { background: #f8fafc; }
+
+table.ttc-table th {
+    padding: 10px 16px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+table.ttc-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    vertical-align: middle;
+}
+
+table.ttc-table tbody tr:last-child td { border-bottom: none; }
+
+table.ttc-table tbody tr:hover {
+    background: #f8fafc;
+    transition: background 0.15s;
+}
+
+/* Tên trường */
+.field-name-cell .field-label {
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.field-name-cell .field-key {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-family: 'Courier New', monospace;
+    margin-top: 2px;
+}
+
+/* Badge kiểu dữ liệu */
+.kieu-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.kieu-VAN_BAN    { background: #dbeafe; color: #1e40af; }
+.kieu-SO         { background: #dcfce7; color: #166534; }
+.kieu-NGAY       { background: #fef3c7; color: #92400e; }
+.kieu-DANH_SACH_CHON { background: #f3e8ff; color: #7c3aed; }
+
+/* Badge bắt buộc */
+.bat-buoc-badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.bat-buoc-yes { background: #fee2e2; color: #b91c1c; }
+.bat-buoc-no  { background: #f1f5f9; color: #64748b; }
+
+/* Badge trạng thái */
+.trang-thai-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.trang-thai-on  { background: #d1fae5; color: #065f46; }
+.trang-thai-off { background: #f1f5f9; color: #94a3b8; }
+
+/* Drag handle */
+.drag-handle {
+    cursor: grab;
+    color: #cbd5e1;
+    font-size: 1rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    user-select: none;
+    transition: color 0.15s;
+}
+
+.drag-handle:hover { color: #6366f1; }
+
+/* Thứ tự số */
+.thu-tu-num {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    font-weight: 600;
+    min-width: 24px;
+    text-align: center;
+}
+
+/* ---- Trạng thái rỗng ---- */
+.empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: #94a3b8;
+}
+
+.empty-state .empty-icon { font-size: 2.8rem; margin-bottom: 10px; opacity: 0.5; }
+.empty-state p { font-size: 0.9rem; margin: 4px 0; }
+
+/* ---- Form tạo / sửa ---- */
+.form-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    overflow: hidden;
+    max-width: 720px;
+}
+
+.form-card-header {
+    background: #6366f1;
+    padding: 18px 24px;
+    color: #fff;
+}
+
+.form-card-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.form-card-header p {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    opacity: 0.85;
+}
+
+.form-card-body { padding: 28px 24px; }
+
+.form-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    margin: 0 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.form-group { margin-bottom: 20px; }
+
+.form-group label {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.form-group label .required { color: #ef4444; margin-left: 2px; }
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    font-size: 0.9rem;
+    color: #1e293b;
+    background: #f8fafc;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+    background: #fff;
+}
+
+.form-group input.input-error,
+.form-group select.input-error,
+.form-group textarea.input-error {
+    border-color: #f87171;
+    background: #fff5f5;
+}
+
+.form-error-msg {
+    font-size: 0.8rem;
+    color: #dc2626;
+    margin-top: 5px;
+    display: none;
+}
+
+.form-error-msg.visible { display: block; }
+
+.form-help {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-card-footer {
+    padding: 16px 24px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Toggle bắt buộc */
+.toggle-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 7px;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+
+.toggle-group:hover { border-color: #6366f1; }
+
+.toggle-group input[type=checkbox] {
+    width: 18px;
+    height: 18px;
+    accent-color: #6366f1;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.toggle-group .toggle-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.toggle-group .toggle-desc {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin-top: 1px;
+}
+
+/* Panel tuỳ chọn cho DANH_SACH_CHON */
+.options-panel {
+    display: none;
+    padding: 14px;
+    border: 1.5px dashed #c4b5fd;
+    border-radius: 8px;
+    background: #faf5ff;
+    margin-top: 8px;
+}
+
+.options-panel.visible { display: block; }
+
+.options-panel .option-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.options-panel .option-row input {
+    flex: 1;
+    padding: 7px 10px;
+    border: 1px solid #c4b5fd;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    background: #fff;
+}
+
+.options-panel .option-row input:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 2px rgba(124,58,237,0.1);
+}
+
+.btn-remove-option {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #f87171;
+    font-size: 1rem;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.btn-remove-option:hover { background: #fee2e2; }
+
+#btn-them-lua-chon {
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: #7c3aed;
+    background: none;
+    border: 1px dashed #c4b5fd;
+    border-radius: 5px;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+#btn-them-lua-chon:hover { background: #ede9fe; }
+
+/* ============================================================
+   FRAGMENT - Hiển thị trường tuỳ chỉnh trong form KH/CH
+============================================================ */
+.ttc-form-section {
+    margin-top: 24px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 20px;
+}
+
+.ttc-form-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #7c3aed;
+    margin: 0 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ttc-form-section-title::before {
+    content: '⚙';
+    font-size: 0.9rem;
+}
+
+/* ============================================================
+   FRAGMENT - Bộ lọc trường tuỳ chỉnh
+============================================================ */
+.ttc-filter-section {
+    margin-top: 8px;
+    padding: 10px 16px;
+    background: #faf5ff;
+    border: 1px solid #e9d5ff;
+    border-radius: 8px;
+}
+
+.ttc-filter-section-title {
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #7c3aed;
+    margin-bottom: 10px;
+}
+
+.ttc-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.ttc-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.ttc-filter-group label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #7c3aed;
+}
+
+.ttc-filter-group input,
+.ttc-filter-group select {
+    padding: 7px 10px;
+    border: 1px solid #c4b5fd;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    min-width: 140px;
+    background: #fff;
+    color: #1e293b;
+}
+
+.ttc-filter-group input:focus,
+.ttc-filter-group select:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 2px rgba(124,58,237,0.12);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+    .ttc-container { padding: 14px; }
+
+    .form-row { grid-template-columns: 1fr; }
+
+    .page-header { flex-direction: column; align-items: flex-start; }
+
+    table.ttc-table { font-size: 0.82rem; }
+
+    table.ttc-table th,
+    table.ttc-table td { padding: 9px 10px; }
+
+    .ttc-filter-row { flex-direction: column; align-items: stretch; }
+
+    .ttc-filter-group input,
+    .ttc-filter-group select { min-width: 100%; }
+}
