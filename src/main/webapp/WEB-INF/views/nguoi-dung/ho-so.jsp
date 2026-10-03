@@ -6,10 +6,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hồ sơ cá nhân & Chữ ký email - CRM Bán Hàng</title>
-    <meta name="description" content="Xem và cập nhật hồ sơ cá nhân, chữ ký email phục vụ gửi báo giá cho khách hàng.">
+    <meta name="description" content="Xem và cập nhật hồ sơ cá nhân, ảnh đại diện cắt vuông và chữ ký email phục vụ gửi báo giá cho khách hàng.">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/nguoi-dung/nguoi-dung.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/nguoi-dung/ho-so.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/ho-so/avatar.css">
 </head>
 <body class="crm-body">
 
@@ -21,10 +23,16 @@
 
             <!-- Hero Banner hồ sơ -->
             <div class="ho-so-hero">
-                <div class="ho-so-avatar-large" id="avatar-display" title="${nguoiDung.hoTen}">
-                    <c:out value="${nguoiDung.tenVietTat}"/>
+                <div class="ho-so-avatar-large" id="avatar-display" title="${nguoiDung.hoTen}" style="position: relative; overflow: hidden; padding: 0;">
+                    <img src="${pageContext.request.contextPath}/avatar?id=${nguoiDung.id}"
+                         alt="${nguoiDung.hoTen}"
+                         id="avatarPreviewLarge"
+                         class="avatar-large-img"
+                         style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
+                         onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                    <span style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center;"><c:out value="${nguoiDung.tenVietTat}"/></span>
                 </div>
-                <div class="ho-so-hero-info">
+                <div class="ho-so-hero-info" style="flex: 1;">
                     <h1 id="hero-user-name"><c:out value="${nguoiDung.hoTen}"/></h1>
                     <div class="ho-so-hero-badges">
                         <span class="badge-pill badge-pill-role" title="Vai trò người dùng">
@@ -53,7 +61,84 @@
                 </div>
             </c:if>
 
-            <!-- Form cập nhật hồ sơ -->
+            <!-- ===============================================================
+                 THẺ TẢI LÊN ẢNH ĐẠI DIỆN & CẮT VUÔNG (Story S2-03)
+                 =============================================================== -->
+            <div class="ho-so-card" style="margin-bottom: 24px;">
+                <div class="ho-so-card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <h2 style="margin: 0; font-size: 1.15rem;"><i class="bi bi-camera-fill"></i> Tải ảnh đại diện (Cắt vuông & Thumbnail)</h2>
+                    <span class="hint-text" style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 20px; font-weight: 500;">
+                        <i class="bi bi-check2-circle"></i> Chấp nhận JPG/PNG &le; 2MB
+                    </span>
+                </div>
+                <div class="ho-so-card-body">
+                    <form id="avatarUploadForm"
+                          action="${pageContext.request.contextPath}/avatar"
+                          method="post"
+                          enctype="multipart/form-data"
+                          class="avatar-form">
+
+                        <!-- Vùng kéo thả file (Drag and Drop Zone) -->
+                        <div class="upload-dropzone" id="uploadDropzone" tabindex="0" role="button" aria-label="Kéo thả file ảnh hoặc nhấn để chọn">
+                            <input type="file"
+                                   name="avatar"
+                                   id="avatarInput"
+                                   accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                                   aria-label="Chọn file ảnh đại diện">
+                            <div class="dropzone-inner">
+                                <div class="upload-icon-circle">
+                                    <i class="bi bi-cloud-arrow-up-fill upload-icon" style="font-size: 2rem;"></i>
+                                </div>
+                                <div class="upload-text" style="font-weight: 600; font-size: 1rem; margin-top: 8px;">Kéo thả ảnh vào đây</div>
+                                <div class="upload-subtext" style="color: #64748b; font-size: 0.9rem;">hoặc <span class="browse-link" id="btnTriggerFileSelect" style="color: #2563eb; text-decoration: underline; cursor: pointer;">nhấn để duyệt file</span></div>
+                                <div class="upload-hint" style="color: #94a3b8; font-size: 0.8rem; margin-top: 4px;">
+                                    <i class="bi bi-info-circle"></i> Định dạng JPG, PNG • Tối đa 2MB
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Box thông tin file được chọn kèm kiểm tra hợp lệ -->
+                        <div class="selected-file-info" id="selectedFileInfo" style="display: none; margin-top: 12px; padding: 12px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px;">
+                            <div class="file-info-header" style="display: flex; align-items: center; justify-content: space-between;">
+                                <div class="file-info-text">
+                                    <div class="file-name" id="fileName" style="font-weight: 600; color: #1e293b;">chua-chon-file.png</div>
+                                    <div class="file-meta" style="font-size: 0.85rem; color: #64748b; margin-top: 2px;">
+                                        <span id="fileSize">0 KB</span> •
+                                        <span class="badge-valid-status" id="badgeValidStatus" style="color: #10b981; font-weight: 600;">
+                                            <i class="bi bi-check-circle-fill"></i> Hợp lệ (&le; 2MB)
+                                        </span>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-clear-file" id="btnClearFile" title="Hủy chọn file" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #ef4444;">
+                                    <i class="bi bi-x-circle-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Hộp thông báo lỗi phía Client (Validate AC: JPG/PNG <= 2MB) -->
+                        <div class="client-error-box" id="clientErrorBox" style="display: none; margin-top: 12px; padding: 10px; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 6px; color: #b91c1c; font-size: 0.9rem;">
+                            <i class="bi bi-exclamation-octagon-fill"></i>
+                            <span id="clientErrorText"></span>
+                        </div>
+
+                        <!-- Hàng nút hành động: Cắt vuông trực quan & Tải lên -->
+                        <div class="upload-action-buttons" style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-primary" id="btnOpenCropModal" disabled style="padding: 10px 20px; background: #2563eb; color: #fff; border: 1px solid #1d4ed8; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                                <i class="bi bi-crop"></i>
+                                <span>Cắt vuông & Tải lên</span>
+                            </button>
+                            <button type="submit" class="btn btn-secondary" id="btnSubmitDirect" disabled style="padding: 10px 20px; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                                <i class="bi bi-arrow-up-circle"></i>
+                                <span>Tải lên nhanh</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ===============================================================
+                 FORM CẬP NHẬT HỒ SƠ CÁ NHÂN & CHỮ KÝ (Story S2-02)
+                 =============================================================== -->
             <div class="ho-so-grid">
                 <div class="ho-so-card">
                     <div class="ho-so-card-header">
@@ -202,6 +287,140 @@
         </div>
     </main>
 
+    <!-- =======================================================================
+         MODAL CẮT ẢNH VUÔNG (1:1) VÀ TẠO BẢN THU NHỎ THUMBNAIL (Story S2-03)
+         ======================================================================= -->
+    <div class="crop-modal-backdrop" id="cropModalBackdrop" style="display: none;"></div>
+    <div class="crop-modal" id="cropModal" role="dialog" aria-modal="true" aria-labelledby="cropModalTitle" style="display: none;">
+        <div class="crop-modal-content">
+
+            <!-- Modal Header -->
+            <div class="crop-modal-header">
+                <div class="crop-modal-title-wrap">
+                    <i class="bi bi-crop crop-modal-icon"></i>
+                    <div>
+                        <h3 class="crop-modal-title" id="cropModalTitle">Cắt ảnh vuông & Tạo thumbnail</h3>
+                        <div class="crop-modal-subtitle">Điều chỉnh khung hình vuông (1:1) để nhận diện rõ nét nhất</div>
+                    </div>
+                </div>
+                <button type="button" class="crop-modal-close" id="btnCloseCropModal" aria-label="Đóng cửa sổ">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body: Workspace + Dual Previews -->
+            <div class="crop-modal-body">
+
+                <!-- Workspace: Canvas tương tác di chuyển, phóng to, xoay -->
+                <div class="crop-workspace-container">
+                    <div class="crop-canvas-wrapper" id="cropCanvasWrapper">
+                        <canvas id="cropCanvas" width="360" height="360"></canvas>
+                        <div class="crop-overlay-guide">
+                            <div class="crop-rule-of-thirds">
+                                <span class="grid-line grid-v1"></span>
+                                <span class="grid-line grid-v2"></span>
+                                <span class="grid-line grid-h1"></span>
+                                <span class="grid-line grid-h2"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thanh công cụ điều khiển tương tác (Zoom, Rotate, Reset) -->
+                    <div class="crop-toolbar">
+                        <button type="button" class="btn-tool" id="btnZoomOut" title="Thu nhỏ (-)">
+                            <i class="bi bi-dash-lg"></i>
+                        </button>
+                        <div class="zoom-slider-wrap">
+                            <i class="bi bi-zoom-in slider-icon"></i>
+                            <input type="range"
+                                   id="zoomSlider"
+                                   min="0.5"
+                                   max="3.0"
+                                   step="0.05"
+                                   value="1.0"
+                                   aria-label="Thanh trượt thu phóng ảnh">
+                        </div>
+                        <button type="button" class="btn-tool" id="btnZoomIn" title="Phóng to (+)">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                        <div class="tool-divider"></div>
+                        <button type="button" class="btn-tool" id="btnRotateLeft" title="Xoay trái 90°">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                        <button type="button" class="btn-tool" id="btnRotateRight" title="Xoay phải 90°">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                        <button type="button" class="btn-tool" id="btnResetCrop" title="Đặt lại vị trí ban đầu">
+                            <i class="bi bi-aspect-ratio"></i> Đặt lại
+                        </button>
+                    </div>
+                    <div class="crop-drag-hint">
+                        <i class="bi bi-arrows-move"></i> Kéo giữ chuột hoặc chạm vuốt trên điện thoại để điều chỉnh vị trí ảnh
+                    </div>
+                </div>
+
+                <!-- Preview Sidebar: Xem trước đồng thời Ảnh vuông chuẩn & Thumbnail -->
+                <div class="crop-preview-sidebar">
+                    <div class="preview-group">
+                        <div class="preview-group-title">
+                            <i class="bi bi-aspect-ratio"></i> Ảnh vuông chuẩn (1:1 - 400x400)
+                        </div>
+                        <div class="preview-circle-large-wrap">
+                            <canvas id="previewSquareCanvas" width="140" height="140" class="preview-canvas-round"></canvas>
+                            <canvas id="previewSquareRectCanvas" width="80" height="80" class="preview-canvas-rect"></canvas>
+                        </div>
+                        <div class="preview-note">Hiển thị trong trang Hồ sơ cá nhân</div>
+                    </div>
+
+                    <div class="preview-group">
+                        <div class="preview-group-title">
+                            <i class="bi bi-eye"></i> Bản thu nhỏ (Thumbnail - 120x120)
+                        </div>
+                        <div class="preview-thumb-demo-wrap">
+                            <canvas id="previewThumbCanvas" width="48" height="48" class="preview-canvas-thumb"></canvas>
+                            <div class="thumb-demo-meta">
+                                <span class="thumb-demo-name"><c:out value="${nguoiDung.hoTen}"/></span>
+                                <span class="thumb-demo-tag">Nhận diện người phụ trách</span>
+                            </div>
+                        </div>
+                        <div class="preview-note">Hiển thị ở Header, Danh bạ & Hồ sơ khách hàng</div>
+                    </div>
+
+                    <div class="crop-meta-box">
+                        <div class="meta-row">
+                            <span>Tỷ lệ cắt:</span>
+                            <strong class="text-success">1 : 1 (Vuông chuẩn)</strong>
+                        </div>
+                        <div class="meta-row">
+                            <span>Định dạng xuất:</span>
+                            <strong id="cropFormatLabel">JPG</strong>
+                        </div>
+                        <div class="meta-row">
+                            <span>Dung lượng sau cắt:</span>
+                            <strong id="cropEstimatedSize">&le; 200 KB (&le; 2MB)</strong>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="crop-modal-footer">
+                <button type="button" class="btn btn-light" id="btnCancelCrop">
+                    Hủy bỏ
+                </button>
+                <button type="button" class="btn btn-primary" id="btnConfirmCropAndUpload">
+                    <i class="bi bi-check2-circle"></i>
+                    <span id="btnConfirmText">Cắt & Lưu ảnh đại diện</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast Container cho các thông báo tương tác nhanh -->
+    <div class="crm-toast-container" id="crmToastContainer" aria-live="polite"></div>
+
     <!-- JavaScript xem trước chữ ký thời gian thực và validation phía client -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -236,5 +455,6 @@
             }
         });
     </script>
+    <script src="${pageContext.request.contextPath}/assets/js/ho-so/avatar.js"></script>
 </body>
 </html>
