@@ -8,6 +8,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,6 +23,9 @@ import java.util.logging.Logger;
 public class DanhMucBanHangDAO {
 
     private static final Logger LOGGER = Logger.getLogger(DanhMucBanHangDAO.class.getName());
+
+    private static final Set<String> BANG_HOP_LE = Set.of("khach_hang", "lead", "co_hoi", "hoat_dong");
+    private static final Set<String> COT_HOP_LE = Set.of("nganh_nghe_id", "quy_mo_id", "nguon_lead_id", "loai_hoat_dong");
 
     /**
      * Lấy toàn bộ danh sách mục thuộc một loại danh mục, sắp xếp theo thứ tự hiển thị tăng dần, id tăng dần.
@@ -62,7 +66,7 @@ public class DanhMucBanHangDAO {
                 dto.setNguoiTao("Giám đốc kinh doanh");
 
                 // Lấy số lượng bản ghi thực tế đang tham chiếu mục này
-                dto.setSoBanGhiDangSuDung(Math.max(0, demSoLuongThamChieu(loai, dto.getId())));
+                dto.setSoBanGhiDangSuDung(Math.max(0, demSoLuongThamChieu(loai, dto.getId(), dto.getMaMuc())));
 
                 danhSach.add(dto);
             }
@@ -102,7 +106,7 @@ public class DanhMucBanHangDAO {
                     Timestamp ts = rs.getTimestamp("created_at");
                     dto.setNgayTao(ts != null ? ts.toLocalDateTime().toLocalDate() : LocalDate.now());
                     dto.setNguoiTao("Giám đốc kinh doanh");
-                    dto.setSoBanGhiDangSuDung(Math.max(0, demSoLuongThamChieu(loai, id)));
+                    dto.setSoBanGhiDangSuDung(Math.max(0, demSoLuongThamChieu(loai, id, dto.getMaMuc())));
                     return dto;
                 }
             }
@@ -269,36 +273,49 @@ public class DanhMucBanHangDAO {
      * Kiểm tra các bảng Khách hàng, Lead, Cơ hội, Hoạt động.
      */
     public int demSoLuongThamChieu(LoaiDanhMuc loai, long id) {
+        return demSoLuongThamChieu(loai, id, null);
+    }
+
+    /**
+     * AC2: Đếm số lượng bản ghi đang tham chiếu, hỗ trợ truyền mã mục gợi ý
+     * để tối ưu hóa truy vấn đối với LOAI_HOAT_DONG (so khớp theo ma_loai VARCHAR).
+     */
+    public int demSoLuongThamChieu(LoaiDanhMuc loai, long id, String maMucGoiY) {
         if (loai == null) return -1;
         int total = 0;
 
         try (Connection conn = DatabaseConnection.layKetNoi()) {
             switch (loai) {
                 case NGANH_NGHE:
-                    // Tham chiếu trong khach_hang.nganh_nghe_id và lead.nganh_nghe_id
+                    // Tham chiếu trong khach_hang.nganh_nghe_id và `lead`.nganh_nghe_id
                     total += demThamChieuTrongBang(conn, "khach_hang", "nganh_nghe_id", id);
                     total += demThamChieuTrongBang(conn, "lead", "nganh_nghe_id", id);
                     break;
 
                 case QUY_MO:
-                    // Tham chiếu trong khach_hang.quy_mo_id và lead.quy_mo_id
+                    // Tham chiếu trong khach_hang.quy_mo_id và `lead`.quy_mo_id
                     total += demThamChieuTrongBang(conn, "khach_hang", "quy_mo_id", id);
                     total += demThamChieuTrongBang(conn, "lead", "quy_mo_id", id);
                     break;
 
                 case NGUON_LEAD:
-                    // Tham chiếu trong lead.nguon_lead_id và co_hoi.nguon_lead_id
+                    // Tham chiếu trong `lead`.nguon_lead_id và co_hoi.nguon_lead_id
                     total += demThamChieuTrongBang(conn, "lead", "nguon_lead_id", id);
                     total += demThamChieuTrongBang(conn, "co_hoi", "nguon_lead_id", id);
                     break;
 
                 case LOAI_HOAT_DONG:
-                    // Tham chiếu trong hoat_dong.loai_hoat_dong_id
-                    total += demThamChieuTrongBang(conn, "hoat_dong", "loai_hoat_dong_id", id);
+                    // Tham chiếu trong hoat_dong.loai_hoat_dong theo ma_loai VARCHAR (canonical schema)
+                    String maLoai = (maMucGoiY != null && !maMucGoiY.isBlank())
+                            ? maMucGoiY.trim()
+                            : layMaLoaiHoatDong(conn, id);
+                    if (maLoai != null && !maLoai.isBlank()) {
+                        total += demThamChieuLoaiHoatDong(conn, maLoai);
+                    }
                     break;
             }
             return total;
-        } catch (SQLException e) {
+        } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Lỗi kiểm tra tham chiếu cho mục ID=" + id + " trong bảng " + loai.getTenBang() + ": " + e.getMessage(), e);
             // Fail-closed: trả về -1 khi gặp lỗi truy vấn để ngăn chặn việc xóa nhầm dữ liệu
             return -1;
@@ -306,9 +323,40 @@ public class DanhMucBanHangDAO {
     }
 
     private int demThamChieuTrongBang(Connection conn, String tenBang, String tenCot, long id) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM " + tenBang + " WHERE " + tenCot + " = ?";
+        String cleanBang = tenBang.replace("`", "");
+        String cleanCot = tenCot.replace("`", "");
+        if (!BANG_HOP_LE.contains(cleanBang) || !COT_HOP_LE.contains(cleanCot)) {
+            throw new IllegalArgumentException("Identifier không hợp lệ: " + tenBang + "." + tenCot);
+        }
+        String sql = "SELECT COUNT(*) FROM `" + cleanBang + "` WHERE `" + cleanCot + "` = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
+    private String layMaLoaiHoatDong(Connection conn, long id) throws SQLException {
+        String sql = "SELECT ma_loai FROM `loai_hoat_dong` WHERE `id` = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString(1);
+                }
+            }
+        }
+        return null;
+    }
+
+    private int demThamChieuLoaiHoatDong(Connection conn, String maLoai) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM `hoat_dong` WHERE `loai_hoat_dong` = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, maLoai);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1);

@@ -161,6 +161,81 @@ class DanhMucBanHangServiceTest {
     }
 
     @Test
+    @DisplayName("AC2: NGUON_LEAD không tham chiếu -> xóa thành công")
+    void testXoaMuc_NguonLead_KhongThamChieu_XoaThanhCong() {
+        long id = 10L;
+        LoaiDanhMuc loai = LoaiDanhMuc.NGUON_LEAD;
+        MucDanhMucDTO item = new MucDanhMucDTO(id, loai, "FACEBOOK_TEST", "Facebook Test", "", 1, true, 0, LocalDate.now(), "Admin");
+        when(dao.layTheoId(loai, id)).thenReturn(item);
+        when(dao.demSoLuongThamChieu(loai, id)).thenReturn(0);
+        when(dao.xoa(loai, id)).thenReturn(true);
+
+        boolean ketQua = service.xoaMuc(loai, id);
+
+        assertTrue(ketQua);
+        verify(dao).xoa(loai, id);
+    }
+
+    @Test
+    @DisplayName("AC2: NGUON_LEAD có reference trong `lead` -> chặn xóa")
+    void testXoaMuc_NguonLead_CoReferenceTrongLead_ChanXoa() {
+        long id = 11L;
+        LoaiDanhMuc loai = LoaiDanhMuc.NGUON_LEAD;
+        MucDanhMucDTO item = new MucDanhMucDTO(id, loai, "TIKTOK_ADS", "TikTok Ads", "", 2, true, 3, LocalDate.now(), "Admin");
+        when(dao.layTheoId(loai, id)).thenReturn(item);
+        when(dao.demSoLuongThamChieu(loai, id)).thenReturn(3);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> service.xoaMuc(loai, id));
+        assertTrue(ex.getMessage().contains("Không thể xóa"));
+        assertTrue(ex.getMessage().contains("3 bản ghi"));
+        verify(dao, never()).xoa(eq(loai), anyLong());
+    }
+
+    @Test
+    @DisplayName("AC2: NGUON_LEAD có reference trong co_hoi -> chặn xóa")
+    void testXoaMuc_NguonLead_CoReferenceTrongCoHoi_ChanXoa() {
+        long id = 12L;
+        LoaiDanhMuc loai = LoaiDanhMuc.NGUON_LEAD;
+        MucDanhMucDTO item = new MucDanhMucDTO(id, loai, "GOOGLE_ADS", "Google Ads", "", 3, true, 2, LocalDate.now(), "Admin");
+        when(dao.layTheoId(loai, id)).thenReturn(item);
+        when(dao.demSoLuongThamChieu(loai, id)).thenReturn(2);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> service.xoaMuc(loai, id));
+        assertTrue(ex.getMessage().contains("Không thể xóa"));
+        verify(dao, never()).xoa(eq(loai), anyLong());
+    }
+
+    @Test
+    @DisplayName("AC2: LOAI_HOAT_DONG có reference trong hoat_dong -> chặn xóa")
+    void testXoaMuc_LoaiHoatDong_CoReference_ChanXoa() {
+        long id = 20L;
+        LoaiDanhMuc loai = LoaiDanhMuc.LOAI_HOAT_DONG;
+        MucDanhMucDTO item = new MucDanhMucDTO(id, loai, "CUOC_GOI", "Cuộc gọi", "", 1, true, 10, LocalDate.now(), "Admin");
+        when(dao.layTheoId(loai, id)).thenReturn(item);
+        when(dao.demSoLuongThamChieu(loai, id)).thenReturn(10);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> service.xoaMuc(loai, id));
+        assertTrue(ex.getMessage().contains("Không thể xóa"));
+        verify(dao, never()).xoa(eq(loai), anyLong());
+    }
+
+    @Test
+    @DisplayName("AC2: LOAI_HOAT_DONG chưa dùng -> xóa thành công")
+    void testXoaMuc_LoaiHoatDong_ChuaDung_XoaThanhCong() {
+        long id = 21L;
+        LoaiDanhMuc loai = LoaiDanhMuc.LOAI_HOAT_DONG;
+        MucDanhMucDTO item = new MucDanhMucDTO(id, loai, "ZALO_ZNS", "Zalo ZNS", "", 5, true, 0, LocalDate.now(), "Admin");
+        when(dao.layTheoId(loai, id)).thenReturn(item);
+        when(dao.demSoLuongThamChieu(loai, id)).thenReturn(0);
+        when(dao.xoa(loai, id)).thenReturn(true);
+
+        boolean ketQua = service.xoaMuc(loai, id);
+
+        assertTrue(ketQua);
+        verify(dao).xoa(loai, id);
+    }
+
+    @Test
     @DisplayName("AC3: Sắp xếp thứ tự hiển thị - Di chuyển mục lên trên thành công")
     void testThayDoiThuTu_DiChuyenLen() {
         LoaiDanhMuc loai = LoaiDanhMuc.QUY_MO;
