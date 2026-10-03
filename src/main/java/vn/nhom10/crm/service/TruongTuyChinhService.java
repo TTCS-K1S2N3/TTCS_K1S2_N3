@@ -6,6 +6,11 @@ import vn.nhom10.crm.model.KieuDuLieuCustomField;
 import vn.nhom10.crm.model.LoaiDoiTuongCustomField;
 import vn.nhom10.crm.model.TruongTuyChinh;
 
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -24,10 +29,15 @@ public class TruongTuyChinhService {
 
     // Danh sách tên cột hệ thống mặc định để tránh xung đột mã trường kỹ thuật
     private static final Set<String> CAC_MA_CAM = Set.of(
-            "id", "created_at", "updated_at", "created_by", "trang_thai", "nguoi_so_huu_id",
-            "nhom_kinh_doanh_id", "ten_cong_ty", "ma_khach_hang", "ma_so_thue", "email",
-            "so_dien_thoai", "dia_chi", "website", "ten_co_hoi", "ma_co_hoi", "gia_tri",
-            "giai_doan_id", "pipeline_id", "xac_suat", "ngay_ky_vong"
+            "id", "created_at", "updated_at", "created_by", "trang_thai",
+            "nguoi_so_huu_id", "nhom_kinh_doanh_id", "nguoi_phu_trach_id",
+            "ma_khach_hang", "ten_cong_ty", "ten_chuan_hoa", "ma_so_thue",
+            "nganh_nghe_id", "quy_mo_id", "website", "website_chuan_hoa",
+            "so_dien_thoai", "email", "dia_chi", "tinh_thanh_id", "quan_huyen_id",
+            "phuong_xa_id", "mo_ta", "nguon_lead_id",
+            "ma_co_hoi", "ten_co_hoi", "khach_hang_id", "nguoi_lien_he_id",
+            "pipeline_id", "giai_doan_id", "gia_tri", "tien_te", "xac_suat",
+            "ngay_ky_vong", "ly_do_that_bai", "mo_ta_that_bai"
     );
 
     public TruongTuyChinhService() {
@@ -46,8 +56,14 @@ public class TruongTuyChinhService {
      * Lấy danh sách trường tuỳ chỉnh theo đối tượng (KHACH_HANG hoặc CO_HOI).
      */
     public List<TruongTuyChinh> layDanhSachTheoDoiTuong(String loaiDoiTuong, boolean chiLayDangHoatDong) {
-        String doiTuongChuan = chuanHoaLoaiDoiTuong(loaiDoiTuong);
-        return dao.layDanhSachTheoDoiTuong(doiTuongChuan, chiLayDangHoatDong);
+        if (loaiDoiTuong == null || loaiDoiTuong.isBlank()) {
+            return dao.layDanhSachTheoDoiTuong("KHACH_HANG", chiLayDangHoatDong);
+        }
+        String upper = loaiDoiTuong.trim().toUpperCase();
+        if (!"KHACH_HANG".equals(upper) && !"CO_HOI".equals(upper)) {
+            return Collections.emptyList();
+        }
+        return dao.layDanhSachTheoDoiTuong(upper, chiLayDangHoatDong);
     }
 
     /**
@@ -66,7 +82,7 @@ public class TruongTuyChinhService {
 
         // 1. Kiểm tra đối tượng
         String doiTuong = dto.getDoiTuong();
-        if (doiTuong == null || LoaiDoiTuongCustomField.tuMa(doiTuong) == null) {
+        if (doiTuong == null || doiTuong.isBlank() || LoaiDoiTuongCustomField.tuMa(doiTuong) == null) {
             errors.put("doiTuong", "Vui lòng chọn loại đối tượng hợp lệ (Khách hàng hoặc Cơ hội).");
         }
 
@@ -91,7 +107,7 @@ public class TruongTuyChinhService {
                     errors.put("tenTruong", "Tên kỹ thuật không được vượt quá 80 ký tự.");
                 } else if (CAC_MA_CAM.contains(slug)) {
                     errors.put("tenTruong", "Tên kỹ thuật trùng với trường chuẩn của hệ thống. Vui lòng chọn tên khác.");
-                } else if (dao.kiemTraTonTaiMa(doiTuong, slug, null)) {
+                } else if (doiTuong != null && dao.kiemTraTonTaiMa(doiTuong, slug, null)) {
                     errors.put("tenTruong", "Tên kỹ thuật này đã tồn tại trong đối tượng " + doiTuong + ".");
                 }
             }
@@ -117,6 +133,9 @@ public class TruongTuyChinhService {
             if (!coLuaChon) {
                 errors.put("danhSachLuaChon", "Kiểu danh sách chọn bắt buộc phải có ít nhất một lựa chọn.");
             }
+        } else {
+            // Nếu không phải DANH_SACH_CHON, xoá toàn bộ lựa chọn rác nếu có
+            dto.setDanhSachLuaChon(new ArrayList<>());
         }
 
         return errors;
@@ -126,6 +145,10 @@ public class TruongTuyChinhService {
      * Tạo mới một trường tuỳ chỉnh (Story S2-08).
      */
     public long taoTruongTuyChinh(TruongTuyChinhDTO dto, Long userId) {
+        if (userId == null || userId <= 0) {
+            throw new IllegalArgumentException("Không xác định được người dùng tạo trường.");
+        }
+
         Map<String, String> errors = validateDinhNghiaTruong(dto, true);
         if (!errors.isEmpty()) {
             throw new IllegalArgumentException(errors.values().iterator().next());
@@ -133,6 +156,11 @@ public class TruongTuyChinhService {
 
         TruongTuyChinh model = dto.chuyenSangModel();
         model.setCreatedBy(userId);
+
+        if (!KieuDuLieuCustomField.DANH_SACH_CHON.getMa().equalsIgnoreCase(model.getKieuDuLieu())) {
+            model.setDanhSachLuaChon(new ArrayList<>());
+            model.setLuaChonJson(null);
+        }
 
         // Lưu metadata cấu hình hiển thị (bộ lọc, excel) vào giaTriMacDinhJson
         model.setGiaTriMacDinhJson(buildMetadataJson(dto.isHienThiBoDac(), dto.isHienThiExcel()));
@@ -171,6 +199,9 @@ public class TruongTuyChinhService {
 
         if (KieuDuLieuCustomField.DANH_SACH_CHON.getMa().equalsIgnoreCase(existing.getKieuDuLieu())) {
             existing.setDanhSachLuaChon(dto.getDanhSachLuaChon());
+        } else {
+            existing.setDanhSachLuaChon(new ArrayList<>());
+            existing.setLuaChonJson(null);
         }
 
         existing.setGiaTriMacDinhJson(buildMetadataJson(dto.isHienThiBoDac(), dto.isHienThiExcel()));
@@ -461,17 +492,101 @@ public class TruongTuyChinhService {
         return csv.toString();
     }
 
+    /**
+     * Xuất dữ liệu bảng có gắn kèm các cột trường tuỳ chỉnh sang file Excel (.xlsx) chuẩn Apache POI.
+     */
+    public byte[] xuatDuLieuExcelXLSX(String loaiDoiTuong,
+                                      List<String> cotChuanHeader,
+                                      List<String> cotChuanKeys,
+                                      List<Map<String, Object>> danhSachBanGhi,
+                                      Map<Long, Map<String, String>> giaTriCustomFields) {
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            String sheetName = "CO_HOI".equalsIgnoreCase(loaiDoiTuong) ? "Cơ hội" : "Khách hàng";
+            Sheet sheet = workbook.createSheet(sheetName);
+
+            // Style cho hàng tiêu đề
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+
+            List<TruongTuyChinh> dsTruongExcel = layDanhSachChoExcel(loaiDoiTuong);
+
+            // 1. Dòng tiêu đề
+            Row headerRow = sheet.createRow(0);
+            int colIdx = 0;
+            for (String h : cotChuanHeader) {
+                Cell cell = headerRow.createCell(colIdx++);
+                cell.setCellValue(h);
+                cell.setCellStyle(headerStyle);
+            }
+            for (TruongTuyChinh t : dsTruongExcel) {
+                Cell cell = headerRow.createCell(colIdx++);
+                cell.setCellValue(t.getNhanHien());
+                cell.setCellStyle(headerStyle);
+            }
+
+            // 2. Dòng dữ liệu
+            int rowIdx = 1;
+            if (danhSachBanGhi != null) {
+                for (Map<String, Object> record : danhSachBanGhi) {
+                    Row row = sheet.createRow(rowIdx++);
+                    colIdx = 0;
+
+                    Long id = null;
+                    Object idObj = record.get("id");
+                    if (idObj instanceof Number) {
+                        id = ((Number) idObj).longValue();
+                    } else if (idObj != null) {
+                        try {
+                            id = Long.parseLong(idObj.toString());
+                        } catch (Exception ignored) {}
+                    }
+
+                    for (String key : cotChuanKeys) {
+                        Cell cell = row.createCell(colIdx++);
+                        Object val = record.get(key);
+                        cell.setCellValue(val != null ? val.toString() : "");
+                    }
+
+                    Map<String, String> customVals = (id != null && giaTriCustomFields != null)
+                            ? giaTriCustomFields.get(id) : null;
+
+                    for (TruongTuyChinh t : dsTruongExcel) {
+                        Cell cell = row.createCell(colIdx++);
+                        String v = (customVals != null) ? customVals.get(t.getMaTruong()) : "";
+                        cell.setCellValue(v != null ? v : "");
+                    }
+                }
+            }
+
+            // Auto-size các cột để file Excel dễ nhìn
+            for (int i = 0; i < colIdx; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            workbook.write(bos);
+            return bos.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException("Lỗi tạo file Excel .xlsx: " + e.getMessage(), e);
+        }
+    }
+
     // --- Helper methods ---
 
-    private String chuanHoaLoaiDoiTuong(String loaiDoiTuong) {
+    public String chuanHoaLoaiDoiTuong(String loaiDoiTuong) {
         if (loaiDoiTuong == null || loaiDoiTuong.isBlank()) {
             return "KHACH_HANG";
         }
         String upper = loaiDoiTuong.trim().toUpperCase();
-        if ("CO_HOI".equals(upper) || "OPPORTUNITY".equals(upper) || "DEAL".equals(upper)) {
+        if ("CO_HOI".equals(upper)) {
             return "CO_HOI";
         }
-        return "KHACH_HANG";
+        if ("KHACH_HANG".equals(upper)) {
+            return "KHACH_HANG";
+        }
+        throw new IllegalArgumentException("Loại đối tượng không hợp lệ: " + loaiDoiTuong + ". Chỉ chấp nhận KHACH_HANG hoặc CO_HOI.");
     }
 
     private String buildMetadataJson(boolean hienThiBoDac, boolean hienThiExcel) {
@@ -480,6 +595,11 @@ public class TruongTuyChinhService {
 
     private String escapeCsv(String value) {
         if (value == null) return "\"\"";
-        return "\"" + value.replace("\"", "\"\"") + "\"";
+        String s = value;
+        // Chống Formula Injection khi mở CSV bằng Excel: escape các ký tự khởi đầu công thức =, +, -, @
+        if (s.startsWith("=") || s.startsWith("+") || s.startsWith("-") || s.startsWith("@")) {
+            s = "'" + s;
+        }
+        return "\"" + s.replace("\"", "\"\"") + "\"";
     }
 }

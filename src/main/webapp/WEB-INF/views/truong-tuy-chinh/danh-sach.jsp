@@ -192,7 +192,7 @@
                                     <td>
                                         <div class="field-name-cell">
                                             <div class="field-label"><c:out value="${t.nhanHien}"/></div>
-                                            <div class="field-key"><code>${t.tenTruong}</code></div>
+                                            <div class="field-key"><code><c:out value="${t.tenTruong}"/></code></div>
                                         </div>
                                     </td>
                                     <td>
@@ -323,7 +323,7 @@
                                     <td>
                                         <div class="field-name-cell">
                                             <div class="field-label"><c:out value="${t.nhanHien}"/></div>
-                                            <div class="field-key"><code>${t.tenTruong}</code></div>
+                                            <div class="field-key"><code><c:out value="${t.tenTruong}"/></code></div>
                                         </div>
                                     </td>
                                     <td>

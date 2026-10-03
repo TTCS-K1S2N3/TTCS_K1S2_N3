@@ -325,4 +325,155 @@ class TruongTuyChinhServiceTest {
         assertTrue(csv.contains("\"KH-001\",\"Tập đoàn Viễn thông Viettel\",\"Hội thảo 2026\",\"5000000000\""));
         assertTrue(csv.contains("\"KH-002\",\"Công ty TNHH VNG\",\"Online\",\"2000000000\""));
     }
+
+    @Test
+    @DisplayName("AC3.5: Chống Formula Injection khi xuất CSV (giá trị bắt đầu bằng =, +, -, @)")
+    void testXuatDuLieuExcelCSVFormulaInjection() {
+        TruongTuyChinh t1 = new TruongTuyChinh("KHACH_HANG", "cong_thuc", "Công thức test", "VAN_BAN", false);
+        t1.setHienThiExcel(true);
+        when(dao.layDanhSachTheoDoiTuong("KHACH_HANG", true)).thenReturn(List.of(t1));
+
+        List<String> headers = List.of("Mã KH");
+        List<String> keys = List.of("ma");
+        List<Map<String, Object>> records = List.of(
+                Map.of("id", 1L, "ma", "=1+1"),
+                Map.of("id", 2L, "ma", "@SUM(A1:A10)"),
+                Map.of("id", 3L, "ma", "+cmd"),
+                Map.of("id", 4L, "ma", "-calc")
+        );
+        Map<Long, Map<String, String>> customFields = Map.of(
+                1L, Map.of("cong_thuc", "=cmd|' /C calc'!A0")
+        );
+
+        String csv = service.xuatDuLieuExcelCSV("KHACH_HANG", headers, keys, records, customFields);
+
+        // Các giá trị nguy hiểm phải được tiền tố dấu nháy đơn '
+        assertTrue(csv.contains("\"'=1+1\""));
+        assertTrue(csv.contains("\"'@SUM(A1:A10)\""));
+        assertTrue(csv.contains("\"'+cmd\""));
+        assertTrue(csv.contains("\"'-calc\""));
+        assertTrue(csv.contains("\"'=cmd|' /C calc'!A0\""));
+    }
+
+    @Test
+    @DisplayName("AC3.6: Xuất file Excel chuẩn XLSX với Apache POI")
+    void testXuatDuLieuExcelXLSX() throws Exception {
+        TruongTuyChinh tExcelOn = new TruongTuyChinh("KHACH_HANG", "nguon_lead", "Nguồn giới thiệu", "DANH_SACH_CHON", false);
+        tExcelOn.setHienThiExcel(true);
+
+        TruongTuyChinh tExcelOff = new TruongTuyChinh("KHACH_HANG", "noi_bo", "Ghi chú nội bộ", "VAN_BAN", false);
+        tExcelOff.setHienThiExcel(false);
+
+        // layDanhSachTheoDoiTuong trả về cả 2, nhưng layDanhSachChoExcel chỉ lọc tExcelOn
+        when(dao.layDanhSachTheoDoiTuong("KHACH_HANG", true)).thenReturn(List.of(tExcelOn, tExcelOff));
+
+        List<String> headers = List.of("Mã KH", "Tên công ty");
+        List<String> keys = List.of("ma", "ten");
+        List<Map<String, Object>> records = List.of(
+                Map.of("id", 100L, "ma", "KH-VIP", "ten", "Công ty Cổ phần Misa")
+        );
+        Map<Long, Map<String, String>> customFields = Map.of(
+                100L, Map.of("nguon_lead", "Triển lãm Techfest", "noi_bo", "Tuyệt mật")
+        );
+
+        byte[] xlsxBytes = service.xuatDuLieuExcelXLSX("KHACH_HANG", headers, keys, records, customFields);
+        assertNotNull(xlsxBytes);
+        assertTrue(xlsxBytes.length > 0);
+
+        // Đọc lại bằng POI để kiểm chứng cấu trúc file XLSX
+        try (org.apache.poi.xssf.usermodel.XSSFWorkbook wb = new org.apache.poi.xssf.usermodel.XSSFWorkbook(new java.io.ByteArrayInputStream(xlsxBytes))) {
+            org.apache.poi.ss.usermodel.Sheet sheet = wb.getSheet("Khách hàng");
+            assertNotNull(sheet);
+
+            org.apache.poi.ss.usermodel.Row headerRow = sheet.getRow(0);
+            assertNotNull(headerRow);
+            assertEquals("Mã KH", headerRow.getCell(0).getStringCellValue());
+            assertEquals("Tên công ty", headerRow.getCell(1).getStringCellValue());
+            assertEquals("Nguồn giới thiệu", headerRow.getCell(2).getStringCellValue());
+            // Cột noi_bo có hienThiExcel = false -> không được xuất hiện
+            assertNull(headerRow.getCell(3));
+
+            org.apache.poi.ss.usermodel.Row dataRow = sheet.getRow(1);
+            assertNotNull(dataRow);
+            assertEquals("KH-VIP", dataRow.getCell(0).getStringCellValue());
+            assertEquals("Công ty Cổ phần Misa", dataRow.getCell(1).getStringCellValue());
+            assertEquals("Triển lãm Techfest", dataRow.getCell(2).getStringCellValue());
+        }
+    }
+
+    // =========================================================================
+    // VALIDATION BỔ SUNG & BẢO MẬT
+    // =========================================================================
+
+    @Test
+    @DisplayName("Validation: Reject loại đối tượng không hợp lệ")
+    void testChuanHoaLoaiDoiTuongKhongHopLe() {
+        assertThrows(IllegalArgumentException.class, () -> service.chuanHoaLoaiDoiTuong("SAN_PHAM"));
+        assertThrows(IllegalArgumentException.class, () -> service.chuanHoaLoaiDoiTuong("NGUOI_DUNG"));
+    }
+
+    @Test
+    @DisplayName("Validation: Chặn tên trường trùng với cột chuẩn hệ thống (Reserved names)")
+    void testValidateDinhNghiaTruongCotHeThongBiCam() {
+        List<String> reserved = List.of("id", "created_at", "updated_at", "ma_khach_hang", "ten_cong_ty", "ma_co_hoi", "ten_co_hoi");
+        for (String col : reserved) {
+            TruongTuyChinhDTO dto = new TruongTuyChinhDTO();
+            dto.setDoiTuong("KHACH_HANG");
+            dto.setTenTruong(col);
+            dto.setNhanHien("Cột hệ thống");
+            dto.setKieuDuLieu("VAN_BAN");
+
+            Map<String, String> errors = service.validateDinhNghiaTruong(dto, true);
+            assertTrue(errors.containsKey("tenTruong"), "Cột " + col + " phải bị chặn");
+            assertTrue(errors.get("tenTruong").contains("trùng với trường chuẩn của hệ thống"));
+        }
+    }
+
+    @Test
+    @DisplayName("Validation: Chặn kiểu dữ liệu không hợp lệ")
+    void testValidateDinhNghiaTruongKieuDuLieuKhongHopLe() {
+        TruongTuyChinhDTO dto = new TruongTuyChinhDTO();
+        dto.setDoiTuong("KHACH_HANG");
+        dto.setTenTruong("truong_la");
+        dto.setNhanHien("Trường lạ");
+        dto.setKieuDuLieu("BOOLEAN"); // Không hỗ trợ kiểu này
+
+        Map<String, String> errors = service.validateDinhNghiaTruong(dto, true);
+        assertTrue(errors.containsKey("kieuDuLieu"));
+        assertTrue(errors.get("kieuDuLieu").contains("không hợp lệ"));
+    }
+
+    @Test
+    @DisplayName("Security: Yêu cầu userId hợp lệ khi tạo trường tuỳ chỉnh (created_by)")
+    void testTaoTruongUserIdKhongHopLe() {
+        TruongTuyChinhDTO dto = new TruongTuyChinhDTO();
+        dto.setDoiTuong("KHACH_HANG");
+        dto.setTenTruong("test_uid");
+        dto.setNhanHien("Test UID");
+        dto.setKieuDuLieu("VAN_BAN");
+
+        assertThrows(IllegalArgumentException.class, () -> service.taoTruongTuyChinh(dto, null));
+        assertThrows(IllegalArgumentException.class, () -> service.taoTruongTuyChinh(dto, 0L));
+        assertThrows(IllegalArgumentException.class, () -> service.taoTruongTuyChinh(dto, -1L));
+    }
+
+    @Test
+    @DisplayName("Business Rule: Kiểu khác DANH_SACH_CHON sẽ tự xóa options rác nếu có")
+    void testTaoTruongKhongPhaiSelectXoaOptions() {
+        TruongTuyChinhDTO dto = new TruongTuyChinhDTO();
+        dto.setDoiTuong("KHACH_HANG");
+        dto.setTenTruong("ghi_chu");
+        dto.setNhanHien("Ghi chú");
+        dto.setKieuDuLieu("VAN_BAN");
+        dto.setDanhSachLuaChon(List.of("Option 1", "Option 2"));
+
+        when(dao.kiemTraTonTaiMa("KHACH_HANG", "ghi_chu", null)).thenReturn(false);
+        when(dao.them(any(TruongTuyChinh.class))).thenReturn(99L);
+
+        service.taoTruongTuyChinh(dto, 1L);
+
+        verify(dao).them(argThat(t ->
+                t.getDanhSachLuaChon().isEmpty() && t.getLuaChonJson() == null
+        ));
+    }
 }

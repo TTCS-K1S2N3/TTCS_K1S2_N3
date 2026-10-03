@@ -221,14 +221,20 @@ public class TruongTuyChinhDAO {
         if ("CO_HOI".equalsIgnoreCase(loaiDoiTuong)) {
             return "gia_tri_truong_tuy_chinh_co_hoi";
         }
-        return "gia_tri_truong_tuy_chinh_khach_hang";
+        if ("KHACH_HANG".equalsIgnoreCase(loaiDoiTuong)) {
+            return "gia_tri_truong_tuy_chinh_khach_hang";
+        }
+        throw new IllegalArgumentException("Loại đối tượng không hợp lệ: " + loaiDoiTuong);
     }
 
     private String layTenCotDoiTuong(String loaiDoiTuong) {
         if ("CO_HOI".equalsIgnoreCase(loaiDoiTuong)) {
             return "co_hoi_id";
         }
-        return "khach_hang_id";
+        if ("KHACH_HANG".equalsIgnoreCase(loaiDoiTuong)) {
+            return "khach_hang_id";
+        }
+        throw new IllegalArgumentException("Loại đối tượng không hợp lệ: " + loaiDoiTuong);
     }
 
     /**
@@ -416,39 +422,34 @@ public class TruongTuyChinhDAO {
         if ("SO".equalsIgnoreCase(kieuDuLieu)) {
             try {
                 BigDecimal bd = new BigDecimal(val.replace(",", ""));
-                ps.setString(startIndex, val);
-                ps.setBigDecimal(startIndex + 1, bd);
-                ps.setNull(startIndex + 2, Types.DATE);
-                ps.setNull(startIndex + 3, Types.VARCHAR);
+                ps.setNull(startIndex, Types.VARCHAR);     // gia_tri_van_ban
+                ps.setBigDecimal(startIndex + 1, bd);      // gia_tri_so
+                ps.setNull(startIndex + 2, Types.DATE);    // gia_tri_ngay
+                ps.setNull(startIndex + 3, Types.VARCHAR); // gia_tri_json
             } catch (Exception e) {
-                ps.setString(startIndex, val);
-                ps.setNull(startIndex + 1, Types.DECIMAL);
-                ps.setNull(startIndex + 2, Types.DATE);
-                ps.setNull(startIndex + 3, Types.VARCHAR);
+                throw new IllegalArgumentException("Giá trị không phải là số hợp lệ: " + val);
             }
         } else if ("NGAY".equalsIgnoreCase(kieuDuLieu)) {
             try {
                 LocalDate ld = LocalDate.parse(val);
-                ps.setString(startIndex, val);
-                ps.setNull(startIndex + 1, Types.DECIMAL);
-                ps.setDate(startIndex + 2, java.sql.Date.valueOf(ld));
-                ps.setNull(startIndex + 3, Types.VARCHAR);
+                ps.setNull(startIndex, Types.VARCHAR);     // gia_tri_van_ban
+                ps.setNull(startIndex + 1, Types.DECIMAL); // gia_tri_so
+                ps.setDate(startIndex + 2, java.sql.Date.valueOf(ld)); // gia_tri_ngay
+                ps.setNull(startIndex + 3, Types.VARCHAR); // gia_tri_json
             } catch (Exception e) {
-                ps.setString(startIndex, val);
-                ps.setNull(startIndex + 1, Types.DECIMAL);
-                ps.setNull(startIndex + 2, Types.DATE);
-                ps.setNull(startIndex + 3, Types.VARCHAR);
+                throw new IllegalArgumentException("Giá trị không phải là ngày hợp lệ (YYYY-MM-DD): " + val);
             }
         } else if ("DANH_SACH_CHON".equalsIgnoreCase(kieuDuLieu)) {
-            ps.setString(startIndex, val);
-            ps.setNull(startIndex + 1, Types.DECIMAL);
-            ps.setNull(startIndex + 2, Types.DATE);
-            ps.setString(startIndex + 3, "\"" + val.replace("\"", "\\\"") + "\"");
+            ps.setString(startIndex, val);                 // gia_tri_van_ban
+            ps.setNull(startIndex + 1, Types.DECIMAL);     // gia_tri_so
+            ps.setNull(startIndex + 2, Types.DATE);        // gia_tri_ngay
+            ps.setString(startIndex + 3, "\"" + val.replace("\"", "\\\"") + "\""); // gia_tri_json
         } else {
-            ps.setString(startIndex, val);
-            ps.setNull(startIndex + 1, Types.DECIMAL);
-            ps.setNull(startIndex + 2, Types.DATE);
-            ps.setNull(startIndex + 3, Types.VARCHAR);
+            // VAN_BAN
+            ps.setString(startIndex, val);                 // gia_tri_van_ban
+            ps.setNull(startIndex + 1, Types.DECIMAL);     // gia_tri_so
+            ps.setNull(startIndex + 2, Types.DATE);        // gia_tri_ngay
+            ps.setNull(startIndex + 3, Types.VARCHAR);     // gia_tri_json
         }
     }
 

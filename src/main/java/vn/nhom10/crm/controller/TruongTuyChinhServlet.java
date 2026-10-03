@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpSession;
 import vn.nhom10.crm.dto.TruongTuyChinhDTO;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.TruongTuyChinh;
+import vn.nhom10.crm.model.VaiTroEnum;
+import vn.nhom10.crm.service.PhienService;
 import vn.nhom10.crm.service.TruongTuyChinhService;
 
 import java.io.IOException;
@@ -190,35 +192,62 @@ public class TruongTuyChinhServlet extends HttpServlet {
         if (doiTuong == null || doiTuong.isBlank()) {
             doiTuong = "KHACH_HANG";
         }
+        doiTuong = doiTuong.trim().toUpperCase();
+        if (!"KHACH_HANG".equals(doiTuong) && !"CO_HOI".equals(doiTuong)) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Loại đối tượng không hợp lệ: " + doiTuong);
+            return;
+        }
 
-        List<String> cotChuan = "CO_HOI".equalsIgnoreCase(doiTuong)
+        List<String> cotChuan = "CO_HOI".equals(doiTuong)
                 ? List.of("Mã cơ hội", "Tên cơ hội", "Khách hàng", "Giá trị", "Giai đoạn")
                 : List.of("Mã khách hàng", "Tên công ty", "Mã số thuế", "Điện thoại", "Email");
 
-        List<String> keys = "CO_HOI".equalsIgnoreCase(doiTuong)
+        List<String> keys = "CO_HOI".equals(doiTuong)
                 ? List.of("ma", "ten", "khachHang", "giaTri", "giaiDoan")
                 : List.of("ma", "ten", "mst", "sdt", "email");
 
-        // Dữ liệu mẫu minh họa
+        // Dữ liệu mẫu minh họa theo đối tượng
         List<Map<String, Object>> sample = new ArrayList<>();
-        Map<String, Object> r1 = new HashMap<>();
-        r1.put("id", 1L);
-        r1.put("ma", "KH-001");
-        r1.put("ten", "Công ty Cổ phần Công nghệ FPT");
-        r1.put("mst", "0101248141");
-        r1.put("sdt", "02473007300");
-        r1.put("email", "contact@fpt.com.vn");
-        sample.add(r1);
+        if ("CO_HOI".equals(doiTuong)) {
+            Map<String, Object> r1 = new HashMap<>();
+            r1.put("id", 1L);
+            r1.put("ma", "CH-2026-001");
+            r1.put("ten", "Triển khai phần mềm ERP");
+            r1.put("khachHang", "Tập đoàn Vingroup");
+            r1.put("giaTri", "500000000");
+            r1.put("giaiDoan", "Đàm phán");
+            sample.add(r1);
+        } else {
+            Map<String, Object> r1 = new HashMap<>();
+            r1.put("id", 1L);
+            r1.put("ma", "KH-001");
+            r1.put("ten", "Công ty Cổ phần Công nghệ FPT");
+            r1.put("mst", "0101248141");
+            r1.put("sdt", "02473007300");
+            r1.put("email", "contact@fpt.com.vn");
+            sample.add(r1);
+        }
 
         Map<Long, Map<String, String>> customVals = service.layTatCaGiaTriTheoDanhSach(doiTuong, List.of(1L));
-        String csv = service.xuatDuLieuExcelCSV(doiTuong, cotChuan, keys, sample, customVals);
 
-        response.setContentType("text/csv; charset=UTF-8");
-        response.setHeader("Content-Disposition", "attachment; filename=\"danh-sach-" + doiTuong.toLowerCase() + ".csv\"");
-
-        try (OutputStream os = response.getOutputStream()) {
-            os.write(csv.getBytes(StandardCharsets.UTF_8));
-            os.flush();
+        String format = request.getParameter("format");
+        if ("csv".equalsIgnoreCase(format)) {
+            String csv = service.xuatDuLieuExcelCSV(doiTuong, cotChuan, keys, sample, customVals);
+            response.setContentType("text/csv; charset=UTF-8");
+            response.setHeader("Content-Disposition", "attachment; filename=\"danh-sach-" + doiTuong.toLowerCase() + ".csv\"");
+            try (OutputStream os = response.getOutputStream()) {
+                os.write(csv.getBytes(StandardCharsets.UTF_8));
+                os.flush();
+            }
+        } else {
+            byte[] xlsx = service.xuatDuLieuExcelXLSX(doiTuong, cotChuan, keys, sample, customVals);
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"danh-sach-" + doiTuong.toLowerCase() + ".xlsx\"");
+            response.setContentLength(xlsx.length);
+            try (OutputStream os = response.getOutputStream()) {
+                os.write(xlsx);
+                os.flush();
+            }
         }
     }
 
@@ -228,7 +257,7 @@ public class TruongTuyChinhServlet extends HttpServlet {
 
     private void xuLyTaoTruong(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        TruongTuyChinhDTO dto = thuThapDuLieuForm(request);
+        TruongTuyChinhDTO dto = thuThapDuLieuForm(request, true);
 
         Map<String, String> formError = service.validateDinhNghiaTruong(dto, true);
         if (!formError.isEmpty()) {
@@ -238,8 +267,13 @@ public class TruongTuyChinhServlet extends HttpServlet {
             return;
         }
 
+        Long userId = layIdNguoiDungHienTai(request);
+        if (userId == null) {
+            response.sendRedirect(request.getContextPath() + "/dang-nhap?error=auth_required");
+            return;
+        }
+
         try {
-            Long userId = layIdNguoiDungHienTai(request);
             service.taoTruongTuyChinh(dto, userId);
 
             datThongBaoThanhCong(request, "Đã tạo thành công trường tuỳ chỉnh '" + dto.getNhanHien() + "'.");
@@ -254,7 +288,7 @@ public class TruongTuyChinhServlet extends HttpServlet {
 
     private void xuLySuaTruong(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        TruongTuyChinhDTO dto = thuThapDuLieuForm(request);
+        TruongTuyChinhDTO dto = thuThapDuLieuForm(request, false);
         String idStr = request.getParameter("id");
         dto.setId(parseLong(idStr));
 
@@ -284,7 +318,7 @@ public class TruongTuyChinhServlet extends HttpServlet {
         String idStr = request.getParameter("id");
         Long id = parseLong(idStr);
         String trangThaiStr = request.getParameter("trangThai");
-        boolean hoatDong = "true".equalsIgnoreCase(trangThaiStr) || "1".equals(trangThaiStr);
+        boolean hoatDong = parseBooleanParam(trangThaiStr, false);
 
         if (id != null) {
             service.doiTrangThai(id, hoatDong);
@@ -297,24 +331,38 @@ public class TruongTuyChinhServlet extends HttpServlet {
     // HELPER METHODS
     // =========================================================================
 
-    private TruongTuyChinhDTO thuThapDuLieuForm(HttpServletRequest request) {
+    private boolean parseBooleanParam(String param, boolean defaultValue) {
+        if (param == null) {
+            return defaultValue;
+        }
+        String p = param.trim().toLowerCase();
+        if ("true".equals(p) || "on".equals(p) || "1".equals(p)) {
+            return true;
+        }
+        if ("false".equals(p) || "off".equals(p) || "0".equals(p) || p.isEmpty()) {
+            return false;
+        }
+        return false;
+    }
+
+    private TruongTuyChinhDTO thuThapDuLieuForm(HttpServletRequest request, boolean isCreate) {
         TruongTuyChinhDTO dto = new TruongTuyChinhDTO();
         dto.setDoiTuong(request.getParameter("doiTuong"));
         dto.setTenTruong(request.getParameter("tenTruong"));
         dto.setNhanHien(request.getParameter("nhanHien"));
         dto.setKieuDuLieu(request.getParameter("kieuDuLieu"));
 
-        // Checkbox values
-        dto.setBatBuoc("true".equalsIgnoreCase(request.getParameter("batBuoc")) || request.getParameter("batBuoc") != null);
-        dto.setHienThiBoDac("true".equalsIgnoreCase(request.getParameter("hienThiBoDac")) || request.getParameter("hienThiBoDac") != null);
-        dto.setHienThiExcel("true".equalsIgnoreCase(request.getParameter("hienThiExcel")) || request.getParameter("hienThiExcel") != null);
+        // Checkbox values: parse an toàn không để chuỗi "false" biến thành true
+        dto.setBatBuoc(parseBooleanParam(request.getParameter("batBuoc"), false));
+        dto.setHienThiBoDac(parseBooleanParam(request.getParameter("hienThiBoDac"), false));
+        dto.setHienThiExcel(parseBooleanParam(request.getParameter("hienThiExcel"), false));
 
-        String dangHoatDongParam = request.getParameter("dangHoatDong");
-        if (dangHoatDongParam != null) {
-            dto.setDangHoatDong("true".equalsIgnoreCase(dangHoatDongParam) || "1".equals(dangHoatDongParam));
+        if (isCreate) {
+            // Khi tạo mới: mặc định bật hoạt động nếu không có checkbox này
+            dto.setDangHoatDong(parseBooleanParam(request.getParameter("dangHoatDong"), true));
         } else {
-            // Khi submit form tạo, mặc định bật nếu không có checkbox này
-            dto.setDangHoatDong(true);
+            // Khi sửa: lấy từ checkbox form sửa (unchecked gửi null -> false)
+            dto.setDangHoatDong(parseBooleanParam(request.getParameter("dangHoatDong"), false));
         }
 
         String thuTuStr = request.getParameter("thuTu");
@@ -346,18 +394,20 @@ public class TruongTuyChinhServlet extends HttpServlet {
             throws IOException {
         HttpSession session = request.getSession(false);
         if (session == null) {
-            // Cho phép chạy độc lập trong môi trường mock testing nếu session null
-            return true;
+            response.sendRedirect(request.getContextPath() + "/dang-nhap?error=auth_required");
+            return false;
         }
 
-        NguoiDung loggedInUser = (NguoiDung) session.getAttribute("nguoiDung");
+        NguoiDung loggedInUser = (NguoiDung) session.getAttribute(PhienService.SESSION_USER_KEY);
         if (loggedInUser == null) {
-            return true;
+            response.sendRedirect(request.getContextPath() + "/dang-nhap?error=auth_required");
+            return false;
         }
 
-        // Chỉ ADMIN và DIRECTOR có quyền quản lý danh mục và cấu hình trường tuỳ chỉnh
-        if (!loggedInUser.coVaiTro("ADMIN") && !loggedInUser.coVaiTro("QUAN_TRI") && !loggedInUser.coVaiTro("DIRECTOR")) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền quản lý Trường tuỳ chỉnh.");
+        // Story S2-08 Actor: Quản trị hệ thống (ADMIN)
+        // Chỉ ADMIN (hoặc QUAN_TRI) được cấu hình Trường tuỳ chỉnh.
+        if (!loggedInUser.coVaiTro(VaiTroEnum.ADMIN) && !loggedInUser.coVaiTro("QUAN_TRI")) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền quản lý Trường tuỳ chỉnh. Chức năng này chỉ dành cho Quản trị hệ thống.");
             return false;
         }
         return true;
@@ -366,7 +416,7 @@ public class TruongTuyChinhServlet extends HttpServlet {
     private Long layIdNguoiDungHienTai(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session != null) {
-            NguoiDung nd = (NguoiDung) session.getAttribute("nguoiDung");
+            NguoiDung nd = (NguoiDung) session.getAttribute(PhienService.SESSION_USER_KEY);
             if (nd != null) {
                 return nd.getId();
             }

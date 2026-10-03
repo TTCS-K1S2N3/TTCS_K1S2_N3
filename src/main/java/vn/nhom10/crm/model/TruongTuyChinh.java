@@ -2,8 +2,7 @@ package vn.nhom10.crm.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Model đại diện cho một Trường tuỳ chỉnh (Story S2-08).
@@ -221,8 +220,20 @@ public class TruongTuyChinh implements Serializable {
     }
 
     public void setDanhSachLuaChon(List<String> danhSachLuaChon) {
-        this.danhSachLuaChon = danhSachLuaChon != null ? danhSachLuaChon : new ArrayList<>();
-        this.luaChonJson = buildLuaChonJson(this.danhSachLuaChon);
+        List<String> cleanList = new ArrayList<>();
+        if (danhSachLuaChon != null) {
+            Set<String> seen = new HashSet<>();
+            for (String opt : danhSachLuaChon) {
+                if (opt != null && !opt.trim().isEmpty()) {
+                    String trimmed = opt.trim();
+                    if (seen.add(trimmed.toLowerCase())) {
+                        cleanList.add(trimmed);
+                    }
+                }
+            }
+        }
+        this.danhSachLuaChon = cleanList;
+        this.luaChonJson = buildLuaChonJson(cleanList);
     }
 
     // --- Phương thức tiện ích chuyển đổi JSON đơn giản không phụ thuộc thư viện ngoài ---
@@ -243,10 +254,20 @@ public class TruongTuyChinh implements Serializable {
         // Tách chuỗi theo dấu phẩy, hỗ trợ trường hợp bọc trong ngoặc kép
         StringBuilder cur = new StringBuilder();
         boolean inQuotes = false;
+        boolean escapeNext = false;
         for (int i = 0; i < clean.length(); i++) {
             char c = clean.charAt(i);
-            if (c == '"') {
+            if (escapeNext) {
+                cur.append(c);
+                escapeNext = false;
+                continue;
+            }
+            if (c == '\\') {
+                cur.append(c);
+                escapeNext = true;
+            } else if (c == '"') {
                 inQuotes = !inQuotes;
+                cur.append(c);
             } else if (c == ',' && !inQuotes) {
                 String item = unescapeJsonItem(cur.toString().trim());
                 if (!item.isEmpty()) {
@@ -286,13 +307,25 @@ public class TruongTuyChinh implements Serializable {
     }
 
     private static String unescapeJsonItem(String item) {
-        if (item.startsWith("\"") && item.endsWith("\"") && item.length() >= 2) {
-            item = item.substring(1, item.length() - 1);
+        if (item == null) return "";
+        String s = item.trim();
+        if (s.startsWith("\"") && s.endsWith("\"") && s.length() >= 2) {
+            s = s.substring(1, s.length() - 1);
         }
-        return item.replace("\\\"", "\"").replace("\\\\", "\\").trim();
+        return s.replace("\\\"", "\"")
+                .replace("\\\\", "\\")
+                .replace("\\r", "\r")
+                .replace("\\n", "\n")
+                .replace("\\t", "\t")
+                .trim();
     }
 
     private static String escapeJsonItem(String s) {
-        return s.replace("\\", "\\\\").replace("\"", "\\\"");
+        if (s == null) return "";
+        return s.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n")
+                .replace("\t", "\\t");
     }
 }

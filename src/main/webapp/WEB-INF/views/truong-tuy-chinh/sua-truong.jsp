@@ -28,7 +28,7 @@
             <h1><span>✏️</span> Cập nhật Trường Tuỳ Chỉnh</h1>
             <p>
                 Điều chỉnh nhãn hiển thị, cấu hình bắt buộc và phạm vi xuất hiện trên biểu mẫu / bộ lọc / Excel cho trường
-                <strong style="color: #4f46e5;"><code>${truong.tenTruong}</code> (${truong.nhanHien})</strong>
+                <strong style="color: #4f46e5;"><code><c:out value="${truong.tenTruong}"/></code> (<c:out value="${truong.nhanHien}"/>)</strong>
             </p>
         </div>
         <div class="page-header-actions">

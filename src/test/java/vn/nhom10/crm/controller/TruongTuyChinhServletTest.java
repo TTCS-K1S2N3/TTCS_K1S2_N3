@@ -184,7 +184,7 @@ class TruongTuyChinhServletTest {
     }
 
     @Test
-    @DisplayName("Phân quyền: Người dùng không có vai trò ADMIN/DIRECTOR bị chặn 403 Forbidden")
+    @DisplayName("Phân quyền: Người dùng không có vai trò ADMIN bị chặn 403 Forbidden")
     void testChanNguoiDungKhongCoQuyen() throws Exception {
         mockRegularUser(); // SALES_REP
 
@@ -192,5 +192,149 @@ class TruongTuyChinhServletTest {
 
         verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN), contains("không có quyền"));
         verify(dispatcher, never()).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("Phân quyền: Giám đốc kinh doanh (DIRECTOR) không được cấu hình trường tuỳ chỉnh (chỉ dành cho ADMIN)")
+    void testChanDirector() throws Exception {
+        when(request.getSession(false)).thenReturn(session);
+        NguoiDung director = new NguoiDung(3L, "Phạm Giám Đốc", "director@crm.vn");
+        VaiTro vt = new VaiTro(3, "DIRECTOR", "Giám đốc kinh doanh", "Kinh doanh");
+        director.setDanhSachVaiTro(Set.of(vt));
+        when(session.getAttribute("nguoiDung")).thenReturn(director);
+
+        servlet.doGet(request, response);
+
+        verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN), contains("không có quyền"));
+        verify(dispatcher, never()).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("Xác thực: Session null không được bypass mà phải chuyển hướng về /dang-nhap")
+    void testSessionNullChuyenHuongDangNhap() throws Exception {
+        when(request.getSession(false)).thenReturn(null);
+        when(request.getContextPath()).thenReturn("/crm");
+
+        servlet.doGet(request, response);
+
+        verify(response).sendRedirect("/crm/dang-nhap?error=auth_required");
+        verify(dispatcher, never()).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("Xác thực: Session có nhưng user null phải chuyển hướng về /dang-nhap")
+    void testUserNullChuyenHuongDangNhap() throws Exception {
+        when(request.getSession(false)).thenReturn(session);
+        when(session.getAttribute("nguoiDung")).thenReturn(null);
+        when(request.getContextPath()).thenReturn("/crm");
+
+        servlet.doGet(request, response);
+
+        verify(response).sendRedirect("/crm/dang-nhap?error=auth_required");
+        verify(dispatcher, never()).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("POST /truong-tuy-chinh/tao: created_by lấy đúng ID của người dùng đăng nhập trong session")
+    void testCreatedByLayDungUserId() throws Exception {
+        when(request.getSession(false)).thenReturn(session);
+        NguoiDung admin = new NguoiDung(42L, "Admin 42", "admin42@crm.vn");
+        VaiTro vt = new VaiTro(1, "ADMIN", "Quản trị hệ thống", "Toàn quyền quản trị");
+        admin.setDanhSachVaiTro(Set.of(vt));
+        when(session.getAttribute("nguoiDung")).thenReturn(admin);
+
+        when(request.getServletPath()).thenReturn("/truong-tuy-chinh/tao");
+        when(request.getParameter("doiTuong")).thenReturn("KHACH_HANG");
+        when(request.getParameter("tenTruong")).thenReturn("linh_vuc_phu");
+        when(request.getParameter("nhanHien")).thenReturn("Lĩnh vực phụ");
+        when(request.getParameter("kieuDuLieu")).thenReturn("VAN_BAN");
+        when(request.getContextPath()).thenReturn("/crm");
+        when(request.getSession(true)).thenReturn(session);
+
+        when(service.validateDinhNghiaTruong(any(TruongTuyChinhDTO.class), eq(true))).thenReturn(Collections.emptyMap());
+        when(service.taoTruongTuyChinh(any(TruongTuyChinhDTO.class), eq(42L))).thenReturn(200L);
+
+        servlet.doPost(request, response);
+
+        verify(service).taoTruongTuyChinh(any(TruongTuyChinhDTO.class), eq(42L));
+    }
+
+    @Test
+    @DisplayName("Checkbox boolean parsing: POST gửi batBuoc=false không được hiểu thành true")
+    void testCheckboxParsingFalseKhongBienThanhTrue() throws Exception {
+        mockAdminUser();
+        when(request.getServletPath()).thenReturn("/truong-tuy-chinh/tao");
+        when(request.getParameter("doiTuong")).thenReturn("KHACH_HANG");
+        when(request.getParameter("tenTruong")).thenReturn("ma_so_thue_2");
+        when(request.getParameter("nhanHien")).thenReturn("Mã số thuế 2");
+        when(request.getParameter("kieuDuLieu")).thenReturn("VAN_BAN");
+        // Giả lập POST giả mạo gửi chuỗi false rõ ràng
+        when(request.getParameter("batBuoc")).thenReturn("false");
+        when(request.getParameter("hienThiBoDac")).thenReturn("off");
+        when(request.getParameter("hienThiExcel")).thenReturn("0");
+        when(request.getContextPath()).thenReturn("/crm");
+        when(request.getSession(true)).thenReturn(session);
+
+        when(service.validateDinhNghiaTruong(any(TruongTuyChinhDTO.class), eq(true))).thenReturn(Collections.emptyMap());
+
+        servlet.doPost(request, response);
+
+        verify(service).taoTruongTuyChinh(argThat(dto ->
+                !dto.isBatBuoc() && !dto.isHienThiBoDac() && !dto.isHienThiExcel()
+        ), eq(1L));
+    }
+
+    @Test
+    @DisplayName("GET /truong-tuy-chinh/xuat-excel: Xuất file Excel (.xlsx) chuẩn Apache POI")
+    void testXuLyXuatExcelXLSX() throws Exception {
+        mockAdminUser();
+        when(request.getServletPath()).thenReturn("/truong-tuy-chinh/xuat-excel");
+        when(request.getParameter("doiTuong")).thenReturn("KHACH_HANG");
+
+        byte[] fakeXlsx = new byte[]{1, 2, 3, 4};
+        when(service.xuatDuLieuExcelXLSX(eq("KHACH_HANG"), anyList(), anyList(), anyList(), anyMap()))
+                .thenReturn(fakeXlsx);
+
+        jakarta.servlet.ServletOutputStream sos = mock(jakarta.servlet.ServletOutputStream.class);
+        when(response.getOutputStream()).thenReturn(sos);
+
+        servlet.doGet(request, response);
+
+        verify(response).setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        verify(response).setHeader(eq("Content-Disposition"), contains(".xlsx"));
+        verify(sos).write(fakeXlsx);
+    }
+
+    @Test
+    @DisplayName("GET /truong-tuy-chinh/xuat-excel?format=csv: Xuất file CSV")
+    void testXuLyXuatExcelCSV() throws Exception {
+        mockAdminUser();
+        when(request.getServletPath()).thenReturn("/truong-tuy-chinh/xuat-excel");
+        when(request.getParameter("doiTuong")).thenReturn("CO_HOI");
+        when(request.getParameter("format")).thenReturn("csv");
+
+        String fakeCsv = "\uFEFFMã cơ hội,Tên cơ hội\n";
+        when(service.xuatDuLieuExcelCSV(eq("CO_HOI"), anyList(), anyList(), anyList(), anyMap()))
+                .thenReturn(fakeCsv);
+
+        jakarta.servlet.ServletOutputStream sos = mock(jakarta.servlet.ServletOutputStream.class);
+        when(response.getOutputStream()).thenReturn(sos);
+
+        servlet.doGet(request, response);
+
+        verify(response).setContentType("text/csv; charset=UTF-8");
+        verify(response).setHeader(eq("Content-Disposition"), contains(".csv"));
+    }
+
+    @Test
+    @DisplayName("GET /truong-tuy-chinh/xuat-excel: Báo lỗi 400 khi loại đối tượng không hợp lệ")
+    void testXuLyXuatExcelDoiTuongKhongHopLe() throws Exception {
+        mockAdminUser();
+        when(request.getServletPath()).thenReturn("/truong-tuy-chinh/xuat-excel");
+        when(request.getParameter("doiTuong")).thenReturn("SAN_PHAM_INVALID");
+
+        servlet.doGet(request, response);
+
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), contains("không hợp lệ"));
     }
 }
