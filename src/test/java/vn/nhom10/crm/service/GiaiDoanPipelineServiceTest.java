@@ -235,4 +235,29 @@ public class GiaiDoanPipelineServiceTest {
         assertTrue(ketQua.getThongBao().contains("không có quyền"));
         verifyNoInteractions(daoMock);
     }
+
+    @Test
+    public void testCoQuyenCauHinhNullVaKhoaTaiKhoan() {
+        assertFalse(service.coQuyenCauHinh(null), "Null user không được cấp quyền");
+
+        NguoiDung directorLocked = new NguoiDung(3, "Giám đốc bị khoá", "director.locked@crm.vn");
+        directorLocked.themVaiTro(new VaiTro(VaiTroEnum.DIRECTOR));
+        directorLocked.setTrangThai(NguoiDung.TRANG_THAI_KHOA);
+
+        assertFalse(service.coQuyenCauHinh(directorLocked), "Tài khoản bị khoá không được cấp quyền cấu hình");
+    }
+
+    @Test
+    public void testDieuKienBatBuocQua500KyTuBaoLoi() {
+        GiaiDoanPipeline gd = new GiaiDoanPipeline();
+        gd.setMaGiaiDoan("LONG_DK");
+        gd.setTenGiaiDoan("Mô tả quá dài");
+        gd.setThuTu(1);
+        gd.setXacSuatThang(30);
+        gd.setDieuKienBatBuoc("A".repeat(501));
+
+        KetQuaGiaiDoanDTO ketQua = service.taoGiaiDoan(gd, directorUser);
+        assertFalse(ketQua.isThanhCong());
+        assertTrue(ketQua.getDanhSachLoi().containsKey("dieuKienBatBuoc"));
+    }
 }

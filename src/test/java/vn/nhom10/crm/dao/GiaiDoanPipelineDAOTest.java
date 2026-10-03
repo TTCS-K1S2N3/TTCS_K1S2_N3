@@ -228,4 +228,75 @@ public class GiaiDoanPipelineDAOTest {
         // Dự báo = 100,000,000 * 25% = 25,000,000
         assertEquals(0, new BigDecimal("25000000.00").compareTo(item.getDoanhSoDuBao()));
     }
+
+    @Test
+    public void testChenThuTuBiTrungVaTuDongDoi() throws Exception {
+        GiaiDoanPipeline gd1 = new GiaiDoanPipeline();
+        gd1.setPipelineId(1);
+        gd1.setMaGiaiDoan("BUOC_A");
+        gd1.setTenGiaiDoan("Bước A");
+        gd1.setThuTu(1);
+        int id1 = dao.themGiaiDoan(gd1);
+
+        GiaiDoanPipeline gd2 = new GiaiDoanPipeline();
+        gd2.setPipelineId(1);
+        gd2.setMaGiaiDoan("BUOC_B");
+        gd2.setTenGiaiDoan("Bước B");
+        gd2.setThuTu(2);
+        int id2 = dao.themGiaiDoan(gd2);
+
+        // Chèn bước mới nhưng chỉ định thứ tự = 1 (trùng với BUOC_A)
+        GiaiDoanPipeline gdChen = new GiaiDoanPipeline();
+        gdChen.setPipelineId(1);
+        gdChen.setMaGiaiDoan("BUOC_CHEN");
+        gdChen.setTenGiaiDoan("Bước Chèn Đầu");
+        gdChen.setThuTu(1);
+        int idChen = dao.themGiaiDoan(gdChen);
+
+        assertTrue(idChen > 0);
+        // BUOC_CHEN có thứ tự 1
+        assertEquals(1, dao.timTheoId(idChen).getThuTu());
+        // BUOC_A bị dời lên thứ tự 2
+        assertEquals(2, dao.timTheoId(id1).getThuTu());
+        // BUOC_B bị dời lên thứ tự 3
+        assertEquals(3, dao.timTheoId(id2).getThuTu());
+    }
+
+    @Test
+    public void testCapNhatThuTuGiaiDoan() throws Exception {
+        GiaiDoanPipeline gd1 = new GiaiDoanPipeline(0, "S1", "Stage 1", 1, 10, "");
+        gd1.setPipelineId(1);
+        int id1 = dao.themGiaiDoan(gd1);
+
+        GiaiDoanPipeline gd2 = new GiaiDoanPipeline(0, "S2", "Stage 2", 2, 20, "");
+        gd2.setPipelineId(1);
+        int id2 = dao.themGiaiDoan(gd2);
+
+        GiaiDoanPipeline gd3 = new GiaiDoanPipeline(0, "S3", "Stage 3", 3, 30, "");
+        gd3.setPipelineId(1);
+        int id3 = dao.themGiaiDoan(gd3);
+
+        // Đổi gd3 từ vị trí 3 lên vị trí 1
+        GiaiDoanPipeline gd3Update = dao.timTheoId(id3);
+        gd3Update.setThuTu(1);
+        boolean updateOk = dao.capNhatGiaiDoan(gd3Update);
+        assertTrue(updateOk);
+
+        assertEquals(1, dao.timTheoId(id3).getThuTu());
+        assertEquals(2, dao.timTheoId(id1).getThuTu());
+        assertEquals(3, dao.timTheoId(id2).getThuTu());
+    }
+
+    @Test
+    public void testThemGiaiDoanThuTuKhongHopLeTuDongTang() throws Exception {
+        GiaiDoanPipeline gd = new GiaiDoanPipeline();
+        gd.setPipelineId(1);
+        gd.setMaGiaiDoan("AUTO_SEQ");
+        gd.setTenGiaiDoan("Tự động gán thứ tự");
+        gd.setThuTu(0); // Không chỉ định hoặc <= 0
+        int id = dao.themGiaiDoan(gd);
+
+        assertTrue(id > 0);
+        assertTrue(dao.timTheoId(id).getThuTu() >= 1);
+    }
 }

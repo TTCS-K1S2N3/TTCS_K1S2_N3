@@ -40,21 +40,13 @@ public class GiaiDoanPipelineService {
      * Kiểm tra quyền Giám đốc kinh doanh hoặc Quản trị viên (ADMIN / DIRECTOR).
      */
     public boolean coQuyenCauHinh(NguoiDung nguoiDung) {
-        if (nguoiDung == null) {
-            return true; // Mặc định chế độ test hoặc demo
+        if (nguoiDung == null || !nguoiDung.dangHoatDong()) {
+            return false;
         }
-        if (nguoiDung.getDanhSachVaiTro() != null) {
-            for (VaiTro vt : nguoiDung.getDanhSachVaiTro()) {
-                if (vt != null && vt.getMaVaiTro() != null) {
-                    String ma = vt.getMaVaiTro().toUpperCase();
-                    if (ma.equals(VaiTroEnum.DIRECTOR.name()) || ma.equals(VaiTroEnum.ADMIN.name())
-                            || ma.equals("GIAM_DOC") || ma.equals("QUAN_TRI")) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        return nguoiDung.coVaiTro(VaiTroEnum.DIRECTOR)
+                || nguoiDung.coVaiTro(VaiTroEnum.ADMIN)
+                || nguoiDung.coVaiTro("GIAM_DOC")
+                || nguoiDung.coVaiTro("QUAN_TRI");
     }
 
     /**
@@ -99,6 +91,9 @@ public class GiaiDoanPipelineService {
             if (e.getMessage() != null && e.getMessage().contains("uk_gdp_ma")) {
                 return KetQuaGiaiDoanDTO.loiTrungMa(gd.getMaGiaiDoan());
             }
+            if (e.getMessage() != null && e.getMessage().contains("uk_gdp_tt")) {
+                return KetQuaGiaiDoanDTO.thatBai("Thứ tự " + gd.getThuTu() + " đã tồn tại trong chuỗi pipeline.");
+            }
             return KetQuaGiaiDoanDTO.thatBai("Lỗi hệ thống: " + e.getMessage());
         }
     }
@@ -138,6 +133,9 @@ public class GiaiDoanPipelineService {
             LOGGER.log(Level.SEVERE, "Lỗi cập nhật giai đoạn pipeline ID=" + gd.getId() + ": " + e.getMessage(), e);
             if (e.getMessage() != null && e.getMessage().contains("uk_gdp_ma")) {
                 return KetQuaGiaiDoanDTO.loiTrungMa(gd.getMaGiaiDoan());
+            }
+            if (e.getMessage() != null && e.getMessage().contains("uk_gdp_tt")) {
+                return KetQuaGiaiDoanDTO.thatBai("Thứ tự " + gd.getThuTu() + " đã tồn tại trong chuỗi pipeline.");
             }
             return KetQuaGiaiDoanDTO.thatBai("Lỗi hệ thống: " + e.getMessage());
         }
@@ -334,6 +332,11 @@ public class GiaiDoanPipelineService {
         // 5. Cảnh báo đình trệ
         if (gd.getSoNgayCanhBaoDinhTre() <= 0) {
             ketQua.themLoi("soNgayCanhBaoDinhTre", "Số ngày cảnh báo đình trệ phải lớn hơn 0.");
+        }
+
+        // 6. Mô tả quy tắc điều kiện bắt buộc tối đa 500 ký tự (theo schema DB)
+        if (gd.getDieuKienBatBuoc() != null && gd.getDieuKienBatBuoc().trim().length() > 500) {
+            ketQua.themLoi("dieuKienBatBuoc", "Mô tả điều kiện bắt buộc tối đa 500 ký tự.");
         }
     }
 }
