@@ -27,7 +27,7 @@
         <button type="button" class="crm-mobile-user-avatar-btn" id="btn-mobile-user-profile" aria-label="Xem hồ sơ người dùng: <%= navData.getHoTen() %>" title="<%= navData.getHoTen() %> (<%= navData.getVaiTroHienThi() %>)">
             <span class="crm-mobile-user-avatar">
                 <% if (navData.getAnhDaiDienThumbUrl() != null && !navData.getAnhDaiDienThumbUrl().isBlank()) { %>
-                    <img src="<%= navData.getAnhDaiDienThumbUrl() %>" alt="<%= navData.getHoTen() %>" class="crm-user-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                    <img src="<%= navData.getAnhDaiDienThumbUrl() %>" alt="<%= navData.getHoTen() %>" class="crm-user-avatar-img" width="36" height="36" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
                     <span style="display:none;"><%= navData.getTenVietTat() %></span>
                 <% } else { %>
                     <%= navData.getTenVietTat() %>
@@ -66,11 +66,11 @@
     </div>
 
     <!-- User Profile Box (AC: Hiển thị Tên, Vai trò và Nhóm kinh doanh) -->
-    <a href="<%= request.getContextPath() %>/ho-so" class="crm-user-profile-box" id="crm-user-profile-card" style="text-decoration: none; display: block; color: inherit;">
+    <a href="<%= request.getContextPath() %>/ho-so" class="crm-user-profile-box" id="crm-user-profile-card" style="text-decoration: none; color: inherit;">
         <div class="crm-user-avatar-wrap">
             <div class="crm-user-avatar" title="<%= navData.getHoTen() %>">
                 <% if (navData.getAnhDaiDienThumbUrl() != null && !navData.getAnhDaiDienThumbUrl().isBlank()) { %>
-                    <img src="<%= navData.getAnhDaiDienThumbUrl() %>" alt="<%= navData.getHoTen() %>" class="crm-user-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <img src="<%= navData.getAnhDaiDienThumbUrl() %>" alt="<%= navData.getHoTen() %>" class="crm-user-avatar-img" width="44" height="44" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <span style="display:none;"><%= navData.getTenVietTat() %></span>
                 <% } else { %>
                     <%= navData.getTenVietTat() %>
