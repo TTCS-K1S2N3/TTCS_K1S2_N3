@@ -6,16 +6,28 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import vn.nhom10.crm.config.DatabaseConfig;
 import vn.nhom10.crm.dto.DuBaoDoanhSoDTO;
+import vn.nhom10.crm.dto.KetQuaGiaiDoanDTO;
 import vn.nhom10.crm.model.GiaiDoanPipeline;
 import vn.nhom10.crm.model.LoaiGiaiDoanEnum;
+import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.TrangThaiGiaiDoanEnum;
+import vn.nhom10.crm.model.VaiTro;
+import vn.nhom10.crm.model.VaiTroEnum;
+import vn.nhom10.crm.service.GiaiDoanPipelineService;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -55,7 +67,8 @@ public class GiaiDoanPipelineDAOTest {
                     "loai_ket_thuc VARCHAR(20) NULL, " +
                     "hoat_dong INT NOT NULL DEFAULT 1, " +
                     "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-                    "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+                    "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "CONSTRAINT fk_gdp_pl FOREIGN KEY (pipeline_id) REFERENCES pipeline_ban_hang(id) ON DELETE RESTRICT)");
 
             stmt.execute("CREATE TABLE IF NOT EXISTS dieu_kien_giai_doan (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
@@ -353,5 +366,253 @@ public class GiaiDoanPipelineDAOTest {
             }
         }
         assertTrue(timThay, "Cơ hội đang mở trong giai đoạn ngừng áp dụng phải được bảo toàn trong thống kê dự báo (AC 4)");
+    }
+
+    @Test
+    public void testA_EmptyDbAndGet_ReadOnlyNoMutate() throws Exception {
+        try (Statement stmt = h2Connection.createStatement()) {
+            stmt.execute("DELETE FROM co_hoi");
+            stmt.execute("DELETE FROM dieu_kien_giai_doan");
+            stmt.execute("DELETE FROM giai_doan_pipeline");
+            stmt.execute("DELETE FROM pipeline_ban_hang");
+        }
+
+        // Kiểm tra hiện trạng DB rỗng
+        assertEquals(0, demSoBanGhi("pipeline_ban_hang"));
+        assertEquals(0, demSoBanGhi("giai_doan_pipeline"));
+
+        // Gọi các thao tác GET / READ
+        List<GiaiDoanPipeline> list = dao.layTatCaGiaiDoan();
+        assertNotNull(list);
+        assertTrue(list.isEmpty());
+
+        List<DuBaoDoanhSoDTO> duBao = dao.layThongKeDuBaoPipeline();
+        assertNotNull(duBao);
+        assertTrue(duBao.isEmpty());
+
+        // Kiểm tra sau GET: DB vẫn hoàn toàn = 0 rows
+        assertEquals(0, demSoBanGhi("pipeline_ban_hang"), "pipeline_ban_hang vẫn = 0");
+        assertEquals(0, demSoBanGhi("giai_doan_pipeline"), "giai_doan_pipeline vẫn = 0");
+    }
+
+    @Test
+    public void testB_EmptyDbAndCreateFirstStage_InitializesParentWithRealId() throws Exception {
+        try (Statement stmt = h2Connection.createStatement()) {
+            stmt.execute("DELETE FROM co_hoi");
+            stmt.execute("DELETE FROM dieu_kien_giai_doan");
+            stmt.execute("DELETE FROM giai_doan_pipeline");
+            stmt.execute("DELETE FROM pipeline_ban_hang");
+        }
+
+        // Tạo stage đầu tiên từ input người dùng
+        GiaiDoanPipeline gd = new GiaiDoanPipeline();
+        gd.setMaGiaiDoan("KHAO_SAT");
+        gd.setTenGiaiDoan("Khảo sát nhu cầu thực tế");
+        gd.setThuTu(1);
+        gd.setXacSuatThang(20);
+        gd.setSoCuocGapToiThieu(1);
+        gd.setYeuCauKhaoSatNhuCau(true);
+        gd.setLoaiGiaiDoan(LoaiGiaiDoanEnum.DANG_TIEN_HANH);
+        gd.setTrangThai(TrangThaiGiaiDoanEnum.DANG_AP_DUNG);
+
+        int stageId = dao.themGiaiDoan(gd);
+        assertTrue(stageId > 0, "Insert stage đầu tiên phải thành công");
+
+        // Kỳ vọng sau POST:
+        // pipeline_ban_hang = 1 row
+        // giai_doan_pipeline = 1 row
+        long realPipelineId = -1;
+        try (Statement stmt = h2Connection.createStatement();
+             ResultSet rsPl = stmt.executeQuery("SELECT id, COUNT(*) OVER() as total FROM pipeline_ban_hang")) {
+            assertTrue(rsPl.next());
+            assertEquals(1, rsPl.getInt("total"), "pipeline_ban_hang = 1 row");
+            realPipelineId = rsPl.getLong("id");
+            assertTrue(realPipelineId > 0, "ID thật của pipeline phải > 0");
+        }
+
+        try (Statement stmt = h2Connection.createStatement();
+             ResultSet rsStage = stmt.executeQuery("SELECT id, pipeline_id, ma_giai_doan, COUNT(*) OVER() as total FROM giai_doan_pipeline")) {
+            assertTrue(rsStage.next());
+            assertEquals(1, rsStage.getInt("total"), "giai_doan_pipeline = 1 row");
+            assertEquals("KHAO_SAT", rsStage.getString("ma_giai_doan"));
+            assertEquals(realPipelineId, rsStage.getLong("pipeline_id"), "stage.pipeline_id phải bằng id thật của pipeline_ban_hang");
+            assertEquals(realPipelineId, gd.getPipelineId(), "gd.pipelineId phải bằng id thật");
+        }
+
+        // dieu_kien_giai_doan có đúng các condition cần thiết
+        try (Statement stmt = h2Connection.createStatement();
+             ResultSet rsDk = stmt.executeQuery("SELECT COUNT(*) FROM dieu_kien_giai_doan WHERE giai_doan_nguon_id = " + stageId)) {
+            assertTrue(rsDk.next());
+            assertEquals(2, rsDk.getInt(1), "Phải có đúng 2 điều kiện (cuộc gặp và khảo sát nhu cầu)");
+        }
+    }
+
+    @Test
+    public void testC_CreateSecondStage_UsesSamePipeline() throws Exception {
+        // Tiếp nối sau khi đã có 1 pipeline
+        testB_EmptyDbAndCreateFirstStage_InitializesParentWithRealId();
+
+        long firstPipelineId = -1;
+        try (Statement stmt = h2Connection.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT id FROM pipeline_ban_hang LIMIT 1")) {
+            assertTrue(rs.next());
+            firstPipelineId = rs.getLong("id");
+        }
+
+        // Tạo stage thứ 2
+        GiaiDoanPipeline gd2 = new GiaiDoanPipeline();
+        gd2.setMaGiaiDoan("DE_XUAT");
+        gd2.setTenGiaiDoan("Đề xuất giải pháp kỹ thuật");
+        gd2.setThuTu(2);
+        gd2.setXacSuatThang(40);
+        gd2.setLoaiGiaiDoan(LoaiGiaiDoanEnum.DANG_TIEN_HANH);
+        gd2.setTrangThai(TrangThaiGiaiDoanEnum.DANG_AP_DUNG);
+
+        int stageId2 = dao.themGiaiDoan(gd2);
+        assertTrue(stageId2 > 0);
+
+        // Kỳ vọng: pipeline_ban_hang vẫn chỉ = 1 row
+        try (Statement stmt = h2Connection.createStatement();
+             ResultSet rsPl = stmt.executeQuery("SELECT COUNT(*) FROM pipeline_ban_hang")) {
+            assertTrue(rsPl.next());
+            assertEquals(1, rsPl.getInt(1), "pipeline_ban_hang vẫn chỉ = 1 row");
+        }
+
+        // stage thứ 2 dùng cùng pipeline_id
+        assertEquals(firstPipelineId, gd2.getPipelineId(), "stage thứ hai dùng cùng pipeline_id");
+    }
+
+    @Test
+    public void testD_InvalidFirstStage_ValidationBlocksParentCreation() throws Exception {
+        try (Statement stmt = h2Connection.createStatement()) {
+            stmt.execute("DELETE FROM co_hoi");
+            stmt.execute("DELETE FROM dieu_kien_giai_doan");
+            stmt.execute("DELETE FROM giai_doan_pipeline");
+            stmt.execute("DELETE FROM pipeline_ban_hang");
+        }
+
+        GiaiDoanPipelineService service = new GiaiDoanPipelineService(dao);
+        NguoiDung director = new NguoiDung(1, "Giám đốc", "director@crm.vn");
+        director.themVaiTro(new VaiTro(VaiTroEnum.DIRECTOR));
+
+        // POST với xacSuat = 150
+        GiaiDoanPipeline gd = new GiaiDoanPipeline();
+        gd.setMaGiaiDoan("INVALID_XS");
+        gd.setTenGiaiDoan("Stage sai xác suất");
+        gd.setThuTu(1);
+        gd.setXacSuatThang(150);
+
+        KetQuaGiaiDoanDTO ketQua = service.themGiaiDoan(gd, director);
+        assertFalse(ketQua.isThanhCong(), "Validation phải thất bại");
+        assertTrue(ketQua.getDanhSachLoi().containsKey("xacSuatThang"));
+
+        // Kỳ vọng DB:
+        // pipeline_ban_hang = 0
+        // giai_doan_pipeline = 0
+        assertEquals(0, demSoBanGhi("pipeline_ban_hang"), "pipeline_ban_hang = 0");
+        assertEquals(0, demSoBanGhi("giai_doan_pipeline"), "giai_doan_pipeline = 0");
+    }
+
+    @Test
+    public void testE_TransactionRollback_NoOrphanPipelineOnFailure() throws Exception {
+        try (Statement stmt = h2Connection.createStatement()) {
+            stmt.execute("DELETE FROM co_hoi");
+            stmt.execute("DELETE FROM dieu_kien_giai_doan");
+            stmt.execute("DELETE FROM giai_doan_pipeline");
+            stmt.execute("DELETE FROM pipeline_ban_hang");
+        }
+
+        // Ép lỗi khi insert giai_doan_pipeline (ví dụ ma_giai_doan dài 100 ký tự vượt quá VARCHAR(60))
+        GiaiDoanPipeline gd = new GiaiDoanPipeline();
+        gd.setMaGiaiDoan("A".repeat(100)); // Vi phạm VARCHAR(60) constraint của DB
+        gd.setTenGiaiDoan("Stage Lỗi Rollback");
+        gd.setThuTu(1);
+        gd.setXacSuatThang(30);
+
+        assertThrows(SQLException.class, () -> dao.themGiaiDoan(gd));
+
+        // Kỳ vọng sau rollback: không còn pipeline parent rác
+        assertEquals(0, demSoBanGhi("pipeline_ban_hang"), "Rollback hoàn toàn, không còn pipeline parent rác");
+        assertEquals(0, demSoBanGhi("giai_doan_pipeline"), "Rollback giai_doan_pipeline = 0");
+    }
+
+    @Test
+    public void testF_NoSampleStages_OnlyUserCreatedStageExists() throws Exception {
+        try (Statement stmt = h2Connection.createStatement()) {
+            stmt.execute("DELETE FROM co_hoi");
+            stmt.execute("DELETE FROM dieu_kien_giai_doan");
+            stmt.execute("DELETE FROM giai_doan_pipeline");
+            stmt.execute("DELETE FROM pipeline_ban_hang");
+        }
+
+        GiaiDoanPipeline gd = new GiaiDoanPipeline();
+        gd.setMaGiaiDoan("KHAO_SAT");
+        gd.setTenGiaiDoan("Khảo sát nhu cầu thực tế");
+        gd.setThuTu(1);
+        gd.setXacSuatThang(20);
+
+        dao.themGiaiDoan(gd);
+
+        List<GiaiDoanPipeline> list = dao.layTatCaGiaiDoan();
+        assertEquals(1, list.size(), "Chỉ có đúng 1 giai đoạn do người dùng tạo");
+        assertEquals("KHAO_SAT", list.get(0).getMaGiaiDoan());
+
+        // KHÔNG tự sinh 6 stage mẫu
+        List<String> mauKhongDuocCo = List.of(
+                "TIEP_CAN", "XAC_DINH_NHU_CAU", "DE_XUAT_GIAI_PHAP",
+                "BAO_GIA", "DAM_PHAN", "CHOT_THANH_CONG"
+        );
+        for (String maMau : mauKhongDuocCo) {
+            assertFalse(dao.kiemTraMaTonTai(maMau, null), "Tuyệt đối không được tự sinh stage mẫu " + maMau);
+        }
+    }
+
+    @Test
+    public void testConcurrentFirstStageCreation_OnlyOnePipelineCreated() throws Exception {
+        try (Statement stmt = h2Connection.createStatement()) {
+            stmt.execute("DELETE FROM co_hoi");
+            stmt.execute("DELETE FROM dieu_kien_giai_doan");
+            stmt.execute("DELETE FROM giai_doan_pipeline");
+            stmt.execute("DELETE FROM pipeline_ban_hang");
+        }
+
+        int threads = 4;
+        ExecutorService executor = Executors.newFixedThreadPool(threads);
+        List<Callable<Long>> tasks = new ArrayList<>();
+
+        for (int i = 0; i < threads; i++) {
+            tasks.add(() -> {
+                try (Connection conn = DatabaseConfig.getConnection()) {
+                    return dao.layHoacTaoPipelineContainerMacDinh(conn);
+                }
+            });
+        }
+
+        List<Future<Long>> results = executor.invokeAll(tasks);
+        executor.shutdown();
+
+        Long firstId = null;
+        for (Future<Long> f : results) {
+            Long pid = f.get();
+            assertNotNull(pid);
+            assertTrue(pid > 0);
+            if (firstId == null) {
+                firstId = pid;
+            } else {
+                assertEquals(firstId, pid, "Tất cả các luồng đồng thời phải dùng chung 1 pipeline_id");
+            }
+        }
+
+        assertEquals(1, demSoBanGhi("pipeline_ban_hang"), "Chỉ tạo duy nhất 1 pipeline dù có nhiều luồng cùng gọi");
+    }
+
+    private int demSoBanGhi(String table) throws SQLException {
+        try (Statement stmt = h2Connection.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM " + table)) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            return 0;
+        }
     }
 }

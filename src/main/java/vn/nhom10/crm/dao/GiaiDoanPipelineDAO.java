@@ -37,11 +37,23 @@ public class GiaiDoanPipelineDAO {
      * GET/Read operation KHÔNG được mutate DB.
      */
     public PipelineBanHang layPipelineMacDinh() {
+        try (Connection conn = DatabaseConfig.getConnection()) {
+            return layPipelineMacDinh(conn);
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, "Không tìm thấy pipeline: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Lấy pipeline mặc định nếu có trong DB bằng Connection được truyền vào.
+     * GET/Read operation KHÔNG được mutate DB.
+     */
+    public PipelineBanHang layPipelineMacDinh(Connection conn) throws SQLException {
         String sql = "SELECT id, ma_pipeline, ten_pipeline, mo_ta, mac_dinh, hoat_dong, created_at, updated_at " +
                 "FROM pipeline_ban_hang WHERE mac_dinh = 1 OR hoat_dong = 1 ORDER BY mac_dinh DESC, id ASC LIMIT 1";
 
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
+        try (PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
             if (rs.next()) {
@@ -56,18 +68,23 @@ public class GiaiDoanPipelineDAO {
                 p.setUpdatedAt(rs.getTimestamp("updated_at"));
                 return p;
             }
-        } catch (SQLException e) {
-            LOGGER.log(Level.WARNING, "Không tìm thấy pipeline: " + e.getMessage());
         }
-
         return null;
     }
 
     /**
      * Khởi tạo container pipeline_ban_hang mặc định khi có thao tác ghi hợp lệ (nếu chưa có).
-     * Chỉ tạo container bảng cha, KHÔNG tự ý chèn các giai đoạn mẫu.
+     * Nằm trong cùng Connection / Transaction với thao tác tạo stage đầu tiên.
+     * TUYỆT ĐỐI KHÔNG tự chèn 6 giai đoạn mẫu.
+     * Dùng generated key thật trả về từ DB (không hardcode 1, không fallback ID).
+     * An toàn đồng thời: Nếu hai luồng cùng insert thì luồng thứ hai sẽ bắt được duplicate key và query lại ID thật.
      */
-    public long khoiTaoPipelineContainerMacDinh(Connection conn) throws SQLException {
+    public long layHoacTaoPipelineContainerMacDinh(Connection conn) throws SQLException {
+        PipelineBanHang existing = layPipelineMacDinh(conn);
+        if (existing != null && existing.getId() > 0) {
+            return existing.getId();
+        }
+
         String insertPipelineSql = "INSERT INTO pipeline_ban_hang (ma_pipeline, ten_pipeline, mo_ta, mac_dinh, hoat_dong) " +
                 "VALUES ('PIPELINE_B2B_STANDARD', 'Chuỗi Pipeline Bán Hàng Chuẩn B2B', " +
                 "'Quy trình tiếp cận và chuyển đổi cơ hội doanh nghiệp', 1, 1)";
@@ -75,114 +92,44 @@ public class GiaiDoanPipelineDAO {
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    return rs.getLong(1);
-                }
-            }
-        }
-        return 1L;
-    }
-
-    /**
-     * Khởi tạo pipeline chuẩn B2B và 6 giai đoạn chuẩn nếu database chưa có.
-     */
-    public synchronized PipelineBanHang khoiTaoPipelineChuan() {
-        String insertPipelineSql = "INSERT INTO pipeline_ban_hang (ma_pipeline, ten_pipeline, mo_ta, mac_dinh, hoat_dong) " +
-                "VALUES ('PIPELINE_B2B_STANDARD', 'Chuỗi Pipeline Bán Hàng Chuẩn B2B', " +
-                "'Quy trình tiếp cận và chuyển đổi cơ hội doanh nghiệp chuẩn 6 bước: Tiếp cận → Xác định nhu cầu → Đề xuất giải pháp → Báo giá → Đàm phán → Chốt', 1, 1)";
-
-        try (Connection conn = DatabaseConfig.getConnection()) {
-            long pipelineId = -1;
-            try (PreparedStatement ps = conn.prepareStatement(insertPipelineSql, Statement.RETURN_GENERATED_KEYS)) {
-                ps.executeUpdate();
-                try (ResultSet rs = ps.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        pipelineId = rs.getLong(1);
+                    long generatedId = rs.getLong(1);
+                    if (generatedId > 0) {
+                        return generatedId;
                     }
                 }
             }
-
-            if (pipelineId > 0) {
-                // Thêm chuỗi 6 giai đoạn mẫu theo đề bài:
-                // Tiếp cận → Xác định nhu cầu → Đề xuất giải pháp → Báo giá → Đàm phán → Chốt
-                khoiTaoGiaiDoanMau(conn, pipelineId);
-
-                PipelineBanHang p = new PipelineBanHang(pipelineId, "PIPELINE_B2B_STANDARD",
-                        "Chuỗi Pipeline Bán Hàng Chuẩn B2B", "Quy trình bán hàng chuẩn 6 bước");
-                p.setMacDinh(true);
-                p.setHoatDong(true);
-                return p;
-            }
         } catch (SQLException e) {
-            LOGGER.log(Level.WARNING, "Khởi tạo pipeline chuẩn gặp thông báo: " + e.getMessage());
-            // Nếu đã tồn tại bản ghi, truy vấn lại để lấy thông tin thực tế
-            String findSql = "SELECT id, ma_pipeline, ten_pipeline, mo_ta, mac_dinh, hoat_dong, created_at, updated_at " +
-                    "FROM pipeline_ban_hang WHERE ma_pipeline = 'PIPELINE_B2B_STANDARD' LIMIT 1";
-            try (Connection conn2 = DatabaseConfig.getConnection();
-                 PreparedStatement ps2 = conn2.prepareStatement(findSql);
-                 ResultSet rs2 = ps2.executeQuery()) {
-                if (rs2.next()) {
-                    PipelineBanHang p = new PipelineBanHang();
-                    p.setId(rs2.getLong("id"));
-                    p.setMaPipeline(rs2.getString("ma_pipeline"));
-                    p.setTenPipeline(rs2.getString("ten_pipeline"));
-                    p.setMoTa(rs2.getString("mo_ta"));
-                    p.setMacDinh(rs2.getBoolean("mac_dinh"));
-                    p.setHoatDong(rs2.getBoolean("hoat_dong"));
-                    return p;
+            // Concurrent safety: Nếu bị trùng unique ma_pipeline do 2 luồng cùng ghi lúc đầu
+            PipelineBanHang raceExisting = layPipelineMacDinh(conn);
+            if (raceExisting != null && raceExisting.getId() > 0) {
+                return raceExisting.getId();
+            }
+            String findByCodeSql = "SELECT id FROM pipeline_ban_hang WHERE ma_pipeline = 'PIPELINE_B2B_STANDARD' LIMIT 1";
+            try (PreparedStatement psFind = conn.prepareStatement(findByCodeSql);
+                 ResultSet rsFind = psFind.executeQuery()) {
+                if (rsFind.next()) {
+                    return rsFind.getLong("id");
                 }
-            } catch (SQLException ex) {
-                LOGGER.log(Level.SEVERE, "Lỗi truy vấn pipeline mặc định fallback: " + ex.getMessage(), ex);
             }
+            throw e;
         }
 
-        PipelineBanHang pFallback = new PipelineBanHang(1, "PIPELINE_B2B_STANDARD",
-                "Chuỗi Pipeline Bán Hàng Chuẩn B2B", "Mặc định");
-        return pFallback;
-    }
-
-    private void khoiTaoGiaiDoanMau(Connection conn, long pipelineId) {
-        GiaiDoanPipeline[] danhSach = new GiaiDoanPipeline[]{
-                taoMauGiaiDoan(pipelineId, "TIEP_CAN", "Tiếp cận", 1, 10, 7, LoaiGiaiDoanEnum.DANG_TIEN_HANH,
-                        "Phải có ít nhất 1 cuộc gọi kết nối với đầu mối khách hàng", 0, 1, false, false),
-                taoMauGiaiDoan(pipelineId, "XAC_DINH_NHU_CAU", "Xác định nhu cầu", 2, 25, 10, LoaiGiaiDoanEnum.DANG_TIEN_HANH,
-                        "Phải có ít nhất một cuộc gặp trực tiếp/online và hoàn thành khảo sát nhu cầu", 1, 1, false, true),
-                taoMauGiaiDoan(pipelineId, "DE_XUAT_GIAI_PHAP", "Đề xuất giải pháp", 3, 45, 14, LoaiGiaiDoanEnum.DANG_TIEN_HANH,
-                        "Phải tổ chức ít nhất một cuộc gặp demo hoặc trình bày giải pháp kỹ thuật", 1, 0, false, false),
-                taoMauGiaiDoan(pipelineId, "BAO_GIA", "Báo giá", 4, 65, 10, LoaiGiaiDoanEnum.DANG_TIEN_HANH,
-                        "Bắt buộc phải tạo và gửi Báo giá niêm yết chính thức cho khách hàng", 0, 0, true, false),
-                taoMauGiaiDoan(pipelineId, "DAM_PHAN", "Đàm phán", 5, 85, 7, LoaiGiaiDoanEnum.DANG_TIEN_HANH,
-                        "Phải có ít nhất 1 cuộc gặp đàm phán hợp đồng thương mại với người quyết định", 1, 0, false, false),
-                taoMauGiaiDoan(pipelineId, "CHOT_THANH_CONG", "Chốt thành công", 6, 100, 0, LoaiGiaiDoanEnum.THANH_CONG,
-                        "Hợp đồng đã được ký kết và bàn giao triển khai", 0, 0, false, false)
-        };
-
-        for (GiaiDoanPipeline gd : danhSach) {
-            try {
-                themGiaiDoanNoiBo(conn, gd);
-            } catch (SQLException e) {
-                LOGGER.log(Level.WARNING, "Không thể chèn giai đoạn mẫu " + gd.getMaGiaiDoan() + ": " + e.getMessage());
+        // Truy vấn lại ID nếu driver không trả về generated key
+        String findByCodeSql = "SELECT id FROM pipeline_ban_hang WHERE ma_pipeline = 'PIPELINE_B2B_STANDARD' LIMIT 1";
+        try (PreparedStatement psFind = conn.prepareStatement(findByCodeSql);
+             ResultSet rsFind = psFind.executeQuery()) {
+            if (rsFind.next()) {
+                return rsFind.getLong("id");
             }
         }
+        throw new SQLException("Không thể tạo hoặc lấy ID của pipeline_ban_hang.");
     }
 
-    private GiaiDoanPipeline taoMauGiaiDoan(long pipelineId, String ma, String ten, int thuTu,
-                                            int xacSuat, int dinhTre, LoaiGiaiDoanEnum loai,
-                                            String dieuKien, int soGap, int soGoi, boolean baoGia, boolean khaoSat) {
-        GiaiDoanPipeline gd = new GiaiDoanPipeline();
-        gd.setPipelineId(pipelineId);
-        gd.setMaGiaiDoan(ma);
-        gd.setTenGiaiDoan(ten);
-        gd.setThuTu(thuTu);
-        gd.setXacSuatThang(xacSuat);
-        gd.setSoNgayCanhBaoDinhTre(dinhTre);
-        gd.setLoaiGiaiDoan(loai);
-        gd.setTrangThai(TrangThaiGiaiDoanEnum.DANG_AP_DUNG);
-        gd.setDieuKienBatBuoc(dieuKien);
-        gd.setSoCuocGapToiThieu(soGap);
-        gd.setSoCuocGoiToiThieu(soGoi);
-        gd.setYeuCauBaoGia(baoGia);
-        gd.setYeuCauKhaoSatNhuCau(khaoSat);
-        return gd;
+    /**
+     * Backward-compatible helper method.
+     */
+    public long khoiTaoPipelineContainerMacDinh(Connection conn) throws SQLException {
+        return layHoacTaoPipelineContainerMacDinh(conn);
     }
 
     /**
@@ -345,9 +292,16 @@ public class GiaiDoanPipelineDAO {
                 int id = themGiaiDoanNoiBo(conn, gd);
                 conn.commit();
                 return id;
-            } catch (SQLException e) {
-                conn.rollback();
-                throw e;
+            } catch (Exception e) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    LOGGER.log(Level.WARNING, "Lỗi rollback transaction: " + ex.getMessage(), ex);
+                }
+                if (e instanceof SQLException) {
+                    throw (SQLException) e;
+                }
+                throw new SQLException("Lỗi thực thi thêm giai đoạn: " + e.getMessage(), e);
             } finally {
                 conn.setAutoCommit(autoCommitOld);
             }
@@ -355,13 +309,25 @@ public class GiaiDoanPipelineDAO {
     }
 
     private int themGiaiDoanNoiBo(Connection conn, GiaiDoanPipeline gd) throws SQLException {
-        if (gd.getPipelineId() <= 0) {
-            PipelineBanHang p = layPipelineMacDinh();
-            if (p != null) {
-                gd.setPipelineId(p.getId());
-            } else {
-                long newPid = khoiTaoPipelineContainerMacDinh(conn);
-                gd.setPipelineId(newPid);
+        if (gd == null) {
+            throw new IllegalArgumentException("Dữ liệu giai đoạn không được null");
+        }
+
+        // Đảm bảo lấy hoặc khởi tạo pipeline container trong cùng transaction
+        long pId = gd.getPipelineId();
+        if (pId <= 0) {
+            pId = layHoacTaoPipelineContainerMacDinh(conn);
+            gd.setPipelineId(pId);
+        } else {
+            String checkPlSql = "SELECT id FROM pipeline_ban_hang WHERE id = ?";
+            try (PreparedStatement psCheck = conn.prepareStatement(checkPlSql)) {
+                psCheck.setLong(1, pId);
+                try (ResultSet rsCheck = psCheck.executeQuery()) {
+                    if (!rsCheck.next()) {
+                        pId = layHoacTaoPipelineContainerMacDinh(conn);
+                        gd.setPipelineId(pId);
+                    }
+                }
             }
         }
 

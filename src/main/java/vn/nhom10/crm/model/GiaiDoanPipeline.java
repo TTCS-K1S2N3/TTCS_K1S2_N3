@@ -19,7 +19,7 @@ public class GiaiDoanPipeline implements Serializable {
     private static final DecimalFormat TIEN_TE_FORMAT = new DecimalFormat("#,##0");
 
     private int id;
-    private long pipelineId = 1;
+    private long pipelineId = 0;
     private String maGiaiDoan;
     private String tenGiaiDoan;
     private int thuTu = 1;
