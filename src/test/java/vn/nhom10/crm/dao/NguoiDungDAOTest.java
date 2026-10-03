@@ -58,6 +58,7 @@ class NguoiDungDAOTest {
                     "email VARCHAR(200) NOT NULL UNIQUE, " +
                     "mat_khau VARCHAR(255) NOT NULL, " +
                     "so_dien_thoai VARCHAR(20), " +
+                    "chu_ky_email TEXT, " +
                     "trang_thai VARCHAR(30) DEFAULT 'CHO_KICH_HOAT', " +
                     "so_lan_sai INT DEFAULT 0, " +
                     "thoi_gian_khoa TIMESTAMP NULL, " +
@@ -291,5 +292,21 @@ class NguoiDungDAOTest {
     void testCapNhatVaiTroVaNhomTransaction_UserKhongTonTai_KhongDoiRole() throws Exception {
         boolean kq = nguoiDungDAO.capNhatVaiTroVaNhomTransaction(99999, Arrays.asList(1, 4), 2);
         assertFalse(kq, "Cập nhật với user không tồn tại phải trả về false");
+    }
+
+    @Test
+    @DisplayName("S2-02 DAO: Cập nhật thành công họ tên, số điện thoại và chữ ký email")
+    void testCapNhatHoSo() throws Exception {
+        boolean kq = nguoiDungDAO.capNhatHoSo(1, "Nguyễn Văn Quản Trị", "0909999999", "Chữ ký email báo giá");
+        assertTrue(kq, "Cập nhật hồ sơ phải trả về true");
+
+        NguoiDung nd = nguoiDungDAO.timTheoId(1);
+        assertNotNull(nd);
+        assertEquals("Nguyễn Văn Quản Trị", nd.getHoTen());
+        assertEquals("0909999999", nd.getSoDienThoai());
+        assertEquals("Chữ ký email báo giá", nd.getChuKyEmail());
+        // Đảm bảo email và nhóm không bị thay đổi
+        assertEquals("admin@crm.vn", nd.getEmail());
+        assertEquals(1, nd.getNhomKinhDoanhId());
     }
 }

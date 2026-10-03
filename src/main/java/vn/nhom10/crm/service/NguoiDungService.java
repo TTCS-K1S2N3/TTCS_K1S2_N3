@@ -293,4 +293,12 @@ public class NguoiDungService {
     public List<NhomKinhDoanh> layDanhSachNhom() {
         return nhomKinhDoanhDAO.layTatCa();
     }
+
+    /**
+     * Cập nhật thông tin hồ sơ cá nhân (Story S2-02).
+     */
+    public KetQuaNguoiDungDTO capNhatHoSo(long nguoiDungId, String hoTen, String soDienThoai, String chuKyEmail) {
+        HoSoService hoSoService = new HoSoService(this.nguoiDungDAO);
+        return hoSoService.capNhatHoSo(nguoiDungId, hoTen, soDienThoai, chuKyEmail);
+    }
 }
