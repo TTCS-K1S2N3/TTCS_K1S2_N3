@@ -240,4 +240,77 @@ class DangNhapServiceTest {
         assertFalse(r2.isThanhCong());
         assertTrue(r2.getThongBaoLoi().contains("đầy đủ"));
     }
+
+    @Test
+    @DisplayName("S1-08/S2-01: Tài khoản CHO_KICH_HOAT đăng nhập đúng mật khẩu -> Kích hoạt sang HOAT_DONG")
+    void testDangNhap_ChoKichHoat_DungMatKhau_KichHoatSangHoatDong() {
+        NguoiDung user = taoUserMau("newuser@crm.vn", VaiTroEnum.SALES_REP);
+        user.setTrangThai(NguoiDung.TRANG_THAI_CHO_KICH_HOAT);
+        when(nguoiDungDAO.timTheoEmail("newuser@crm.vn")).thenReturn(user);
+
+        KetQuaDangNhapDTO result = dangNhapService.dangNhap("newuser@crm.vn", rawPassword);
+
+        assertTrue(result.isThanhCong(), "Đăng nhập phải thành công với mật khẩu hợp lệ");
+        verify(nguoiDungDAO).kichHoatTaiKhoan(10L);
+        assertEquals(NguoiDung.TRANG_THAI_HOAT_DONG, result.getNguoiDung().getTrangThai(),
+                "Trạng thái người dùng phải được kích hoạt sang HOAT_DONG");
+        assertTrue(result.getNguoiDung().dangHoatDong(), "dangHoatDong() phải trả về true");
+        assertEquals("/khach-hang", result.getTrangChuUrl());
+    }
+
+    @Test
+    @DisplayName("S1-08/S2-01: Tài khoản CHO_KICH_HOAT đăng nhập sai mật khẩu -> Báo lỗi, không kích hoạt")
+    void testDangNhap_ChoKichHoat_SaiMatKhau_KhongKichHoat() {
+        NguoiDung user = taoUserMau("newuser@crm.vn", VaiTroEnum.SALES_REP);
+        user.setTrangThai(NguoiDung.TRANG_THAI_CHO_KICH_HOAT);
+        when(nguoiDungDAO.timTheoEmail("newuser@crm.vn")).thenReturn(user);
+
+        KetQuaDangNhapDTO result = dangNhapService.dangNhap("newuser@crm.vn", "SaiMatKhau@123");
+
+        assertFalse(result.isThanhCong());
+        assertEquals(DangNhapService.THONG_BAO_SAI_THONG_TIN, result.getThongBaoLoi());
+        verify(nguoiDungDAO, never()).kichHoatTaiKhoan(anyLong());
+        assertEquals(NguoiDung.TRANG_THAI_CHO_KICH_HOAT, user.getTrangThai(),
+                "Khi sai mật khẩu, trạng thái CHO_KICH_HOAT phải được giữ nguyên");
+    }
+
+    @Test
+    @DisplayName("Integration S1-08: User tạo thủ công đăng nhập bằng mật khẩu tạm -> Kích hoạt HOAT_DONG và truy cập được menu")
+    void testDangNhap_UserMoiTuS108_KichHoatVaCoQuyenTruyCapModule() {
+        NguoiDung userS108 = taoUserMau("s108_nvkd@crm.vn", VaiTroEnum.SALES_REP);
+        userS108.setTrangThai(NguoiDung.TRANG_THAI_CHO_KICH_HOAT);
+        when(nguoiDungDAO.timTheoEmail("s108_nvkd@crm.vn")).thenReturn(userS108);
+
+        KetQuaDangNhapDTO result = dangNhapService.dangNhap("s108_nvkd@crm.vn", rawPassword);
+
+        assertTrue(result.isThanhCong());
+        assertEquals(NguoiDung.TRANG_THAI_HOAT_DONG, result.getNguoiDung().getTrangThai());
+
+        // Kiểm tra quyền truy cập module Khách hàng và điều hướng hệ thống
+        MenuService menuService = MenuService.getInstance();
+        assertTrue(menuService.kiemTraQuyenTruyCapUrl(result.getNguoiDung(), "/khach-hang"),
+                "User sau khi kích hoạt phải có quyền truy cập /khach-hang (không bị 403)");
+        assertFalse(menuService.layDanhSachMenuChoNguoiDung(result.getNguoiDung(), "/khach-hang").isEmpty(),
+                "Danh sách menu không được rỗng (không bị 0/12 module)");
+    }
+
+    @Test
+    @DisplayName("Integration S2-01: User import từ Excel đăng nhập -> Kích hoạt HOAT_DONG và không bị 403 toàn hệ thống")
+    void testDangNhap_UserMoiTuS201_KichHoatVaCoQuyenTruyCapModule() {
+        NguoiDung userS201 = taoUserMau("s201_valid1@crm.vn", VaiTroEnum.SALES_REP);
+        userS201.setTrangThai(NguoiDung.TRANG_THAI_CHO_KICH_HOAT);
+        when(nguoiDungDAO.timTheoEmail("s201_valid1@crm.vn")).thenReturn(userS201);
+
+        KetQuaDangNhapDTO result = dangNhapService.dangNhap("s201_valid1@crm.vn", rawPassword);
+
+        assertTrue(result.isThanhCong());
+        assertEquals(NguoiDung.TRANG_THAI_HOAT_DONG, result.getNguoiDung().getTrangThai());
+        assertTrue(result.getNguoiDung().dangHoatDong());
+
+        MenuService menuService = MenuService.getInstance();
+        assertTrue(menuService.kiemTraQuyenTruyCapUrl(result.getNguoiDung(), "/khach-hang"),
+                "User S2-01 không được bị 403 trên /khach-hang sau khi đăng nhập");
+        assertEquals(11, menuService.layDanhSachMenuChoNguoiDung(result.getNguoiDung(), "/khach-hang").size(),
+                "User S2-01 SALES_REP phải thấy đủ 11/12 module khả dụng");
+    }
 }
