@@ -37,6 +37,7 @@ import java.util.List;
         "/pipeline/giai-doan/doi-thu-tu",
         "/pipeline/giai-doan/trang-thai",
         "/pipeline/giai-doan/kiem-tra-dieu-kien",
+        "/pipeline/giai-doan/tinh-du-bao",
         "/co-hoi/pipeline"
 })
 public class GiaiDoanPipelineServlet extends HttpServlet {
@@ -88,6 +89,7 @@ public class GiaiDoanPipelineServlet extends HttpServlet {
             gd.setThuTu(list.size() + 1);
             gd.setXacSuatThang(50);
             request.setAttribute("giaiDoan", gd);
+            napThuocTinhForm(request);
             request.getRequestDispatcher("/WEB-INF/views/co-hoi/tao-giai-doan.jsp").forward(request, response);
             return;
         }
@@ -105,6 +107,7 @@ public class GiaiDoanPipelineServlet extends HttpServlet {
                 return;
             }
             request.setAttribute("giaiDoan", gd);
+            napThuocTinhForm(request);
             request.getRequestDispatcher("/WEB-INF/views/co-hoi/sua-giai-doan.jsp").forward(request, response);
             return;
         }
@@ -175,6 +178,7 @@ public class GiaiDoanPipelineServlet extends HttpServlet {
             request.setAttribute("giaiDoan", gd);
             request.setAttribute("danhSachLoi", ketQua.getDanhSachLoi());
             request.setAttribute("thongBaoLoi", ketQua.getThongBao());
+            napThuocTinhForm(request);
             request.getRequestDispatcher("/WEB-INF/views/co-hoi/tao-giai-doan.jsp").forward(request, response);
         }
     }
@@ -195,8 +199,14 @@ public class GiaiDoanPipelineServlet extends HttpServlet {
             request.setAttribute("giaiDoan", gd);
             request.setAttribute("danhSachLoi", ketQua.getDanhSachLoi());
             request.setAttribute("thongBaoLoi", ketQua.getThongBao());
+            napThuocTinhForm(request);
             request.getRequestDispatcher("/WEB-INF/views/co-hoi/sua-giai-doan.jsp").forward(request, response);
         }
+    }
+
+    private void napThuocTinhForm(HttpServletRequest request) {
+        request.setAttribute("danhSachLoai", LoaiGiaiDoanEnum.values());
+        request.setAttribute("danhSachTrangThai", TrangThaiGiaiDoanEnum.values());
     }
 
     private void xuLyDoiThuTu(HttpServletRequest request, HttpServletResponse response, NguoiDung user)

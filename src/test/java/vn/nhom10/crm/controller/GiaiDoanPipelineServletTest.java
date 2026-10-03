@@ -148,4 +148,38 @@ public class GiaiDoanPipelineServletTest {
 
         verify(resp).sendRedirect(contains("error="));
     }
+
+    @Test
+    public void testDoGetFormTaoSetsFormAttributes() throws Exception {
+        when(req.getServletPath()).thenReturn("/pipeline/giai-doan/tao");
+        when(session.getAttribute(GiaiDoanPipelineServlet.SESSION_USER)).thenReturn(directorUser);
+        when(serviceMock.coQuyenCauHinh(directorUser)).thenReturn(true);
+        when(serviceMock.layTatCaGiaiDoan()).thenReturn(Collections.emptyList());
+
+        servlet.doGet(req, resp);
+
+        verify(req).setAttribute(eq("danhSachLoai"), any());
+        verify(req).setAttribute(eq("danhSachTrangThai"), any());
+        verify(req).getRequestDispatcher("/WEB-INF/views/co-hoi/tao-giai-doan.jsp");
+        verify(dispatcher).forward(req, resp);
+    }
+
+    @Test
+    public void testDoGetFormSuaSetsFormAttributes() throws Exception {
+        when(req.getServletPath()).thenReturn("/pipeline/giai-doan/sua");
+        when(session.getAttribute(GiaiDoanPipelineServlet.SESSION_USER)).thenReturn(directorUser);
+        when(serviceMock.coQuyenCauHinh(directorUser)).thenReturn(true);
+        when(req.getParameter("id")).thenReturn("3");
+
+        GiaiDoanPipeline gd = new GiaiDoanPipeline(3, "GD_3", "Giai đoạn 3", 3, 40, "");
+        when(serviceMock.timTheoId(3)).thenReturn(gd);
+
+        servlet.doGet(req, resp);
+
+        verify(req).setAttribute(eq("danhSachLoai"), any());
+        verify(req).setAttribute(eq("danhSachTrangThai"), any());
+        verify(req).setAttribute(eq("giaiDoan"), eq(gd));
+        verify(req).getRequestDispatcher("/WEB-INF/views/co-hoi/sua-giai-doan.jsp");
+        verify(dispatcher).forward(req, resp);
+    }
 }

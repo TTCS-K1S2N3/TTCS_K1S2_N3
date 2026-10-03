@@ -94,7 +94,26 @@ public class GiaiDoanPipelineDAO {
                 return p;
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khởi tạo pipeline chuẩn: " + e.getMessage(), e);
+            LOGGER.log(Level.WARNING, "Khởi tạo pipeline chuẩn gặp thông báo: " + e.getMessage());
+            // Nếu đã tồn tại bản ghi, truy vấn lại để lấy thông tin thực tế
+            String findSql = "SELECT id, ma_pipeline, ten_pipeline, mo_ta, mac_dinh, hoat_dong, created_at, updated_at " +
+                    "FROM pipeline_ban_hang WHERE ma_pipeline = 'PIPELINE_B2B_STANDARD' LIMIT 1";
+            try (Connection conn2 = DatabaseConfig.getConnection();
+                 PreparedStatement ps2 = conn2.prepareStatement(findSql);
+                 ResultSet rs2 = ps2.executeQuery()) {
+                if (rs2.next()) {
+                    PipelineBanHang p = new PipelineBanHang();
+                    p.setId(rs2.getLong("id"));
+                    p.setMaPipeline(rs2.getString("ma_pipeline"));
+                    p.setTenPipeline(rs2.getString("ten_pipeline"));
+                    p.setMoTa(rs2.getString("mo_ta"));
+                    p.setMacDinh(rs2.getBoolean("mac_dinh"));
+                    p.setHoatDong(rs2.getBoolean("hoat_dong"));
+                    return p;
+                }
+            } catch (SQLException ex) {
+                LOGGER.log(Level.SEVERE, "Lỗi truy vấn pipeline mặc định fallback: " + ex.getMessage(), ex);
+            }
         }
 
         PipelineBanHang pFallback = new PipelineBanHang(1, "PIPELINE_B2B_STANDARD",
@@ -253,6 +272,7 @@ public class GiaiDoanPipelineDAO {
      * Đếm số cơ hội đang liên kết với giai đoạn (AC 4: bảo vệ cơ hội đang chạy).
      */
     public int demSoCoHoiTrongGiaiDoan(int giaiDoanId) {
+        int count = 0;
         String sql = "SELECT COUNT(*) FROM co_hoi WHERE giai_doan_id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -260,13 +280,32 @@ public class GiaiDoanPipelineDAO {
             ps.setInt(1, giaiDoanId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1);
+                    count = rs.getInt(1);
                 }
             }
         } catch (SQLException e) {
             LOGGER.log(Level.WARNING, "Lỗi kiểm tra số cơ hội của giai đoạn ID=" + giaiDoanId + ": " + e.getMessage());
         }
-        return 0;
+
+        if (count > 0) {
+            return count;
+        }
+
+        // Kiểm tra thêm lịch sử giai đoạn cơ hội nếu bảng đã được khởi tạo
+        String sqlHistory = "SELECT COUNT(*) FROM lich_su_giai_doan_co_hoi WHERE giai_doan_id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sqlHistory)) {
+            ps.setInt(1, giaiDoanId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException ignored) {
+            // Bảng có thể chưa tồn tại trong môi trường test rút gọn
+        }
+
+        return count;
     }
 
     /**
@@ -293,6 +332,22 @@ public class GiaiDoanPipelineDAO {
         if (gd.getPipelineId() <= 0) {
             PipelineBanHang p = layHoacTaoPipelineMacDinh();
             gd.setPipelineId(p.getId());
+        }
+
+        // Tự động tính toán thứ tự tiếp theo nếu thứ tự truyền vào <= 0
+        if (gd.getThuTu() <= 0) {
+            String maxSql = "SELECT COALESCE(MAX(thu_tu), 0) + 1 FROM giai_doan_pipeline WHERE pipeline_id = ?";
+            try (PreparedStatement psMax = conn.prepareStatement(maxSql)) {
+                psMax.setLong(1, gd.getPipelineId());
+                try (ResultSet rsMax = psMax.executeQuery()) {
+                    if (rsMax.next()) {
+                        gd.setThuTu(rsMax.getInt(1));
+                    }
+                }
+            }
+        } else {
+            // Nếu thứ tự đã bị chiếm, dời các giai đoạn từ thuTu đó trở đi lên +1 để nhường chỗ
+            giaiPhongThuTu(conn, gd.getPipelineId(), gd.getThuTu());
         }
 
         String sql = "INSERT INTO giai_doan_pipeline (pipeline_id, ma_giai_doan, ten_giai_doan, thu_tu, " +
@@ -332,17 +387,73 @@ public class GiaiDoanPipelineDAO {
     }
 
     /**
+     * Dời các giai đoạn có thứ tự >= targetThuTu lên +1 theo thứ tự giảm dần để giải phóng vị trí.
+     */
+    private void giaiPhongThuTu(Connection conn, long pipelineId, int targetThuTu) throws SQLException {
+        String checkSql = "SELECT COUNT(*) FROM giai_doan_pipeline WHERE pipeline_id = ? AND thu_tu = ?";
+        try (PreparedStatement psCheck = conn.prepareStatement(checkSql)) {
+            psCheck.setLong(1, pipelineId);
+            psCheck.setInt(2, targetThuTu);
+            try (ResultSet rsCheck = psCheck.executeQuery()) {
+                if (rsCheck.next() && rsCheck.getInt(1) > 0) {
+                    String selectSql = "SELECT id, thu_tu FROM giai_doan_pipeline WHERE pipeline_id = ? AND thu_tu >= ? ORDER BY thu_tu DESC";
+                    List<int[]> itemsToShift = new ArrayList<>();
+                    try (PreparedStatement psSel = conn.prepareStatement(selectSql)) {
+                        psSel.setLong(1, pipelineId);
+                        psSel.setInt(2, targetThuTu);
+                        try (ResultSet rsSel = psSel.executeQuery()) {
+                            while (rsSel.next()) {
+                                itemsToShift.add(new int[]{rsSel.getInt("id"), rsSel.getInt("thu_tu")});
+                            }
+                        }
+                    }
+
+                    String updateSql = "UPDATE giai_doan_pipeline SET thu_tu = ? WHERE id = ?";
+                    try (PreparedStatement psUpd = conn.prepareStatement(updateSql)) {
+                        for (int[] item : itemsToShift) {
+                            psUpd.setInt(1, item[1] + 1);
+                            psUpd.setInt(2, item[0]);
+                            psUpd.executeUpdate();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Cập nhật thông tin giai đoạn pipeline.
      * AC 4: Thay đổi cấu hình không làm hỏng cơ hội đang chạy (cơ hội vẫn liên kết theo ID).
      */
     public boolean capNhatGiaiDoan(GiaiDoanPipeline gd) throws SQLException {
-        String sql = "UPDATE giai_doan_pipeline SET ma_giai_doan = ?, ten_giai_doan = ?, thu_tu = ?, " +
-                "xac_suat_mac_dinh = ?, so_ngay_dinh_tre = ?, loai_ket_thuc = ?, hoat_dong = ? WHERE id = ?";
-
         try (Connection conn = DatabaseConfig.getConnection()) {
             boolean autoCommitOld = conn.getAutoCommit();
             conn.setAutoCommit(false);
             try {
+                // Kiểm tra thứ tự cũ và đồng bộ nếu người dùng đổi vị trí
+                int oldThuTu = -1;
+                long pipelineId = gd.getPipelineId();
+                String selectOldSql = "SELECT pipeline_id, thu_tu FROM giai_doan_pipeline WHERE id = ?";
+                try (PreparedStatement psOld = conn.prepareStatement(selectOldSql)) {
+                    psOld.setInt(1, gd.getId());
+                    try (ResultSet rsOld = psOld.executeQuery()) {
+                        if (rsOld.next()) {
+                            pipelineId = rsOld.getLong("pipeline_id");
+                            oldThuTu = rsOld.getInt("thu_tu");
+                            if (gd.getPipelineId() <= 0) {
+                                gd.setPipelineId(pipelineId);
+                            }
+                        }
+                    }
+                }
+
+                if (oldThuTu > 0 && oldThuTu != gd.getThuTu()) {
+                    dieuChinhThuTuCapNhat(conn, pipelineId, gd.getId(), oldThuTu, gd.getThuTu());
+                }
+
+                String sql = "UPDATE giai_doan_pipeline SET ma_giai_doan = ?, ten_giai_doan = ?, thu_tu = ?, " +
+                        "xac_suat_mac_dinh = ?, so_ngay_dinh_tre = ?, loai_ket_thuc = ?, hoat_dong = ? WHERE id = ?";
+
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
                     ps.setString(1, gd.getMaGiaiDoan().trim());
                     ps.setString(2, gd.getTenGiaiDoan().trim());
@@ -381,6 +492,62 @@ public class GiaiDoanPipelineDAO {
         }
     }
 
+    private void dieuChinhThuTuCapNhat(Connection conn, long pipelineId, int stageId, int oldThuTu, int newThuTu) throws SQLException {
+        // Gán tạm thời vị trí âm để giải phóng slot cũ
+        String tempSql = "UPDATE giai_doan_pipeline SET thu_tu = ? WHERE id = ?";
+        try (PreparedStatement psTemp = conn.prepareStatement(tempSql)) {
+            psTemp.setInt(1, -100000 - stageId);
+            psTemp.setInt(2, stageId);
+            psTemp.executeUpdate();
+        }
+
+        if (newThuTu < oldThuTu) {
+            // Di chuyển lên: các phần tử trong khoảng [newThuTu, oldThuTu - 1] dịch chuyển +1 (giảm dần)
+            String selSql = "SELECT id, thu_tu FROM giai_doan_pipeline WHERE pipeline_id = ? AND thu_tu >= ? AND thu_tu < ? ORDER BY thu_tu DESC";
+            List<int[]> items = new ArrayList<>();
+            try (PreparedStatement ps = conn.prepareStatement(selSql)) {
+                ps.setLong(1, pipelineId);
+                ps.setInt(2, newThuTu);
+                ps.setInt(3, oldThuTu);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        items.add(new int[]{rs.getInt("id"), rs.getInt("thu_tu")});
+                    }
+                }
+            }
+            String updSql = "UPDATE giai_doan_pipeline SET thu_tu = ? WHERE id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(updSql)) {
+                for (int[] item : items) {
+                    ps.setInt(1, item[1] + 1);
+                    ps.setInt(2, item[0]);
+                    ps.executeUpdate();
+                }
+            }
+        } else {
+            // Di chuyển xuống: các phần tử trong khoảng [oldThuTu + 1, newThuTu] dịch chuyển -1 (tăng dần)
+            String selSql = "SELECT id, thu_tu FROM giai_doan_pipeline WHERE pipeline_id = ? AND thu_tu > ? AND thu_tu <= ? ORDER BY thu_tu ASC";
+            List<int[]> items = new ArrayList<>();
+            try (PreparedStatement ps = conn.prepareStatement(selSql)) {
+                ps.setLong(1, pipelineId);
+                ps.setInt(2, oldThuTu);
+                ps.setInt(3, newThuTu);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        items.add(new int[]{rs.getInt("id"), rs.getInt("thu_tu")});
+                    }
+                }
+            }
+            String updSql = "UPDATE giai_doan_pipeline SET thu_tu = ? WHERE id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(updSql)) {
+                for (int[] item : items) {
+                    ps.setInt(1, item[1] - 1);
+                    ps.setInt(2, item[0]);
+                    ps.executeUpdate();
+                }
+            }
+        }
+    }
+
     /**
      * Đổi thứ tự 2 giai đoạn liền kề (Move Up / Move Down) trong transaction an toàn.
      */
@@ -391,8 +558,8 @@ public class GiaiDoanPipelineDAO {
             boolean autoCommitOld = conn.getAutoCommit();
             conn.setAutoCommit(false);
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                // Tạm thời gán id1 sang thứ tự âm để tránh trùng UK uk_gdp_tt
-                ps.setInt(1, -Math.abs(thuTu2));
+                // Tạm thời gán id1 sang thứ tự âm duy nhất để tránh trùng UK uk_gdp_tt
+                ps.setInt(1, -100000 - Math.abs(id1));
                 ps.setInt(2, id1);
                 ps.executeUpdate();
 
