@@ -54,4 +54,19 @@ public enum LoaiGiaiDoanEnum {
         }
         return DANG_TIEN_HANH;
     }
+
+    public static LoaiGiaiDoanEnum tuMaStrict(String ma) {
+        if (ma == null || ma.isBlank()) {
+            return null;
+        }
+        for (LoaiGiaiDoanEnum e : values()) {
+            if (e.maLoai.equalsIgnoreCase(ma.trim()) || e.name().equalsIgnoreCase(ma.trim())) {
+                return e;
+            }
+            if (e.maDb != null && e.maDb.equalsIgnoreCase(ma.trim())) {
+                return e;
+            }
+        }
+        return null;
+    }
 }

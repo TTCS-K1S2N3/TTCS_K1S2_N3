@@ -17,7 +17,7 @@
     <nav class="breadcrumb-nav" aria-label="Đường dẫn điều hướng">
         <a href="${pageContext.request.contextPath}/">Trang chủ</a>
         <span class="sep">/</span>
-        <a href="${pageContext.request.contextPath}/pipeline/giai-doan${not empty param.role ? '?role='.concat(param.role) : ''}">Cấu hình Pipeline</a>
+        <a href="${pageContext.request.contextPath}/pipeline/giai-doan">Cấu hình Pipeline</a>
         <span class="sep">/</span>
         <span class="current">Thêm giai đoạn mới</span>
     </nav>
@@ -29,7 +29,7 @@
             <p>Định nghĩa một bước trong chuỗi phễu bán hàng, xác suất thắng mặc định dùng để tính dự báo và tiêu chuẩn bắt buộc rời giai đoạn.</p>
         </div>
         <div>
-            <a href="${pageContext.request.contextPath}/pipeline/giai-doan${not empty param.role ? '?role='.concat(param.role) : ''}"
+            <a href="${pageContext.request.contextPath}/pipeline/giai-doan"
                class="btn btn-outline"
                id="btnQuayLai">
                 &larr; Quay lại danh sách
@@ -40,7 +40,7 @@
     <!-- Flash Error nếu có -->
     <c:if test="${not empty thongBaoLoi}">
         <div class="alert alert-danger" role="alert">
-            <span>⚠️ <strong>Lỗi:</strong> ${thongBaoLoi}</span>
+            <span>⚠️ <strong>Lỗi:</strong> <c:out value="${thongBaoLoi}"/></span>
             <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
         </div>
     </c:if>
@@ -48,10 +48,6 @@
     <!-- Form Tạo Giai Đoạn -->
     <div class="crm-card">
         <form id="formGiaiDoan" method="post" action="${pageContext.request.contextPath}/pipeline/giai-doan/tao" novalidate>
-            <c:if test="${not empty param.role}">
-                <input type="hidden" name="role" value="${param.role}">
-            </c:if>
-
             <div class="form-grid">
 
                 <!-- 1. Mã giai đoạn -->
@@ -59,12 +55,12 @@
                     <label for="maGiaiDoan">
                         Mã giai đoạn <span class="required">*</span>
                     </label>
-                    <input type="text" id="maGiaiDoan" name="maGiaiDoan" value="${giaiDoan.maGiaiDoan}"
+                    <input type="text" id="maGiaiDoan" name="maGiaiDoan" value="<c:out value='${giaiDoan.maGiaiDoan}'/>"
                            placeholder="VD: TIEP_CAN, BAO_GIA, DAM_PHAN"
                            class="${not empty danhSachLoi['maGiaiDoan'] ? 'is-invalid' : ''}"
                            required autofocus>
                     <c:if test="${not empty danhSachLoi['maGiaiDoan']}">
-                        <span class="field-error">⚠️ ${danhSachLoi['maGiaiDoan']}</span>
+                        <span class="field-error">⚠️ <c:out value="${danhSachLoi['maGiaiDoan']}"/></span>
                     </c:if>
                     <span class="form-hint">Mã viết in hoa không dấu, gồm chữ, số, gạch ngang (-) hoặc gạch dưới (_).</span>
                 </div>
@@ -74,12 +70,12 @@
                     <label for="tenGiaiDoan">
                         Tên giai đoạn <span class="required">*</span>
                     </label>
-                    <input type="text" id="tenGiaiDoan" name="tenGiaiDoan" value="${giaiDoan.tenGiaiDoan}"
+                    <input type="text" id="tenGiaiDoan" name="tenGiaiDoan" value="<c:out value='${giaiDoan.tenGiaiDoan}'/>"
                            placeholder="VD: Tiếp cận, Báo giá, Đàm phán..."
                            class="${not empty danhSachLoi['tenGiaiDoan'] ? 'is-invalid' : ''}"
                            required>
                     <c:if test="${not empty danhSachLoi['tenGiaiDoan']}">
-                        <span class="field-error">⚠️ ${danhSachLoi['tenGiaiDoan']}</span>
+                        <span class="field-error">⚠️ <c:out value="${danhSachLoi['tenGiaiDoan']}"/></span>
                     </c:if>
                     <span class="form-hint">Tên hiển thị trên quy trình pipeline và thẻ cơ hội bán hàng.</span>
                 </div>
@@ -93,7 +89,7 @@
                            class="${not empty danhSachLoi['thuTu'] ? 'is-invalid' : ''}"
                            required>
                     <c:if test="${not empty danhSachLoi['thuTu']}">
-                        <span class="field-error">⚠️ ${danhSachLoi['thuTu']}</span>
+                        <span class="field-error">⚠️ <c:out value="${danhSachLoi['thuTu']}"/></span>
                     </c:if>
                     <span class="form-hint">Vị trí bước trong chuỗi phễu (1, 2, 3...).</span>
                 </div>
@@ -128,7 +124,7 @@
                         </div>
                     </div>
                     <c:if test="${not empty danhSachLoi['xacSuatThang']}">
-                        <span class="field-error">⚠️ ${danhSachLoi['xacSuatThang']}</span>
+                        <span class="field-error">⚠️ <c:out value="${danhSachLoi['xacSuatThang']}"/></span>
                     </c:if>
                     <span class="form-hint" style="color: var(--primary-700); margin-top: 6px;">
                         💡 Công thức dự báo tự động: <strong>Doanh số dự báo = Giá trị cơ hội &times; (Xác suất thắng / 100)</strong>
@@ -153,7 +149,7 @@
                         <!-- Mô tả bằng văn bản -->
                         <div class="form-group" style="margin-bottom: 16px;">
                             <label for="dieuKienBatBuoc">Mô tả quy tắc điều kiện bắt buộc:</label>
-                            <input type="text" id="dieuKienBatBuoc" name="dieuKienBatBuoc" value="${giaiDoan.dieuKienBatBuoc}"
+                            <input type="text" id="dieuKienBatBuoc" name="dieuKienBatBuoc" value="<c:out value='${giaiDoan.dieuKienBatBuoc}'/>"
                                    placeholder="VD: Phải có ít nhất một cuộc gặp trực tiếp và xác nhận bảng câu hỏi nhu cầu">
                             <span class="form-hint">Mô tả sẽ hiển thị trực tiếp trên thẻ giai đoạn để hướng dẫn nhân viên kinh doanh.</span>
                         </div>
@@ -214,7 +210,7 @@
 
             <!-- Form Actions -->
             <div style="margin-top: 28px; display: flex; justify-content: flex-end; gap: 14px; border-top: 1px solid var(--gray-200); padding-top: 20px;">
-                <a href="${pageContext.request.contextPath}/pipeline/giai-doan${not empty param.role ? '?role='.concat(param.role) : ''}"
+                <a href="${pageContext.request.contextPath}/pipeline/giai-doan"
                    class="btn btn-outline">
                     Hủy bỏ
                 </a>

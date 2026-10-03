@@ -51,6 +51,18 @@ public enum TrangThaiGiaiDoanEnum {
         return DANG_AP_DUNG;
     }
 
+    public static TrangThaiGiaiDoanEnum tuMaStrict(String ma) {
+        if (ma == null || ma.isBlank()) {
+            return null;
+        }
+        for (TrangThaiGiaiDoanEnum e : values()) {
+            if (e.maTrangThai.equalsIgnoreCase(ma.trim()) || e.name().equalsIgnoreCase(ma.trim())) {
+                return e;
+            }
+        }
+        return null;
+    }
+
     public static TrangThaiGiaiDoanEnum tuGiaTriDb(int giaTri) {
         return giaTri == 1 ? DANG_AP_DUNG : NGUNG_AP_DUNG;
     }

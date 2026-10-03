@@ -118,16 +118,47 @@ public class GiaiDoanPipelineServiceTest {
     }
 
     @Test
-    public void testValidateXacSuatThangTu0Den100() {
+    public void testValidateXacSuatThangTu0Den100() throws Exception {
         GiaiDoanPipeline gdAm = new GiaiDoanPipeline();
         gdAm.setMaGiaiDoan("TEST_AM");
         gdAm.setTenGiaiDoan("Âm");
         gdAm.setThuTu(1);
         gdAm.setXacSuatThang(-5); // Nhỏ hơn 0
 
-        KetQuaGiaiDoanDTO ketQua1 = service.taoGiaiDoan(gdAm, directorUser);
-        // Do setter clamp về 0 hoặc validator kiểm tra
-        assertTrue(gdAm.getXacSuatThang() >= 0 && gdAm.getXacSuatThang() <= 100);
+        KetQuaGiaiDoanDTO ketQuaAm = service.taoGiaiDoan(gdAm, directorUser);
+        assertFalse(ketQuaAm.isThanhCong(), "Xác suất âm phải bị từ chối");
+        assertTrue(ketQuaAm.getDanhSachLoi().containsKey("xacSuatThang"));
+
+        GiaiDoanPipeline gdQua100 = new GiaiDoanPipeline();
+        gdQua100.setMaGiaiDoan("TEST_150");
+        gdQua100.setTenGiaiDoan("Quá 100");
+        gdQua100.setThuTu(2);
+        gdQua100.setXacSuatThang(150); // Lớn hơn 100
+
+        KetQuaGiaiDoanDTO ketQuaQua100 = service.taoGiaiDoan(gdQua100, directorUser);
+        assertFalse(ketQuaQua100.isThanhCong(), "Xác suất > 100 phải bị từ chối");
+        assertTrue(ketQuaQua100.getDanhSachLoi().containsKey("xacSuatThang"));
+
+        // Xác suất 0 và 100 hợp lệ
+        GiaiDoanPipeline gd0 = new GiaiDoanPipeline();
+        gd0.setMaGiaiDoan("TEST_0");
+        gd0.setTenGiaiDoan("Không phần trăm");
+        gd0.setThuTu(3);
+        gd0.setXacSuatThang(0);
+        when(daoMock.kiemTraMaTonTai("TEST_0", null)).thenReturn(false);
+        when(daoMock.themGiaiDoan(gd0)).thenReturn(3);
+        KetQuaGiaiDoanDTO ketQua0 = service.taoGiaiDoan(gd0, directorUser);
+        assertTrue(ketQua0.isThanhCong(), "Xác suất 0% phải hợp lệ");
+
+        GiaiDoanPipeline gd100 = new GiaiDoanPipeline();
+        gd100.setMaGiaiDoan("TEST_100");
+        gd100.setTenGiaiDoan("Một trăm phần trăm");
+        gd100.setThuTu(4);
+        gd100.setXacSuatThang(100);
+        when(daoMock.kiemTraMaTonTai("TEST_100", null)).thenReturn(false);
+        when(daoMock.themGiaiDoan(gd100)).thenReturn(4);
+        KetQuaGiaiDoanDTO ketQua100 = service.taoGiaiDoan(gd100, directorUser);
+        assertTrue(ketQua100.isThanhCong(), "Xác suất 100% phải hợp lệ");
     }
 
     // ====================================================================
@@ -259,5 +290,18 @@ public class GiaiDoanPipelineServiceTest {
         KetQuaGiaiDoanDTO ketQua = service.taoGiaiDoan(gd, directorUser);
         assertFalse(ketQua.isThanhCong());
         assertTrue(ketQua.getDanhSachLoi().containsKey("dieuKienBatBuoc"));
+    }
+
+    @Test
+    public void testFailClosedWhenReferenceCheckThrowsSQLException() throws SQLException {
+        GiaiDoanPipeline gd = new GiaiDoanPipeline(7, "STAGE_ERR", "Stage lỗi", 7, 50, "");
+        when(daoMock.timTheoId(7)).thenReturn(gd);
+        when(daoMock.demSoCoHoiTrongGiaiDoan(7)).thenThrow(new SQLException("Lỗi kết nối CSDL"));
+
+        KetQuaGiaiDoanDTO ketQua = service.xoaGiaiDoan(7, directorUser);
+
+        assertFalse(ketQua.isThanhCong(), "Khi DB bị lỗi kiểm tra tham chiếu, phải fail-closed chặn xóa");
+        assertTrue(ketQua.getThongBao().contains("Để bảo vệ dữ liệu, không thực hiện xóa"));
+        verify(daoMock, never()).xoaGiaiDoan(7);
     }
 }

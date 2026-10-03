@@ -33,9 +33,10 @@ public class GiaiDoanPipelineDAO {
     private static final Logger LOGGER = Logger.getLogger(GiaiDoanPipelineDAO.class.getName());
 
     /**
-     * Lấy pipeline mặc định hoặc tự động tạo pipeline chuẩn nếu chưa có dữ liệu.
+     * Lấy pipeline mặc định nếu có trong DB.
+     * GET/Read operation KHÔNG được mutate DB.
      */
-    public PipelineBanHang layHoacTaoPipelineMacDinh() {
+    public PipelineBanHang layPipelineMacDinh() {
         String sql = "SELECT id, ma_pipeline, ten_pipeline, mo_ta, mac_dinh, hoat_dong, created_at, updated_at " +
                 "FROM pipeline_ban_hang WHERE mac_dinh = 1 OR hoat_dong = 1 ORDER BY mac_dinh DESC, id ASC LIMIT 1";
 
@@ -59,8 +60,26 @@ public class GiaiDoanPipelineDAO {
             LOGGER.log(Level.WARNING, "Không tìm thấy pipeline: " + e.getMessage());
         }
 
-        // Tạo pipeline chuẩn nếu bảng trống
-        return khoiTaoPipelineChuan();
+        return null;
+    }
+
+    /**
+     * Khởi tạo container pipeline_ban_hang mặc định khi có thao tác ghi hợp lệ (nếu chưa có).
+     * Chỉ tạo container bảng cha, KHÔNG tự ý chèn các giai đoạn mẫu.
+     */
+    public long khoiTaoPipelineContainerMacDinh(Connection conn) throws SQLException {
+        String insertPipelineSql = "INSERT INTO pipeline_ban_hang (ma_pipeline, ten_pipeline, mo_ta, mac_dinh, hoat_dong) " +
+                "VALUES ('PIPELINE_B2B_STANDARD', 'Chuỗi Pipeline Bán Hàng Chuẩn B2B', " +
+                "'Quy trình tiếp cận và chuyển đổi cơ hội doanh nghiệp', 1, 1)";
+        try (PreparedStatement ps = conn.prepareStatement(insertPipelineSql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+            }
+        }
+        return 1L;
     }
 
     /**
@@ -168,9 +187,13 @@ public class GiaiDoanPipelineDAO {
 
     /**
      * Lấy toàn bộ danh sách các giai đoạn theo pipelineId, kèm số lượng cơ hội đang chạy.
+     * Nếu chưa có pipeline nào trong DB: trả về danh sách rỗng (KHÔNG tự insert).
      */
     public List<GiaiDoanPipeline> layTatCaGiaiDoan() {
-        PipelineBanHang p = layHoacTaoPipelineMacDinh();
+        PipelineBanHang p = layPipelineMacDinh();
+        if (p == null) {
+            return new ArrayList<>();
+        }
         return layTatCaGiaiDoanTheoPipeline(p.getId());
     }
 
@@ -269,9 +292,10 @@ public class GiaiDoanPipelineDAO {
     }
 
     /**
-     * Đếm số cơ hội đang liên kết với giai đoạn (AC 4: bảo vệ cơ hội đang chạy).
+     * Đếm số cơ hội và lịch sử đang liên kết với giai đoạn (AC 4: bảo vệ cơ hội đang chạy).
+     * Fail-closed: Bắt buộc ném SQLException nếu có lỗi truy vấn DB.
      */
-    public int demSoCoHoiTrongGiaiDoan(int giaiDoanId) {
+    public int demSoCoHoiTrongGiaiDoan(int giaiDoanId) throws SQLException {
         int count = 0;
         String sql = "SELECT COUNT(*) FROM co_hoi WHERE giai_doan_id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
@@ -280,15 +304,9 @@ public class GiaiDoanPipelineDAO {
             ps.setInt(1, giaiDoanId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    count = rs.getInt(1);
+                    count += rs.getInt(1);
                 }
             }
-        } catch (SQLException e) {
-            LOGGER.log(Level.WARNING, "Lỗi kiểm tra số cơ hội của giai đoạn ID=" + giaiDoanId + ": " + e.getMessage());
-        }
-
-        if (count > 0) {
-            return count;
         }
 
         // Kiểm tra thêm lịch sử giai đoạn cơ hội nếu bảng đã được khởi tạo
@@ -298,11 +316,19 @@ public class GiaiDoanPipelineDAO {
             ps.setInt(1, giaiDoanId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1);
+                    count += rs.getInt(1);
                 }
             }
-        } catch (SQLException ignored) {
-            // Bảng có thể chưa tồn tại trong môi trường test rút gọn
+        } catch (SQLException e) {
+            String state = e.getSQLState();
+            int code = e.getErrorCode();
+            String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+            if ("42S02".equalsIgnoreCase(state) || code == 1146 || code == 42102 || msg.contains("not found")) {
+                LOGGER.log(Level.FINE, "Bảng lich_su_giai_doan_co_hoi chưa tồn tại trong môi trường hiện tại: " + e.getMessage());
+            } else {
+                LOGGER.log(Level.SEVERE, "Lỗi kiểm tra tham chiếu lịch sử: " + e.getMessage(), e);
+                throw e;
+            }
         }
 
         return count;
@@ -330,8 +356,13 @@ public class GiaiDoanPipelineDAO {
 
     private int themGiaiDoanNoiBo(Connection conn, GiaiDoanPipeline gd) throws SQLException {
         if (gd.getPipelineId() <= 0) {
-            PipelineBanHang p = layHoacTaoPipelineMacDinh();
-            gd.setPipelineId(p.getId());
+            PipelineBanHang p = layPipelineMacDinh();
+            if (p != null) {
+                gd.setPipelineId(p.getId());
+            } else {
+                long newPid = khoiTaoPipelineContainerMacDinh(conn);
+                gd.setPipelineId(newPid);
+            }
         }
 
         // Tự động tính toán thứ tự tiếp theo nếu thứ tự truyền vào <= 0
@@ -600,13 +631,13 @@ public class GiaiDoanPipelineDAO {
     }
 
     /**
-     * Xóa giai đoạn (AC 4: chỉ được gọi khi không có bất kỳ cơ hội nào đang liên kết).
+     * Xóa giai đoạn (AC 4: chỉ được gọi khi không có bất kỳ cơ hội hoặc lịch sử nào đang liên kết).
      */
     public boolean xoaGiaiDoan(int id) throws SQLException {
-        // Kiểm tra an toàn trước khi xóa
+        // Kiểm tra an toàn trước khi xóa (Fail-closed)
         int soCoHoi = demSoCoHoiTrongGiaiDoan(id);
         if (soCoHoi > 0) {
-            throw new IllegalStateException("Không thể xóa giai đoạn đang có " + soCoHoi + " cơ hội đang chạy!");
+            throw new IllegalStateException("Không thể xóa giai đoạn đang có " + soCoHoi + " cơ hội hoặc lịch sử tham chiếu!");
         }
 
         try (Connection conn = DatabaseConfig.getConnection()) {
@@ -633,32 +664,41 @@ public class GiaiDoanPipelineDAO {
     }
 
     /**
-     * AC 2: Tính toán tổng hợp số liệu dự báo doanh số theo từng giai đoạn và toàn pipeline.
+     * AC 2 & AC 4: Tính toán tổng hợp số liệu dự báo doanh số theo từng giai đoạn và toàn pipeline.
+     * Bảo toàn thương vụ đang chạy: Các giai đoạn NGUNG_AP_DUNG nhưng vẫn có cơ hội mở sẽ được giữ lại trong dự báo.
      */
     public List<DuBaoDoanhSoDTO> layThongKeDuBaoPipeline() {
         List<DuBaoDoanhSoDTO> danhSach = new ArrayList<>();
-        String sql = "SELECT g.id, g.ten_giai_doan, g.xac_suat_mac_dinh, " +
+        PipelineBanHang p = layPipelineMacDinh();
+        if (p == null) {
+            return danhSach;
+        }
+
+        String sql = "SELECT g.id, g.ten_giai_doan, g.xac_suat_mac_dinh, g.hoat_dong, " +
                 "COALESCE(SUM(c.gia_tri_du_kien), 0) AS tong_gia_tri, " +
                 "COUNT(c.id) AS so_co_hoi " +
                 "FROM giai_doan_pipeline g " +
                 "LEFT JOIN co_hoi c ON c.giai_doan_id = g.id AND c.trang_thai = 'MO' " +
-                "WHERE g.hoat_dong = 1 " +
-                "GROUP BY g.id, g.ten_giai_doan, g.xac_suat_mac_dinh, g.thu_tu " +
+                "WHERE g.pipeline_id = ? " +
+                "GROUP BY g.id, g.ten_giai_doan, g.xac_suat_mac_dinh, g.hoat_dong, g.thu_tu " +
+                "HAVING g.hoat_dong = 1 OR COUNT(c.id) > 0 " +
                 "ORDER BY g.thu_tu ASC";
 
         try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            while (rs.next()) {
-                int gid = rs.getInt("id");
-                String ten = rs.getString("ten_giai_doan");
-                BigDecimal xsBd = rs.getBigDecimal("xac_suat_mac_dinh");
-                int xacSuat = xsBd != null ? xsBd.intValue() : 0;
-                BigDecimal tongGiaTri = rs.getBigDecimal("tong_gia_tri");
-                int soCoHoi = rs.getInt("so_co_hoi");
+            ps.setLong(1, p.getId());
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int gid = rs.getInt("id");
+                    String ten = rs.getString("ten_giai_doan");
+                    BigDecimal xsBd = rs.getBigDecimal("xac_suat_mac_dinh");
+                    int xacSuat = xsBd != null ? xsBd.intValue() : 0;
+                    BigDecimal tongGiaTri = rs.getBigDecimal("tong_gia_tri");
+                    int soCoHoi = rs.getInt("so_co_hoi");
 
-                danhSach.add(new DuBaoDoanhSoDTO(gid, ten, xacSuat, tongGiaTri, soCoHoi));
+                    danhSach.add(new DuBaoDoanhSoDTO(gid, ten, xacSuat, tongGiaTri, soCoHoi));
+                }
             }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Lỗi truy vấn thống kê dự báo doanh số pipeline: " + e.getMessage(), e);
@@ -829,7 +869,7 @@ public class GiaiDoanPipelineDAO {
         gd.setXacSuatThang(xsBd != null ? xsBd.intValue() : 0);
 
         int dinhTre = rs.getInt("so_ngay_dinh_tre");
-        gd.setSoNgayCanhBaoDinhTre(dinhTre > 0 ? dinhTre : 7);
+        gd.setSoNgayCanhBaoDinhTre(rs.wasNull() ? 0 : dinhTre);
 
         String loaiKetThuc = rs.getString("loai_ket_thuc");
         gd.setLoaiGiaiDoan(LoaiGiaiDoanEnum.tuMa(loaiKetThuc));

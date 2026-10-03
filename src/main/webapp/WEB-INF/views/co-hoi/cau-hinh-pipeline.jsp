@@ -33,27 +33,17 @@
         </div>
 
         <div class="role-switcher-card">
-            <span class="role-label">Phân quyền:</span>
+            <span class="role-label">Vai trò:</span>
             <c:choose>
                 <c:when test="${coQuyenCauHinh}">
-                    <span class="role-pill role-pill-director" title="Đang ở chế độ Giám đốc kinh doanh">
-                        👔 Giám đốc kinh doanh
+                    <span class="role-pill role-pill-director" title="Tài khoản có quyền cấu hình pipeline">
+                        👔 Giám đốc kinh doanh / Quản trị
                     </span>
-                    <a href="${pageContext.request.contextPath}/pipeline/giai-doan?role=SALES_REP"
-                       class="btn btn-outline btn-sm"
-                       title="Chuyển sang góc nhìn Nhân viên kinh doanh (Chỉ xem)">
-                        Góc nhìn Sales
-                    </a>
                 </c:when>
                 <c:otherwise>
-                    <span class="role-pill role-pill-sales" title="Đang ở chế độ Nhân viên kinh doanh (Chỉ xem)">
-                        👤 Nhân viên kinh doanh
+                    <span class="role-pill role-pill-sales" title="Tài khoản chỉ xem">
+                        👤 Nhân viên kinh doanh (Chỉ xem)
                     </span>
-                    <a href="${pageContext.request.contextPath}/pipeline/giai-doan?role=DIRECTOR"
-                       class="btn btn-primary btn-sm"
-                       title="Chuyển sang quyền Giám đốc kinh doanh để cấu hình">
-                        Chuyển Giám đốc
-                    </a>
                 </c:otherwise>
             </c:choose>
         </div>
@@ -62,14 +52,14 @@
     <!-- Flash Messages (Thông báo thành công / lỗi) -->
     <c:if test="${not empty thongBaoThanhCong}">
         <div class="alert alert-success" role="alert">
-            <span>✅ <strong>Thành công:</strong> ${thongBaoThanhCong}</span>
+            <span>✅ <strong>Thành công:</strong> <c:out value="${thongBaoThanhCong}"/></span>
             <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
         </div>
     </c:if>
 
     <c:if test="${not empty thongBaoLoi}">
         <div class="alert alert-danger" role="alert">
-            <span>⚠️ <strong>Cảnh báo:</strong> ${thongBaoLoi}</span>
+            <span>⚠️ <strong>Cảnh báo:</strong> <c:out value="${thongBaoLoi}"/></span>
             <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
         </div>
     </c:if>
@@ -143,7 +133,7 @@
             </div>
 
             <c:if test="${coQuyenCauHinh}">
-                <a href="${pageContext.request.contextPath}/pipeline/giai-doan/tao${not empty param.role ? '?role='.concat(param.role) : ''}"
+                <a href="${pageContext.request.contextPath}/pipeline/giai-doan/tao"
                    class="btn btn-primary"
                    id="btnThemGiaiDoan">
                     + Thêm giai đoạn mới
@@ -176,7 +166,7 @@
                                     </span>
                                 </div>
 
-                                <div class="stepper-name" title="${gd.tenGiaiDoan}">${gd.tenGiaiDoan}</div>
+                                <div class="stepper-name" title="<c:out value="${gd.tenGiaiDoan}"/>"><c:out value="${gd.tenGiaiDoan}"/></div>
 
                                 <!-- Progress bar xác suất -->
                                 <div class="stepper-progress">
@@ -194,8 +184,8 @@
                                 <!-- Điều kiện rời giai đoạn (AC 3) -->
                                 <c:choose>
                                     <c:when test="${not empty gd.dieuKienBatBuoc}">
-                                        <div class="stepper-rule-tag" title="Điều kiện bắt buộc: ${gd.dieuKienBatBuoc}">
-                                            🔒 ${gd.dieuKienBatBuoc}
+                                        <div class="stepper-rule-tag" title="Điều kiện bắt buộc: <c:out value="${gd.dieuKienBatBuoc}"/>">
+                                            🔒 <c:out value="${gd.dieuKienBatBuoc}"/>
                                         </div>
                                     </c:when>
                                     <c:otherwise>
@@ -243,7 +233,7 @@
                     <c:forEach var="db" items="${duBaoPipeline}">
                         <tr>
                             <td>
-                                <strong>${db.tenGiaiDoan}</strong>
+                                <strong><c:out value="${db.tenGiaiDoan}"/></strong>
                             </td>
                             <td style="text-align: center;">
                                 <span class="badge badge-prob">${db.xacSuatThang}%</span>
@@ -381,18 +371,16 @@
                                     <div class="order-control-box">
                                         <c:if test="${not loop.first}">
                                             <form method="post" action="${pageContext.request.contextPath}/pipeline/giai-doan/doi-thu-tu" style="margin: 0;">
-                                                <c:if test="${not empty param.role}"><input type="hidden" name="role" value="${param.role}"></c:if>
                                                 <input type="hidden" name="id1" value="${gd.id}">
                                                 <input type="hidden" name="id2" value="${danhSachGiaiDoan[loop.index - 1].id}">
-                                                <button type="submit" class="btn-order" title="Chuyển lên trước bước ${danhSachGiaiDoan[loop.index - 1].tenGiaiDoan}">▲</button>
+                                                <button type="submit" class="btn-order" title="Chuyển lên trước bước <c:out value="${danhSachGiaiDoan[loop.index - 1].tenGiaiDoan}"/>">▲</button>
                                             </form>
                                         </c:if>
                                         <c:if test="${not loop.last}">
                                             <form method="post" action="${pageContext.request.contextPath}/pipeline/giai-doan/doi-thu-tu" style="margin: 0;">
-                                                <c:if test="${not empty param.role}"><input type="hidden" name="role" value="${param.role}"></c:if>
                                                 <input type="hidden" name="id1" value="${gd.id}">
                                                 <input type="hidden" name="id2" value="${danhSachGiaiDoan[loop.index + 1].id}">
-                                                <button type="submit" class="btn-order" title="Chuyển xuống sau bước ${danhSachGiaiDoan[loop.index + 1].tenGiaiDoan}">▼</button>
+                                                <button type="submit" class="btn-order" title="Chuyển xuống sau bước <c:out value="${danhSachGiaiDoan[loop.index + 1].tenGiaiDoan}"/>">▼</button>
                                             </form>
                                         </c:if>
                                     </div>
@@ -403,23 +391,23 @@
                         <!-- Mã giai đoạn -->
                         <td>
                             <code style="background: var(--gray-100); padding: 2px 6px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; color: var(--primary-700);">
-                                ${gd.maGiaiDoan}
+                                <c:out value="${gd.maGiaiDoan}"/>
                             </code>
                         </td>
 
                         <!-- Tên giai đoạn & Phân loại -->
                         <td>
-                            <strong style="color: var(--gray-900); font-size: 14.5px;">${gd.tenGiaiDoan}</strong>
+                            <strong style="color: var(--gray-900); font-size: 14.5px;"><c:out value="${gd.tenGiaiDoan}"/></strong>
                             <div style="font-size: 12px; color: var(--gray-500); margin-top: 2px;">
                                 <c:choose>
                                     <c:when test="${gd.thanhCong}">
-                                        <span style="color: var(--success-700); font-weight: 600;">🎯 Chốt thành công</span>
+                                         <span style="color: var(--success-700); font-weight: 600;">🎯 Chốt thành công</span>
                                     </c:when>
                                     <c:when test="${gd.thatBai}">
-                                        <span style="color: var(--danger-600); font-weight: 600;">❌ Đóng thất bại</span>
+                                         <span style="color: var(--danger-600); font-weight: 600;">❌ Đóng thất bại</span>
                                     </c:when>
                                     <c:otherwise>
-                                        <span>🔄 Đang tiến hành bán hàng</span>
+                                         <span>🔄 Đang tiến hành bán hàng</span>
                                     </c:otherwise>
                                 </c:choose>
                                 &bull; Đình trệ: &gt;${gd.soNgayCanhBaoDinhTre} ngày
@@ -436,7 +424,7 @@
                             <c:choose>
                                 <c:when test="${not empty gd.dieuKienBatBuoc}">
                                     <div style="font-size: 13.5px; font-weight: 600; color: #0f172a;">
-                                        🔒 ${gd.dieuKienBatBuoc}
+                                        🔒 <c:out value="${gd.dieuKienBatBuoc}"/>
                                     </div>
                                 </c:when>
                                 <c:otherwise>
@@ -504,14 +492,21 @@
                         <td style="text-align: center; white-space: nowrap;">
                             <!-- Nút thử nghiệm điều kiện rời giai đoạn (AC 3) -->
                             <button type="button" class="btn btn-outline btn-sm"
-                                    onclick="kiemTraDieuKienGiaiDoan('${gd.id}', '${gd.tenGiaiDoan}', ${gd.soCuocGapToiThieu}, ${gd.soCuocGoiToiThieu}, ${gd.yeuCauBaoGia}, ${gd.yeuCauKhaoSatNhuCau}, '${gd.dieuKienBatBuoc}')"
+                                    data-giai-doan-id="${gd.id}"
+                                    data-ten-giai-doan="<c:out value='${gd.tenGiaiDoan}'/>"
+                                    data-cuoc-gap="${gd.soCuocGapToiThieu}"
+                                    data-cuoc-goi="${gd.soCuocGoiToiThieu}"
+                                    data-bao-gia="${gd.yeuCauBaoGia}"
+                                    data-khao-sat="${gd.yeuCauKhaoSatNhuCau}"
+                                    data-dieu-kien-bat-buoc="<c:out value='${gd.dieuKienBatBuoc}'/>"
+                                    onclick="moModalDieuKienTuBtn(this)"
                                     title="Thử nghiệm kiểm tra cơ hội có đủ điều kiện rời giai đoạn hay không">
                                 🔍 Thử điều kiện
                             </button>
 
                             <c:if test="${coQuyenCauHinh}">
                                 <!-- Nút Sửa -->
-                                <a href="${pageContext.request.contextPath}/pipeline/giai-doan/sua?id=${gd.id}${not empty param.role ? '&role='.concat(param.role) : ''}"
+                                <a href="${pageContext.request.contextPath}/pipeline/giai-doan/sua?id=${gd.id}"
                                    class="btn btn-outline btn-sm"
                                    title="Chỉnh sửa xác suất, tên, hoặc tiêu chuẩn điều kiện">
                                     ✏️ Sửa
@@ -519,19 +514,18 @@
 
                                 <!-- Nút Chuyển trạng thái (Đang áp dụng <-> Ngừng áp dụng) -->
                                 <form method="post" action="${pageContext.request.contextPath}/pipeline/giai-doan/trang-thai" style="display:inline;">
-                                    <c:if test="${not empty param.role}"><input type="hidden" name="role" value="${param.role}"></c:if>
                                     <input type="hidden" name="id" value="${gd.id}">
                                     <c:choose>
                                         <c:when test="${gd.dangApDung}">
-                                            <input type="hidden" name="trangThaiMoi" value="NGUNG_AP_DUNG">
+                                            <input type="hidden" name="trangThai" value="NGUNG_AP_DUNG">
                                             <button type="submit" class="btn btn-outline btn-sm" style="color: var(--warning-600);"
-                                                    onclick="return confirm('Chuyển giai đoạn \'${gd.tenGiaiDoan}\' sang trạng thái Ngừng áp dụng? Các cơ hội đang chạy vẫn được bảo toàn nguyên vẹn.')"
+                                                    onclick="return confirm('Chuyển giai đoạn này sang trạng thái Ngừng áp dụng? Các cơ hội đang chạy vẫn được bảo toàn nguyên vẹn.')"
                                                     title="Tạm ngừng nhận cơ hội mới vào giai đoạn này">
                                                 ⏸️ Ngừng
                                             </button>
                                         </c:when>
                                         <c:otherwise>
-                                            <input type="hidden" name="trangThaiMoi" value="DANG_AP_DUNG">
+                                            <input type="hidden" name="trangThai" value="DANG_AP_DUNG">
                                             <button type="submit" class="btn btn-outline btn-sm" style="color: var(--success-600);"
                                                     title="Kích hoạt lại giai đoạn này trong chuỗi pipeline">
                                                 ▶️ Dùng lại
@@ -545,7 +539,9 @@
                                     <c:when test="${gd.soCoHoiHienTai > 0}">
                                         <!-- Đang có cơ hội: Chặn xóa cứng, giải thích cho người dùng -->
                                         <button type="button" class="btn btn-outline btn-sm" style="color: var(--gray-400); cursor: help;"
-                                                onclick="xacNhanXoaGiaiDoan(null, '${gd.tenGiaiDoan}', ${gd.soCoHoiHienTai})"
+                                                data-ten-giai-doan="<c:out value='${gd.tenGiaiDoan}'/>"
+                                                data-so-co-hoi="${gd.soCoHoiHienTai}"
+                                                onclick="xacNhanXoaTuBtn(null, this)"
                                                 title="Đang có ${gd.soCoHoiHienTai} cơ hội đang chạy. Hệ thống bảo vệ dữ liệu, không cho phép xoá cứng. Nhấn để xem chi tiết.">
                                             🔒 Không thể xoá
                                         </button>
@@ -553,10 +549,11 @@
                                     <c:otherwise>
                                         <!-- Không có cơ hội nào: Cho phép xóa với modal xác nhận -->
                                         <form method="post" action="${pageContext.request.contextPath}/pipeline/giai-doan/xoa" style="display:inline;">
-                                            <c:if test="${not empty param.role}"><input type="hidden" name="role" value="${param.role}"></c:if>
                                             <input type="hidden" name="id" value="${gd.id}">
                                             <button type="button" class="btn btn-danger btn-sm"
-                                                    onclick="xacNhanXoaGiaiDoan(this.form, '${gd.tenGiaiDoan}', 0)"
+                                                    data-ten-giai-doan="<c:out value='${gd.tenGiaiDoan}'/>"
+                                                    data-so-co-hoi="0"
+                                                    onclick="xacNhanXoaTuBtn(this.form, this)"
                                                     title="Xoá vĩnh viễn giai đoạn khỏi hệ thống">
                                                 🗑️ Xoá
                                             </button>

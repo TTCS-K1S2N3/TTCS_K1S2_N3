@@ -299,4 +299,59 @@ public class GiaiDoanPipelineDAOTest {
         assertTrue(id > 0);
         assertTrue(dao.timTheoId(id).getThuTu() >= 1);
     }
+
+    @Test
+    public void testDocDatabaseRongKhongTuInsert() throws Exception {
+        try (Statement stmt = h2Connection.createStatement()) {
+            stmt.execute("DELETE FROM pipeline_ban_hang");
+            stmt.execute("DELETE FROM giai_doan_pipeline");
+        }
+
+        // Đọc danh sách khi DB rỗng
+        List<GiaiDoanPipeline> list = dao.layTatCaGiaiDoan();
+        assertNotNull(list);
+        assertTrue(list.isEmpty(), "DB rỗng thì phải trả về danh sách rỗng");
+
+        // Xác nhận không tự ý mutate/insert pipeline hay giai đoạn nào vào DB
+        try (Statement stmt = h2Connection.createStatement();
+             java.sql.ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM pipeline_ban_hang")) {
+            assertTrue(rs.next());
+            assertEquals(0, rs.getInt(1), "GET/read tuyệt đối không được tự động INSERT pipeline");
+        }
+    }
+
+    @Test
+    public void testDuBaoBaoToanCoHoiTrongGiaiDoanNgungApDung() throws Exception {
+        GiaiDoanPipeline gd = new GiaiDoanPipeline();
+        gd.setPipelineId(1);
+        gd.setMaGiaiDoan("DIS_STAGE");
+        gd.setTenGiaiDoan("Stage Ngừng Áp Dụng");
+        gd.setThuTu(1);
+        gd.setXacSuatThang(50);
+        gd.setTrangThai(TrangThaiGiaiDoanEnum.NGUNG_AP_DUNG);
+        int id = dao.themGiaiDoan(gd);
+
+        // Chuyển sang ngừng áp dụng
+        dao.capNhatTrangThai(id, TrangThaiGiaiDoanEnum.NGUNG_AP_DUNG);
+
+        // Thêm cơ hội đang mở vào stage này
+        try (Statement stmt = h2Connection.createStatement()) {
+            stmt.execute("INSERT INTO co_hoi (id, ten_co_hoi, giai_doan_id, gia_tri_du_kien, trang_thai) " +
+                    "VALUES (99, 'Hợp đồng trong stage ngừng áp dụng', " + id + ", 50000000.00, 'MO')");
+        }
+
+        List<DuBaoDoanhSoDTO> duBao = dao.layThongKeDuBaoPipeline();
+        boolean timThay = false;
+        for (DuBaoDoanhSoDTO dto : duBao) {
+            if ("Stage Ngừng Áp Dụng".equals(dto.getTenGiaiDoan())) {
+                timThay = true;
+                assertEquals(1, dto.getSoLuongCoHoi());
+                assertEquals(0, new BigDecimal("50000000.00").compareTo(dto.getTongGiaTriCoHoi()));
+                // 50,000,000 * 50% = 25,000,000
+                assertEquals(0, new BigDecimal("25000000.00").compareTo(dto.getDoanhSoDuBao()));
+                break;
+            }
+        }
+        assertTrue(timThay, "Cơ hội đang mở trong giai đoạn ngừng áp dụng phải được bảo toàn trong thống kê dự báo (AC 4)");
+    }
 }

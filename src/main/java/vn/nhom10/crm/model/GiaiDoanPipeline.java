@@ -96,7 +96,7 @@ public class GiaiDoanPipeline implements Serializable {
     }
 
     public void setXacSuatThang(int xacSuatThang) {
-        this.xacSuatThang = Math.max(0, Math.min(100, xacSuatThang));
+        this.xacSuatThang = xacSuatThang;
     }
 
     public int getSoNgayCanhBaoDinhTre() {
@@ -104,7 +104,7 @@ public class GiaiDoanPipeline implements Serializable {
     }
 
     public void setSoNgayCanhBaoDinhTre(int soNgayCanhBaoDinhTre) {
-        this.soNgayCanhBaoDinhTre = soNgayCanhBaoDinhTre > 0 ? soNgayCanhBaoDinhTre : 7;
+        this.soNgayCanhBaoDinhTre = soNgayCanhBaoDinhTre;
     }
 
     public LoaiGiaiDoanEnum getLoaiGiaiDoan() {
@@ -112,7 +112,7 @@ public class GiaiDoanPipeline implements Serializable {
     }
 
     public void setLoaiGiaiDoan(LoaiGiaiDoanEnum loaiGiaiDoan) {
-        this.loaiGiaiDoan = loaiGiaiDoan != null ? loaiGiaiDoan : LoaiGiaiDoanEnum.DANG_TIEN_HANH;
+        this.loaiGiaiDoan = loaiGiaiDoan;
     }
 
     public String getMaLoaiGiaiDoan() {

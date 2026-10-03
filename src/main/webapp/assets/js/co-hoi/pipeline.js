@@ -441,3 +441,20 @@ function dinhDangTienTe(soTien) {
     if (isNaN(soTien)) soTien = 0;
     return Number(Math.round(soTien)).toLocaleString("vi-VN") + " ₫";
 }
+
+function moModalDieuKienTuBtn(btn) {
+    var id = btn.getAttribute('data-id');
+    var ten = btn.getAttribute('data-ten');
+    var gap = parseInt(btn.getAttribute('data-gap'), 10) || 0;
+    var goi = parseInt(btn.getAttribute('data-goi'), 10) || 0;
+    var baogia = btn.getAttribute('data-baogia') === 'true';
+    var khaosat = btn.getAttribute('data-khaosat') === 'true';
+    var mota = btn.getAttribute('data-mota');
+    kiemTraDieuKienGiaiDoan(id, ten, gap, goi, baogia, khaosat, mota);
+}
+
+function xacNhanXoaTuBtn(formEl, btn) {
+    var ten = btn.getAttribute('data-ten');
+    var cohoi = parseInt(btn.getAttribute('data-cohoi'), 10) || 0;
+    return xacNhanXoaGiaiDoan(formEl, ten, cohoi);
+}

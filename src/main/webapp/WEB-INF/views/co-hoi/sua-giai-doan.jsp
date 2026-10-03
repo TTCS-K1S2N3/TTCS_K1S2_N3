@@ -17,19 +17,19 @@
     <nav class="breadcrumb-nav" aria-label="Đường dẫn điều hướng">
         <a href="${pageContext.request.contextPath}/">Trang chủ</a>
         <span class="sep">/</span>
-        <a href="${pageContext.request.contextPath}/pipeline/giai-doan${not empty param.role ? '?role='.concat(param.role) : ''}">Cấu hình Pipeline</a>
+        <a href="${pageContext.request.contextPath}/pipeline/giai-doan">Cấu hình Pipeline</a>
         <span class="sep">/</span>
-        <span class="current">Cập nhật: ${giaiDoan.tenGiaiDoan}</span>
+        <span class="current">Cập nhật: <c:out value="${giaiDoan.tenGiaiDoan}"/></span>
     </nav>
 
     <!-- Header -->
     <header class="crm-header">
         <div class="crm-header-title">
-            <h1>✏️ Cập nhật Giai đoạn: ${giaiDoan.tenGiaiDoan}</h1>
+            <h1>✏️ Cập nhật Giai đoạn: <c:out value="${giaiDoan.tenGiaiDoan}"/></h1>
             <p>Điều chỉnh xác suất thắng mặc định, thứ tự chuỗi quy trình và tiêu chuẩn bắt buộc rời giai đoạn (AC 1, AC 2, AC 3).</p>
         </div>
         <div>
-            <a href="${pageContext.request.contextPath}/pipeline/giai-doan${not empty param.role ? '?role='.concat(param.role) : ''}"
+            <a href="${pageContext.request.contextPath}/pipeline/giai-doan"
                class="btn btn-outline"
                id="btnQuayLai">
                 &larr; Quay lại danh sách
@@ -58,7 +58,7 @@
     <!-- Flash Error nếu có -->
     <c:if test="${not empty thongBaoLoi}">
         <div class="alert alert-danger" role="alert">
-            <span>⚠️ <strong>Lỗi:</strong> ${thongBaoLoi}</span>
+            <span>⚠️ <strong>Lỗi:</strong> <c:out value="${thongBaoLoi}"/></span>
             <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
         </div>
     </c:if>
@@ -66,9 +66,6 @@
     <!-- Form Chỉnh Sửa Giai Đoạn -->
     <div class="crm-card">
         <form id="formGiaiDoan" method="post" action="${pageContext.request.contextPath}/pipeline/giai-doan/sua" novalidate>
-            <c:if test="${not empty param.role}">
-                <input type="hidden" name="role" value="${param.role}">
-            </c:if>
             <input type="hidden" name="id" value="${giaiDoan.id}">
 
             <div class="form-grid">
@@ -78,11 +75,11 @@
                     <label for="maGiaiDoan">
                         Mã giai đoạn <span class="required">*</span>
                     </label>
-                    <input type="text" id="maGiaiDoan" name="maGiaiDoan" value="${giaiDoan.maGiaiDoan}"
+                    <input type="text" id="maGiaiDoan" name="maGiaiDoan" value="<c:out value='${giaiDoan.maGiaiDoan}'/>"
                            class="${not empty danhSachLoi['maGiaiDoan'] ? 'is-invalid' : ''}"
                            required>
                     <c:if test="${not empty danhSachLoi['maGiaiDoan']}">
-                        <span class="field-error">⚠️ ${danhSachLoi['maGiaiDoan']}</span>
+                        <span class="field-error">⚠️ <c:out value="${danhSachLoi['maGiaiDoan']}"/></span>
                     </c:if>
                     <span class="form-hint">Mã định danh duy nhất trong hệ thống CRM (chữ in hoa, số, _, -).</span>
                 </div>
@@ -92,11 +89,11 @@
                     <label for="tenGiaiDoan">
                         Tên giai đoạn <span class="required">*</span>
                     </label>
-                    <input type="text" id="tenGiaiDoan" name="tenGiaiDoan" value="${giaiDoan.tenGiaiDoan}"
+                    <input type="text" id="tenGiaiDoan" name="tenGiaiDoan" value="<c:out value='${giaiDoan.tenGiaiDoan}'/>"
                            class="${not empty danhSachLoi['tenGiaiDoan'] ? 'is-invalid' : ''}"
                            required autofocus>
                     <c:if test="${not empty danhSachLoi['tenGiaiDoan']}">
-                        <span class="field-error">⚠️ ${danhSachLoi['tenGiaiDoan']}</span>
+                        <span class="field-error">⚠️ <c:out value="${danhSachLoi['tenGiaiDoan']}"/></span>
                     </c:if>
                     <span class="form-hint">Tên hiển thị trực tiếp trên giao diện phễu bán hàng.</span>
                 </div>
@@ -110,7 +107,7 @@
                            class="${not empty danhSachLoi['thuTu'] ? 'is-invalid' : ''}"
                            required>
                     <c:if test="${not empty danhSachLoi['thuTu']}">
-                        <span class="field-error">⚠️ ${danhSachLoi['thuTu']}</span>
+                        <span class="field-error">⚠️ <c:out value="${danhSachLoi['thuTu']}"/></span>
                     </c:if>
                     <span class="form-hint">Vị trí tương ứng trong chuỗi tuyến tính (1, 2, 3...).</span>
                 </div>
@@ -144,7 +141,7 @@
                         </div>
                     </div>
                     <c:if test="${not empty danhSachLoi['xacSuatThang']}">
-                        <span class="field-error">⚠️ ${danhSachLoi['xacSuatThang']}</span>
+                        <span class="field-error">⚠️ <c:out value="${danhSachLoi['xacSuatThang']}"/></span>
                     </c:if>
                     <span class="form-hint" style="color: var(--primary-700); margin-top: 6px;">
                         💡 Công thức dự báo tự động: <strong>Doanh số dự báo = Giá trị cơ hội &times; (Xác suất thắng / 100)</strong>
@@ -169,7 +166,7 @@
                         <!-- Mô tả bằng văn bản -->
                         <div class="form-group" style="margin-bottom: 16px;">
                             <label for="dieuKienBatBuoc">Mô tả quy tắc điều kiện bắt buộc:</label>
-                            <input type="text" id="dieuKienBatBuoc" name="dieuKienBatBuoc" value="${giaiDoan.dieuKienBatBuoc}">
+                            <input type="text" id="dieuKienBatBuoc" name="dieuKienBatBuoc" value="<c:out value='${giaiDoan.dieuKienBatBuoc}'/>">
                             <span class="form-hint">Mô tả tóm tắt sẽ xuất hiện trên giao diện Kanban và chi tiết cơ hội.</span>
                         </div>
 
@@ -228,7 +225,7 @@
 
             <!-- Form Actions -->
             <div style="margin-top: 28px; display: flex; justify-content: flex-end; gap: 14px; border-top: 1px solid var(--gray-200); padding-top: 20px;">
-                <a href="${pageContext.request.contextPath}/pipeline/giai-doan${not empty param.role ? '?role='.concat(param.role) : ''}"
+                <a href="${pageContext.request.contextPath}/pipeline/giai-doan"
                    class="btn btn-outline">
                     Hủy bỏ
                 </a>

@@ -188,8 +188,15 @@ public class GiaiDoanPipelineService {
             return KetQuaGiaiDoanDTO.thatBai("Không tìm thấy giai đoạn có ID=" + id);
         }
 
-        // Ràng buộc AC 4: Kiểm tra xem có cơ hội nào đang liên kết với giai đoạn này không
-        int soCoHoi = giaiDoanPipelineDAO.demSoCoHoiTrongGiaiDoan(id);
+        // Ràng buộc AC 4: Kiểm tra xem có cơ hội hoặc lịch sử nào đang liên kết với giai đoạn này không
+        int soCoHoi;
+        try {
+            soCoHoi = giaiDoanPipelineDAO.demSoCoHoiTrongGiaiDoan(id);
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi kiểm tra dữ liệu tham chiếu khi xoá giai đoạn ID=" + id + ": " + e.getMessage(), e);
+            return KetQuaGiaiDoanDTO.thatBai("Không thể kiểm tra dữ liệu tham chiếu do lỗi hệ thống. Để bảo vệ dữ liệu, không thực hiện xóa.");
+        }
+
         if (soCoHoi > 0) {
             return KetQuaGiaiDoanDTO.loiDangCoCoHoi(gd.getTenGiaiDoan(), soCoHoi);
         }
@@ -329,12 +336,22 @@ public class GiaiDoanPipelineService {
             ketQua.themLoi("xacSuatThang", "Xác suất thắng phải từ 0% đến 100%.");
         }
 
-        // 5. Cảnh báo đình trệ
-        if (gd.getSoNgayCanhBaoDinhTre() <= 0) {
-            ketQua.themLoi("soNgayCanhBaoDinhTre", "Số ngày cảnh báo đình trệ phải lớn hơn 0.");
+        // 5. Cảnh báo đình trệ (cho phép để trống hoặc 0 ngày, không được âm)
+        if (gd.getSoNgayCanhBaoDinhTre() < 0) {
+            ketQua.themLoi("soNgayCanhBaoDinhTre", "Số ngày cảnh báo đình trệ không được âm.");
         }
 
-        // 6. Mô tả quy tắc điều kiện bắt buộc tối đa 500 ký tự (theo schema DB)
+        // 6. Phân loại giai đoạn
+        if (gd.getLoaiGiaiDoan() == null) {
+            ketQua.themLoi("loaiGiaiDoan", "Phân loại giai đoạn không hợp lệ.");
+        }
+
+        // 7. Trạng thái giai đoạn
+        if (gd.getTrangThai() == null) {
+            ketQua.themLoi("trangThai", "Trạng thái giai đoạn không hợp lệ.");
+        }
+
+        // 8. Mô tả quy tắc điều kiện bắt buộc tối đa 500 ký tự (theo schema DB)
         if (gd.getDieuKienBatBuoc() != null && gd.getDieuKienBatBuoc().trim().length() > 500) {
             ketQua.themLoi("dieuKienBatBuoc", "Mô tả điều kiện bắt buộc tối đa 500 ký tự.");
         }

@@ -13,15 +13,13 @@ import vn.nhom10.crm.model.GiaiDoanPipeline;
 import vn.nhom10.crm.model.LoaiGiaiDoanEnum;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.TrangThaiGiaiDoanEnum;
-import vn.nhom10.crm.model.VaiTro;
-import vn.nhom10.crm.model.VaiTroEnum;
 import vn.nhom10.crm.service.GiaiDoanPipelineService;
+import vn.nhom10.crm.service.PhienService;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,7 +40,7 @@ import java.util.List;
 })
 public class GiaiDoanPipelineServlet extends HttpServlet {
 
-    public static final String SESSION_USER = "nguoiDung";
+    public static final String SESSION_USER = PhienService.SESSION_USER_KEY;
 
     private GiaiDoanPipelineService giaiDoanPipelineService;
 
@@ -64,6 +62,12 @@ public class GiaiDoanPipelineServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
 
+        NguoiDung user = layNguoiDung(request);
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/dang-nhap?error=auth_required");
+            return;
+        }
+
         String servletPath = request.getServletPath();
 
         if ("/pipeline/giai-doan/kiem-tra-dieu-kien".equals(servletPath)) {
@@ -76,7 +80,6 @@ public class GiaiDoanPipelineServlet extends HttpServlet {
             return;
         }
 
-        NguoiDung user = layNguoiDung(request);
         boolean coQuyen = giaiDoanPipelineService.coQuyenCauHinh(user);
 
         if ("/pipeline/giai-doan/tao".equals(servletPath)) {
@@ -88,6 +91,9 @@ public class GiaiDoanPipelineServlet extends HttpServlet {
             List<GiaiDoanPipeline> list = giaiDoanPipelineService.layTatCaGiaiDoan();
             gd.setThuTu(list.size() + 1);
             gd.setXacSuatThang(50);
+            gd.setSoNgayCanhBaoDinhTre(7);
+            gd.setLoaiGiaiDoan(LoaiGiaiDoanEnum.DANG_TIEN_HANH);
+            gd.setTrangThai(TrangThaiGiaiDoanEnum.DANG_AP_DUNG);
             request.setAttribute("giaiDoan", gd);
             napThuocTinhForm(request);
             request.getRequestDispatcher("/WEB-INF/views/co-hoi/tao-giai-doan.jsp").forward(request, response);
@@ -99,8 +105,11 @@ public class GiaiDoanPipelineServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền chỉnh sửa cấu hình giai đoạn.");
                 return;
             }
-            String paramId = request.getParameter("id");
-            int id = parseIntSafe(paramId, -1);
+            Integer id = parseIntegerOrNull(request.getParameter("id"));
+            if (id == null || id <= 0) {
+                response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?error=not_found");
+                return;
+            }
             GiaiDoanPipeline gd = giaiDoanPipelineService.timTheoId(id);
             if (gd == null) {
                 response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?error=not_found");
@@ -137,8 +146,13 @@ public class GiaiDoanPipelineServlet extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
 
-        String servletPath = request.getServletPath();
         NguoiDung user = layNguoiDung(request);
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/dang-nhap?error=auth_required");
+            return;
+        }
+
+        String servletPath = request.getServletPath();
 
         if ("/pipeline/giai-doan/kiem-tra-dieu-kien".equals(servletPath)) {
             xuLyKiemTraDieuKienAjax(request, response);
@@ -167,13 +181,20 @@ public class GiaiDoanPipelineServlet extends HttpServlet {
 
     private void xuLyThemGiaiDoan(HttpServletRequest request, HttpServletResponse response, NguoiDung user)
             throws ServletException, IOException {
-        GiaiDoanPipeline gd = trichXuatDuLieuForm(request);
-        KetQuaGiaiDoanDTO ketQua = giaiDoanPipelineService.themGiaiDoan(gd, user);
+        KetQuaGiaiDoanDTO ketQuaForm = new KetQuaGiaiDoanDTO();
+        GiaiDoanPipeline gd = trichXuatDuLieuForm(request, ketQuaForm);
+
+        KetQuaGiaiDoanDTO ketQua;
+        if (!ketQuaForm.getDanhSachLoi().isEmpty()) {
+            ketQua = ketQuaForm;
+            ketQua.setThongBao("Dữ liệu giai đoạn không hợp lệ. Vui lòng kiểm tra lại các trường.");
+        } else {
+            ketQua = giaiDoanPipelineService.themGiaiDoan(gd, user);
+        }
 
         if (ketQua.isThanhCong()) {
             String encoded = URLEncoder.encode(ketQua.getThongBao(), StandardCharsets.UTF_8);
-            String roleParam = request.getParameter("role") != null ? "&role=" + request.getParameter("role") : "";
-            response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?thanhCong=" + encoded + roleParam);
+            response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?thanhCong=" + encoded);
         } else {
             request.setAttribute("giaiDoan", gd);
             request.setAttribute("danhSachLoi", ketQua.getDanhSachLoi());
@@ -185,16 +206,27 @@ public class GiaiDoanPipelineServlet extends HttpServlet {
 
     private void xuLyCapNhatGiaiDoan(HttpServletRequest request, HttpServletResponse response, NguoiDung user)
             throws ServletException, IOException {
-        int id = parseIntSafe(request.getParameter("id"), -1);
-        GiaiDoanPipeline gd = trichXuatDuLieuForm(request);
+        Integer id = parseIntegerOrNull(request.getParameter("id"));
+        if (id == null || id <= 0) {
+            response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?error=" + URLEncoder.encode("ID giai đoạn không hợp lệ.", StandardCharsets.UTF_8));
+            return;
+        }
+
+        KetQuaGiaiDoanDTO ketQuaForm = new KetQuaGiaiDoanDTO();
+        GiaiDoanPipeline gd = trichXuatDuLieuForm(request, ketQuaForm);
         gd.setId(id);
 
-        KetQuaGiaiDoanDTO ketQua = giaiDoanPipelineService.capNhatGiaiDoan(gd, user);
+        KetQuaGiaiDoanDTO ketQua;
+        if (!ketQuaForm.getDanhSachLoi().isEmpty()) {
+            ketQua = ketQuaForm;
+            ketQua.setThongBao("Dữ liệu giai đoạn không hợp lệ. Vui lòng kiểm tra lại các trường.");
+        } else {
+            ketQua = giaiDoanPipelineService.capNhatGiaiDoan(gd, user);
+        }
 
         if (ketQua.isThanhCong()) {
             String encoded = URLEncoder.encode(ketQua.getThongBao(), StandardCharsets.UTF_8);
-            String roleParam = request.getParameter("role") != null ? "&role=" + request.getParameter("role") : "";
-            response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?thanhCong=" + encoded + roleParam);
+            response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?thanhCong=" + encoded);
         } else {
             request.setAttribute("giaiDoan", gd);
             request.setAttribute("danhSachLoi", ketQua.getDanhSachLoi());
@@ -211,46 +243,66 @@ public class GiaiDoanPipelineServlet extends HttpServlet {
 
     private void xuLyDoiThuTu(HttpServletRequest request, HttpServletResponse response, NguoiDung user)
             throws IOException {
-        int id1 = parseIntSafe(request.getParameter("id1"), -1);
-        int id2 = parseIntSafe(request.getParameter("id2"), -1);
+        Integer id1 = parseIntegerOrNull(request.getParameter("id1"));
+        Integer id2 = parseIntegerOrNull(request.getParameter("id2"));
+        if (id1 == null || id2 == null || id1 <= 0 || id2 <= 0) {
+            response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?error=" + URLEncoder.encode("Tham số đổi thứ tự không hợp lệ.", StandardCharsets.UTF_8));
+            return;
+        }
 
         KetQuaGiaiDoanDTO ketQua = giaiDoanPipelineService.hoanDoiThuTu(id1, id2, user);
         String msg = ketQua.isThanhCong() ? "thanhCong=" : "error=";
         String encoded = URLEncoder.encode(ketQua.getThongBao(), StandardCharsets.UTF_8);
-        String roleParam = request.getParameter("role") != null ? "&role=" + request.getParameter("role") : "";
-        response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?" + msg + encoded + roleParam);
+        response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?" + msg + encoded);
     }
 
     private void xuLyTrangThai(HttpServletRequest request, HttpServletResponse response, NguoiDung user)
             throws IOException {
-        int id = parseIntSafe(request.getParameter("id"), -1);
+        Integer id = parseIntegerOrNull(request.getParameter("id"));
+        if (id == null || id <= 0) {
+            response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?error=" + URLEncoder.encode("ID giai đoạn không hợp lệ.", StandardCharsets.UTF_8));
+            return;
+        }
         String trangThaiStr = request.getParameter("trangThai");
-        TrangThaiGiaiDoanEnum moi = TrangThaiGiaiDoanEnum.tuMa(trangThaiStr);
+        if (trangThaiStr == null || trangThaiStr.isBlank()) {
+            trangThaiStr = request.getParameter("trangThaiMoi");
+        }
+        TrangThaiGiaiDoanEnum moi = TrangThaiGiaiDoanEnum.tuMaStrict(trangThaiStr);
+        if (moi == null) {
+            response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?error=" + URLEncoder.encode("Trạng thái giai đoạn không hợp lệ.", StandardCharsets.UTF_8));
+            return;
+        }
 
         KetQuaGiaiDoanDTO ketQua = giaiDoanPipelineService.chuyenTrangThai(id, moi, user);
         String msg = ketQua.isThanhCong() ? "thanhCong=" : "error=";
         String encoded = URLEncoder.encode(ketQua.getThongBao(), StandardCharsets.UTF_8);
-        String roleParam = request.getParameter("role") != null ? "&role=" + request.getParameter("role") : "";
-        response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?" + msg + encoded + roleParam);
+        response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?" + msg + encoded);
     }
 
     private void xuLyXoaGiaiDoan(HttpServletRequest request, HttpServletResponse response, NguoiDung user)
             throws IOException {
-        int id = parseIntSafe(request.getParameter("id"), -1);
+        Integer id = parseIntegerOrNull(request.getParameter("id"));
+        if (id == null || id <= 0) {
+            response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?error=" + URLEncoder.encode("ID giai đoạn không hợp lệ.", StandardCharsets.UTF_8));
+            return;
+        }
         KetQuaGiaiDoanDTO ketQua = giaiDoanPipelineService.xoaGiaiDoan(id, user);
 
         String msg = ketQua.isThanhCong() ? "thanhCong=" : "error=";
         String encoded = URLEncoder.encode(ketQua.getThongBao(), StandardCharsets.UTF_8);
-        String roleParam = request.getParameter("role") != null ? "&role=" + request.getParameter("role") : "";
-        response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?" + msg + encoded + roleParam);
+        response.sendRedirect(request.getContextPath() + "/pipeline/giai-doan?" + msg + encoded);
     }
 
     private void xuLyKiemTraDieuKienAjax(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         response.setContentType("application/json;charset=UTF-8");
-        int id = parseIntSafe(request.getParameter("giaiDoanId"), -1);
-        int soGap = parseIntSafe(request.getParameter("soCuocGap"), 0);
-        int soGoi = parseIntSafe(request.getParameter("soCuocGoi"), 0);
+        Integer id = parseIntegerOrNull(request.getParameter("giaiDoanId"));
+        if (id == null || id <= 0) {
+            response.getWriter().write("{\"thoaDieuKien\":false,\"giaiDoanId\":-1,\"tenGiaiDoan\":\"Không hợp lệ\",\"thongBao\":\"ID giai đoạn không hợp lệ.\",\"danhSachYeuCauThieu\":[\"ID giai đoạn không hợp lệ.\"]}");
+            return;
+        }
+        int soGap = parseIntegerOrDefault(request.getParameter("soCuocGap"), 0);
+        int soGoi = parseIntegerOrDefault(request.getParameter("soCuocGoi"), 0);
         boolean baoGia = "true".equalsIgnoreCase(request.getParameter("daBaoGia")) || "1".equals(request.getParameter("daBaoGia"));
         boolean khaoSat = "true".equalsIgnoreCase(request.getParameter("daKhaoSat")) || "1".equals(request.getParameter("daKhaoSat"));
 
@@ -274,32 +326,112 @@ public class GiaiDoanPipelineServlet extends HttpServlet {
     private void xuLyTinhDuBaoAjax(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         response.setContentType("application/json;charset=UTF-8");
-        java.math.BigDecimal giaTri = java.math.BigDecimal.ZERO;
+        BigDecimal giaTri = BigDecimal.ZERO;
         try {
             String giaTriStr = request.getParameter("giaTri");
             if (giaTriStr != null && !giaTriStr.isBlank()) {
-                giaTri = new java.math.BigDecimal(giaTriStr.trim());
+                giaTri = new BigDecimal(giaTriStr.trim());
             }
         } catch (Exception ignored) {
+            response.getWriter().write("{\"thanhCong\":false,\"thongBao\":\"Giá trị cơ hội không hợp lệ.\"}");
+            return;
         }
-        int xacSuat = parseIntSafe(request.getParameter("xacSuat"), 0);
-        java.math.BigDecimal kq = giaiDoanPipelineService.tinhDuBaoDoanhSo(giaTri, xacSuat);
+
+        Integer xacSuat = parseIntegerOrNull(request.getParameter("xacSuat"));
+        if (xacSuat == null || xacSuat < 0 || xacSuat > 100) {
+            response.getWriter().write("{\"thanhCong\":false,\"thongBao\":\"Xác suất phải từ 0% đến 100%.\"}");
+            return;
+        }
+
+        BigDecimal kq = giaiDoanPipelineService.tinhDuBaoDoanhSo(giaTri, xacSuat);
         response.getWriter().write("{\"thanhCong\":true,\"doanhSoDuBao\":" + kq.toPlainString() + "}");
     }
 
-    private GiaiDoanPipeline trichXuatDuLieuForm(HttpServletRequest request) {
+    private GiaiDoanPipeline trichXuatDuLieuForm(HttpServletRequest request, KetQuaGiaiDoanDTO ketQua) {
         GiaiDoanPipeline gd = new GiaiDoanPipeline();
         gd.setMaGiaiDoan(request.getParameter("maGiaiDoan"));
         gd.setTenGiaiDoan(request.getParameter("tenGiaiDoan"));
-        gd.setThuTu(parseIntSafe(request.getParameter("thuTu"), 1));
-        gd.setXacSuatThang(parseIntSafe(request.getParameter("xacSuatThang"), 0));
-        gd.setSoNgayCanhBaoDinhTre(parseIntSafe(request.getParameter("soNgayCanhBaoDinhTre"), 7));
-        gd.setLoaiGiaiDoan(LoaiGiaiDoanEnum.tuMa(request.getParameter("loaiGiaiDoan")));
-        gd.setTrangThai(TrangThaiGiaiDoanEnum.tuMa(request.getParameter("trangThai")));
 
-        // AC 3: Điều kiện rời bước
-        gd.setSoCuocGapToiThieu(parseIntSafe(request.getParameter("soCuocGapToiThieu"), 0));
-        gd.setSoCuocGoiToiThieu(parseIntSafe(request.getParameter("soCuocGoiToiThieu"), 0));
+        String thuTuStr = request.getParameter("thuTu");
+        if (thuTuStr == null || thuTuStr.isBlank()) {
+            ketQua.themLoi("thuTu", "Thứ tự giai đoạn không được để trống.");
+            gd.setThuTu(-1);
+        } else {
+            try {
+                gd.setThuTu(Integer.parseInt(thuTuStr.trim()));
+            } catch (NumberFormatException e) {
+                ketQua.themLoi("thuTu", "Thứ tự giai đoạn phải là số nguyên.");
+                gd.setThuTu(-1);
+            }
+        }
+
+        String xacSuatStr = request.getParameter("xacSuatThang");
+        if (xacSuatStr == null || xacSuatStr.isBlank()) {
+            ketQua.themLoi("xacSuatThang", "Xác suất thắng không được để trống.");
+            gd.setXacSuatThang(-1);
+        } else {
+            try {
+                gd.setXacSuatThang(Integer.parseInt(xacSuatStr.trim()));
+            } catch (NumberFormatException e) {
+                ketQua.themLoi("xacSuatThang", "Xác suất thắng phải là số nguyên từ 0 đến 100.");
+                gd.setXacSuatThang(-1);
+            }
+        }
+
+        String dinhTreStr = request.getParameter("soNgayCanhBaoDinhTre");
+        if (dinhTreStr != null && !dinhTreStr.isBlank()) {
+            try {
+                gd.setSoNgayCanhBaoDinhTre(Integer.parseInt(dinhTreStr.trim()));
+            } catch (NumberFormatException e) {
+                ketQua.themLoi("soNgayCanhBaoDinhTre", "Số ngày cảnh báo đình trệ phải là số nguyên.");
+                gd.setSoNgayCanhBaoDinhTre(-1);
+            }
+        } else {
+            gd.setSoNgayCanhBaoDinhTre(0);
+        }
+
+        String loaiStr = request.getParameter("loaiGiaiDoan");
+        if (loaiStr != null && !loaiStr.isBlank()) {
+            LoaiGiaiDoanEnum loai = LoaiGiaiDoanEnum.tuMaStrict(loaiStr);
+            if (loai == null) {
+                ketQua.themLoi("loaiGiaiDoan", "Phân loại giai đoạn không hợp lệ.");
+            } else {
+                gd.setLoaiGiaiDoan(loai);
+            }
+        } else {
+            gd.setLoaiGiaiDoan(LoaiGiaiDoanEnum.DANG_TIEN_HANH);
+        }
+
+        String trangThaiStr = request.getParameter("trangThai");
+        if (trangThaiStr != null && !trangThaiStr.isBlank()) {
+            TrangThaiGiaiDoanEnum tt = TrangThaiGiaiDoanEnum.tuMaStrict(trangThaiStr);
+            if (tt == null) {
+                ketQua.themLoi("trangThai", "Trạng thái giai đoạn không hợp lệ.");
+            } else {
+                gd.setTrangThai(tt);
+            }
+        } else {
+            gd.setTrangThai(TrangThaiGiaiDoanEnum.DANG_AP_DUNG);
+        }
+
+        String soGapStr = request.getParameter("soCuocGapToiThieu");
+        if (soGapStr != null && !soGapStr.isBlank()) {
+            try {
+                gd.setSoCuocGapToiThieu(Integer.parseInt(soGapStr.trim()));
+            } catch (NumberFormatException e) {
+                ketQua.themLoi("soCuocGapToiThieu", "Số cuộc gặp tối thiểu phải là số nguyên.");
+            }
+        }
+
+        String soGoiStr = request.getParameter("soCuocGoiToiThieu");
+        if (soGoiStr != null && !soGoiStr.isBlank()) {
+            try {
+                gd.setSoCuocGoiToiThieu(Integer.parseInt(soGoiStr.trim()));
+            } catch (NumberFormatException e) {
+                ketQua.themLoi("soCuocGoiToiThieu", "Số cuộc gọi tối thiểu phải là số nguyên.");
+            }
+        }
+
         gd.setYeuCauBaoGia("true".equalsIgnoreCase(request.getParameter("yeuCauBaoGia")) || "on".equalsIgnoreCase(request.getParameter("yeuCauBaoGia")));
         gd.setYeuCauKhaoSatNhuCau("true".equalsIgnoreCase(request.getParameter("yeuCauKhaoSatNhuCau")) || "on".equalsIgnoreCase(request.getParameter("yeuCauKhaoSatNhuCau")));
         gd.setDieuKienBatBuoc(request.getParameter("dieuKienBatBuoc"));
@@ -308,31 +440,26 @@ public class GiaiDoanPipelineServlet extends HttpServlet {
     }
 
     private NguoiDung layNguoiDung(HttpServletRequest request) {
-        String roleParam = request.getParameter("role");
-        if (roleParam != null && !roleParam.isBlank()) {
-            NguoiDung fakeUser = new NguoiDung();
-            fakeUser.setHoTen("Người Dùng Thử Nghiệm");
-            VaiTro vt = new VaiTro();
-            vt.setMaVaiTro(roleParam.trim().toUpperCase());
-            fakeUser.setDanhSachVaiTro(Collections.singleton(vt));
-            return fakeUser;
-        }
-
         HttpSession session = request.getSession(false);
-        if (session != null && session.getAttribute("nguoiDung") != null) {
-            return (NguoiDung) session.getAttribute("nguoiDung");
+        if (session != null) {
+            Object obj = session.getAttribute(PhienService.SESSION_USER_KEY);
+            if (obj instanceof NguoiDung) {
+                return (NguoiDung) obj;
+            }
         }
-
-        // Mặc định Giám đốc kinh doanh khi truy cập dev trực tiếp
-        NguoiDung defaultDirector = new NguoiDung();
-        defaultDirector.setHoTen("Giám đốc kinh doanh");
-        VaiTro vt = new VaiTro();
-        vt.setMaVaiTro(VaiTroEnum.DIRECTOR.name());
-        defaultDirector.setDanhSachVaiTro(Collections.singleton(vt));
-        return defaultDirector;
+        return null;
     }
 
-    private int parseIntSafe(String val, int defaultVal) {
+    private Integer parseIntegerOrNull(String val) {
+        if (val == null || val.isBlank()) return null;
+        try {
+            return Integer.parseInt(val.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private int parseIntegerOrDefault(String val, int defaultVal) {
         if (val == null || val.isBlank()) return defaultVal;
         try {
             return Integer.parseInt(val.trim());

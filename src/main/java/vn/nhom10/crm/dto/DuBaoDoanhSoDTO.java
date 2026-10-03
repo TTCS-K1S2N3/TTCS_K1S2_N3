@@ -24,20 +24,25 @@ public class DuBaoDoanhSoDTO implements Serializable {
     }
 
     public DuBaoDoanhSoDTO(int giaiDoanId, String tenGiaiDoan, int xacSuatThang, BigDecimal tongGiaTriCoHoi, int soLuongCoHoi) {
+        if (xacSuatThang < 0 || xacSuatThang > 100) {
+            throw new IllegalArgumentException("Xác suất thắng phải từ 0% đến 100%");
+        }
         this.giaiDoanId = giaiDoanId;
         this.tenGiaiDoan = tenGiaiDoan;
         this.xacSuatThang = xacSuatThang;
         this.tongGiaTriCoHoi = tongGiaTriCoHoi != null ? tongGiaTriCoHoi : BigDecimal.ZERO;
         this.soLuongCoHoi = soLuongCoHoi;
-        this.doanhSoDuBao = this.tongGiaTriCoHoi.multiply(new BigDecimal(xacSuatThang))
-                .divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
+        this.doanhSoDuBao = tinhDuBao(this.tongGiaTriCoHoi, xacSuatThang);
     }
 
     public static BigDecimal tinhDuBao(BigDecimal giaTri, int xacSuat) {
-        if (giaTri == null || giaTri.compareTo(BigDecimal.ZERO) <= 0 || xacSuat <= 0) {
+        if (xacSuat < 0 || xacSuat > 100) {
+            throw new IllegalArgumentException("Xác suất phải trong khoảng từ 0 đến 100%");
+        }
+        if (giaTri == null || giaTri.compareTo(BigDecimal.ZERO) <= 0 || xacSuat == 0) {
             return BigDecimal.ZERO;
         }
-        return giaTri.multiply(new BigDecimal(xacSuat)).divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
+        return giaTri.multiply(BigDecimal.valueOf(xacSuat)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
     }
 
     public int getGiaiDoanId() {
