@@ -290,14 +290,73 @@ public class GiaiDoanPipelineServiceTest {
         gd.setTenGiaiDoan("Đàm phán");
 
         when(daoMock.timTheoId(5)).thenReturn(gd);
-        when(daoMock.demSoCoHoiTrongGiaiDoan(5)).thenReturn(3); // Đang có 3 cơ hội chạy
+        when(daoMock.demSoCoHoiTrongGiaiDoan(5)).thenReturn(3);
+        when(daoMock.demSoCoHoiHienTai(5)).thenReturn(3);
+        when(daoMock.demSoLichSuThamChieu(5)).thenReturn(0);
 
         KetQuaGiaiDoanDTO ketQua = service.xoaGiaiDoan(5, directorUser);
 
         assertFalse(ketQua.isThanhCong(), "Giai đoạn đang có cơ hội không được phép xoá cứng");
-        assertTrue(ketQua.getThongBao().contains("đang có 3 cơ hội đang chạy"));
+        assertTrue(ketQua.getThongBao().contains("đang có 3 cơ hội hiện tại tham chiếu"));
         assertTrue(ketQua.getThongBao().contains("Ngừng áp dụng"));
         verify(daoMock, never()).xoaGiaiDoan(5);
+    }
+
+    @Test
+    public void testKhongChoXoaGiaiDoanCurrentOnly() throws SQLException {
+        GiaiDoanPipeline gd = new GiaiDoanPipeline();
+        gd.setId(2);
+        gd.setTenGiaiDoan("Khảo sát nhu cầu thực tế");
+
+        when(daoMock.timTheoId(2)).thenReturn(gd);
+        when(daoMock.demSoCoHoiTrongGiaiDoan(2)).thenReturn(2);
+        when(daoMock.demSoCoHoiHienTai(2)).thenReturn(2);
+        when(daoMock.demSoLichSuThamChieu(2)).thenReturn(0);
+
+        KetQuaGiaiDoanDTO ketQua = service.xoaGiaiDoan(2, directorUser);
+
+        assertFalse(ketQua.isThanhCong());
+        assertTrue(ketQua.getThongBao().contains("Giai đoạn 'Khảo sát nhu cầu thực tế' đang có 2 cơ hội hiện tại tham chiếu."));
+        assertTrue(ketQua.getThongBao().contains("Ngừng áp dụng"));
+        verify(daoMock, never()).xoaGiaiDoan(2);
+    }
+
+    @Test
+    public void testKhongChoXoaGiaiDoanHistoryOnly() throws SQLException {
+        GiaiDoanPipeline gd = new GiaiDoanPipeline();
+        gd.setId(2);
+        gd.setTenGiaiDoan("Khảo sát nhu cầu thực tế");
+
+        when(daoMock.timTheoId(2)).thenReturn(gd);
+        when(daoMock.demSoCoHoiTrongGiaiDoan(2)).thenReturn(1);
+        when(daoMock.demSoCoHoiHienTai(2)).thenReturn(0);
+        when(daoMock.demSoLichSuThamChieu(2)).thenReturn(1);
+
+        KetQuaGiaiDoanDTO ketQua = service.xoaGiaiDoan(2, directorUser);
+
+        assertFalse(ketQua.isThanhCong());
+        assertTrue(ketQua.getThongBao().contains("Không thể xóa vì giai đoạn 'Khảo sát nhu cầu thực tế' đang được 1 bản ghi lịch sử cơ hội tham chiếu."));
+        assertTrue(ketQua.getThongBao().contains("Ngừng áp dụng"));
+        verify(daoMock, never()).xoaGiaiDoan(2);
+    }
+
+    @Test
+    public void testKhongChoXoaGiaiDoanCurrentAndHistory() throws SQLException {
+        GiaiDoanPipeline gd = new GiaiDoanPipeline();
+        gd.setId(2);
+        gd.setTenGiaiDoan("Khảo sát nhu cầu thực tế");
+
+        when(daoMock.timTheoId(2)).thenReturn(gd);
+        when(daoMock.demSoCoHoiTrongGiaiDoan(2)).thenReturn(5);
+        when(daoMock.demSoCoHoiHienTai(2)).thenReturn(2);
+        when(daoMock.demSoLichSuThamChieu(2)).thenReturn(3);
+
+        KetQuaGiaiDoanDTO ketQua = service.xoaGiaiDoan(2, directorUser);
+
+        assertFalse(ketQua.isThanhCong());
+        assertTrue(ketQua.getThongBao().contains("Giai đoạn 'Khảo sát nhu cầu thực tế' đang có 2 cơ hội hiện tại và 3 bản ghi lịch sử tham chiếu."));
+        assertTrue(ketQua.getThongBao().contains("Ngừng áp dụng"));
+        verify(daoMock, never()).xoaGiaiDoan(2);
     }
 
     @Test

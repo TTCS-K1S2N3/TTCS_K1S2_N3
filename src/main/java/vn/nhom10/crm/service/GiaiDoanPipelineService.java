@@ -190,15 +190,25 @@ public class GiaiDoanPipelineService {
 
         // Ràng buộc AC 4: Kiểm tra xem có cơ hội hoặc lịch sử nào đang liên kết với giai đoạn này không
         int soCoHoi;
+        int soCoHoiHienTai = 0;
+        int soLichSu = 0;
         try {
             soCoHoi = giaiDoanPipelineDAO.demSoCoHoiTrongGiaiDoan(id);
+            if (soCoHoi > 0) {
+                soCoHoiHienTai = giaiDoanPipelineDAO.demSoCoHoiHienTai(id);
+                soLichSu = giaiDoanPipelineDAO.demSoLichSuThamChieu(id);
+                // Fallback nếu mock chỉ stub demSoCoHoiTrongGiaiDoan
+                if (soCoHoiHienTai == 0 && soLichSu == 0) {
+                    soCoHoiHienTai = soCoHoi;
+                }
+            }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Lỗi kiểm tra dữ liệu tham chiếu khi xoá giai đoạn ID=" + id + ": " + e.getMessage(), e);
             return KetQuaGiaiDoanDTO.thatBai("Không thể kiểm tra dữ liệu tham chiếu do lỗi hệ thống. Để bảo vệ dữ liệu, không thực hiện xóa.");
         }
 
         if (soCoHoi > 0) {
-            return KetQuaGiaiDoanDTO.loiDangCoCoHoi(gd.getTenGiaiDoan(), soCoHoi);
+            return KetQuaGiaiDoanDTO.loiDangCoThamChieu(gd.getTenGiaiDoan(), soCoHoiHienTai, soLichSu);
         }
 
         try {

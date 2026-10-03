@@ -88,6 +88,14 @@ public class GiaiDoanPipelineDAOTest {
                     "giai_doan_id BIGINT NULL, " +
                     "gia_tri_du_kien DECIMAL(18,2) NOT NULL DEFAULT 0.00, " +
                     "trang_thai VARCHAR(20) NOT NULL DEFAULT 'MO')");
+
+            stmt.execute("CREATE TABLE IF NOT EXISTS lich_su_giai_doan_co_hoi (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "co_hoi_id BIGINT NOT NULL, " +
+                    "giai_doan_id BIGINT NOT NULL, " +
+                    "giai_doan_truoc_id BIGINT NULL, " +
+                    "thoi_gian_chuyen TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "nguoi_thay_doi_id BIGINT NULL)");
         }
 
         DatabaseConfig.setConnectionSupplier(() -> {
@@ -111,6 +119,7 @@ public class GiaiDoanPipelineDAOTest {
     public void clearData() throws Exception {
         dao = new GiaiDoanPipelineDAO();
         try (Statement stmt = h2Connection.createStatement()) {
+            stmt.execute("DELETE FROM lich_su_giai_doan_co_hoi");
             stmt.execute("DELETE FROM co_hoi");
             stmt.execute("DELETE FROM dieu_kien_giai_doan");
             stmt.execute("DELETE FROM giai_doan_pipeline");
@@ -184,6 +193,16 @@ public class GiaiDoanPipelineDAOTest {
 
         // Kiểm tra số lượng cơ hội
         assertEquals(2, dao.demSoCoHoiTrongGiaiDoan(id));
+        assertEquals(2, dao.demSoCoHoiHienTai(id));
+        assertEquals(0, dao.demSoLichSuThamChieu(id));
+
+        // Thêm 1 bản ghi lịch sử tham chiếu
+        try (Statement stmt = h2Connection.createStatement()) {
+            stmt.execute("INSERT INTO lich_su_giai_doan_co_hoi (co_hoi_id, giai_doan_id, giai_doan_truoc_id, nguoi_thay_doi_id) " +
+                    "VALUES (1, " + id + ", NULL, 1)");
+        }
+        assertEquals(1, dao.demSoLichSuThamChieu(id));
+        assertEquals(3, dao.demSoCoHoiTrongGiaiDoan(id));
 
         // Lấy danh sách kiểm tra xem trường so_co_hoi có ánh xạ đúng không
         List<GiaiDoanPipeline> list = dao.layTatCaGiaiDoan();

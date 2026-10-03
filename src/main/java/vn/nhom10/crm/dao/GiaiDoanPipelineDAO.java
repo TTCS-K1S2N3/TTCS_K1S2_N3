@@ -239,10 +239,9 @@ public class GiaiDoanPipelineDAO {
     }
 
     /**
-     * Đếm số cơ hội và lịch sử đang liên kết với giai đoạn (AC 4: bảo vệ cơ hội đang chạy).
-     * Fail-closed: Bắt buộc ném SQLException nếu có lỗi truy vấn DB.
+     * Đếm số lượng cơ hội hiện tại đang ở giai đoạn này.
      */
-    public int demSoCoHoiTrongGiaiDoan(int giaiDoanId) throws SQLException {
+    public int demSoCoHoiHienTai(int giaiDoanId) throws SQLException {
         int count = 0;
         String sql = "SELECT COUNT(*) FROM co_hoi WHERE giai_doan_id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
@@ -251,19 +250,25 @@ public class GiaiDoanPipelineDAO {
             ps.setInt(1, giaiDoanId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    count += rs.getInt(1);
+                    count = rs.getInt(1);
                 }
             }
         }
+        return count;
+    }
 
-        // Kiểm tra thêm lịch sử giai đoạn cơ hội nếu bảng đã được khởi tạo
+    /**
+     * Đếm số bản ghi lịch sử chuyển giai đoạn tham chiếu tới giai đoạn này.
+     */
+    public int demSoLichSuThamChieu(int giaiDoanId) throws SQLException {
+        int count = 0;
         String sqlHistory = "SELECT COUNT(*) FROM lich_su_giai_doan_co_hoi WHERE giai_doan_id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sqlHistory)) {
             ps.setInt(1, giaiDoanId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    count += rs.getInt(1);
+                    count = rs.getInt(1);
                 }
             }
         } catch (SQLException e) {
@@ -277,8 +282,15 @@ public class GiaiDoanPipelineDAO {
                 throw e;
             }
         }
-
         return count;
+    }
+
+    /**
+     * Đếm tổng số cơ hội và lịch sử đang liên kết với giai đoạn (AC 4: bảo vệ cơ hội đang chạy).
+     * Fail-closed: Bắt buộc ném SQLException nếu có lỗi truy vấn DB.
+     */
+    public int demSoCoHoiTrongGiaiDoan(int giaiDoanId) throws SQLException {
+        return demSoCoHoiHienTai(giaiDoanId) + demSoLichSuThamChieu(giaiDoanId);
     }
 
     /**

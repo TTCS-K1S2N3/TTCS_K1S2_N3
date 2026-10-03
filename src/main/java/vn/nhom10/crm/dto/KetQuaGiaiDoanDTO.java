@@ -48,9 +48,23 @@ public class KetQuaGiaiDoanDTO implements Serializable {
     }
 
     public static KetQuaGiaiDoanDTO loiDangCoCoHoi(String tenGiaiDoan, int soCoHoi) {
+        return loiDangCoThamChieu(tenGiaiDoan, soCoHoi, 0);
+    }
+
+    public static KetQuaGiaiDoanDTO loiDangCoThamChieu(String tenGiaiDoan, int soCoHoiHienTai, int soLichSu) {
         KetQuaGiaiDoanDTO dto = new KetQuaGiaiDoanDTO();
         dto.thanhCong = false;
-        dto.thongBao = "Giai đoạn '" + tenGiaiDoan + "' đang có " + soCoHoi + " cơ hội đang chạy. Để đảm bảo không làm hỏng cơ hội, hệ thống không cho phép xoá mà chỉ cho phép chuyển sang 'Ngừng áp dụng'.";
+
+        String moTaChiTiet;
+        if (soCoHoiHienTai > 0 && soLichSu > 0) {
+            moTaChiTiet = "Giai đoạn '" + tenGiaiDoan + "' đang có " + soCoHoiHienTai + " cơ hội hiện tại và " + soLichSu + " bản ghi lịch sử tham chiếu.";
+        } else if (soLichSu > 0) {
+            moTaChiTiet = "Không thể xóa vì giai đoạn '" + tenGiaiDoan + "' đang được " + soLichSu + " bản ghi lịch sử cơ hội tham chiếu.";
+        } else {
+            moTaChiTiet = "Giai đoạn '" + tenGiaiDoan + "' đang có " + soCoHoiHienTai + " cơ hội hiện tại tham chiếu.";
+        }
+
+        dto.thongBao = moTaChiTiet + " Để bảo toàn dữ liệu, hệ thống không cho phép xoá mà chỉ cho phép chuyển sang 'Ngừng áp dụng'.";
         dto.danhSachLoi.put("_global", MA_LOI_DANG_CO_CO_HOI);
         return dto;
     }
