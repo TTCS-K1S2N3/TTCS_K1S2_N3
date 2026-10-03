@@ -20,7 +20,7 @@
     }
     String contextPath = request.getContextPath();
     String userFullName = (currentUser != null && currentUser.getHoTen() != null) ? currentUser.getHoTen() : "Người dùng";
-    String userRoleTitle = (currentUser != null && currentUser.getVaiTroHienThi() != null) ? currentUser.getVaiTroHienThi() : "Quản trị viên";
+    String userRoleTitle = (currentUser != null && currentUser.getChuoiVaiTroHienThi() != null) ? currentUser.getChuoiVaiTroHienThi() : "Quản trị viên";
     String userThumbUrl = (currentUser != null && currentUser.getAnhDaiDienThumbPath() != null)
             ? contextPath + "/avatar?id=" + currentUser.getId() + "&thumb=true"
             : null;
