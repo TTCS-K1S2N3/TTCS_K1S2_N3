@@ -62,7 +62,7 @@ public class DanhMucBanHangDAO {
                 dto.setNguoiTao("Giám đốc kinh doanh");
 
                 // Lấy số lượng bản ghi thực tế đang tham chiếu mục này
-                dto.setSoBanGhiDangSuDung(demSoLuongThamChieu(loai, dto.getId()));
+                dto.setSoBanGhiDangSuDung(Math.max(0, demSoLuongThamChieu(loai, dto.getId())));
 
                 danhSach.add(dto);
             }
@@ -102,7 +102,7 @@ public class DanhMucBanHangDAO {
                     Timestamp ts = rs.getTimestamp("created_at");
                     dto.setNgayTao(ts != null ? ts.toLocalDateTime().toLocalDate() : LocalDate.now());
                     dto.setNguoiTao("Giám đốc kinh doanh");
-                    dto.setSoBanGhiDangSuDung(demSoLuongThamChieu(loai, id));
+                    dto.setSoBanGhiDangSuDung(Math.max(0, demSoLuongThamChieu(loai, id)));
                     return dto;
                 }
             }
@@ -269,7 +269,7 @@ public class DanhMucBanHangDAO {
      * Kiểm tra các bảng Khách hàng, Lead, Cơ hội, Hoạt động.
      */
     public int demSoLuongThamChieu(LoaiDanhMuc loai, long id) {
-        if (loai == null) return 0;
+        if (loai == null) return -1;
         int total = 0;
 
         try (Connection conn = DatabaseConnection.layKetNoi()) {
@@ -297,13 +297,15 @@ public class DanhMucBanHangDAO {
                     total += demThamChieuTrongBang(conn, "hoat_dong", "loai_hoat_dong_id", id);
                     break;
             }
+            return total;
         } catch (SQLException e) {
-            LOGGER.log(Level.FINE, "Kiểm tra tham chiếu gặp exception (bảng chưa tạo hoặc rỗng): " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Lỗi kiểm tra tham chiếu cho mục ID=" + id + " trong bảng " + loai.getTenBang() + ": " + e.getMessage(), e);
+            // Fail-closed: trả về -1 khi gặp lỗi truy vấn để ngăn chặn việc xóa nhầm dữ liệu
+            return -1;
         }
-        return total;
     }
 
-    private int demThamChieuTrongBang(Connection conn, String tenBang, String tenCot, long id) {
+    private int demThamChieuTrongBang(Connection conn, String tenBang, String tenCot, long id) throws SQLException {
         String sql = "SELECT COUNT(*) FROM " + tenBang + " WHERE " + tenCot + " = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -312,8 +314,6 @@ public class DanhMucBanHangDAO {
                     return rs.getInt(1);
                 }
             }
-        } catch (SQLException ignored) {
-            // Nếu bảng chưa có bản ghi hoặc chưa được tạo trong sprint hiện tại thì count = 0
         }
         return 0;
     }

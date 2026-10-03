@@ -219,4 +219,154 @@ class DanhMucBanHangServiceTest {
         List<MucDanhMucDTO> kqTimChung = service.timKiem(loai, "ads");
         assertEquals(2, kqTimChung.size());
     }
+
+    @Test
+    @DisplayName("AC1: Tạo mới mục Ngành nghề khách hàng thành công")
+    void testThemMuc_NganhNghe_ThanhCong() {
+        MucDanhMucDTO dto = new MucDanhMucDTO();
+        dto.setLoaiDanhMuc(LoaiDanhMuc.NGANH_NGHE);
+        dto.setMaMuc("LOGISTICS");
+        dto.setTenMuc("Kho vận & Hậu cần Logistics");
+        when(dao.kiemTraTonTaiMa(LoaiDanhMuc.NGANH_NGHE, "LOGISTICS", null)).thenReturn(false);
+        when(dao.layDanhSach(LoaiDanhMuc.NGANH_NGHE, false)).thenReturn(Collections.emptyList());
+        when(dao.them(eq(LoaiDanhMuc.NGANH_NGHE), any())).thenReturn(101L);
+
+        long id = service.themMuc(dto);
+        assertEquals(101L, id);
+        verify(dao).them(eq(LoaiDanhMuc.NGANH_NGHE), eq(dto));
+    }
+
+    @Test
+    @DisplayName("AC1: Tạo mới mục Quy mô doanh nghiệp thành công")
+    void testThemMuc_QuyMo_ThanhCong() {
+        MucDanhMucDTO dto = new MucDanhMucDTO();
+        dto.setLoaiDanhMuc(LoaiDanhMuc.QUY_MO);
+        dto.setMaMuc("QM_TAP_DOAN");
+        dto.setTenMuc("Tập đoàn đa quốc gia");
+        when(dao.kiemTraTonTaiMa(LoaiDanhMuc.QUY_MO, "QM_TAP_DOAN", null)).thenReturn(false);
+        when(dao.layDanhSach(LoaiDanhMuc.QUY_MO, false)).thenReturn(Collections.emptyList());
+        when(dao.them(eq(LoaiDanhMuc.QUY_MO), any())).thenReturn(102L);
+
+        long id = service.themMuc(dto);
+        assertEquals(102L, id);
+        verify(dao).them(eq(LoaiDanhMuc.QUY_MO), eq(dto));
+    }
+
+    @Test
+    @DisplayName("AC1: Tạo mới mục Nguồn lead thành công")
+    void testThemMuc_NguonLead_ThanhCong() {
+        MucDanhMucDTO dto = new MucDanhMucDTO();
+        dto.setLoaiDanhMuc(LoaiDanhMuc.NGUON_LEAD);
+        dto.setMaMuc("LINKEDIN_INBOUND");
+        dto.setTenMuc("Khách tiềm năng từ LinkedIn");
+        when(dao.kiemTraTonTaiMa(LoaiDanhMuc.NGUON_LEAD, "LINKEDIN_INBOUND", null)).thenReturn(false);
+        when(dao.layDanhSach(LoaiDanhMuc.NGUON_LEAD, false)).thenReturn(Collections.emptyList());
+        when(dao.them(eq(LoaiDanhMuc.NGUON_LEAD), any())).thenReturn(103L);
+
+        long id = service.themMuc(dto);
+        assertEquals(103L, id);
+        verify(dao).them(eq(LoaiDanhMuc.NGUON_LEAD), eq(dto));
+    }
+
+    @Test
+    @DisplayName("AC1: Tạo mới mục Loại hoạt động thành công")
+    void testThemMuc_LoaiHoatDong_ThanhCong() {
+        MucDanhMucDTO dto = new MucDanhMucDTO();
+        dto.setLoaiDanhMuc(LoaiDanhMuc.LOAI_HOAT_DONG);
+        dto.setMaMuc("KHAO_SAT_OFFLINE");
+        dto.setTenMuc("Khảo sát hiện trường trực tiếp");
+        when(dao.kiemTraTonTaiMa(LoaiDanhMuc.LOAI_HOAT_DONG, "KHAO_SAT_OFFLINE", null)).thenReturn(false);
+        when(dao.layDanhSach(LoaiDanhMuc.LOAI_HOAT_DONG, false)).thenReturn(Collections.emptyList());
+        when(dao.them(eq(LoaiDanhMuc.LOAI_HOAT_DONG), any())).thenReturn(104L);
+
+        long id = service.themMuc(dto);
+        assertEquals(104L, id);
+        verify(dao).them(eq(LoaiDanhMuc.LOAI_HOAT_DONG), eq(dto));
+    }
+
+    @Test
+    @DisplayName("AC3: Sắp xếp thứ tự hiển thị - Di chuyển mục xuống dưới thành công")
+    void testThayDoiThuTu_DiChuyenXuong_ThanhCong() {
+        LoaiDanhMuc loai = LoaiDanhMuc.LOAI_HOAT_DONG;
+        MucDanhMucDTO item1 = new MucDanhMucDTO(10L, loai, "GOI", "Gọi điện", "", 1, true, 0, LocalDate.now(), "Admin");
+        MucDanhMucDTO item2 = new MucDanhMucDTO(20L, loai, "EMAIL", "Gửi email", "", 2, true, 0, LocalDate.now(), "Admin");
+        when(dao.layDanhSach(loai, false)).thenReturn(Arrays.asList(item1, item2));
+
+        boolean ketQua = service.thayDoiThuTu(loai, 10L, false);
+
+        assertTrue(ketQua);
+        verify(dao).capNhatThuTu(loai, 10L, 2);
+        verify(dao).capNhatThuTu(loai, 20L, 1);
+    }
+
+    @Test
+    @DisplayName("AC3: Sắp xếp thứ tự hiển thị - Mục ở cuối danh sách di chuyển xuống dưới sẽ bị bỏ qua")
+    void testThayDoiThuTu_MucCuoiDanhSach_KhongTheXuongTiep() {
+        LoaiDanhMuc loai = LoaiDanhMuc.LOAI_HOAT_DONG;
+        MucDanhMucDTO item1 = new MucDanhMucDTO(10L, loai, "GOI", "Gọi điện", "", 1, true, 0, LocalDate.now(), "Admin");
+        when(dao.layDanhSach(loai, false)).thenReturn(Collections.singletonList(item1));
+
+        boolean ketQua = service.thayDoiThuTu(loai, 10L, false);
+
+        assertFalse(ketQua);
+        verify(dao, never()).capNhatThuTu(any(), anyLong(), anyInt());
+    }
+
+    @Test
+    @DisplayName("AC2 & AC3: Tạm ngưng mục đang được tham chiếu vẫn thực hiện thành công")
+    void testTamNgung_ItemDangThamChieu_VanThanhCong() {
+        LoaiDanhMuc loai = LoaiDanhMuc.NGANH_NGHE;
+        MucDanhMucDTO item = new MucDanhMucDTO(1L, loai, "CNTT", "CNTT", "", 1, true, 15, LocalDate.now(), "Admin");
+        when(dao.layTheoId(loai, 1L)).thenReturn(item);
+        when(dao.doiTrangThai(loai, 1L, false)).thenReturn(true);
+
+        boolean ketQua = service.chuyenTrangThaiKichHoat(loai, 1L);
+
+        assertTrue(ketQua);
+        verify(dao).doiTrangThai(loai, 1L, false);
+    }
+
+    @Test
+    @DisplayName("AC2: Fail-closed - Nếu kiểm tra tham chiếu bị lỗi (< 0), từ chối xóa để bảo vệ dữ liệu")
+    void testXoaMuc_LoiTruyVanThamChieu_FailClosed_ChanXoa() {
+        long id = 5L;
+        LoaiDanhMuc loai = LoaiDanhMuc.NGUON_LEAD;
+        MucDanhMucDTO item = new MucDanhMucDTO(id, loai, "MKT", "Marketing", "", 1, true, 0, LocalDate.now(), "Admin");
+        when(dao.layTheoId(loai, id)).thenReturn(item);
+        // Lỗi database kiểm tra tham chiếu trả về -1
+        when(dao.demSoLuongThamChieu(loai, id)).thenReturn(-1);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> service.xoaMuc(loai, id));
+        assertTrue(ex.getMessage().contains("Không thể kiểm tra dữ liệu tham chiếu"));
+        verify(dao, never()).xoa(any(), anyLong());
+    }
+
+    @Test
+    @DisplayName("Story S2-07: GET danh mục rỗng KHÔNG tự động INSERT dữ liệu mẫu")
+    void testLayDanhSachTheoLoai_DanhSachRong_KhongTuDongInsertDuLieuMau() {
+        LoaiDanhMuc loai = LoaiDanhMuc.NGANH_NGHE;
+        when(dao.layDanhSach(loai, false)).thenReturn(Collections.emptyList());
+
+        List<MucDanhMucDTO> result = service.layDanhSachTheoLoai(loai);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        // Đảm bảo không gọi method them(...) vào database
+        verify(dao, never()).them(any(), any());
+    }
+
+    @Test
+    @DisplayName("LoaiDanhMuc: tuMa() với chuỗi không hợp lệ hoặc rỗng trả về null (không fallback NGANH_NGHE)")
+    void testLoaiDanhMuc_TuMa_InvalidHoacRong_TraVeNull() {
+        assertNull(LoaiDanhMuc.tuMa(null));
+        assertNull(LoaiDanhMuc.tuMa(""));
+        assertNull(LoaiDanhMuc.tuMa("   "));
+        assertNull(LoaiDanhMuc.tuMa("INVALID_CATEGORY"));
+        assertNull(LoaiDanhMuc.tuMa("SAN_PHAM"));
+
+        assertEquals(LoaiDanhMuc.NGANH_NGHE, LoaiDanhMuc.tuMa("NGANH_NGHE"));
+        assertEquals(LoaiDanhMuc.QUY_MO, LoaiDanhMuc.tuMa("QUY_MO"));
+        assertEquals(LoaiDanhMuc.NGUON_LEAD, LoaiDanhMuc.tuMa("NGUON_LEAD"));
+        assertEquals(LoaiDanhMuc.LOAI_HOAT_DONG, LoaiDanhMuc.tuMa("LOAI_HOAT_DONG"));
+    }
 }

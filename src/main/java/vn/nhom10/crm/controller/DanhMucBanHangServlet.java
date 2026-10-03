@@ -49,7 +49,16 @@ public class DanhMucBanHangServlet extends HttpServlet {
         }
 
         String loaiParam = request.getParameter("loai");
-        LoaiDanhMuc loai = LoaiDanhMuc.tuMa(loaiParam);
+        LoaiDanhMuc loai;
+        if (loaiParam == null || loaiParam.isBlank()) {
+            loai = LoaiDanhMuc.NGANH_NGHE;
+        } else {
+            loai = LoaiDanhMuc.tuMa(loaiParam);
+            if (loai == null) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Loại danh mục không hợp lệ: " + loaiParam);
+                return;
+            }
+        }
         String tuKhoa = request.getParameter("tuKhoa");
 
         List<MucDanhMucDTO> danhSachMuc = service.timKiem(loai, tuKhoa);
@@ -68,7 +77,6 @@ public class DanhMucBanHangServlet extends HttpServlet {
         NguoiDung currentUser = null;
         if (session != null) {
             Object u = session.getAttribute("nguoiDung");
-            if (u == null) u = session.getAttribute("user");
             if (u instanceof NguoiDung) {
                 currentUser = (NguoiDung) u;
             }
@@ -101,6 +109,10 @@ public class DanhMucBanHangServlet extends HttpServlet {
         String action = request.getParameter("action");
         String loaiParam = request.getParameter("loaiDanhMuc");
         LoaiDanhMuc loai = LoaiDanhMuc.tuMa(loaiParam);
+        if (loai == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Loại danh mục không hợp lệ: " + loaiParam);
+            return;
+        }
 
         HttpSession session = request.getSession();
 
@@ -176,16 +188,19 @@ public class DanhMucBanHangServlet extends HttpServlet {
     private boolean kiemTraQuyenTruyCap(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
-        Object userObj = (session != null) ? session.getAttribute("nguoiDung") : null;
-        if (userObj == null && session != null) {
-            userObj = session.getAttribute("user");
-        }
-        if (userObj == null) {
+        NguoiDung currentUser = (session != null) ? (NguoiDung) session.getAttribute("nguoiDung") : null;
+        if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/dang-nhap?error=auth_required");
             return false;
         }
 
-        NguoiDung currentUser = (NguoiDung) userObj;
+        if (!currentUser.dangHoatDong()) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            request.setAttribute("errorMessage", "Tài khoản của bạn đã bị khóa hoặc chưa được kích hoạt.");
+            request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+            return false;
+        }
+
         boolean coQuyen = currentUser.coVaiTro(VaiTroEnum.DIRECTOR)
                 || currentUser.coVaiTro(VaiTroEnum.ADMIN)
                 || currentUser.coVaiTro("DIRECTOR")

@@ -96,6 +96,55 @@ class DanhMucBanHangServletTest {
     }
 
     @Test
+    @DisplayName("Quyền truy cập: SALES_REP gửi request POST bị chặn 403 Forbidden")
+    void testDoPost_SalesUser_BiCam403() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(salesUser);
+
+        servlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+        verify(request).getRequestDispatcher("/WEB-INF/views/common/403.jsp");
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("Loại danh mục: GET với tham số loại không hợp lệ bị từ chối 400 Bad Request")
+    void testDoGet_InvalidCategory_TraVe400() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(directorUser);
+        when(request.getParameter("loai")).thenReturn("INVALID_TRASH_CATEGORY");
+
+        servlet.doGet(request, response);
+
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), contains("Loại danh mục không hợp lệ"));
+        verify(request, never()).getRequestDispatcher(anyString());
+    }
+
+    @Test
+    @DisplayName("Loại danh mục: POST với loại danh mục không hợp lệ bị từ chối 400 Bad Request")
+    void testDoPost_InvalidCategory_TraVe400() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(directorUser);
+        when(request.getParameter("loaiDanhMuc")).thenReturn("UNKNOWN_CATEGORY");
+
+        servlet.doPost(request, response);
+
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), contains("Loại danh mục không hợp lệ"));
+    }
+
+    @Test
+    @DisplayName("Loại danh mục: GET không truyền loai (null) mặc định hiển thị NGANH_NGHE")
+    void testDoGet_LoaiNull_MacDinhNganhNghe() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(directorUser);
+        when(request.getParameter("loai")).thenReturn(null);
+        when(service.timKiem(eq(LoaiDanhMuc.NGANH_NGHE), any())).thenReturn(Collections.emptyList());
+        when(service.tinhThongKe(eq(LoaiDanhMuc.NGANH_NGHE))).thenReturn(new long[]{0, 0, 0});
+
+        servlet.doGet(request, response);
+
+        verify(request).setAttribute(eq("loaiHienTai"), eq(LoaiDanhMuc.NGANH_NGHE));
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
     @DisplayName("Quyền truy cập: Giám đốc kinh doanh (DIRECTOR) truy cập thành công")
     void testDoGet_Director_ThanhCong() throws Exception {
         when(session.getAttribute("nguoiDung")).thenReturn(directorUser);

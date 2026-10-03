@@ -18,12 +18,9 @@
     if (currentUser == null) {
         currentUser = (NguoiDung) session.getAttribute("nguoiDung");
     }
-    if (currentUser == null) {
-        currentUser = (NguoiDung) session.getAttribute("user");
-    }
     String contextPath = request.getContextPath();
-    String userFullName = (currentUser != null && currentUser.getHoTen() != null) ? currentUser.getHoTen() : "Bàn Thị Linh";
-    String userRoleTitle = (currentUser != null && currentUser.getVaiTroHienThi() != null) ? currentUser.getVaiTroHienThi() : "Giám đốc kinh doanh";
+    String userFullName = (currentUser != null && currentUser.getHoTen() != null) ? currentUser.getHoTen() : "Người dùng";
+    String userRoleTitle = (currentUser != null && currentUser.getVaiTroHienThi() != null) ? currentUser.getVaiTroHienThi() : "Quản trị viên";
     String userThumbUrl = (currentUser != null && currentUser.getAnhDaiDienThumbPath() != null)
             ? contextPath + "/avatar?id=" + currentUser.getId() + "&thumb=true"
             : null;

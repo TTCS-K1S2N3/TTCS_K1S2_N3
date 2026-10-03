@@ -61,13 +61,13 @@ public enum LoaiDanhMuc {
 
     public static LoaiDanhMuc tuMa(String ma) {
         if (ma == null || ma.trim().isEmpty()) {
-            return NGANH_NGHE;
+            return null;
         }
         for (LoaiDanhMuc item : values()) {
             if (item.ma.equalsIgnoreCase(ma.trim())) {
                 return item;
             }
         }
-        return NGANH_NGHE;
+        return null;
     }
 }

@@ -134,8 +134,9 @@ public enum ModuleHeThong {
             "/danh-muc",
             "settings",
             11,
-            // Cho phép tất cả 7 vai trò
-            VaiTroEnum.values()
+            // Chỉ Director và Admin được xem/quản lý (Story S2-07)
+            VaiTroEnum.DIRECTOR,
+            VaiTroEnum.ADMIN
     ),
     NGUOI_DUNG(
             "NGUOI_DUNG",

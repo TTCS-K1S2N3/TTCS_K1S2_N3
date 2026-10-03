@@ -42,12 +42,7 @@ public class DanhMucBanHangService {
         if (loai == null) {
             return new ArrayList<>();
         }
-        List<MucDanhMucDTO> list = dao.layDanhSach(loai, false);
-        if (list.isEmpty()) {
-            khoiTaoDuLieuMauNeuTrong(loai);
-            list = dao.layDanhSach(loai, false);
-        }
-        return list;
+        return dao.layDanhSach(loai, false);
     }
 
     /**
@@ -101,8 +96,16 @@ public class DanhMucBanHangService {
         }
 
         String maChuan = dto.getMaMuc().trim().toUpperCase();
+        if (maChuan.length() > 50) {
+            throw new IllegalArgumentException("Mã định danh không được vượt quá 50 ký tự.");
+        }
+        String tenChuan = dto.getTenMuc().trim();
+        if (tenChuan.length() > 150) {
+            throw new IllegalArgumentException("Tên mục danh mục không được vượt quá 150 ký tự.");
+        }
+
         dto.setMaMuc(maChuan);
-        dto.setTenMuc(dto.getTenMuc().trim());
+        dto.setTenMuc(tenChuan);
         if (dto.getMoTa() != null) {
             dto.setMoTa(dto.getMoTa().trim());
         }
@@ -139,7 +142,12 @@ public class DanhMucBanHangService {
             throw new IllegalArgumentException("Tên mục danh mục không được để trống.");
         }
 
-        dto.setTenMuc(dto.getTenMuc().trim());
+        String tenChuan = dto.getTenMuc().trim();
+        if (tenChuan.length() > 150) {
+            throw new IllegalArgumentException("Tên mục danh mục không được vượt quá 150 ký tự.");
+        }
+
+        dto.setTenMuc(tenChuan);
         if (dto.getMoTa() != null) {
             dto.setMoTa(dto.getMoTa().trim());
         }
@@ -154,6 +162,7 @@ public class DanhMucBanHangService {
     /**
      * AC2: Xóa mục danh mục.
      * Quy tắc bắt buộc: Giá trị đang được tham chiếu thì KHÔNG xóa được.
+     * Áp dụng cơ chế fail-closed: nếu kiểm tra tham chiếu lỗi, từ chối xóa.
      */
     public boolean xoaMuc(LoaiDanhMuc loai, Long id) {
         if (loai == null || id == null || id <= 0) {
@@ -165,8 +174,11 @@ public class DanhMucBanHangService {
             throw new IllegalArgumentException("Mục danh mục không tồn tại.");
         }
 
-        // Kiểm tra số lượng bản ghi đang tham chiếu
+        // Kiểm tra số lượng bản ghi đang tham chiếu (Fail-closed)
         int soThamChieu = dao.demSoLuongThamChieu(loai, id);
+        if (soThamChieu < 0) {
+            throw new IllegalStateException("Không thể kiểm tra dữ liệu tham chiếu do lỗi hệ thống. Để bảo vệ dữ liệu, không thực hiện xóa.");
+        }
         if (soThamChieu > 0) {
             throw new IllegalStateException(
                 "Không thể xóa mục '" + item.getTenMuc() + "' (" + item.getMaMuc() + ") vì hiện đang có " +
@@ -214,14 +226,21 @@ public class DanhMucBanHangService {
         int orderCurrent = current.getThuTuHienThi();
         int orderNeighbor = neighbor.getThuTuHienThi();
 
-        // Hoán đổi nếu khác nhau, nếu bằng nhau thì gán lại theo thứ tự index
-        if (orderCurrent == orderNeighbor) {
+        // Hoán đổi nếu khác nhau, nếu bằng nhau hoặc <= 0 thì gán lại an toàn >= 1
+        if (orderCurrent == orderNeighbor || orderCurrent <= 0 || orderNeighbor <= 0) {
             orderCurrent = index + 1;
             orderNeighbor = targetIndex + 1;
         }
 
-        dao.capNhatThuTu(loai, current.getId(), orderNeighbor);
-        dao.capNhatThuTu(loai, neighbor.getId(), orderCurrent);
+        int newCurrentOrder = Math.max(1, orderNeighbor);
+        int newNeighborOrder = Math.max(1, orderCurrent);
+        if (newCurrentOrder == newNeighborOrder) {
+            newCurrentOrder = targetIndex + 1;
+            newNeighborOrder = index + 1;
+        }
+
+        dao.capNhatThuTu(loai, current.getId(), newCurrentOrder);
+        dao.capNhatThuTu(loai, neighbor.getId(), newNeighborOrder);
         return true;
     }
 
@@ -256,54 +275,5 @@ public class DanhMucBanHangService {
             tongThamChieu += item.getSoBanGhiDangSuDung();
         }
         return new long[]{tong, kichHoat, tongThamChieu};
-    }
-
-    /**
-     * Khởi tạo bộ dữ liệu chuẩn của ngành bán hàng nếu bảng danh mục trong database chưa có dữ liệu.
-     */
-    private void khoiTaoDuLieuMauNeuTrong(LoaiDanhMuc loai) {
-        try {
-            switch (loai) {
-                case NGANH_NGHE:
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "CNTT", "Công nghệ thông tin & Viễn thông", "Phần mềm, viễn thông, phần cứng và giải pháp số", 1, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "BAN_LE", "Bán lẻ & Thương mại điện tử", "Chuỗi cửa hàng bán lẻ, siêu thị, sàn thương mại điện tử", 2, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "SAN_XUAT", "Sản xuất & Chế biến", "Nhà máy, xưởng chế biến xuất nhập khẩu công nghiệp", 3, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "TAI_CHINH", "Tài chính - Ngân hàng - Bảo hiểm", "Ngân hàng thương mại, công ty chứng khoán, bảo hiểm nhân thọ", 4, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "BAT_DONG_SAN", "Bất động sản & Xây dựng", "Chủ đầu tư, sàn môi giới bất động sản và nhà thầu", 5, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "GIAO_DUC", "Giáo dục & Đào tạo", "Trường học, trung tâm ngoại ngữ, học viện kỹ năng", 6, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "Y_TE", "Y tế & Dược phẩm", "Bệnh viện, phòng khám đa khoa, doanh nghiệp phân phối dược", 7, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "DICH_VU", "Dịch vụ & Tư vấn", "Dịch vụ chuyên nghiệp, tư vấn pháp lý, kế toán thuế", 8, true, 0, LocalDate.now(), "Hệ thống"));
-                    break;
-
-                case QUY_MO:
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "DUOI_10", "Dưới 10 nhân sự (Siêu nhỏ)", "Doanh nghiệp khởi nghiệp, hộ kinh doanh cá thể", 1, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "TU_10_50", "Từ 10 - 50 nhân sự (Nhỏ)", "Doanh nghiệp quy mô nhỏ với cơ cấu phòng ban tinh gọn", 2, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "TU_51_200", "Từ 51 - 200 nhân sự (Vừa)", "Doanh nghiệp vừa đã có quy trình và quản lý trung cấp", 3, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "TU_201_500", "Từ 201 - 500 nhân sự (Lớn)", "Doanh nghiệp quy mô lớn đa chi nhánh", 4, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "TREN_500", "Trên 500 nhân sự (Tập đoàn)", "Tập đoàn kinh tế quy mô nhiều công ty thành viên", 5, true, 0, LocalDate.now(), "Hệ thống"));
-                    break;
-
-                case NGUON_LEAD:
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "WEBSITE", "Website & Đăng ký trực tuyến", "Khách hàng để lại thông tin form liên hệ trên website công ty", 1, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "FACEBOOK", "Facebook Ads & Fanpage", "Chiến dịch quảng cáo Facebook Lead Form và tin nhắn", 2, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "GOOGLE", "Google Search & Ads", "Tìm kiếm tự nhiên SEO và quảng cáo Google AdWords", 3, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "GIOI_THIEU", "Giới thiệu từ đối tác / khách hàng", "Kênh giới thiệu uy tín từ mạng lưới đối tác kinh doanh", 4, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "HOI_THAO", "Hội thảo & Sự kiện triển lãm", "Thu thập danh thiếp tại hội chợ, workshop kết nối kinh doanh", 5, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "TELESALES", "Cuộc gọi chủ động (Outbound)", "Nhân viên kinh doanh gọi điện tiếp cận danh sách tiềm năng", 6, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "EMAIL_MKT", "Email Marketing", "Chiến dịch gửi thư điện tử bản tin giới thiệu giải pháp", 7, true, 0, LocalDate.now(), "Hệ thống"));
-                    break;
-
-                case LOAI_HOAT_DONG:
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "CUOC_GOI", "Cuộc gọi điện thoại", "Liên hệ trao đổi thông tin trực tiếp qua điện thoại", 1, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "EMAIL", "Gửi email trao đổi", "Gửi tài liệu giới thiệu hoặc thư từ trao đổi nghiệp vụ", 2, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "GAP_MAT", "Gặp mặt trực tiếp", "Đến văn phòng khách hàng hoặc hẹn gặp trao đổi", 3, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "HOP_ONLINE", "Họp trực tuyến (Google Meet/Zoom)", "Trao đổi giải pháp từ xa qua hội nghị truyền hình", 4, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "GUI_BAO_GIA", "Gửi bảng báo giá", "Gửi bảng báo giá chi tiết sản phẩm / dịch vụ", 5, true, 0, LocalDate.now(), "Hệ thống"));
-                    dao.them(loai, new MucDanhMucDTO(null, loai, "DEMO", "Demo thử nghiệm giải pháp", "Trực tiếp trình diễn tính năng phần mềm cho khách hàng", 6, true, 0, LocalDate.now(), "Hệ thống"));
-                    break;
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Không thể tự động nạp dữ liệu mẫu cho danh mục " + loai.getMa() + ": " + e.getMessage());
-        }
     }
 }

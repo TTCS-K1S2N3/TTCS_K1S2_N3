@@ -310,7 +310,7 @@ class DangNhapServiceTest {
         MenuService menuService = MenuService.getInstance();
         assertTrue(menuService.kiemTraQuyenTruyCapUrl(result.getNguoiDung(), "/khach-hang"),
                 "User S2-01 không được bị 403 trên /khach-hang sau khi đăng nhập");
-        assertEquals(11, menuService.layDanhSachMenuChoNguoiDung(result.getNguoiDung(), "/khach-hang").size(),
-                "User S2-01 SALES_REP phải thấy đủ 11/12 module khả dụng");
+        assertEquals(10, menuService.layDanhSachMenuChoNguoiDung(result.getNguoiDung(), "/khach-hang").size(),
+                "User S2-01 SALES_REP phải thấy đủ 10/12 module khả dụng (ngoại trừ NGUOI_DUNG và DANH_MUC)");
     }
 }
