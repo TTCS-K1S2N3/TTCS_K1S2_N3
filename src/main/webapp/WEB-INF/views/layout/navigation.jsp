@@ -26,7 +26,12 @@
     <div class="crm-nav-right">
         <button type="button" class="crm-mobile-user-avatar-btn" id="btn-mobile-user-profile" aria-label="Xem hồ sơ người dùng: <%= navData.getHoTen() %>" title="<%= navData.getHoTen() %> (<%= navData.getVaiTroHienThi() %>)">
             <span class="crm-mobile-user-avatar">
-                <%= navData.getTenVietTat() %>
+                <% if (navData.getAnhDaiDienThumbUrl() != null && !navData.getAnhDaiDienThumbUrl().isBlank()) { %>
+                    <img src="<%= navData.getAnhDaiDienThumbUrl() %>" alt="<%= navData.getHoTen() %>" class="crm-user-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                    <span style="display:none;"><%= navData.getTenVietTat() %></span>
+                <% } else { %>
+                    <%= navData.getTenVietTat() %>
+                <% } %>
             </span>
         </button>
     </div>
@@ -64,7 +69,12 @@
     <a href="<%= request.getContextPath() %>/ho-so" class="crm-user-profile-box" id="crm-user-profile-card" style="text-decoration: none; display: block; color: inherit;">
         <div class="crm-user-avatar-wrap">
             <div class="crm-user-avatar" title="<%= navData.getHoTen() %>">
-                <%= navData.getTenVietTat() %>
+                <% if (navData.getAnhDaiDienThumbUrl() != null && !navData.getAnhDaiDienThumbUrl().isBlank()) { %>
+                    <img src="<%= navData.getAnhDaiDienThumbUrl() %>" alt="<%= navData.getHoTen() %>" class="crm-user-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <span style="display:none;"><%= navData.getTenVietTat() %></span>
+                <% } else { %>
+                    <%= navData.getTenVietTat() %>
+                <% } %>
             </div>
             <span class="crm-status-dot" title="Đang hoạt động" aria-label="Trạng thái trực tuyến"></span>
         </div>
