@@ -198,41 +198,38 @@ public class TruongTuyChinhServlet extends HttpServlet {
             return;
         }
 
-        List<String> cotChuan = "CO_HOI".equals(doiTuong)
-                ? List.of("Mã cơ hội", "Tên cơ hội", "Khách hàng", "Giá trị", "Giai đoạn")
-                : List.of("Mã khách hàng", "Tên công ty", "Mã số thuế", "Điện thoại", "Email");
-
-        List<String> keys = "CO_HOI".equals(doiTuong)
-                ? List.of("ma", "ten", "khachHang", "giaTri", "giaiDoan")
-                : List.of("ma", "ten", "mst", "sdt", "email");
-
-        // Dữ liệu mẫu minh họa theo đối tượng
-        List<Map<String, Object>> sample = new ArrayList<>();
+        List<String> cotChuan;
+        List<String> keys;
         if ("CO_HOI".equals(doiTuong)) {
-            Map<String, Object> r1 = new HashMap<>();
-            r1.put("id", 1L);
-            r1.put("ma", "CH-2026-001");
-            r1.put("ten", "Triển khai phần mềm ERP");
-            r1.put("khachHang", "Tập đoàn Vingroup");
-            r1.put("giaTri", "500000000");
-            r1.put("giaiDoan", "Đàm phán");
-            sample.add(r1);
+            cotChuan = List.of("Mã cơ hội", "Tên cơ hội", "Giá trị dự kiến", "Ngày chốt dự kiến", "Trạng thái");
+            keys = List.of("ma_co_hoi", "ten_co_hoi", "gia_tri_du_kien", "ngay_chot_du_kien", "trang_thai");
         } else {
-            Map<String, Object> r1 = new HashMap<>();
-            r1.put("id", 1L);
-            r1.put("ma", "KH-001");
-            r1.put("ten", "Công ty Cổ phần Công nghệ FPT");
-            r1.put("mst", "0101248141");
-            r1.put("sdt", "02473007300");
-            r1.put("email", "contact@fpt.com.vn");
-            sample.add(r1);
+            cotChuan = List.of("Mã khách hàng", "Tên công ty", "Mã số thuế", "Địa chỉ", "Trạng thái");
+            keys = List.of("ma_khach_hang", "ten_cong_ty", "ma_so_thue", "dia_chi", "trang_thai");
         }
 
-        Map<Long, Map<String, String>> customVals = service.layTatCaGiaTriTheoDanhSach(doiTuong, List.of(1L));
+        // Lấy dữ liệu thực tế từ cơ sở dữ liệu (tuyệt đối không dùng dữ liệu mẫu / mock / hardcode)
+        List<Map<String, Object>> danhSachBanGhi = service.layDanhSachThucTeChoXuatExcel(doiTuong);
+
+        List<Long> dsDoiTuongId = new ArrayList<>();
+        if (danhSachBanGhi != null) {
+            for (Map<String, Object> r : danhSachBanGhi) {
+                Object idObj = r.get("id");
+                if (idObj instanceof Number) {
+                    dsDoiTuongId.add(((Number) idObj).longValue());
+                } else if (idObj != null) {
+                    try {
+                        dsDoiTuongId.add(Long.parseLong(idObj.toString()));
+                    } catch (Exception ignored) {}
+                }
+            }
+        }
+
+        Map<Long, Map<String, String>> customVals = service.layTatCaGiaTriTheoDanhSach(doiTuong, dsDoiTuongId);
 
         String format = request.getParameter("format");
         if ("csv".equalsIgnoreCase(format)) {
-            String csv = service.xuatDuLieuExcelCSV(doiTuong, cotChuan, keys, sample, customVals);
+            String csv = service.xuatDuLieuExcelCSV(doiTuong, cotChuan, keys, danhSachBanGhi, customVals);
             response.setContentType("text/csv; charset=UTF-8");
             response.setHeader("Content-Disposition", "attachment; filename=\"danh-sach-" + doiTuong.toLowerCase() + ".csv\"");
             try (OutputStream os = response.getOutputStream()) {
@@ -240,7 +237,7 @@ public class TruongTuyChinhServlet extends HttpServlet {
                 os.flush();
             }
         } else {
-            byte[] xlsx = service.xuatDuLieuExcelXLSX(doiTuong, cotChuan, keys, sample, customVals);
+            byte[] xlsx = service.xuatDuLieuExcelXLSX(doiTuong, cotChuan, keys, danhSachBanGhi, customVals);
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setHeader("Content-Disposition", "attachment; filename=\"danh-sach-" + doiTuong.toLowerCase() + ".xlsx\"");
             response.setContentLength(xlsx.length);

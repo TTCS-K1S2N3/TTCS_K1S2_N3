@@ -431,6 +431,54 @@ public class TruongTuyChinhService {
     }
 
     /**
+     * Lấy danh sách bản ghi thực tế từ cơ sở dữ liệu (khach_hang hoặc co_hoi) phục vụ xuất Excel.
+     */
+    public List<Map<String, Object>> layDanhSachThucTeChoXuatExcel(String loaiDoiTuong) {
+        return dao.layDanhSachThucTeChoXuatExcel(chuanHoaLoaiDoiTuong(loaiDoiTuong));
+    }
+
+    /**
+     * Xác định tiêu đề hiển thị cho các cột trường tuỳ chỉnh khi xuất Excel/CSV.
+     * Nếu có từ 2 trường trở lên trùng tên hiển thị (ten_truong / nhanHien), tự động gán thêm [ma_truong]
+     * để tránh tạo ra các cột mơ hồ giống hệt nhau (ví dụ: "Phân khúc khách hàng [phan_khuc_kh]").
+     * Nếu không trùng thì giữ nguyên tên hiển thị chuẩn.
+     */
+    public Map<String, String> xacDinhTieuDeCotCustomFields(List<TruongTuyChinh> dsTruong, List<String> cotChuanHeader) {
+        Map<String, String> headerMap = new LinkedHashMap<>();
+        if (dsTruong == null || dsTruong.isEmpty()) {
+            return headerMap;
+        }
+
+        // Đếm tần suất xuất hiện của mỗi tên hiển thị
+        Map<String, Integer> demNhan = new HashMap<>();
+        for (TruongTuyChinh t : dsTruong) {
+            String nhan = (t.getNhanHien() != null && !t.getNhanHien().isBlank())
+                    ? t.getNhanHien().trim() : t.getMaTruong();
+            demNhan.put(nhan, demNhan.getOrDefault(nhan, 0) + 1);
+        }
+
+        Set<String> cotChuanSet = new HashSet<>();
+        if (cotChuanHeader != null) {
+            for (String h : cotChuanHeader) {
+                if (h != null) cotChuanSet.add(h.trim());
+            }
+        }
+
+        for (TruongTuyChinh t : dsTruong) {
+            String nhan = (t.getNhanHien() != null && !t.getNhanHien().isBlank())
+                    ? t.getNhanHien().trim() : t.getMaTruong();
+            // Nếu trùng tên với trường tuỳ chỉnh khác hoặc trùng với cột chuẩn hệ thống, thêm [ma_truong]
+            if (demNhan.getOrDefault(nhan, 0) > 1 || cotChuanSet.contains(nhan)) {
+                headerMap.put(t.getMaTruong(), nhan + " [" + t.getMaTruong() + "]");
+            } else {
+                headerMap.put(t.getMaTruong(), nhan);
+            }
+        }
+
+        return headerMap;
+    }
+
+    /**
      * Xuất dữ liệu bảng có gắn kèm các cột trường tuỳ chỉnh sang file CSV UTF-8 mở được ngay trên Excel.
      */
     public String xuatDuLieuExcelCSV(String loaiDoiTuong,
@@ -443,6 +491,7 @@ public class TruongTuyChinhService {
         csv.append("\uFEFF");
 
         List<TruongTuyChinh> dsTruongExcel = layDanhSachChoExcel(loaiDoiTuong);
+        Map<String, String> customHeaders = xacDinhTieuDeCotCustomFields(dsTruongExcel, cotChuanHeader);
 
         // 1. Dòng tiêu đề
         boolean first = true;
@@ -452,7 +501,7 @@ public class TruongTuyChinhService {
             first = false;
         }
         for (TruongTuyChinh t : dsTruongExcel) {
-            csv.append(",").append(escapeCsv(t.getNhanHien()));
+            csv.append(",").append(escapeCsv(customHeaders.get(t.getMaTruong())));
         }
         csv.append("\n");
 
@@ -511,6 +560,7 @@ public class TruongTuyChinhService {
             headerStyle.setFont(headerFont);
 
             List<TruongTuyChinh> dsTruongExcel = layDanhSachChoExcel(loaiDoiTuong);
+            Map<String, String> customHeaders = xacDinhTieuDeCotCustomFields(dsTruongExcel, cotChuanHeader);
 
             // 1. Dòng tiêu đề
             Row headerRow = sheet.createRow(0);
@@ -522,7 +572,7 @@ public class TruongTuyChinhService {
             }
             for (TruongTuyChinh t : dsTruongExcel) {
                 Cell cell = headerRow.createCell(colIdx++);
-                cell.setCellValue(t.getNhanHien());
+                cell.setCellValue(customHeaders.get(t.getMaTruong()));
                 cell.setCellStyle(headerStyle);
             }
 

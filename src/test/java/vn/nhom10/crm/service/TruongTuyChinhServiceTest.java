@@ -401,6 +401,19 @@ class TruongTuyChinhServiceTest {
         }
     }
 
+    @Test
+    @DisplayName("AC3.7: Xử lý duplicate display label khi xuất Excel/CSV (tự động phân biệt bằng [ma_truong])")
+    void testXacDinhTieuDeCotCustomFieldsTrunghop() {
+        TruongTuyChinh t1 = new TruongTuyChinh("KHACH_HANG", "phan_khuc_kh", "Phân khúc khách hàng", "VAN_BAN", false);
+        TruongTuyChinh t2 = new TruongTuyChinh("KHACH_HANG", "phan_khuc_khach_hang", "Phân khúc khách hàng", "DANH_SACH_CHON", false);
+        TruongTuyChinh t3 = new TruongTuyChinh("KHACH_HANG", "ghi_chu", "Ghi chú", "VAN_BAN", false);
+
+        Map<String, String> headers = service.xacDinhTieuDeCotCustomFields(List.of(t1, t2, t3), List.of("Mã KH"));
+        assertEquals("Phân khúc khách hàng [phan_khuc_kh]", headers.get("phan_khuc_kh"));
+        assertEquals("Phân khúc khách hàng [phan_khuc_khach_hang]", headers.get("phan_khuc_khach_hang"));
+        assertEquals("Ghi chú", headers.get("ghi_chu"));
+    }
+
     // =========================================================================
     // VALIDATION BỔ SUNG & BẢO MẬT
     // =========================================================================

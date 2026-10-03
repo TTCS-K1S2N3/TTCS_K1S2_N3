@@ -146,7 +146,11 @@ public class TruongTuyChinhDAO {
             ps.setString(4, truong.getKieuDuLieu() != null ? truong.getKieuDuLieu().trim().toUpperCase() : "VAN_BAN");
             ps.setBoolean(5, truong.isBatBuoc());
             ps.setString(6, truong.getLuaChonJson());
-            ps.setString(7, truong.getGiaTriMacDinhJson());
+            String macDinhJson = truong.getGiaTriMacDinhJson();
+            if (macDinhJson == null) {
+                macDinhJson = "{\"hienThiBoDac\":" + truong.isHienThiBoDac() + ",\"hienThiExcel\":" + truong.isHienThiExcel() + "}";
+            }
+            ps.setString(7, macDinhJson);
             ps.setInt(8, truong.getThuTuHienThi());
             ps.setBoolean(9, truong.isHoatDong());
 
@@ -371,6 +375,89 @@ public class TruongTuyChinhDAO {
         return ketQua;
     }
 
+    /**
+     * Lấy danh sách bản ghi thực tế từ cơ sở dữ liệu (khach_hang hoặc co_hoi) phục vụ xuất Excel.
+     * Tuyệt đối không dùng dữ liệu mẫu (sample/mock data).
+     */
+    public List<Map<String, Object>> layDanhSachThucTeChoXuatExcel(String loaiDoiTuong) {
+        List<Map<String, Object>> danhSach = new ArrayList<>();
+        String upper = loaiDoiTuong != null ? loaiDoiTuong.trim().toUpperCase() : "KHACH_HANG";
+
+        if ("KHACH_HANG".equals(upper)) {
+            String sql = "SELECT id, ma_khach_hang, ten_cong_ty, ma_so_thue, dia_chi, trang_thai " +
+                         "FROM khach_hang ORDER BY id ASC";
+            try (Connection conn = DatabaseConnection.layKetNoi();
+                 PreparedStatement ps = conn.prepareStatement(sql);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> r = new LinkedHashMap<>();
+                    r.put("id", rs.getLong("id"));
+                    String ma = rs.getString("ma_khach_hang");
+                    String ten = rs.getString("ten_cong_ty");
+                    String mst = rs.getString("ma_so_thue");
+                    String diaChi = rs.getString("dia_chi");
+                    String trangThai = rs.getString("trang_thai");
+
+                    r.put("ma_khach_hang", ma != null ? ma : "");
+                    r.put("ten_cong_ty", ten != null ? ten : "");
+                    r.put("ma_so_thue", mst != null ? mst : "");
+                    r.put("dia_chi", diaChi != null ? diaChi : "");
+                    r.put("trang_thai", trangThai != null ? trangThai : "");
+
+                    // Alias rút gọn
+                    r.put("ma", ma != null ? ma : "");
+                    r.put("ten", ten != null ? ten : "");
+                    r.put("mst", mst != null ? mst : "");
+                    r.put("diaChi", diaChi != null ? diaChi : "");
+                    r.put("trangThai", trangThai != null ? trangThai : "");
+
+                    danhSach.add(r);
+                }
+            } catch (SQLException e) {
+                LOGGER.log(Level.SEVERE, "Lỗi lấy danh sách khách hàng thực tế cho xuất Excel", e);
+            }
+        } else if ("CO_HOI".equals(upper)) {
+            String sql = "SELECT id, ma_co_hoi, ten_co_hoi, gia_tri_du_kien, ngay_chot_du_kien, trang_thai " +
+                         "FROM co_hoi ORDER BY id ASC";
+            try (Connection conn = DatabaseConnection.layKetNoi();
+                 PreparedStatement ps = conn.prepareStatement(sql);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> r = new LinkedHashMap<>();
+                    r.put("id", rs.getLong("id"));
+                    String ma = rs.getString("ma_co_hoi");
+                    String ten = rs.getString("ten_co_hoi");
+                    BigDecimal val = rs.getBigDecimal("gia_tri_du_kien");
+                    String giaTri = (val != null) ? (val.compareTo(BigDecimal.ZERO) == 0 ? "0" : val.stripTrailingZeros().toPlainString()) : "";
+                    java.sql.Date d = rs.getDate("ngay_chot_du_kien");
+                    String ngayChot = d != null ? d.toString() : "";
+                    String trangThai = rs.getString("trang_thai");
+
+                    r.put("ma_co_hoi", ma != null ? ma : "");
+                    r.put("ten_co_hoi", ten != null ? ten : "");
+                    r.put("gia_tri_du_kien", giaTri);
+                    r.put("ngay_chot_du_kien", ngayChot);
+                    r.put("trang_thai", trangThai != null ? trangThai : "");
+
+                    // Alias rút gọn
+                    r.put("ma", ma != null ? ma : "");
+                    r.put("ten", ten != null ? ten : "");
+                    r.put("giaTri", giaTri);
+                    r.put("ngayChot", ngayChot);
+                    r.put("trangThai", trangThai != null ? trangThai : "");
+
+                    danhSach.add(r);
+                }
+            } catch (SQLException e) {
+                LOGGER.log(Level.SEVERE, "Lỗi lấy danh sách cơ hội thực tế cho xuất Excel", e);
+            }
+        } else {
+            throw new IllegalArgumentException("Loại đối tượng không hợp lệ: " + loaiDoiTuong);
+        }
+
+        return danhSach;
+    }
+
     // --- Phương thức Helper ánh xạ dữ liệu ---
 
     private TruongTuyChinh mapResultSetToModel(ResultSet rs) throws SQLException {
@@ -457,7 +544,7 @@ public class TruongTuyChinhDAO {
         if ("SO".equalsIgnoreCase(kieuDuLieu)) {
             BigDecimal bd = rs.getBigDecimal("gia_tri_so");
             if (bd != null) {
-                return bd.stripTrailingZeros().toPlainString();
+                return bd.compareTo(BigDecimal.ZERO) == 0 ? "0" : bd.stripTrailingZeros().toPlainString();
             }
             return rs.getString("gia_tri_van_ban");
         } else if ("NGAY".equalsIgnoreCase(kieuDuLieu)) {

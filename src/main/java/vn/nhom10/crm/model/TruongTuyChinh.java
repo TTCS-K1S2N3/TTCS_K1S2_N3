@@ -202,6 +202,7 @@ public class TruongTuyChinh implements Serializable {
 
     public void setHienThiBoDac(boolean hienThiBoDac) {
         this.hienThiBoDac = hienThiBoDac;
+        dongBoGiaTriMacDinhJson();
     }
 
     public boolean isHienThiExcel() {
@@ -210,6 +211,11 @@ public class TruongTuyChinh implements Serializable {
 
     public void setHienThiExcel(boolean hienThiExcel) {
         this.hienThiExcel = hienThiExcel;
+        dongBoGiaTriMacDinhJson();
+    }
+
+    private void dongBoGiaTriMacDinhJson() {
+        this.giaTriMacDinhJson = "{\"hienThiBoDac\":" + this.hienThiBoDac + ",\"hienThiExcel\":" + this.hienThiExcel + "}";
     }
 
     public List<String> getDanhSachLuaChon() {

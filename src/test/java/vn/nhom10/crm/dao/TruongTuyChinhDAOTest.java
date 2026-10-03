@@ -82,6 +82,26 @@ class TruongTuyChinhDAOTest {
                     "updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                     "UNIQUE (co_hoi_id, truong_tuy_chinh_id)" +
                     ")");
+
+            // Bảng khach_hang thực tế phục vụ kiểm thử xuất Excel
+            st.execute("CREATE TABLE khach_hang (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "ma_khach_hang VARCHAR(50) NULL UNIQUE, " +
+                    "ten_cong_ty VARCHAR(255) NOT NULL, " +
+                    "ma_so_thue VARCHAR(50) NULL, " +
+                    "dia_chi VARCHAR(500) NULL, " +
+                    "trang_thai VARCHAR(50) NOT NULL DEFAULT 'TIEM_NANG'" +
+                    ")");
+
+            // Bảng co_hoi thực tế phục vụ kiểm thử xuất Excel
+            st.execute("CREATE TABLE co_hoi (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "ma_co_hoi VARCHAR(50) NOT NULL UNIQUE, " +
+                    "ten_co_hoi VARCHAR(255) NOT NULL, " +
+                    "gia_tri_du_kien DECIMAL(18,2) NOT NULL DEFAULT 0.00, " +
+                    "ngay_chot_du_kien DATE NULL, " +
+                    "trang_thai VARCHAR(50) NOT NULL DEFAULT 'MO'" +
+                    ")");
         }
 
         dao = new TruongTuyChinhDAO();
@@ -289,5 +309,193 @@ class TruongTuyChinhDAOTest {
         assertThrows(IllegalArgumentException.class, () ->
                 dao.luuGiaTri("USERS", 1L, 1L, "VAN_BAN", "Test")
         );
+    }
+
+    // =========================================================================
+    // KIỂM THỬ XUẤT EXCEL THỰC TẾ (REAL DB DATA - CHỐNG DỮ LIỆU DEMO/SAMPLE)
+    // =========================================================================
+
+    @Test
+    @DisplayName("Excel Real: Khi DB trống không có KH-001 -> Excel chỉ có header, không được tự sinh dòng demo")
+    void testExportKhongCoRecordKhongSinhDemoData() throws Exception {
+        vn.nhom10.crm.service.TruongTuyChinhService service = new vn.nhom10.crm.service.TruongTuyChinhService(dao);
+
+        // Đảm bảo bảng khach_hang hoàn toàn trống
+        List<Map<String, Object>> danhSach = dao.layDanhSachThucTeChoXuatExcel("KHACH_HANG");
+        assertNotNull(danhSach);
+        assertTrue(danhSach.isEmpty(), "Bảng khach_hang phải trống khi chưa có dữ liệu");
+
+        List<String> cotChuan = List.of("Mã khách hàng", "Tên công ty", "Mã số thuế", "Địa chỉ", "Trạng thái");
+        List<String> keys = List.of("ma_khach_hang", "ten_cong_ty", "ma_so_thue", "dia_chi", "trang_thai");
+
+        byte[] xlsxBytes = service.xuatDuLieuExcelXLSX("KHACH_HANG", cotChuan, keys, danhSach, java.util.Collections.emptyMap());
+        assertNotNull(xlsxBytes);
+
+        try (org.apache.poi.xssf.usermodel.XSSFWorkbook wb = new org.apache.poi.xssf.usermodel.XSSFWorkbook(new java.io.ByteArrayInputStream(xlsxBytes))) {
+            org.apache.poi.ss.usermodel.Sheet sheet = wb.getSheet("Khách hàng");
+            assertNotNull(sheet);
+
+            // Dòng tiêu đề phải tồn tại
+            org.apache.poi.ss.usermodel.Row headerRow = sheet.getRow(0);
+            assertNotNull(headerRow);
+            assertEquals("Mã khách hàng", headerRow.getCell(0).getStringCellValue());
+            assertEquals("Tên công ty", headerRow.getCell(1).getStringCellValue());
+
+            // Số dòng vật lý trong sheet chỉ được là 1 (chỉ có dòng tiêu đề, 0 dòng dữ liệu)
+            assertEquals(1, sheet.getPhysicalNumberOfRows(), "Khi DB không có record, file chỉ được có 1 dòng header");
+            assertNull(sheet.getRow(1), "Tuyệt đối không được tự sinh dòng dữ liệu mẫu (KH-001)");
+        }
+    }
+
+    @Test
+    @DisplayName("Excel Real: Tạo 1 khách hàng thật trong DB + custom fields (NUMBER, DATE, SELECT, TEXT) -> Verify từng ô đúng dữ liệu DB")
+    void testExportKhachHangThatKemCustomValuesThat() throws Exception {
+        vn.nhom10.crm.service.TruongTuyChinhService service = new vn.nhom10.crm.service.TruongTuyChinhService(dao);
+
+        // 1. Tạo 1 khách hàng thật trong database
+        long realCustomerId;
+        try (Statement st = connection.createStatement()) {
+            st.execute("INSERT INTO khach_hang (ma_khach_hang, ten_cong_ty, ma_so_thue, dia_chi, trang_thai) " +
+                    "VALUES ('KH-REAL-888', 'Tập đoàn Công nghệ Real Corp', '0109998888', 'Cầu Giấy, Hà Nội', 'KHACH_HANG')",
+                    Statement.RETURN_GENERATED_KEYS);
+            try (ResultSet rs = st.getGeneratedKeys()) {
+                assertTrue(rs.next());
+                realCustomerId = rs.getLong(1);
+            }
+        }
+        assertTrue(realCustomerId > 0);
+
+        // 2. Tạo 4 trường tuỳ chỉnh chuẩn
+        TruongTuyChinh tText = new TruongTuyChinh("KHACH_HANG", "ghi_chu_vip", "Ghi chú VIP", "VAN_BAN", false);
+        tText.setHienThiExcel(true);
+        long idText = dao.them(tText);
+
+        TruongTuyChinh tNumber = new TruongTuyChinh("KHACH_HANG", "doanh_thu_nam", "Doanh thu năm", "SO", false);
+        tNumber.setHienThiExcel(true);
+        long idNumber = dao.them(tNumber);
+
+        TruongTuyChinh tDate = new TruongTuyChinh("KHACH_HANG", "ngay_thanh_lap", "Ngày thành lập", "NGAY", false);
+        tDate.setHienThiExcel(true);
+        long idDate = dao.them(tDate);
+
+        TruongTuyChinh tSelect = new TruongTuyChinh("KHACH_HANG", "loai_hop_dong", "Loại hợp đồng", "DANH_SACH_CHON", false);
+        tSelect.setDanhSachLuaChon(List.of("Hợp đồng khung", "Hợp đồng thử nghiệm"));
+        tSelect.setHienThiExcel(true);
+        long idSelect = dao.them(tSelect);
+
+        // 3. Gán giá trị thật cho khách hàng này trong database
+        assertTrue(dao.luuGiaTri("KHACH_HANG", realCustomerId, idText, "VAN_BAN", "Khách VIP miền Bắc"));
+        assertTrue(dao.luuGiaTri("KHACH_HANG", realCustomerId, idNumber, "SO", "12345.67"));
+        assertTrue(dao.luuGiaTri("KHACH_HANG", realCustomerId, idDate, "NGAY", "2026-10-03"));
+        assertTrue(dao.luuGiaTri("KHACH_HANG", realCustomerId, idSelect, "DANH_SACH_CHON", "Hợp đồng khung"));
+
+        // 4. Lấy dữ liệu thực tế và xuất Excel
+        List<Map<String, Object>> danhSach = dao.layDanhSachThucTeChoXuatExcel("KHACH_HANG");
+        assertEquals(1, danhSach.size());
+        assertEquals(realCustomerId, danhSach.get(0).get("id"));
+        assertEquals("KH-REAL-888", danhSach.get(0).get("ma_khach_hang"));
+        assertEquals("Tập đoàn Công nghệ Real Corp", danhSach.get(0).get("ten_cong_ty"));
+
+        Map<Long, Map<String, String>> customVals = dao.layTatCaGiaTriTheoDanhSach("KHACH_HANG", List.of(realCustomerId));
+
+        List<String> cotChuan = List.of("Mã khách hàng", "Tên công ty", "Mã số thuế", "Địa chỉ", "Trạng thái");
+        List<String> keys = List.of("ma_khach_hang", "ten_cong_ty", "ma_so_thue", "dia_chi", "trang_thai");
+
+        byte[] xlsxBytes = service.xuatDuLieuExcelXLSX("KHACH_HANG", cotChuan, keys, danhSach, customVals);
+        assertNotNull(xlsxBytes);
+
+        // 5. Kiểm chứng từng ô trong file Excel khớp đúng dữ liệu DB
+        try (org.apache.poi.xssf.usermodel.XSSFWorkbook wb = new org.apache.poi.xssf.usermodel.XSSFWorkbook(new java.io.ByteArrayInputStream(xlsxBytes))) {
+            org.apache.poi.ss.usermodel.Sheet sheet = wb.getSheet("Khách hàng");
+            assertNotNull(sheet);
+            assertEquals(2, sheet.getPhysicalNumberOfRows()); // 1 header + 1 data row
+
+            org.apache.poi.ss.usermodel.Row row = sheet.getRow(1);
+            assertNotNull(row);
+
+            // Cột chuẩn
+            assertEquals("KH-REAL-888", row.getCell(0).getStringCellValue());
+            assertEquals("Tập đoàn Công nghệ Real Corp", row.getCell(1).getStringCellValue());
+            assertEquals("0109998888", row.getCell(2).getStringCellValue());
+            assertEquals("Cầu Giấy, Hà Nội", row.getCell(3).getStringCellValue());
+            assertEquals("KHACH_HANG", row.getCell(4).getStringCellValue());
+
+            // Cột trường tuỳ chỉnh
+            assertEquals("Khách VIP miền Bắc", row.getCell(5).getStringCellValue());
+            assertEquals("12345.67", row.getCell(6).getStringCellValue());
+            assertEquals("2026-10-03", row.getCell(7).getStringCellValue());
+            assertEquals("Hợp đồng khung", row.getCell(8).getStringCellValue());
+        }
+    }
+
+    @Test
+    @DisplayName("Excel Real: Hai trường cùng display name -> header được tự động gán [ma_truong] chống mơ hồ")
+    void testDuplicateDisplayNameHeaderDisambiguation() throws Exception {
+        vn.nhom10.crm.service.TruongTuyChinhService service = new vn.nhom10.crm.service.TruongTuyChinhService(dao);
+
+        TruongTuyChinh t1 = new TruongTuyChinh("KHACH_HANG", "phan_khuc_kh", "Phân khúc khách hàng", "VAN_BAN", false);
+        t1.setHienThiExcel(true);
+        dao.them(t1);
+
+        TruongTuyChinh t2 = new TruongTuyChinh("KHACH_HANG", "phan_khuc_khach_hang", "Phân khúc khách hàng", "DANH_SACH_CHON", false);
+        t2.setDanhSachLuaChon(List.of("VIP", "Thường"));
+        t2.setHienThiExcel(true);
+        dao.them(t2);
+
+        TruongTuyChinh t3 = new TruongTuyChinh("KHACH_HANG", "nguon_lead", "Nguồn giới thiệu", "VAN_BAN", false);
+        t3.setHienThiExcel(true);
+        dao.them(t3);
+
+        List<String> cotChuan = List.of("Mã KH");
+        List<String> keys = List.of("ma");
+
+        byte[] xlsxBytes = service.xuatDuLieuExcelXLSX("KHACH_HANG", cotChuan, keys, java.util.Collections.emptyList(), java.util.Collections.emptyMap());
+
+        try (org.apache.poi.xssf.usermodel.XSSFWorkbook wb = new org.apache.poi.xssf.usermodel.XSSFWorkbook(new java.io.ByteArrayInputStream(xlsxBytes))) {
+            org.apache.poi.ss.usermodel.Sheet sheet = wb.getSheet("Khách hàng");
+            org.apache.poi.ss.usermodel.Row headerRow = sheet.getRow(0);
+
+            assertEquals("Mã KH", headerRow.getCell(0).getStringCellValue());
+            // Hai trường trùng display name phải kèm [ma_truong]
+            assertEquals("Phân khúc khách hàng [phan_khuc_kh]", headerRow.getCell(1).getStringCellValue());
+            assertEquals("Phân khúc khách hàng [phan_khuc_khach_hang]", headerRow.getCell(2).getStringCellValue());
+            // Trường không trùng thì giữ nguyên display name bình thường
+            assertEquals("Nguồn giới thiệu", headerRow.getCell(3).getStringCellValue());
+        }
+    }
+
+    @Test
+    @DisplayName("Excel Real: Field tắt Excel hoặc Field inactive không được xuất ra file")
+    void testFieldTatExcelVaFieldInactiveKhongXuat() throws Exception {
+        vn.nhom10.crm.service.TruongTuyChinhService service = new vn.nhom10.crm.service.TruongTuyChinhService(dao);
+
+        TruongTuyChinh tExcelOff = new TruongTuyChinh("KHACH_HANG", "field_excel_tat", "Field Tắt Excel", "VAN_BAN", false);
+        tExcelOff.setHienThiExcel(false); // Tắt Excel
+        dao.them(tExcelOff);
+
+        TruongTuyChinh tInactive = new TruongTuyChinh("KHACH_HANG", "field_inactive", "Field Ngừng Áp Dụng", "VAN_BAN", false);
+        tInactive.setHienThiExcel(true);
+        tInactive.setHoatDong(false); // Ngừng áp dụng
+        dao.them(tInactive);
+
+        TruongTuyChinh tActive = new TruongTuyChinh("KHACH_HANG", "field_active", "Field Hoạt Động Chuẩn", "VAN_BAN", false);
+        tActive.setHienThiExcel(true);
+        tActive.setHoatDong(true);
+        dao.them(tActive);
+
+        List<String> cotChuan = List.of("Mã KH");
+        List<String> keys = List.of("ma");
+
+        byte[] xlsxBytes = service.xuatDuLieuExcelXLSX("KHACH_HANG", cotChuan, keys, java.util.Collections.emptyList(), java.util.Collections.emptyMap());
+
+        try (org.apache.poi.xssf.usermodel.XSSFWorkbook wb = new org.apache.poi.xssf.usermodel.XSSFWorkbook(new java.io.ByteArrayInputStream(xlsxBytes))) {
+            org.apache.poi.ss.usermodel.Sheet sheet = wb.getSheet("Khách hàng");
+            org.apache.poi.ss.usermodel.Row headerRow = sheet.getRow(0);
+
+            assertEquals("Mã KH", headerRow.getCell(0).getStringCellValue());
+            assertEquals("Field Hoạt Động Chuẩn", headerRow.getCell(1).getStringCellValue());
+            // Chỉ có 2 cột (1 cột chuẩn + 1 cột active có bật Excel)
+            assertNull(headerRow.getCell(2), "Không được có cột của field tắt Excel hoặc field inactive");
+        }
     }
 }
