@@ -44,11 +44,18 @@
     <!-- ===== HEADER ===== -->
     <div class="page-header">
         <h1>&#128100; Quản lý Tài khoản Người dùng</h1>
-        <a id="btn-tao-tai-khoan"
-           href="${pageContext.request.contextPath}/nguoi-dung/tao"
-           class="btn btn-primary">
-            &#43; Tạo tài khoản mới
-        </a>
+        <div style="display: flex; gap: 10px;">
+            <a id="btn-import-excel"
+               href="${pageContext.request.contextPath}/nguoi-dung/import"
+               class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;">
+                &#128229; Nhập từ Excel
+            </a>
+            <a id="btn-tao-tai-khoan"
+               href="${pageContext.request.contextPath}/nguoi-dung/tao"
+               class="btn btn-primary">
+                &#43; Tạo tài khoản mới
+            </a>
+        </div>
     </div>
 
     <!-- ===== THÔNG BÁO ===== -->
