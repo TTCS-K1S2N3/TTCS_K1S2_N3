@@ -14,7 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Service xử lý xem và cập nhật hồ sơ cá nhân của người dùng (Story S2-02).
+ * Service xử lý xem và cập nhật hồ sơ cá nhân của người dùng (Story S2-02 & S2-03).
  * Đảm bảo:
  * - AC1: Sửa được họ tên, số điện thoại, chữ ký email.
  * - AC2: Không tự đổi được email, nhóm và vai trò (phân quyền nghiêm ngặt phía server).
@@ -35,7 +35,7 @@ public class HoSoService {
     }
 
     /**
-     * Lấy thông tin hồ sơ cá nhân của người dùng theo ID.
+     * Lấy thông tin hồ sơ cá nhân của người dùng theo ID (S2-02).
      *
      * @param nguoiDungId ID người dùng
      * @return NguoiDung đầy đủ thông tin hoặc null nếu không tồn tại
@@ -45,6 +45,13 @@ public class HoSoService {
             return null;
         }
         return nguoiDungDAO.timTheoId(nguoiDungId);
+    }
+
+    /**
+     * Adapter lấy thông tin hồ sơ theo int ID (S2-03 tương thích).
+     */
+    public NguoiDung layThongTinHoSo(int nguoiDungId) {
+        return layHoSo(nguoiDungId);
     }
 
     /**
@@ -106,6 +113,14 @@ public class HoSoService {
             LOGGER.log(Level.SEVERE, "Lỗi khi cập nhật hồ sơ người dùng ID=" + nguoiDungId + ": " + e.getMessage(), e);
             return KetQuaNguoiDungDTO.thatBai("Lỗi hệ thống khi cập nhật hồ sơ: " + e.getMessage());
         }
+    }
+
+    /**
+     * Adapter cập nhật hồ sơ trả về boolean (S2-03 tương thích).
+     */
+    public boolean capNhatHoSo(int nguoiDungId, String hoTen, String soDienThoai, String chuKyEmail) {
+        KetQuaNguoiDungDTO kq = capNhatHoSo((long) nguoiDungId, hoTen, soDienThoai, chuKyEmail);
+        return kq.isThanhCong();
     }
 
     /**

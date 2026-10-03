@@ -657,6 +657,18 @@ public class NguoiDungDAO {
         nd.setTrangThai(rs.getString("trang_thai"));
 
         try {
+            nd.setChuKyEmail(rs.getString("chu_ky_email"));
+        } catch (SQLException ignored) {}
+
+        try {
+            nd.setAnhDaiDienPath(rs.getString("anh_dai_dien_path"));
+        } catch (SQLException ignored) {}
+
+        try {
+            nd.setAnhDaiDienThumbPath(rs.getString("anh_dai_dien_thumb_path"));
+        } catch (SQLException ignored) {}
+
+        try {
             int soLanSai = rs.getInt("so_lan_sai");
             if (!rs.wasNull()) {
                 nd.setSoLanSai(soLanSai);
@@ -688,21 +700,6 @@ public class NguoiDungDAO {
 
         try {
             nd.setUpdatedAt(rs.getTimestamp("updated_at"));
-        } catch (SQLException ignored) {
-        }
-
-        try {
-            nd.setChuKyEmail(rs.getString("chu_ky_email"));
-        } catch (SQLException ignored) {
-        }
-
-        try {
-            nd.setAnhDaiDienPath(rs.getString("anh_dai_dien_path"));
-        } catch (SQLException ignored) {
-        }
-
-        try {
-            nd.setAnhDaiDienThumbPath(rs.getString("anh_dai_dien_thumb_path"));
         } catch (SQLException ignored) {
         }
 
@@ -903,5 +900,38 @@ public class NguoiDungDAO {
             LOGGER.log(Level.SEVERE, "Lỗi truy vấn danh sách người dùng khả dụng tiếp nhận: " + e.getMessage(), e);
         }
         return danhSach;
+    }
+
+    /**
+     * Cập nhật đường dẫn ảnh đại diện và ảnh thumbnail cho người dùng (Story S2-03).
+     */
+    public boolean capNhatAnhDaiDien(long nguoiDungId, String anhDaiDienPath, String anhDaiDienThumbPath) {
+        String sql = "UPDATE nguoi_dung SET anh_dai_dien_path = ?, anh_dai_dien_thumb_path = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, anhDaiDienPath);
+            ps.setString(2, anhDaiDienThumbPath);
+            ps.setLong(3, nguoiDungId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi cập nhật ảnh đại diện người dùng ID=" + nguoiDungId + ": " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    public boolean capNhatAnhDaiDien(int nguoiDungId, String anhDaiDienPath, String anhDaiDienThumbPath) {
+        return capNhatAnhDaiDien((long) nguoiDungId, anhDaiDienPath, anhDaiDienThumbPath);
+    }
+
+    /**
+     * Cập nhật thông tin hồ sơ cơ bản (họ tên, số điện thoại, chữ ký email) cho int ID.
+     */
+    public boolean capNhatHoSo(int nguoiDungId, String hoTen, String soDienThoai, String chuKyEmail) {
+        try {
+            return capNhatHoSo((long) nguoiDungId, hoTen, soDienThoai, chuKyEmail);
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi cập nhật hồ sơ người dùng ID=" + nguoiDungId + ": " + e.getMessage(), e);
+            return false;
+        }
     }
 }

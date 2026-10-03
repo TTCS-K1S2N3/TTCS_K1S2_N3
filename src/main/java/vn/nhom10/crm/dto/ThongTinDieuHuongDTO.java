@@ -6,17 +6,21 @@ import java.util.List;
 
 /**
  * DTO chứa toàn bộ thông tin cần thiết để render thanh điều hướng (Navigation Bar / Sidebar),
- * bao gồm thông tin cá nhân (họ tên, vai trò, nhóm kinh doanh) và danh sách menu được phép.
+ * bao gồm thông tin cá nhân (họ tên, vai trò, nhóm kinh doanh, ảnh đại diện) và danh sách menu được phép.
  */
 public class ThongTinDieuHuongDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private int nguoiDungId;
     private String hoTen;
     private String email;
     private String vaiTroHienThi;
     private String tenNhomKinhDoanh;
     private String tenVietTat;
     private boolean daDangNhap;
+    private String anhDaiDienUrl;
+    private String anhDaiDienThumbUrl;
+    private boolean coAnhDaiDien;
     private List<MucMenuDTO> danhSachMucMenu = new ArrayList<>();
 
     public ThongTinDieuHuongDTO() {
@@ -30,6 +34,31 @@ public class ThongTinDieuHuongDTO implements Serializable {
         this.tenVietTat = tenVietTat;
         this.daDangNhap = daDangNhap;
         this.danhSachMucMenu = danhSachMucMenu != null ? danhSachMucMenu : new ArrayList<>();
+    }
+
+    public ThongTinDieuHuongDTO(int nguoiDungId, String hoTen, String email, String vaiTroHienThi,
+                               String tenNhomKinhDoanh, String tenVietTat, boolean daDangNhap,
+                               String anhDaiDienUrl, String anhDaiDienThumbUrl,
+                               List<MucMenuDTO> danhSachMucMenu) {
+        this.nguoiDungId = nguoiDungId;
+        this.hoTen = hoTen;
+        this.email = email;
+        this.vaiTroHienThi = vaiTroHienThi;
+        this.tenNhomKinhDoanh = tenNhomKinhDoanh;
+        this.tenVietTat = tenVietTat;
+        this.daDangNhap = daDangNhap;
+        this.anhDaiDienUrl = anhDaiDienUrl;
+        this.anhDaiDienThumbUrl = anhDaiDienThumbUrl;
+        this.coAnhDaiDien = (anhDaiDienUrl != null && !anhDaiDienUrl.isBlank());
+        this.danhSachMucMenu = danhSachMucMenu != null ? danhSachMucMenu : new ArrayList<>();
+    }
+
+    public int getNguoiDungId() {
+        return nguoiDungId;
+    }
+
+    public void setNguoiDungId(int nguoiDungId) {
+        this.nguoiDungId = nguoiDungId;
     }
 
     public String getHoTen() {
@@ -78,6 +107,31 @@ public class ThongTinDieuHuongDTO implements Serializable {
 
     public void setDaDangNhap(boolean daDangNhap) {
         this.daDangNhap = daDangNhap;
+    }
+
+    public String getAnhDaiDienUrl() {
+        return anhDaiDienUrl;
+    }
+
+    public void setAnhDaiDienUrl(String anhDaiDienUrl) {
+        this.anhDaiDienUrl = anhDaiDienUrl;
+        this.coAnhDaiDien = (anhDaiDienUrl != null && !anhDaiDienUrl.isBlank());
+    }
+
+    public String getAnhDaiDienThumbUrl() {
+        return anhDaiDienThumbUrl;
+    }
+
+    public void setAnhDaiDienThumbUrl(String anhDaiDienThumbUrl) {
+        this.anhDaiDienThumbUrl = anhDaiDienThumbUrl;
+    }
+
+    public boolean isCoAnhDaiDien() {
+        return coAnhDaiDien;
+    }
+
+    public void setCoAnhDaiDien(boolean coAnhDaiDien) {
+        this.coAnhDaiDien = coAnhDaiDien;
     }
 
     public List<MucMenuDTO> getDanhSachMucMenu() {

@@ -14,7 +14,7 @@ import java.util.Set;
 
 /**
  * Service xử lý logic điều hướng menu, kiểm tra quyền truy cập module
- * và chuẩn bị dữ liệu hiển thị cho thanh điều hướng hệ thống.
+ * và chuẩn bị dữ liệu hiển thị cho thanh điều hướng hệ thống (bao gồm avatar).
  */
 public class MenuService {
 
@@ -100,13 +100,23 @@ public class MenuService {
     }
 
     /**
-     * Tạo thông tin điều hướng hoàn chỉnh cho thanh header/sidebar bao gồm:
-     * - Họ tên
-     * - Danh sách vai trò hiển thị
-     * - Tên nhóm kinh doanh
-     * - Danh sách menu tương ứng theo quyền
+     * Tạo thông tin điều hướng hoàn chỉnh cho thanh header/sidebar.
      */
     public ThongTinDieuHuongDTO layThongTinDieuHuong(NguoiDung nguoiDung, String currentUri) {
+        return layThongTinDieuHuong(nguoiDung, currentUri, "");
+    }
+
+    /**
+     * Tạo đối tượng ThongTinDieuHuongDTO chứa toàn bộ thông tin người dùng:
+     * - Tên
+     * - Vai trò
+     * - Nhóm kinh doanh
+     * - Đường dẫn ảnh đại diện và thumbnail
+     * - Danh sách menu đúng quyền
+     */
+    public ThongTinDieuHuongDTO layThongTinDieuHuong(NguoiDung nguoiDung, String currentUri, String contextPath) {
+        String prefix = (contextPath != null && !contextPath.isBlank() && !"/".equals(contextPath)) ? contextPath : "";
+
         if (nguoiDung == null) {
             return new ThongTinDieuHuongDTO(
                     "Khách",
@@ -121,14 +131,25 @@ public class MenuService {
 
         List<MucMenuDTO> dsMenu = layDanhSachMenuChoNguoiDung(nguoiDung, currentUri);
 
-        return new ThongTinDieuHuongDTO(
+        String avatarUrl = null;
+        String thumbUrl = null;
+        if (nguoiDung.coAnhDaiDien()) {
+            avatarUrl = prefix + "/avatar?id=" + nguoiDung.getId();
+            thumbUrl = prefix + "/avatar?id=" + nguoiDung.getId() + "&thumb=true";
+        }
+
+        ThongTinDieuHuongDTO dto = new ThongTinDieuHuongDTO(
+                (int) nguoiDung.getId(),
                 nguoiDung.getHoTen(),
                 nguoiDung.getEmail(),
                 nguoiDung.getChuoiVaiTroHienThi(),
                 nguoiDung.getTenNhomKinhDoanh(),
                 nguoiDung.getTenVietTat(),
                 true,
+                avatarUrl,
+                thumbUrl,
                 dsMenu
         );
+        return dto;
     }
 }

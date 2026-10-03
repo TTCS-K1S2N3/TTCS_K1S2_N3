@@ -51,6 +51,14 @@ public class MucMenuDTO implements Serializable {
         this.url = url;
     }
 
+    public String getDuongDanUrl() {
+        return url;
+    }
+
+    public void setDuongDanUrl(String duongDanUrl) {
+        this.url = duongDanUrl;
+    }
+
     public String getBieuTuong() {
         return bieuTuong;
     }
@@ -73,6 +81,14 @@ public class MucMenuDTO implements Serializable {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public boolean isDangChon() {
+        return active;
+    }
+
+    public void setDangChon(boolean dangChon) {
+        this.active = dangChon;
     }
 
     @Override

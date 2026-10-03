@@ -6,9 +6,11 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import vn.nhom10.crm.dao.NguoiDungDAO;
 import vn.nhom10.crm.dto.KetQuaNguoiDungDTO;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.service.HoSoService;
+import vn.nhom10.crm.service.MenuService;
 import vn.nhom10.crm.service.PhienService;
 
 import java.io.IOException;
@@ -17,13 +19,13 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- * Controller tiếp nhận yêu cầu Xem và Cập nhật hồ sơ cá nhân người dùng (Story S2-02).
+ * Controller tiếp nhận yêu cầu Xem và Cập nhật hồ sơ cá nhân người dùng (Story S2-02 & S2-03).
  * URLs:
- * - GET  /ho-so: Xem thông tin hồ sơ và chữ ký email hiện tại.
+ * - GET  /ho-so: Xem thông tin hồ sơ, avatar và chữ ký email hiện tại.
  * - POST /ho-so hoặc /ho-so/cap-nhat: Xử lý cập nhật họ tên, số điện thoại, chữ ký email.
  *
  * Phân quyền & Bảo mật (AC2):
- * - Chỉ cho phép người dùng đang đăng nhập truy cập hồ sơ của chính mình (lấy ID trực tiếp từ session).
+ * - Chỉ cho phép người dùng đang đăng nhập truy cập hồ sơ của chính mình (lấy ID trực tiếp từ session chuẩn).
  * - Không cho phép người dùng tự đổi email, nhóm kinh doanh hoặc vai trò.
  */
 @WebServlet(name = "HoSoServlet", urlPatterns = {"/ho-so", "/ho-so/cap-nhat"})
@@ -32,6 +34,17 @@ public class HoSoServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(HoSoServlet.class.getName());
 
     private HoSoService hoSoService;
+
+    public HoSoServlet() {
+    }
+
+    public HoSoServlet(HoSoService hoSoService) {
+        this.hoSoService = hoSoService;
+    }
+
+    public HoSoServlet(HoSoService hoSoService, MenuService menuService, NguoiDungDAO nguoiDungDAO) {
+        this.hoSoService = hoSoService;
+    }
 
     @Override
     public void init() throws ServletException {
@@ -67,6 +80,20 @@ public class HoSoServlet extends HttpServlet {
         String thanhCongParam = request.getParameter("thanhCong");
         if ("true".equalsIgnoreCase(thanhCongParam)) {
             request.setAttribute("thongBaoThanhCong", "Cập nhật hồ sơ cá nhân thành công.");
+        }
+
+        // Đọc flash message nếu có từ upload avatar
+        if (session != null) {
+            String flashSuccess = (String) session.getAttribute("flashMessageSuccess");
+            String flashError = (String) session.getAttribute("flashMessageError");
+            if (flashSuccess != null) {
+                request.setAttribute("thongBaoThanhCong", flashSuccess);
+                session.removeAttribute("flashMessageSuccess");
+            }
+            if (flashError != null) {
+                request.setAttribute("thongBaoLoi", flashError);
+                session.removeAttribute("flashMessageError");
+            }
         }
 
         request.setAttribute("nguoiDung", thongTinHoSo);
@@ -156,6 +183,10 @@ public class HoSoServlet extends HttpServlet {
         }
         // Hỗ trợ fallback key nếu có
         obj = session.getAttribute("nguoiDung");
+        if (obj instanceof NguoiDung) {
+            return (NguoiDung) obj;
+        }
+        obj = session.getAttribute("user");
         if (obj instanceof NguoiDung) {
             return (NguoiDung) obj;
         }
