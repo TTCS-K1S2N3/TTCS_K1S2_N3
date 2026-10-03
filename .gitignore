@@ -37,3 +37,6 @@ temp/
 *.sql
 *.sql.gz
 !src/main/resources/db/*.sql
+
+# Uploads
+uploads/

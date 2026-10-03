@@ -365,7 +365,8 @@ public class NguoiDung implements Serializable {
     }
 
     public boolean coAnhDaiDien() {
-        return anhDaiDienPath != null && !anhDaiDienPath.isBlank();
+        return (anhDaiDienPath != null && !anhDaiDienPath.isBlank())
+                || (anhDaiDienThumbPath != null && !anhDaiDienThumbPath.isBlank());
     }
 
     /**

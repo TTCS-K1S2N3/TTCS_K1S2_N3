@@ -125,6 +125,27 @@ class AvatarServletTest {
     }
 
     @Test
+    @DisplayName("GET /avatar?id=1: người dùng chưa có ảnh -> xuất SVG fallback theo tên viết tắt")
+    void testDoGet_NguoiDungChuaCoAnh_XuatSvgFallback() throws Exception {
+        when(request.getParameter("id")).thenReturn("1");
+        when(request.getParameter("thumb")).thenReturn("false");
+
+        NguoiDung nd = new NguoiDung(1, "Bàn Thị Linh", "linh.ban@crm.vn");
+        when(nguoiDungDAO.timTheoId(1)).thenReturn(nd);
+        when(avatarService.layFileAnhNguoiDung(1, false)).thenReturn(null);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        when(response.getOutputStream()).thenReturn(new DelegatingServletOutputStream(out));
+
+        servlet.doGet(request, response);
+
+        verify(response).setContentType("image/svg+xml;charset=UTF-8");
+        String svgOutput = out.toString();
+        assertTrue(svgOutput.contains("<svg"), "Phải xuất SVG fallback");
+        assertTrue(svgOutput.contains("BL"), "SVG phải chứa chữ cái viết tắt 'BL' của 'Bàn Thị Linh'");
+    }
+
+    @Test
     @DisplayName("POST /avatar khi chưa đăng nhập: trả về lỗi hoặc chuyển hướng")
     void testDoPost_ChuaDangNhap() throws Exception {
         when(request.getSession(false)).thenReturn(null);

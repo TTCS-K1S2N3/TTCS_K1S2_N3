@@ -51,7 +51,8 @@ public class NguoiDungDAO {
             return null;
         }
 
-        String sql = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, chu_ky_email, trang_thai, "
+        String sql = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, chu_ky_email, "
+                + "anh_dai_dien_path, anh_dai_dien_thumb_path, trang_thai, "
                 + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
                 + "FROM nguoi_dung WHERE LOWER(email) = LOWER(?) LIMIT 1";
 
@@ -66,8 +67,8 @@ public class NguoiDungDAO {
                     }
                 }
             } catch (SQLException e) {
-                // Fallback nếu bảng chưa có cột chu_ky_email
-                String sqlFallback = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, "
+                // Fallback nếu bảng chưa có cột avatar
+                String sqlFallback = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, chu_ky_email, trang_thai, "
                         + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
                         + "FROM nguoi_dung WHERE LOWER(email) = LOWER(?) LIMIT 1";
                 try (PreparedStatement ps = conn.prepareStatement(sqlFallback)) {
@@ -77,6 +78,21 @@ public class NguoiDungDAO {
                             NguoiDung nd = mapResultSetToNguoiDung(rs);
                             nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
                             return nd;
+                        }
+                    }
+                } catch (SQLException e2) {
+                    // Fallback nếu bảng chưa có cả cột chu_ky_email
+                    String sqlFallback2 = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, "
+                            + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
+                            + "FROM nguoi_dung WHERE LOWER(email) = LOWER(?) LIMIT 1";
+                    try (PreparedStatement ps = conn.prepareStatement(sqlFallback2)) {
+                        ps.setString(1, email.trim());
+                        try (ResultSet rs = ps.executeQuery()) {
+                            if (rs.next()) {
+                                NguoiDung nd = mapResultSetToNguoiDung(rs);
+                                nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
+                                return nd;
+                            }
                         }
                     }
                 }
@@ -94,7 +110,8 @@ public class NguoiDungDAO {
      * @return NguoiDung nếu tìm thấy, hoặc null
      */
     public NguoiDung timTheoId(long id) {
-        String sql = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, chu_ky_email, trang_thai, "
+        String sql = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, chu_ky_email, "
+                + "anh_dai_dien_path, anh_dai_dien_thumb_path, trang_thai, "
                 + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
                 + "FROM nguoi_dung WHERE id = ? LIMIT 1";
 
@@ -109,8 +126,8 @@ public class NguoiDungDAO {
                     }
                 }
             } catch (SQLException e) {
-                // Fallback nếu bảng chưa có cột chu_ky_email
-                String sqlFallback = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, "
+                // Fallback nếu bảng chưa có cột avatar
+                String sqlFallback = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, chu_ky_email, trang_thai, "
                         + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
                         + "FROM nguoi_dung WHERE id = ? LIMIT 1";
                 try (PreparedStatement ps = conn.prepareStatement(sqlFallback)) {
@@ -120,6 +137,21 @@ public class NguoiDungDAO {
                             NguoiDung nd = mapResultSetToNguoiDung(rs);
                             nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
                             return nd;
+                        }
+                    }
+                } catch (SQLException e2) {
+                    // Fallback nếu bảng chưa có cả cột chu_ky_email
+                    String sqlFallback2 = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, "
+                            + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
+                            + "FROM nguoi_dung WHERE id = ? LIMIT 1";
+                    try (PreparedStatement ps = conn.prepareStatement(sqlFallback2)) {
+                        ps.setLong(1, id);
+                        try (ResultSet rs = ps.executeQuery()) {
+                            if (rs.next()) {
+                                NguoiDung nd = mapResultSetToNguoiDung(rs);
+                                nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
+                                return nd;
+                            }
                         }
                     }
                 }

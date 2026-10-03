@@ -187,7 +187,7 @@ public class AvatarService {
         String duongDan = laThumbnail ? nd.getAnhDaiDienThumbPath() : nd.getAnhDaiDienPath();
         if (duongDan == null || duongDan.isBlank()) {
             // Thử lấy đường dẫn còn lại nếu 1 trong 2 null
-            duongDan = nd.getAnhDaiDienPath();
+            duongDan = laThumbnail ? nd.getAnhDaiDienPath() : nd.getAnhDaiDienThumbPath();
         }
         return layFileAnh(duongDan);
     }

@@ -59,6 +59,8 @@ class NguoiDungDAOTest {
                     "mat_khau VARCHAR(255) NOT NULL, " +
                     "so_dien_thoai VARCHAR(20), " +
                     "chu_ky_email TEXT, " +
+                    "anh_dai_dien_path VARCHAR(255), " +
+                    "anh_dai_dien_thumb_path VARCHAR(255), " +
                     "trang_thai VARCHAR(30) DEFAULT 'CHO_KICH_HOAT', " +
                     "so_lan_sai INT DEFAULT 0, " +
                     "thoi_gian_khoa TIMESTAMP NULL, " +
@@ -308,5 +310,43 @@ class NguoiDungDAOTest {
         // Đảm bảo email và nhóm không bị thay đổi
         assertEquals("admin@crm.vn", nd.getEmail());
         assertEquals(1, nd.getNhomKinhDoanhId());
+    }
+
+    @Test
+    @DisplayName("S2-03 DAO: timTheoId trả về đúng anh_dai_dien_path và anh_dai_dien_thumb_path khi DB có dữ liệu")
+    void testTimTheoId_CoAvatarPath() throws Exception {
+        // Cập nhật avatar path cho user 1
+        boolean capNhat = nguoiDungDAO.capNhatAnhDaiDien(1, "user_1/avatar_123.jpg", "user_1/thumb_123.jpg");
+        assertTrue(capNhat);
+
+        NguoiDung nd = nguoiDungDAO.timTheoId(1);
+        assertNotNull(nd);
+        assertEquals("user_1/avatar_123.jpg", nd.getAnhDaiDienPath());
+        assertEquals("user_1/thumb_123.jpg", nd.getAnhDaiDienThumbPath());
+        assertTrue(nd.coAnhDaiDien());
+    }
+
+    @Test
+    @DisplayName("S2-03 DAO: timTheoEmail trả về đúng anh_dai_dien_path và anh_dai_dien_thumb_path khi DB có dữ liệu")
+    void testTimTheoEmail_CoAvatarPath() throws Exception {
+        // Cập nhật avatar path cho user 1
+        boolean capNhat = nguoiDungDAO.capNhatAnhDaiDien(1, "user_1/avatar_abc.jpg", "user_1/thumb_abc.jpg");
+        assertTrue(capNhat);
+
+        NguoiDung nd = nguoiDungDAO.timTheoEmail("admin@crm.vn");
+        assertNotNull(nd);
+        assertEquals("user_1/avatar_abc.jpg", nd.getAnhDaiDienPath());
+        assertEquals("user_1/thumb_abc.jpg", nd.getAnhDaiDienThumbPath());
+        assertTrue(nd.coAnhDaiDien());
+    }
+
+    @Test
+    @DisplayName("S2-03 DAO: user chưa upload avatar thì timTheoId trả về path null và coAnhDaiDien là false")
+    void testTimTheoId_KhongCoAvatar() {
+        NguoiDung nd = nguoiDungDAO.timTheoId(1);
+        assertNotNull(nd);
+        assertNull(nd.getAnhDaiDienPath());
+        assertNull(nd.getAnhDaiDienThumbPath());
+        assertFalse(nd.coAnhDaiDien());
     }
 }
