@@ -201,6 +201,85 @@ public class GiaiDoanPipelineServiceTest {
     }
 
     // ====================================================================
+    // AC 3: Kiểm tra điều kiện giai đoạn KHAO_SAT (id=2, meeting >= 1, survey = true)
+    // ====================================================================
+
+    @Test
+    public void testKiemTraDieuKienKhaoSatCase1FailThieuGapVaKhaoSat() {
+        GiaiDoanPipeline gd = new GiaiDoanPipeline();
+        gd.setId(2);
+        gd.setMaGiaiDoan("KHAO_SAT");
+        gd.setTenGiaiDoan("Khảo sát nhu cầu thực tế");
+        gd.setSoCuocGapToiThieu(1);
+        gd.setYeuCauKhaoSatNhuCau(true);
+
+        when(daoMock.timTheoId(2)).thenReturn(gd);
+
+        // Case 1: meeting = 0, survey = false -> FAIL (thiếu cả 2)
+        DieuKienRoiGiaiDoanDTO ketQua = service.kiemTraDieuKienRoiGiaiDoan(2, 0, 0, false, false);
+
+        assertFalse(ketQua.isThoaDieuKien(), "Case 1: meeting=0, survey=false phải FAIL");
+        assertEquals(2, ketQua.getDanhSachYeuCauThieu().size(), "Phải báo thiếu 2 điều kiện");
+        assertTrue(ketQua.getDanhSachYeuCauThieu().stream().anyMatch(msg -> msg.toLowerCase().contains("cuộc gặp")));
+        assertTrue(ketQua.getDanhSachYeuCauThieu().stream().anyMatch(msg -> msg.toLowerCase().contains("khảo sát")));
+    }
+
+    @Test
+    public void testKiemTraDieuKienKhaoSatCase2FailChiThieuKhaoSat() {
+        GiaiDoanPipeline gd = new GiaiDoanPipeline();
+        gd.setId(2);
+        gd.setMaGiaiDoan("KHAO_SAT");
+        gd.setTenGiaiDoan("Khảo sát nhu cầu thực tế");
+        gd.setSoCuocGapToiThieu(1);
+        gd.setYeuCauKhaoSatNhuCau(true);
+
+        when(daoMock.timTheoId(2)).thenReturn(gd);
+
+        // Case 2: meeting = 1, survey = false -> FAIL (chỉ thiếu khảo sát)
+        DieuKienRoiGiaiDoanDTO ketQua = service.kiemTraDieuKienRoiGiaiDoan(2, 1, 0, false, false);
+
+        assertFalse(ketQua.isThoaDieuKien(), "Case 2: meeting=1, survey=false phải FAIL");
+        assertEquals(1, ketQua.getDanhSachYeuCauThieu().size(), "Chỉ thiếu 1 điều kiện khảo sát");
+        assertTrue(ketQua.getDanhSachYeuCauThieu().get(0).toLowerCase().contains("khảo sát"));
+    }
+
+    @Test
+    public void testKiemTraDieuKienKhaoSatCase3PassThoaManTatCa() {
+        GiaiDoanPipeline gd = new GiaiDoanPipeline();
+        gd.setId(2);
+        gd.setMaGiaiDoan("KHAO_SAT");
+        gd.setTenGiaiDoan("Khảo sát nhu cầu thực tế");
+        gd.setSoCuocGapToiThieu(1);
+        gd.setYeuCauKhaoSatNhuCau(true);
+
+        when(daoMock.timTheoId(2)).thenReturn(gd);
+
+        // Case 3: meeting = 1, survey = true -> PASS (đủ điều kiện)
+        DieuKienRoiGiaiDoanDTO ketQua = service.kiemTraDieuKienRoiGiaiDoan(2, 1, 0, false, true);
+
+        assertTrue(ketQua.isThoaDieuKien(), "Case 3: meeting=1, survey=true phải PASS");
+        assertTrue(ketQua.getDanhSachYeuCauThieu().isEmpty(), "Không còn điều kiện nào bị thiếu");
+    }
+
+    @Test
+    public void testKiemTraDieuKienRoiGiaiDoanKhongTonTai() {
+        when(daoMock.timTheoId(999999)).thenReturn(null);
+
+        DieuKienRoiGiaiDoanDTO ketQua = service.kiemTraDieuKienRoiGiaiDoan(999999, 1, 1, true, true);
+
+        assertFalse(ketQua.isThoaDieuKien());
+        assertTrue(ketQua.getThongBaoChiTiet().contains("ID giai đoạn không hợp lệ."));
+    }
+
+    @Test
+    public void testKiemTraDieuKienRoiGiaiDoanIdAm() {
+        DieuKienRoiGiaiDoanDTO ketQua = service.kiemTraDieuKienRoiGiaiDoan(-1, 0, 0, false, false);
+
+        assertFalse(ketQua.isThoaDieuKien());
+        assertTrue(ketQua.getThongBaoChiTiet().contains("ID giai đoạn không hợp lệ."));
+    }
+
+    // ====================================================================
     // AC 4: Thay đổi cấu hình không làm hỏng cơ hội đang chạy
     // ====================================================================
 

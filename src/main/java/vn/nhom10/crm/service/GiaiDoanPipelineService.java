@@ -250,10 +250,18 @@ public class GiaiDoanPipelineService {
      */
     public DieuKienRoiGiaiDoanDTO kiemTraDieuKienRoiGiaiDoan(int giaiDoanId, int soCuocGapDaCo, int soCuocGoiDaCo,
                                                              boolean daCoBaoGia, boolean daKhaoSatNhuCau) {
+        if (giaiDoanId <= 0) {
+            DieuKienRoiGiaiDoanDTO dto = new DieuKienRoiGiaiDoanDTO(-1, "Không xác định");
+            dto.setThongBaoChiTiet("ID giai đoạn không hợp lệ.");
+            dto.themYeuCauThieu("ID giai đoạn không hợp lệ.");
+            return dto;
+        }
+
         GiaiDoanPipeline gd = giaiDoanPipelineDAO.timTheoId(giaiDoanId);
         if (gd == null) {
             DieuKienRoiGiaiDoanDTO dto = new DieuKienRoiGiaiDoanDTO(giaiDoanId, "Không xác định");
-            dto.themYeuCauThieu("Giai đoạn pipeline không tồn tại.");
+            dto.setThongBaoChiTiet("ID giai đoạn không hợp lệ.");
+            dto.themYeuCauThieu("ID giai đoạn không hợp lệ.");
             return dto;
         }
 

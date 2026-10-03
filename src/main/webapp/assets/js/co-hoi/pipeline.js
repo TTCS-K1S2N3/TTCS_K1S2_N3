@@ -268,6 +268,16 @@ function tinhNhanhDuBao() {
     }
 }
 
+function escapeHtml(str) {
+    if (str == null) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
 /**
  * 5. AC 3: Modal Kiểm tra Điều kiện Rời Giai đoạn (AJAX API)
  */
@@ -275,23 +285,48 @@ function kiemTraDieuKienGiaiDoan(id, ten, soGap, soGoi, coBaoGia, coNhuCau, moTa
     const modal = document.getElementById("modalKiemTraDieuKien");
     if (!modal) return;
 
-    document.getElementById("modalTenGiaiDoan").textContent = ten;
-    document.getElementById("modalMoTaDieuKien").textContent = moTa || "Chưa thiết lập mô tả cụ thể";
-    document.getElementById("modalGiaiDoanId").value = id;
+    // Hiển thị tên giai đoạn an toàn XSS
+    const elTen = document.getElementById("modalTenGiaiDoan");
+    if (elTen) elTen.textContent = ten || "";
+
+    // Xử lý quy định: Nếu moTa có và không rỗng/null thì dùng moTa, ngược lại tự sinh từ điều kiện thực tế
+    let quyDinhText = (moTa && moTa !== "null" && moTa.trim().length > 0) ? moTa.trim() : "";
+    if (!quyDinhText) {
+        let parts = [];
+        if (soGap > 0) parts.push("ít nhất " + soGap + " cuộc gặp");
+        if (soGoi > 0) parts.push("ít nhất " + soGoi + " cuộc gọi");
+        if (coBaoGia) parts.push("gửi báo giá niêm yết");
+        if (coNhuCau) parts.push("hoàn thành khảo sát nhu cầu");
+
+        if (parts.length > 0) {
+            quyDinhText = "Phải có " + parts.join(" và ");
+        } else {
+            quyDinhText = "Chưa thiết lập mô tả cụ thể";
+        }
+    }
+    const elMoTa = document.getElementById("modalMoTaDieuKien");
+    if (elMoTa) elMoTa.textContent = quyDinhText;
+
+    const elId = document.getElementById("modalGiaiDoanId");
+    if (elId) elId.value = id || "";
 
     // Reset inputs
-    document.getElementById("testSoGap").value = 0;
-    document.getElementById("testSoGoi").value = 0;
-    document.getElementById("testBaoGia").checked = false;
-    document.getElementById("testNhuCau").checked = false;
+    const elGap = document.getElementById("testSoGap");
+    if (elGap) elGap.value = 0;
+    const elGoi = document.getElementById("testSoGoi");
+    if (elGoi) elGoi.value = 0;
+    const elBaoGia = document.getElementById("testBaoGia");
+    if (elBaoGia) elBaoGia.checked = false;
+    const elNhuCau = document.getElementById("testNhuCau");
+    if (elNhuCau) elNhuCau.checked = false;
 
     // Checklist preview các điều kiện cần đạt của giai đoạn này
     let checklistHtml = "<div style='font-size: 12px; color: var(--gray-600); margin-top: 6px; line-height: 1.5;'>";
-    checklistHtml += "<strong>Tiêu chí bắt buộc của bước này:</strong><ul style='margin-left: 18px; margin-top: 4px;'>";
-    if (soGap > 0) checklistHtml += "<li>Số cuộc gặp tối thiểu: <strong>&ge; " + soGap + "</strong></li>";
-    if (soGoi > 0) checklistHtml += "<li>Số cuộc gọi tối thiểu: <strong>&ge; " + soGoi + "</strong></li>";
-    if (coBaoGia) checklistHtml += "<li>Bắt buộc: <strong>Đã gửi báo giá chính thức</strong></li>";
-    if (coNhuCau) checklistHtml += "<li>Bắt buộc: <strong>Đã xác nhận bảng khảo sát nhu cầu</strong></li>";
+    checklistHtml += "<strong>Tiêu chí bắt buộc:</strong><ul style='margin-left: 18px; margin-top: 4px;'>";
+    if (soGap > 0) checklistHtml += "<li>Tối thiểu <strong>" + soGap + " cuộc gặp</strong></li>";
+    if (soGoi > 0) checklistHtml += "<li>Tối thiểu <strong>" + soGoi + " cuộc gọi</strong></li>";
+    if (coBaoGia) checklistHtml += "<li>Hoàn thành gửi báo giá niêm yết</li>";
+    if (coNhuCau) checklistHtml += "<li>Hoàn thành khảo sát nhu cầu</li>";
     if (soGap === 0 && soGoi === 0 && !coBaoGia && !coNhuCau) {
         checklistHtml += "<li>Không có điều kiện định lượng đặc biệt</li>";
     }
@@ -302,7 +337,9 @@ function kiemTraDieuKienGiaiDoan(id, ten, soGap, soGoi, coBaoGia, coNhuCau, moTa
         boxQuyDinh.innerHTML = checklistHtml;
     }
 
-    document.getElementById("modalKetQuaDieuKien").innerHTML = "";
+    const boxKetQua = document.getElementById("modalKetQuaDieuKien");
+    if (boxKetQua) boxKetQua.innerHTML = "";
+
     modal.style.display = "flex";
 }
 
@@ -312,20 +349,41 @@ function dongModalDieuKien() {
 }
 
 function thucHienKiemTraDieuKien() {
-    const id = document.getElementById("modalGiaiDoanId").value;
-    const soGap = document.getElementById("testSoGap").value || 0;
-    const soGoi = document.getElementById("testSoGoi").value || 0;
-    const coBaoGia = document.getElementById("testBaoGia").checked;
-    const coNhuCau = document.getElementById("testNhuCau").checked;
+    const idInput = document.getElementById("modalGiaiDoanId");
+    const id = idInput ? idInput.value : "";
+    const soGap = document.getElementById("testSoGap") ? (document.getElementById("testSoGap").value || 0) : 0;
+    const soGoi = document.getElementById("testSoGoi") ? (document.getElementById("testSoGoi").value || 0) : 0;
+    const coBaoGia = document.getElementById("testBaoGia") ? document.getElementById("testBaoGia").checked : false;
+    const coNhuCau = document.getElementById("testNhuCau") ? document.getElementById("testNhuCau").checked : false;
     const resultBox = document.getElementById("modalKetQuaDieuKien");
+
+    if (!resultBox) return;
+
+    if (!id || id === "null" || isNaN(id) || parseInt(id, 10) <= 0) {
+        resultBox.innerHTML =
+            "<div class='alert alert-danger' style='margin-top:14px; display:block;'>" +
+            "<div style='font-weight: 700; margin-bottom: 4px;'>⚠️ LỖI XÁC THỰC</div>" +
+            "<div>ID giai đoạn không hợp lệ.</div>" +
+            "</div>";
+        return;
+    }
 
     resultBox.innerHTML = "<div style='padding: 10px; color: var(--gray-500); text-align: center;'>⏳ Đang xác minh điều kiện...</div>";
 
-    const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf("/", 2));
-    const basePath = contextPath.startsWith("/pipeline") ? "" : contextPath;
-    const url = basePath + "/pipeline/giai-doan/kiem-tra-dieu-kien?giaiDoanId=" + id +
+    const modal = document.getElementById("modalKiemTraDieuKien");
+    let endpoint = (modal && modal.dataset && modal.dataset.endpoint) ? modal.dataset.endpoint : null;
+    if (!endpoint) {
+        const path = window.location.pathname;
+        const idx = path.indexOf("/pipeline");
+        const ctx = (idx > 0) ? path.substring(0, idx) : "";
+        endpoint = ctx + "/pipeline/giai-doan/kiem-tra-dieu-kien";
+    }
+
+    const url = endpoint + "?giaiDoanId=" + encodeURIComponent(id) +
         "&soCuocGap=" + encodeURIComponent(soGap) +
         "&soCuocGoi=" + encodeURIComponent(soGoi) +
+        "&daBaoGia=" + encodeURIComponent(coBaoGia) +
+        "&daKhaoSat=" + encodeURIComponent(coNhuCau) +
         "&daCoBaoGia=" + encodeURIComponent(coBaoGia) +
         "&daKhaoSatNhuCau=" + encodeURIComponent(coNhuCau);
 
@@ -340,21 +398,25 @@ function thucHienKiemTraDieuKien() {
                     "</div>";
             } else {
                 let listHtml = "<ul style='margin-left: 20px; margin-top: 6px; line-height: 1.6;'>";
-                data.danhSachYeuCauThieu.forEach(function (req) {
-                    listHtml += "<li>" + req + "</li>";
-                });
+                if (data.danhSachYeuCauThieu && data.danhSachYeuCauThieu.length > 0) {
+                    data.danhSachYeuCauThieu.forEach(function (req) {
+                        listHtml += "<li>" + escapeHtml(req) + "</li>";
+                    });
+                } else if (data.thongBao) {
+                    listHtml += "<li>" + escapeHtml(data.thongBao) + "</li>";
+                }
                 listHtml += "</ul>";
 
                 resultBox.innerHTML =
                     "<div class='alert alert-danger' style='margin-top:14px; display:block;'>" +
                     "<div style='font-weight: 700; margin-bottom: 4px;'>⚠️ CHƯA ĐỦ ĐIỀU KIỆN RỜI GIAI ĐOẠN (AC 3)</div>" +
-                    "<div style='font-size: 13px;'>Hệ thống ngăn không cho chuyển giai đoạn nhằm đảm bảo tính xác thực của dữ liệu:</div>" +
+                    "<div style='font-size: 13px;'>" + escapeHtml(data.thongBao || "Hệ thống ngăn không cho chuyển giai đoạn nhằm đảm bảo tính xác thực của dữ liệu:") + "</div>" +
                     listHtml +
                     "</div>";
             }
         })
         .catch(function (err) {
-            resultBox.innerHTML = "<div class='alert alert-danger'>Lỗi kết nối kiểm tra: " + err.message + "</div>";
+            resultBox.innerHTML = "<div class='alert alert-danger' style='margin-top:14px; display:block;'>Lỗi kết nối kiểm tra: " + escapeHtml(err.message) + "</div>";
         });
 }
 
@@ -443,18 +505,20 @@ function dinhDangTienTe(soTien) {
 }
 
 function moModalDieuKienTuBtn(btn) {
-    var id = btn.getAttribute('data-id');
-    var ten = btn.getAttribute('data-ten');
-    var gap = parseInt(btn.getAttribute('data-gap'), 10) || 0;
-    var goi = parseInt(btn.getAttribute('data-goi'), 10) || 0;
-    var baogia = btn.getAttribute('data-baogia') === 'true';
-    var khaosat = btn.getAttribute('data-khaosat') === 'true';
-    var mota = btn.getAttribute('data-mota');
+    if (!btn) return;
+    var id = btn.getAttribute('data-giai-doan-id') || btn.getAttribute('data-stage-id') || btn.getAttribute('data-id');
+    var ten = btn.getAttribute('data-ten-giai-doan') || btn.getAttribute('data-ten') || '';
+    var gap = parseInt(btn.getAttribute('data-cuoc-gap') || btn.getAttribute('data-gap'), 10) || 0;
+    var goi = parseInt(btn.getAttribute('data-cuoc-goi') || btn.getAttribute('data-goi'), 10) || 0;
+    var baogia = (btn.getAttribute('data-bao-gia') || btn.getAttribute('data-baogia')) === 'true';
+    var khaosat = (btn.getAttribute('data-khao-sat') || btn.getAttribute('data-khaosat')) === 'true';
+    var mota = btn.getAttribute('data-dieu-kien-bat-buoc') || btn.getAttribute('data-mota') || '';
     kiemTraDieuKienGiaiDoan(id, ten, gap, goi, baogia, khaosat, mota);
 }
 
 function xacNhanXoaTuBtn(formEl, btn) {
-    var ten = btn.getAttribute('data-ten');
-    var cohoi = parseInt(btn.getAttribute('data-cohoi'), 10) || 0;
+    if (!btn) return false;
+    var ten = btn.getAttribute('data-ten-giai-doan') || btn.getAttribute('data-ten') || '';
+    var cohoi = parseInt(btn.getAttribute('data-so-co-hoi') || btn.getAttribute('data-cohoi'), 10) || 0;
     return xacNhanXoaGiaiDoan(formEl, ten, cohoi);
 }

@@ -493,6 +493,8 @@
                             <!-- Nút thử nghiệm điều kiện rời giai đoạn (AC 3) -->
                             <button type="button" class="btn btn-outline btn-sm"
                                     data-giai-doan-id="${gd.id}"
+                                    data-stage-id="${gd.id}"
+                                    data-id="${gd.id}"
                                     data-ten-giai-doan="<c:out value='${gd.tenGiaiDoan}'/>"
                                     data-cuoc-gap="${gd.soCuocGapToiThieu}"
                                     data-cuoc-goi="${gd.soCuocGoiToiThieu}"
@@ -572,7 +574,8 @@
 </div>
 
 <!-- MODAL 1: Kiểm tra Điều kiện Rời Giai đoạn (AC 3) -->
-<div id="modalKiemTraDieuKien" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitleDieuKien">
+<div id="modalKiemTraDieuKien" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitleDieuKien"
+     data-endpoint="${pageContext.request.contextPath}/pipeline/giai-doan/kiem-tra-dieu-kien">
     <div class="modal-card">
         <h3 id="modalTitleDieuKien" class="modal-title">
             <span>🔒 Kiểm tra Điều kiện Rời Giai đoạn (AC 3)</span>

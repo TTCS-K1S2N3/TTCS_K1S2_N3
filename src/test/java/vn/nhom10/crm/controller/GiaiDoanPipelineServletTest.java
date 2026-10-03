@@ -99,6 +99,9 @@ public class GiaiDoanPipelineServletTest {
         when(req.getParameter("soCuocGap")).thenReturn("0");
         when(req.getParameter("soCuocGoi")).thenReturn("1");
 
+        GiaiDoanPipeline mockStage = new GiaiDoanPipeline(2, "KHAO_SAT", "Xác định nhu cầu", 2, 20, "");
+        when(serviceMock.timTheoId(2)).thenReturn(mockStage);
+
         DieuKienRoiGiaiDoanDTO dto = new DieuKienRoiGiaiDoanDTO(2, "Xác định nhu cầu");
         dto.themYeuCauThieu("Phải có ít nhất 1 cuộc gặp");
         when(serviceMock.kiemTraDieuKienRoiGiaiDoan(eq(2), eq(0), eq(1), eq(false), eq(false)))
@@ -113,6 +116,137 @@ public class GiaiDoanPipelineServletTest {
         String json = sw.toString();
         assertTrue(json.contains("\"thoaDieuKien\":false"));
         assertTrue(json.contains("Phải có ít nhất 1 cuộc gặp"));
+    }
+
+    @Test
+    public void testKhaoSatCase1FailThieuGapVaKhaoSat() throws Exception {
+        when(req.getServletPath()).thenReturn("/pipeline/giai-doan/kiem-tra-dieu-kien");
+        when(req.getParameter("giaiDoanId")).thenReturn("2");
+        when(req.getParameter("soCuocGap")).thenReturn("0");
+        when(req.getParameter("daKhaoSat")).thenReturn("false");
+
+        GiaiDoanPipeline mockStage = new GiaiDoanPipeline(2, "KHAO_SAT", "Khảo sát nhu cầu thực tế", 2, 20, "");
+        when(serviceMock.timTheoId(2)).thenReturn(mockStage);
+
+        DieuKienRoiGiaiDoanDTO dto = new DieuKienRoiGiaiDoanDTO(2, "Khảo sát nhu cầu thực tế");
+        dto.themYeuCauThieu("Phải có ít nhất 1 cuộc gặp trực tiếp với khách hàng");
+        dto.themYeuCauThieu("Bắt buộc phải hoàn tất xác nhận bảng khảo sát nhu cầu khách hàng");
+        when(serviceMock.kiemTraDieuKienRoiGiaiDoan(eq(2), eq(0), eq(0), eq(false), eq(false)))
+                .thenReturn(dto);
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        when(resp.getWriter()).thenReturn(pw);
+
+        servlet.doGet(req, resp);
+
+        String json = sw.toString();
+        assertTrue(json.contains("\"thoaDieuKien\":false"), "Case 1: meeting=0, survey=false phải trả thoaDieuKien=false");
+        assertTrue(json.contains("cuộc gặp"), "Phải báo thiếu cuộc gặp");
+        assertTrue(json.contains("khảo sát"), "Phải báo thiếu khảo sát");
+    }
+
+    @Test
+    public void testKhaoSatCase2FailChiThieuKhaoSat() throws Exception {
+        when(req.getServletPath()).thenReturn("/pipeline/giai-doan/kiem-tra-dieu-kien");
+        when(req.getParameter("giaiDoanId")).thenReturn("2");
+        when(req.getParameter("soCuocGap")).thenReturn("1");
+        when(req.getParameter("daKhaoSat")).thenReturn("false");
+
+        GiaiDoanPipeline mockStage = new GiaiDoanPipeline(2, "KHAO_SAT", "Khảo sát nhu cầu thực tế", 2, 20, "");
+        when(serviceMock.timTheoId(2)).thenReturn(mockStage);
+
+        DieuKienRoiGiaiDoanDTO dto = new DieuKienRoiGiaiDoanDTO(2, "Khảo sát nhu cầu thực tế");
+        dto.themYeuCauThieu("Bắt buộc phải hoàn tất xác nhận bảng khảo sát nhu cầu khách hàng");
+        when(serviceMock.kiemTraDieuKienRoiGiaiDoan(eq(2), eq(1), eq(0), eq(false), eq(false)))
+                .thenReturn(dto);
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        when(resp.getWriter()).thenReturn(pw);
+
+        servlet.doGet(req, resp);
+
+        String json = sw.toString();
+        assertTrue(json.contains("\"thoaDieuKien\":false"), "Case 2: meeting=1, survey=false phải trả thoaDieuKien=false");
+        assertFalse(json.contains("cuộc gặp"), "Không được báo thiếu cuộc gặp");
+        assertTrue(json.contains("khảo sát"), "Phải báo thiếu khảo sát");
+    }
+
+    @Test
+    public void testKhaoSatCase3PassThoaManTatCa() throws Exception {
+        when(req.getServletPath()).thenReturn("/pipeline/giai-doan/kiem-tra-dieu-kien");
+        when(req.getParameter("giaiDoanId")).thenReturn("2");
+        when(req.getParameter("soCuocGap")).thenReturn("1");
+        when(req.getParameter("daKhaoSat")).thenReturn("true");
+
+        GiaiDoanPipeline mockStage = new GiaiDoanPipeline(2, "KHAO_SAT", "Khảo sát nhu cầu thực tế", 2, 20, "");
+        when(serviceMock.timTheoId(2)).thenReturn(mockStage);
+
+        DieuKienRoiGiaiDoanDTO dto = new DieuKienRoiGiaiDoanDTO(2, "Khảo sát nhu cầu thực tế");
+        dto.setThoaDieuKien(true);
+        when(serviceMock.kiemTraDieuKienRoiGiaiDoan(eq(2), eq(1), eq(0), eq(false), eq(true)))
+                .thenReturn(dto);
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        when(resp.getWriter()).thenReturn(pw);
+
+        servlet.doGet(req, resp);
+
+        String json = sw.toString();
+        assertTrue(json.contains("\"thoaDieuKien\":true"), "Case 3: meeting=1, survey=true phải trả thoaDieuKien=true");
+    }
+
+    @Test
+    public void testKiemTraDieuKienInvalidIdNull() throws Exception {
+        when(req.getServletPath()).thenReturn("/pipeline/giai-doan/kiem-tra-dieu-kien");
+        when(req.getParameter("giaiDoanId")).thenReturn(null);
+        when(req.getParameter("id")).thenReturn(null);
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        when(resp.getWriter()).thenReturn(pw);
+
+        servlet.doGet(req, resp);
+
+        String json = sw.toString();
+        assertTrue(json.contains("\"thoaDieuKien\":false"));
+        assertTrue(json.contains("ID giai đoạn không hợp lệ."));
+    }
+
+    @Test
+    public void testKiemTraDieuKienInvalidIdAbc() throws Exception {
+        when(req.getServletPath()).thenReturn("/pipeline/giai-doan/kiem-tra-dieu-kien");
+        when(req.getParameter("giaiDoanId")).thenReturn("abc");
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        when(resp.getWriter()).thenReturn(pw);
+
+        servlet.doGet(req, resp);
+
+        String json = sw.toString();
+        assertTrue(json.contains("\"thoaDieuKien\":false"));
+        assertTrue(json.contains("ID giai đoạn không hợp lệ."));
+    }
+
+    @Test
+    public void testKiemTraDieuKienInvalidIdNonExistent() throws Exception {
+        when(req.getServletPath()).thenReturn("/pipeline/giai-doan/kiem-tra-dieu-kien");
+        when(req.getParameter("giaiDoanId")).thenReturn("999999");
+
+        when(serviceMock.timTheoId(999999)).thenReturn(null);
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        when(resp.getWriter()).thenReturn(pw);
+
+        servlet.doGet(req, resp);
+
+        String json = sw.toString();
+        assertTrue(json.contains("\"thoaDieuKien\":false"));
+        assertTrue(json.contains("ID giai đoạn không hợp lệ."));
     }
 
     @Test

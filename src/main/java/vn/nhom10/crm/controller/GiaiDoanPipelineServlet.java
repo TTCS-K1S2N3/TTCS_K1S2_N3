@@ -296,15 +296,39 @@ public class GiaiDoanPipelineServlet extends HttpServlet {
     private void xuLyKiemTraDieuKienAjax(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         response.setContentType("application/json;charset=UTF-8");
-        Integer id = parseIntegerOrNull(request.getParameter("giaiDoanId"));
+        String rawId = request.getParameter("giaiDoanId");
+        if (rawId == null || rawId.isBlank()) {
+            rawId = request.getParameter("id");
+        }
+        if (rawId == null || rawId.isBlank()) {
+            rawId = request.getParameter("stageId");
+        }
+        Integer id = parseIntegerOrNull(rawId);
         if (id == null || id <= 0) {
             response.getWriter().write("{\"thoaDieuKien\":false,\"giaiDoanId\":-1,\"tenGiaiDoan\":\"Không hợp lệ\",\"thongBao\":\"ID giai đoạn không hợp lệ.\",\"danhSachYeuCauThieu\":[\"ID giai đoạn không hợp lệ.\"]}");
             return;
         }
+
+        GiaiDoanPipeline gd = giaiDoanPipelineService.timTheoId(id);
+        if (gd == null) {
+            response.getWriter().write("{\"thoaDieuKien\":false,\"giaiDoanId\":" + id + ",\"tenGiaiDoan\":\"Không tồn tại\",\"thongBao\":\"ID giai đoạn không hợp lệ.\",\"danhSachYeuCauThieu\":[\"ID giai đoạn không hợp lệ.\"]}");
+            return;
+        }
+
         int soGap = parseIntegerOrDefault(request.getParameter("soCuocGap"), 0);
         int soGoi = parseIntegerOrDefault(request.getParameter("soCuocGoi"), 0);
-        boolean baoGia = "true".equalsIgnoreCase(request.getParameter("daBaoGia")) || "1".equals(request.getParameter("daBaoGia"));
-        boolean khaoSat = "true".equalsIgnoreCase(request.getParameter("daKhaoSat")) || "1".equals(request.getParameter("daKhaoSat"));
+
+        String rawBaoGia = request.getParameter("daBaoGia");
+        if (rawBaoGia == null || rawBaoGia.isBlank()) {
+            rawBaoGia = request.getParameter("daCoBaoGia");
+        }
+        boolean baoGia = "true".equalsIgnoreCase(rawBaoGia) || "1".equals(rawBaoGia) || "on".equalsIgnoreCase(rawBaoGia);
+
+        String rawKhaoSat = request.getParameter("daKhaoSat");
+        if (rawKhaoSat == null || rawKhaoSat.isBlank()) {
+            rawKhaoSat = request.getParameter("daKhaoSatNhuCau");
+        }
+        boolean khaoSat = "true".equalsIgnoreCase(rawKhaoSat) || "1".equals(rawKhaoSat) || "on".equalsIgnoreCase(rawKhaoSat);
 
         DieuKienRoiGiaiDoanDTO kq = giaiDoanPipelineService.kiemTraDieuKienRoiGiaiDoan(id, soGap, soGoi, baoGia, khaoSat);
 
