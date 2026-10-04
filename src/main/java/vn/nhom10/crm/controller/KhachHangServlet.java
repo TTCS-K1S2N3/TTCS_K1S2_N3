@@ -97,6 +97,8 @@ public class KhachHangServlet extends HttpServlet {
                 userDTO, phamViHieuLuc, tuKhoa, "KHACH_HANG"
         );
 
+        boolean coQuyenDanhMuc = user != null && (user.coVaiTro("ADMIN") || user.coVaiTro("DIRECTOR"));
+        request.setAttribute("coQuyenDanhMuc", coQuyenDanhMuc);
         request.setAttribute("nguoiDung", user);
         request.setAttribute("currentUser", userDTO);
         request.setAttribute("phamViHienTai", phamViHieuLuc);
