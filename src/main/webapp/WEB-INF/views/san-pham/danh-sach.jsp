@@ -13,16 +13,30 @@
 
 <div class="crm-container">
 
-    <!-- Breadcrumb điều hướng chuẩn -->
+    <!-- Breadcrumb điều hướng chuẩn theo phân quyền -->
     <nav class="crm-breadcrumb" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
         <div style="font-size: 13.5px; color: var(--slate-500);">
             <a href="${pageContext.request.contextPath}/dieu-huong" style="color: var(--primary); text-decoration: none;">Trang chủ</a>
             <span style="margin: 0 6px;">/</span>
-            <a href="${pageContext.request.contextPath}/danh-muc" style="color: var(--primary); text-decoration: none;">Danh mục & Cấu hình</a>
+            <c:choose>
+                <c:when test="${coQuyenQuanLy}">
+                    <a href="${pageContext.request.contextPath}/danh-muc" style="color: var(--primary); text-decoration: none;">Danh mục & Cấu hình</a>
+                </c:when>
+                <c:otherwise>
+                    <a href="${pageContext.request.contextPath}/khach-hang" style="color: var(--primary); text-decoration: none;">Khách hàng & Liên hệ</a>
+                </c:otherwise>
+            </c:choose>
             <span style="margin: 0 6px;">/</span>
             <span style="color: var(--slate-700); font-weight: 500;">Sản phẩm & Bảng giá</span>
         </div>
-        <a href="${pageContext.request.contextPath}/danh-muc" class="btn btn-outline btn-sm">&larr; Quay lại Danh mục</a>
+        <c:choose>
+            <c:when test="${coQuyenQuanLy}">
+                <a href="${pageContext.request.contextPath}/danh-muc" class="btn btn-outline btn-sm" id="btnQuayLai">&larr; Quay lại Danh mục</a>
+            </c:when>
+            <c:otherwise>
+                <a href="${pageContext.request.contextPath}/khach-hang" class="btn btn-outline btn-sm" id="btnQuayLai">&larr; Quay lại Khách hàng</a>
+            </c:otherwise>
+        </c:choose>
     </nav>
 
     <!-- Header Section -->
