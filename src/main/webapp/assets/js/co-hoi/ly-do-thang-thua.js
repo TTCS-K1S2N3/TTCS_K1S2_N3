@@ -62,6 +62,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const url = new URL(window.location.href);
         url.searchParams.set('tab', tabId);
         window.history.replaceState({}, '', url.toString());
+
+        applyFilter();
     }
 
     tabButtons.forEach(btn => {
@@ -82,7 +84,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const query = (searchInput ? searchInput.value : '').trim().toLowerCase();
         const status = (statusFilter ? statusFilter.value : '').toLowerCase();
 
-        const activePane = document.querySelector('.crm-tab-pane[style*="block"]') || document.querySelector('.crm-tab-pane');
+        const activeTabBtn = document.querySelector('.crm-nav-tab-btn.active');
+        const currentTabId = activeTabBtn ? activeTabBtn.getAttribute('data-tab') : 'thang';
+        const activePane = document.getElementById('tab-pane-' + currentTabId);
         if (!activePane) return;
 
         const rows = activePane.querySelectorAll('tbody tr[data-search]');
@@ -253,6 +257,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Đóng Modal khi click ngoài backdrop
+    document.querySelectorAll('.crm-modal-backdrop').forEach(backdrop => {
+        backdrop.addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeModalLyDo();
+                closeModalDoiThu();
+                closeModalXoa();
+            }
+        });
+    });
+
     // Đóng modal khi bấm Escape
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
@@ -329,7 +344,11 @@ document.addEventListener('DOMContentLoaded', function () {
             formData.append('id', id);
             formData.append('hoatDong', hoatDong ? '1' : '0');
 
-            fetch(contextPath + '/danh-muc/ly-do-thang-thua', {
+            const toggleEndpoint = window.location.pathname.includes('/co-hoi/')
+                ? (contextPath + '/co-hoi/ly-do-thang-thua')
+                : (contextPath + '/danh-muc/ly-do-thang-thua');
+
+            fetch(toggleEndpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
@@ -345,6 +364,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (labelSpan) {
                         labelSpan.textContent = !hoatDong ? 'Đang hoạt động' : 'Ngừng hoạt động';
                         labelSpan.className = 'crm-status-label ' + (!hoatDong ? 'crm-status-active' : 'crm-status-inactive');
+                    }
+                } else {
+                    const row = checkbox.closest('tr');
+                    if (row) {
+                        row.setAttribute('data-status', hoatDong ? 'active' : 'inactive');
                     }
                 }
             })
@@ -410,7 +434,11 @@ document.addEventListener('DOMContentLoaded', function () {
             formData.append('giaTriChotThucTe', giaTriChotThucTe);
             formData.append('ngayKy', ngayKy);
 
-            fetch(contextPath + '/danh-muc/ly-do-thang-thua', {
+            const simEndpoint = window.location.pathname.includes('/co-hoi/')
+                ? (contextPath + '/co-hoi/ly-do-thang-thua')
+                : (contextPath + '/danh-muc/ly-do-thang-thua');
+
+            fetch(simEndpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
@@ -469,6 +497,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     simResultBox.textContent = 'Đã xảy ra lỗi khi kiểm tra quy tắc đóng cơ hội.';
                 }
             });
+        });
+    }
+
     // Nút nạp nhanh dữ liệu mẫu vào form kiểm thử
     const btnSimulateAutofill = document.getElementById('btn-simulate-autofill');
     if (btnSimulateAutofill) {

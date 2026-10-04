@@ -47,6 +47,7 @@ class LyDoThangThuaServletTest {
         dispatcher = mock(RequestDispatcher.class);
 
         when(request.getContextPath()).thenReturn("/crm");
+        when(request.getServletPath()).thenReturn("/danh-muc/ly-do-thang-thua");
         when(request.getRequestURI()).thenReturn("/crm/danh-muc/ly-do-thang-thua");
         when(request.getSession(anyBoolean())).thenReturn(session);
         when(request.getRequestDispatcher(anyString())).thenReturn(dispatcher);
@@ -184,5 +185,70 @@ class LyDoThangThuaServletTest {
 
         verify(service, never()).xoaLyDo(any());
         verify(response).sendRedirect(contains("msg=error"));
+    }
+
+    @Test
+    @DisplayName("doGet với Sales Rep tại /co-hoi/ly-do-thang-thua -> Read-only mode (coQuyenQuanLy = false)")
+    void testDoGetSalesReadOnlyCoHoiRoute() throws Exception {
+        when(request.getServletPath()).thenReturn("/co-hoi/ly-do-thang-thua");
+        when(request.getRequestURI()).thenReturn("/crm/co-hoi/ly-do-thang-thua");
+        when(session.getAttribute("nguoiDung")).thenReturn(salesUser);
+        when(service.layDanhSachLyDoThang()).thenReturn(Collections.emptyList());
+        when(service.layDanhSachLyDoThua()).thenReturn(Collections.emptyList());
+        when(service.layDanhSachDoiThu()).thenReturn(Collections.emptyList());
+
+        servlet.doGet(request, response);
+
+        verify(request).setAttribute(eq("coQuyenQuanLy"), eq(false));
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("doPost AJAX đổi trạng thái bởi Sales Rep -> Bị từ chối HTTP 403")
+    void testDoPostSalesAjaxTuChoi() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(salesUser);
+        when(request.getParameter("action")).thenReturn("doi-trang-thai-ly-do");
+        when(request.getHeader("X-Requested-With")).thenReturn("XMLHttpRequest");
+        doThrow(new LoiPhanQuyenException("Chỉ Giám đốc kinh doanh mới có quyền")).when(service).kiemTraQuyenQuanLy(salesUser);
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        when(response.getWriter()).thenReturn(pw);
+
+        servlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+        pw.flush();
+        assertTrue(sw.toString().contains("\"thanhCong\":false"));
+    }
+
+    @Test
+    @DisplayName("doPost kiểm tra đóng cơ hội Sprint 5 (AC3) qua route /co-hoi/ly-do-thang-thua bởi Sales -> Trả về JSON thành công")
+    void testDoPostSalesKiemTraSprint5CoHoiRoute() throws Exception {
+        when(request.getServletPath()).thenReturn("/co-hoi/ly-do-thang-thua");
+        when(request.getRequestURI()).thenReturn("/crm/co-hoi/ly-do-thang-thua");
+        when(session.getAttribute("nguoiDung")).thenReturn(salesUser);
+        when(request.getParameter("action")).thenReturn("kiem-tra-dong-co-hoi");
+        when(request.getParameter("trangThaiDong")).thenReturn("THANG");
+        when(request.getParameter("lyDoThangThuaId")).thenReturn("10");
+        when(request.getParameter("giaTriChotThucTe")).thenReturn("100000000");
+        when(request.getParameter("ngayKy")).thenReturn("2026-10-02");
+
+        KetQuaKiemTraDongCoHoiDTO kqMock = new KetQuaKiemTraDongCoHoiDTO();
+        kqMock.setHopLe(true);
+        kqMock.setThongBaoChiTiet("HỢP LỆ THEO SPRINT 5");
+        when(service.kiemTraDongCoHoiSprint5(any(), any(), any(), any(), any(), any()))
+                .thenReturn(kqMock);
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        when(response.getWriter()).thenReturn(pw);
+
+        servlet.doPost(request, response);
+
+        pw.flush();
+        String json = sw.toString();
+        assertTrue(json.contains("\"hopLe\":true"));
+        assertTrue(json.contains("HỢP LỆ THEO SPRINT 5"));
     }
 }
