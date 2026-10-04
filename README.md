@@ -27,7 +27,8 @@ Chi tiết công nghệ và phiên bản: Xem [PLAN/infoTechnology.md](PLAN/info
 
 ## 3. Cấu Hình Cơ Sở Dữ Liệu (Portable DB Configuration)
 
-Dự án hỗ trợ 3 tầng cấu hình linh hoạt để mọi thành viên clone về đều chạy được ngay mà không xung đột mật khẩu cá nhân:
+Dự án hỗ trợ 3 tầng cấu hình linh hoạt để mỗi thành viên clone về và cấu hình local một lần là có thể chạy độc lập,
+không phụ thuộc mật khẩu MySQL hoặc đường dẫn máy của thành viên khác.
 
 1. **Mặc định (Tracked)**: `src/main/resources/config/database.properties` chứa cấu hình mặc định (password để trống).
 2. **Cấu hình cá nhân (Gitignored)**: Sao chép file mẫu:
@@ -44,6 +45,9 @@ Dự án hỗ trợ 3 tầng cấu hình linh hoạt để mọi thành viên cl
 ---
 
 ## 4. Khởi Tạo Cơ Sở Dữ Liệu (Database Bootstrap)
+
+> **Cảnh báo:** script này RESET toàn bộ database `crm_ban_hang`.
+> Chỉ chạy trên máy dev mới hoặc khi chủ động muốn làm sạch toàn bộ dữ liệu.
 
 Chạy script khởi tạo bảng và nạp dữ liệu mẫu ban đầu:
 
@@ -85,14 +89,23 @@ Kết quả build sẽ tạo ra tệp:
 
 ## 7. Tài Khoản Kiểm Thử Mẫu (Seed Accounts)
 
-Hệ thống đã thiết lập sẵn các tài khoản phân quyền mẫu để phục vụ kiểm thử theo role:
+Các tài khoản dưới đây chỉ dùng cho môi trường local/dev.
 
-| Vai trò | Email đăng nhập | Mật khẩu mẫu | Ghi chú quyền hạn |
+Mật khẩu chung:
+
+`123456@Aa`
+
+| Vai trò | Email đăng nhập | Mật khẩu | Ghi chú |
 | :--- | :--- | :--- | :--- |
-| **Quản trị hệ thống** | `admin@crm.vn` | `Admin@123` | Quản trị tài khoản, cơ cấu tổ chức, trường tùy chỉnh, nhật ký thay đổi |
-| **Giám đốc kinh doanh** | `giamdoc@crm.vn` | `Giamdoc@123` | Cấu hình pipeline giai đoạn, giá vốn sản phẩm, lý do thắng/thua |
-| **Trưởng nhóm kinh doanh**| `lead@crm.vn` | `Lead@123` | Phân bổ cơ hội, quản lý nhóm bán hàng, xem danh mục |
-| **Nhân viên kinh doanh** | `sales@crm.vn` | `Sales@123` | Tra cứu sản phẩm, khai báo cơ hội, cập nhật hồ sơ cá nhân |
+| Quản trị hệ thống | `admin@crm.vn` | `123456@Aa` | Quản trị hệ thống |
+| Giám đốc kinh doanh | `director@crm.vn` | `123456@Aa` | Toàn bộ dữ liệu kinh doanh |
+| Trưởng nhóm kinh doanh | `teamlead@crm.vn` | `123456@Aa` | Phạm vi nhóm |
+| Nhân viên kinh doanh | `sales@crm.vn` | `123456@Aa` | Phạm vi cá nhân |
+| Marketing | `marketing@crm.vn` | `123456@Aa` | Marketing / Lead |
+| Chăm sóc khách hàng | `cskh@crm.vn` | `123456@Aa` | CSKH |
+| Kế toán | `accountant@crm.vn` | `123456@Aa` | Báo giá / Hợp đồng |
+
+> Không sử dụng các credential mẫu này trên staging hoặc production.
 
 ---
 
@@ -105,8 +118,17 @@ Hệ thống hỗ trợ gửi email thông báo và kích hoạt tài khoản qu
   ```powershell
   $env:SMTP_USERNAME = "your-email@gmail.com"
   $env:SMTP_PASSWORD = "YOUR_GMAIL_APP_PASSWORD"
+  $env:SMTP_USERNAME="emailcuaban@gmail.com"
+  $env:SMTP_PASSWORD="APP_PASSWORD_CUA_BAN"
+  $env:SMTP_FROM="emailcuaban@gmail.com"
+  $env:SMTP_FROM_NAME="CRM Bán Hàng"
   ```
   > **Lưu ý bảo mật quan trọng:** Tuyệt đối KHÔNG commit mật khẩu hoặc App Password cá nhân vào mã nguồn.
+
+Sau khi thiết lập biến môi trường, phải restart Tomcat từ terminal đã có các biến trên.
+
+Nếu chưa cấu hình SMTP, ứng dụng chạy DEV/TEST fallback:
+yêu cầu có thể được ghi nhận nhưng email thật sẽ không được gửi.
 
 ---
 
