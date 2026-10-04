@@ -27,7 +27,8 @@ Chi tiết công nghệ và phiên bản: Xem [PLAN/infoTechnology.md](PLAN/info
 
 ## 3. Cấu Hình Cơ Sở Dữ Liệu (Portable DB Configuration)
 
-Dự án hỗ trợ 3 tầng cấu hình linh hoạt để mọi thành viên clone về đều chạy được ngay mà không xung đột mật khẩu cá nhân:
+Dự án hỗ trợ 3 tầng cấu hình linh hoạt để mỗi thành viên clone về và cấu hình local một lần là có thể chạy độc lập,
+không phụ thuộc mật khẩu MySQL hoặc đường dẫn máy của thành viên khác.
 
 1. **Mặc định (Tracked)**: `src/main/resources/config/database.properties` chứa cấu hình mặc định (password để trống).
 2. **Cấu hình cá nhân (Gitignored)**: Sao chép file mẫu:
@@ -44,6 +45,9 @@ Dự án hỗ trợ 3 tầng cấu hình linh hoạt để mọi thành viên cl
 ---
 
 ## 4. Khởi Tạo Cơ Sở Dữ Liệu (Database Bootstrap)
+
+> **Cảnh báo:** script này RESET toàn bộ database `crm_ban_hang`.
+> Chỉ chạy trên máy dev mới hoặc khi chủ động muốn làm sạch toàn bộ dữ liệu.
 
 Chạy script khởi tạo bảng và nạp dữ liệu mẫu ban đầu:
 
@@ -114,8 +118,17 @@ Hệ thống hỗ trợ gửi email thông báo và kích hoạt tài khoản qu
   ```powershell
   $env:SMTP_USERNAME = "your-email@gmail.com"
   $env:SMTP_PASSWORD = "YOUR_GMAIL_APP_PASSWORD"
+  $env:SMTP_USERNAME="emailcuaban@gmail.com"
+  $env:SMTP_PASSWORD="APP_PASSWORD_CUA_BAN"
+  $env:SMTP_FROM="emailcuaban@gmail.com"
+  $env:SMTP_FROM_NAME="CRM Bán Hàng"
   ```
   > **Lưu ý bảo mật quan trọng:** Tuyệt đối KHÔNG commit mật khẩu hoặc App Password cá nhân vào mã nguồn.
+
+Sau khi thiết lập biến môi trường, phải restart Tomcat từ terminal đã có các biến trên.
+
+Nếu chưa cấu hình SMTP, ứng dụng chạy DEV/TEST fallback:
+yêu cầu có thể được ghi nhận nhưng email thật sẽ không được gửi.
 
 ---
 
