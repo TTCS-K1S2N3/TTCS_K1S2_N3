@@ -1,11 +1,13 @@
 package vn.nhom10.crm.service;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import vn.nhom10.crm.config.DatabaseConfig;
 import vn.nhom10.crm.dao.NguoiDungDAO;
 import vn.nhom10.crm.dao.NhomKinhDoanhDAO;
 import vn.nhom10.crm.dao.VaiTroDAO;
@@ -14,6 +16,8 @@ import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.NhomKinhDoanh;
 import vn.nhom10.crm.model.VaiTro;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -38,11 +42,23 @@ class NguoiDungServiceTest {
     @Mock
     private EmailService emailService;
 
+    @Mock
+    private NhatKyThayDoiService nhatKyThayDoiService;
+
+    private Connection mockConnection;
     private NguoiDungService nguoiDungService;
 
     @BeforeEach
-    void setUp() {
-        nguoiDungService = new NguoiDungService(nguoiDungDAO, vaiTroDAO, nhomKinhDoanhDAO, emailService);
+    void setUp() throws SQLException {
+        mockConnection = mock(Connection.class);
+        lenient().when(mockConnection.getAutoCommit()).thenReturn(true);
+        DatabaseConfig.setConnectionSupplier(() -> mockConnection);
+        nguoiDungService = new NguoiDungService(nguoiDungDAO, vaiTroDAO, nhomKinhDoanhDAO, emailService, nhatKyThayDoiService);
+    }
+
+    @AfterEach
+    void tearDown() {
+        DatabaseConfig.resetConnectionSupplier();
     }
 
     @Test

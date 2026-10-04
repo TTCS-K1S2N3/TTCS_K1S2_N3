@@ -135,9 +135,11 @@ public class NhatKyThayDoiDAO {
         StringBuilder sql = new StringBuilder(
                 "SELECT nk.id, nk.nguoi_thuc_hien_id, nk.hanh_dong, nk.loai_doi_tuong, nk.doi_tuong_id, " +
                 "nk.gia_tri_truoc_json, nk.gia_tri_sau_json, nk.ly_do, nk.dia_chi_ip, nk.thong_tin_thiet_bi, nk.created_at, " +
-                "nd.ho_ten, nd.email " +
+                "nd.ho_ten, nd.email, " +
+                "target_nd.ho_ten AS target_ho_ten, target_nd.email AS target_email " +
                 "FROM nhat_ky_he_thong nk " +
                 "LEFT JOIN nguoi_dung nd ON nk.nguoi_thuc_hien_id = nd.id " +
+                "LEFT JOIN nguoi_dung target_nd ON (nk.doi_tuong_id = target_nd.id AND nk.loai_doi_tuong = 'VAI_TRO_NGUOI_DUNG') " +
                 "WHERE 1=1 "
         );
 
@@ -181,6 +183,7 @@ public class NhatKyThayDoiDAO {
                 "SELECT COUNT(*) " +
                 "FROM nhat_ky_he_thong nk " +
                 "LEFT JOIN nguoi_dung nd ON nk.nguoi_thuc_hien_id = nd.id " +
+                "LEFT JOIN nguoi_dung target_nd ON (nk.doi_tuong_id = target_nd.id AND nk.loai_doi_tuong = 'VAI_TRO_NGUOI_DUNG') " +
                 "WHERE 1=1 "
         );
 
@@ -217,6 +220,7 @@ public class NhatKyThayDoiDAO {
                 "SELECT nk.loai_doi_tuong, COUNT(*) AS so_luong " +
                 "FROM nhat_ky_he_thong nk " +
                 "LEFT JOIN nguoi_dung nd ON nk.nguoi_thuc_hien_id = nd.id " +
+                "LEFT JOIN nguoi_dung target_nd ON (nk.doi_tuong_id = target_nd.id AND nk.loai_doi_tuong = 'VAI_TRO_NGUOI_DUNG') " +
                 "WHERE 1=1 "
         );
 
@@ -287,9 +291,11 @@ public class NhatKyThayDoiDAO {
     public NhatKyThayDoi timTheoId(long id) {
         String sql = "SELECT nk.id, nk.nguoi_thuc_hien_id, nk.hanh_dong, nk.loai_doi_tuong, nk.doi_tuong_id, " +
                 "nk.gia_tri_truoc_json, nk.gia_tri_sau_json, nk.ly_do, nk.dia_chi_ip, nk.thong_tin_thiet_bi, nk.created_at, " +
-                "nd.ho_ten, nd.email " +
+                "nd.ho_ten, nd.email, " +
+                "target_nd.ho_ten AS target_ho_ten, target_nd.email AS target_email " +
                 "FROM nhat_ky_he_thong nk " +
                 "LEFT JOIN nguoi_dung nd ON nk.nguoi_thuc_hien_id = nd.id " +
+                "LEFT JOIN nguoi_dung target_nd ON (nk.doi_tuong_id = target_nd.id AND nk.loai_doi_tuong = 'VAI_TRO_NGUOI_DUNG') " +
                 "WHERE nk.id = ? LIMIT 1";
 
         try (Connection conn = DatabaseConnection.layKetNoi();
@@ -368,9 +374,10 @@ public class NhatKyThayDoiDAO {
         if (boLoc.getTuKhoa() != null && !boLoc.getTuKhoa().trim().isEmpty()) {
             String keyword = "%" + boLoc.getTuKhoa().trim().toLowerCase() + "%";
             sql.append("AND (LOWER(nd.ho_ten) LIKE ? OR LOWER(nd.email) LIKE ? " +
+                    "OR LOWER(target_nd.ho_ten) LIKE ? OR LOWER(target_nd.email) LIKE ? " +
                     "OR LOWER(nk.ly_do) LIKE ? OR LOWER(nk.hanh_dong) LIKE ? " +
                     "OR LOWER(nk.gia_tri_truoc_json) LIKE ? OR LOWER(nk.gia_tri_sau_json) LIKE ?) ");
-            for (int i = 0; i < 6; i++) {
+            for (int i = 0; i < 8; i++) {
                 params.add(keyword);
             }
         }
@@ -428,6 +435,34 @@ public class NhatKyThayDoiDAO {
         Timestamp ts = rs.getTimestamp("created_at");
         if (ts != null) {
             nk.setCreatedAt(ts.toLocalDateTime());
+        }
+
+        // Lấy thông tin đối tượng đích (Target) nếu có
+        String targetHoTen = null;
+        String targetEmail = null;
+        try {
+            targetHoTen = rs.getString("target_ho_ten");
+        } catch (SQLException ignored) {
+        }
+        try {
+            targetEmail = rs.getString("target_email");
+        } catch (SQLException ignored) {
+        }
+
+        if (nk.getLoaiDoiTuong() == LoaiDoiTuongNhayCam.VAI_TRO_NGUOI_DUNG) {
+            if (targetHoTen != null && !targetHoTen.isBlank()) {
+                nk.setTenDoiTuong(targetHoTen);
+            } else if (targetEmail != null && !targetEmail.isBlank()) {
+                nk.setTenDoiTuong(targetEmail);
+            } else if (dtId > 0) {
+                nk.setTenDoiTuong("Người dùng #" + dtId);
+            }
+
+            if (targetEmail != null && !targetEmail.isBlank()) {
+                nk.setMaDoiTuong(targetEmail);
+            } else if (dtId > 0) {
+                nk.setMaDoiTuong("ND-" + dtId);
+            }
         }
 
         return nk;

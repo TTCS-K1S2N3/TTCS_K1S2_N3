@@ -436,11 +436,15 @@
                                         <% if (loai == LoaiDoiTuongNhayCam.VAI_TRO_NGUOI_DUNG) { %> 🛡️ <% } %>
                                         <%= loaiTen %>
                                     </div>
-                                    <div class="target-name" title="<%= item.getTenDoiTuong() %>">
-                                        <%= item.getTenDoiTuong() %>
+                                    <div class="target-name" title="<%= item.getTenDoiTuong() != null ? item.getTenDoiTuong() : "" %>">
+                                        <%= item.getTenDoiTuong() != null ? item.getTenDoiTuong() : "-" %>
                                     </div>
                                     <div class="target-code">
-                                        Mã đối tượng: <code><%= item.getMaDoiTuong() %></code>
+                                        <% if (loai == LoaiDoiTuongNhayCam.VAI_TRO_NGUOI_DUNG) { %>
+                                            Email / Mã: <code><%= item.getMaDoiTuong() != null ? item.getMaDoiTuong() : "-" %></code>
+                                        <% } else { %>
+                                            Mã đối tượng: <code><%= item.getMaDoiTuong() != null ? item.getMaDoiTuong() : "-" %></code>
+                                        <% } %>
                                     </div>
                                 </td>
 

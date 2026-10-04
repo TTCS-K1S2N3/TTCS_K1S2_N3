@@ -147,10 +147,16 @@ public class NhatKyThayDoi implements Serializable {
     }
 
     public String getMaDoiTuong() {
-        if ((maDoiTuong == null || maDoiTuong.isBlank()) && doiTuongId != null) {
+        if (maDoiTuong != null && !maDoiTuong.isBlank()) {
+            return maDoiTuong;
+        }
+        if (doiTuongId != null && doiTuongId > 0) {
+            if (loaiDoiTuong == LoaiDoiTuongNhayCam.VAI_TRO_NGUOI_DUNG) {
+                return "ND-" + doiTuongId;
+            }
             return "DT-" + doiTuongId;
         }
-        return maDoiTuong;
+        return "-";
     }
 
     public void setMaDoiTuong(String maDoiTuong) {
@@ -158,7 +164,16 @@ public class NhatKyThayDoi implements Serializable {
     }
 
     public String getTenDoiTuong() {
-        return tenDoiTuong;
+        if (tenDoiTuong != null && !tenDoiTuong.isBlank()) {
+            return tenDoiTuong;
+        }
+        if (doiTuongId != null && doiTuongId > 0) {
+            if (loaiDoiTuong == LoaiDoiTuongNhayCam.VAI_TRO_NGUOI_DUNG) {
+                return "Người dùng #" + doiTuongId;
+            }
+            return "Đối tượng #" + doiTuongId;
+        }
+        return "-";
     }
 
     public void setTenDoiTuong(String tenDoiTuong) {
