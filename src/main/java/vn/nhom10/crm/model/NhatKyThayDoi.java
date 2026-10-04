@@ -99,7 +99,10 @@ public class NhatKyThayDoi implements Serializable {
     }
 
     public String getTenNguoiThucHien() {
-        return tenNguoiThucHien;
+        if (tenNguoiThucHien != null && !tenNguoiThucHien.isBlank() && !"null".equalsIgnoreCase(tenNguoiThucHien.trim())) {
+            return tenNguoiThucHien;
+        }
+        return (nguoiThucHienId != null && nguoiThucHienId > 0) ? ("Người dùng #" + nguoiThucHienId) : "Hệ thống";
     }
 
     public void setTenNguoiThucHien(String tenNguoiThucHien) {
@@ -107,7 +110,10 @@ public class NhatKyThayDoi implements Serializable {
     }
 
     public String getEmailNguoiThucHien() {
-        return emailNguoiThucHien;
+        if (emailNguoiThucHien != null && !emailNguoiThucHien.isBlank() && !"null".equalsIgnoreCase(emailNguoiThucHien.trim())) {
+            return emailNguoiThucHien;
+        }
+        return "-";
     }
 
     public void setEmailNguoiThucHien(String emailNguoiThucHien) {
@@ -115,7 +121,10 @@ public class NhatKyThayDoi implements Serializable {
     }
 
     public String getVaiTroNguoiThucHien() {
-        return vaiTroNguoiThucHien;
+        if (vaiTroNguoiThucHien != null && !vaiTroNguoiThucHien.isBlank() && !"null".equalsIgnoreCase(vaiTroNguoiThucHien.trim())) {
+            return vaiTroNguoiThucHien;
+        }
+        return "Không xác định";
     }
 
     public void setVaiTroNguoiThucHien(String vaiTroNguoiThucHien) {
@@ -303,9 +312,9 @@ public class NhatKyThayDoi implements Serializable {
                 this.id,
                 getMaTruyVet(),
                 this.nguoiThucHienId,
-                this.tenNguoiThucHien,
-                this.emailNguoiThucHien,
-                this.vaiTroNguoiThucHien,
+                getTenNguoiThucHien(),
+                getEmailNguoiThucHien(),
+                getVaiTroNguoiThucHien(),
                 getThoiDiem(),
                 this.loaiDoiTuong,
                 getMaDoiTuong(),

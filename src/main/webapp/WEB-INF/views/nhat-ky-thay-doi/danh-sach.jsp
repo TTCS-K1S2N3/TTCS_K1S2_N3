@@ -422,7 +422,13 @@
                                         <div class="actor-details">
                                             <span class="actor-name"><%= item.getTenNguoiThucHien() %></span>
                                             <span class="actor-email"><%= item.getEmailNguoiThucHien() %></span>
-                                            <span class="actor-role-badge"><%= item.getVaiTroNguoiThucHien() %></span>
+                                            <%
+                                                String vtNguoiThucHien = item.getVaiTroNguoiThucHien();
+                                                if (vtNguoiThucHien == null || vtNguoiThucHien.isBlank() || "null".equalsIgnoreCase(vtNguoiThucHien.trim())) {
+                                                    vtNguoiThucHien = "Không xác định";
+                                                }
+                                            %>
+                                            <span class="actor-role-badge"><%= vtNguoiThucHien %></span>
                                         </div>
                                     </div>
                                 </td>

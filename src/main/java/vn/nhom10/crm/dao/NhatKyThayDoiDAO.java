@@ -136,7 +136,11 @@ public class NhatKyThayDoiDAO {
                 "SELECT nk.id, nk.nguoi_thuc_hien_id, nk.hanh_dong, nk.loai_doi_tuong, nk.doi_tuong_id, " +
                 "nk.gia_tri_truoc_json, nk.gia_tri_sau_json, nk.ly_do, nk.dia_chi_ip, nk.thong_tin_thiet_bi, nk.created_at, " +
                 "nd.ho_ten, nd.email, " +
-                "target_nd.ho_ten AS target_ho_ten, target_nd.email AS target_email " +
+                "target_nd.ho_ten AS target_ho_ten, target_nd.email AS target_email, " +
+                "(SELECT GROUP_CONCAT(DISTINCT vt.ten_vai_tro ORDER BY vt.id SEPARATOR ', ') " +
+                " FROM nguoi_dung_vai_tro ndvt " +
+                " JOIN vai_tro vt ON ndvt.vai_tro_id = vt.id " +
+                " WHERE ndvt.nguoi_dung_id = nk.nguoi_thuc_hien_id) AS vai_tro_nguoi_thuc_hien " +
                 "FROM nhat_ky_he_thong nk " +
                 "LEFT JOIN nguoi_dung nd ON nk.nguoi_thuc_hien_id = nd.id " +
                 "LEFT JOIN nguoi_dung target_nd ON (nk.doi_tuong_id = target_nd.id AND nk.loai_doi_tuong = 'VAI_TRO_NGUOI_DUNG') " +
@@ -166,7 +170,8 @@ public class NhatKyThayDoiDAO {
                 }
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi truy vấn danh sách nhật ký thay đổi: " + e.getMessage(), e);
+            LOGGER.log(Level.FINE, "Lỗi truy vấn danh sách nhật ký kèm vai trò, thử truy vấn cơ bản: " + e.getMessage());
+            return layDanhSachCoBan(boLoc);
         }
 
         return danhSach;
@@ -292,7 +297,11 @@ public class NhatKyThayDoiDAO {
         String sql = "SELECT nk.id, nk.nguoi_thuc_hien_id, nk.hanh_dong, nk.loai_doi_tuong, nk.doi_tuong_id, " +
                 "nk.gia_tri_truoc_json, nk.gia_tri_sau_json, nk.ly_do, nk.dia_chi_ip, nk.thong_tin_thiet_bi, nk.created_at, " +
                 "nd.ho_ten, nd.email, " +
-                "target_nd.ho_ten AS target_ho_ten, target_nd.email AS target_email " +
+                "target_nd.ho_ten AS target_ho_ten, target_nd.email AS target_email, " +
+                "(SELECT GROUP_CONCAT(DISTINCT vt.ten_vai_tro ORDER BY vt.id SEPARATOR ', ') " +
+                " FROM nguoi_dung_vai_tro ndvt " +
+                " JOIN vai_tro vt ON ndvt.vai_tro_id = vt.id " +
+                " WHERE ndvt.nguoi_dung_id = nk.nguoi_thuc_hien_id) AS vai_tro_nguoi_thuc_hien " +
                 "FROM nhat_ky_he_thong nk " +
                 "LEFT JOIN nguoi_dung nd ON nk.nguoi_thuc_hien_id = nd.id " +
                 "LEFT JOIN nguoi_dung target_nd ON (nk.doi_tuong_id = target_nd.id AND nk.loai_doi_tuong = 'VAI_TRO_NGUOI_DUNG') " +
@@ -309,7 +318,8 @@ public class NhatKyThayDoiDAO {
                 }
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi tìm nhật ký theo id: " + id, e);
+            LOGGER.log(Level.FINE, "Lỗi tìm nhật ký kèm vai trò, thử truy vấn cơ bản: " + e.getMessage());
+            return timTheoIdCoBan(id);
         }
 
         return null;
@@ -411,8 +421,33 @@ public class NhatKyThayDoiDAO {
             nk.setNguoiThucHienId(ndId);
         }
 
-        nk.setTenNguoiThucHien(rs.getString("ho_ten"));
-        nk.setEmailNguoiThucHien(rs.getString("email"));
+        String hoTen = rs.getString("ho_ten");
+        if (hoTen != null && !hoTen.isBlank() && !"null".equalsIgnoreCase(hoTen.trim())) {
+            nk.setTenNguoiThucHien(hoTen.trim());
+        } else if (nk.getNguoiThucHienId() != null && nk.getNguoiThucHienId() > 0) {
+            nk.setTenNguoiThucHien("Người dùng #" + nk.getNguoiThucHienId());
+        } else {
+            nk.setTenNguoiThucHien("Hệ thống");
+        }
+
+        String email = rs.getString("email");
+        if (email != null && !email.isBlank() && !"null".equalsIgnoreCase(email.trim())) {
+            nk.setEmailNguoiThucHien(email.trim());
+        } else {
+            nk.setEmailNguoiThucHien("-");
+        }
+
+        // Lấy vai trò thực tế của người thực hiện
+        String vaiTroActor = null;
+        try {
+            vaiTroActor = rs.getString("vai_tro_nguoi_thuc_hien");
+        } catch (SQLException ignored) {
+        }
+        if (vaiTroActor != null && !vaiTroActor.isBlank() && !"null".equalsIgnoreCase(vaiTroActor.trim())) {
+            nk.setVaiTroNguoiThucHien(vaiTroActor.trim());
+        } else {
+            nk.setVaiTroNguoiThucHien("Không xác định");
+        }
 
         String hanhDong = rs.getString("hanh_dong");
         nk.setHanhDong(HanhDongThayDoi.tuMa(hanhDong));
@@ -466,5 +501,73 @@ public class NhatKyThayDoiDAO {
         }
 
         return nk;
+    }
+
+    private List<NhatKyThayDoi> layDanhSachCoBan(BoLocNhatKyDTO boLoc) {
+        List<NhatKyThayDoi> danhSach = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+                "SELECT nk.id, nk.nguoi_thuc_hien_id, nk.hanh_dong, nk.loai_doi_tuong, nk.doi_tuong_id, " +
+                "nk.gia_tri_truoc_json, nk.gia_tri_sau_json, nk.ly_do, nk.dia_chi_ip, nk.thong_tin_thiet_bi, nk.created_at, " +
+                "nd.ho_ten, nd.email, " +
+                "target_nd.ho_ten AS target_ho_ten, target_nd.email AS target_email " +
+                "FROM nhat_ky_he_thong nk " +
+                "LEFT JOIN nguoi_dung nd ON nk.nguoi_thuc_hien_id = nd.id " +
+                "LEFT JOIN nguoi_dung target_nd ON (nk.doi_tuong_id = target_nd.id AND nk.loai_doi_tuong = 'VAI_TRO_NGUOI_DUNG') " +
+                "WHERE 1=1 "
+        );
+
+        List<Object> params = buildFilterParams(sql, boLoc);
+        sql.append("ORDER BY nk.created_at DESC, nk.id DESC ");
+
+        int soBanGhi = (boLoc != null && boLoc.getSoBanGhiTrenTrang() > 0) ? boLoc.getSoBanGhiTrenTrang() : 10;
+        int trang = (boLoc != null && boLoc.getTrang() > 0) ? boLoc.getTrang() : 1;
+        int offset = (trang - 1) * soBanGhi;
+
+        sql.append("LIMIT ? OFFSET ?");
+        params.add(soBanGhi);
+        params.add(offset);
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            setParameters(ps, params);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    danhSach.add(mapResultSetToModel(rs));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi truy vấn cơ bản danh sách nhật ký: " + e.getMessage(), e);
+        }
+
+        return danhSach;
+    }
+
+    private NhatKyThayDoi timTheoIdCoBan(long id) {
+        String sql = "SELECT nk.id, nk.nguoi_thuc_hien_id, nk.hanh_dong, nk.loai_doi_tuong, nk.doi_tuong_id, " +
+                "nk.gia_tri_truoc_json, nk.gia_tri_sau_json, nk.ly_do, nk.dia_chi_ip, nk.thong_tin_thiet_bi, nk.created_at, " +
+                "nd.ho_ten, nd.email, " +
+                "target_nd.ho_ten AS target_ho_ten, target_nd.email AS target_email " +
+                "FROM nhat_ky_he_thong nk " +
+                "LEFT JOIN nguoi_dung nd ON nk.nguoi_thuc_hien_id = nd.id " +
+                "LEFT JOIN nguoi_dung target_nd ON (nk.doi_tuong_id = target_nd.id AND nk.loai_doi_tuong = 'VAI_TRO_NGUOI_DUNG') " +
+                "WHERE nk.id = ? LIMIT 1";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToModel(rs);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi tìm nhật ký cơ bản theo id: " + id, e);
+        }
+
+        return null;
     }
 }

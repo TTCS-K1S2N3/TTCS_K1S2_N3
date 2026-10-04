@@ -62,11 +62,35 @@ class NhatKyThayDoiDAOTest {
                     "created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP" +
                     ")");
 
+            st.execute("CREATE TABLE vai_tro (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "ma_vai_tro VARCHAR(50) NOT NULL UNIQUE, " +
+                    "ten_vai_tro VARCHAR(100) NOT NULL, " +
+                    "mo_ta VARCHAR(255) NULL" +
+                    ")");
+
+            st.execute("CREATE TABLE nguoi_dung_vai_tro (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "nguoi_dung_id BIGINT NOT NULL, " +
+                    "vai_tro_id BIGINT NOT NULL" +
+                    ")");
+
+            st.execute("INSERT INTO vai_tro (id, ma_vai_tro, ten_vai_tro) VALUES " +
+                    "(1, 'ADMIN', 'Quản trị hệ thống'), " +
+                    "(2, 'SALES_REP', 'Nhân viên kinh doanh'), " +
+                    "(3, 'MARKETING', 'Nhân viên Marketing')");
+
             // Nạp người dùng mẫu
             st.execute("INSERT INTO nguoi_dung (id, ho_ten, email) VALUES " +
                     "(101, 'Lê Minh Tuấn', 'tuan.lm@crm.vn'), " +
                     "(102, 'Phạm Hoàng Long', 'long.ph@crm.vn'), " +
                     "(103, 'Nguyễn Thị Thu Hà', 'ha.ntt@crm.vn')");
+
+            // 101 có 1 vai trò Admin
+            st.execute("INSERT INTO nguoi_dung_vai_tro (nguoi_dung_id, vai_tro_id) VALUES (101, 1)");
+
+            // 102 có 2 vai trò: SALES_REP + MARKETING
+            st.execute("INSERT INTO nguoi_dung_vai_tro (nguoi_dung_id, vai_tro_id) VALUES (102, 2), (102, 3)");
 
             // Nạp dữ liệu mẫu
             st.execute("INSERT INTO nhat_ky_he_thong (id, nguoi_thuc_hien_id, hanh_dong, loai_doi_tuong, doi_tuong_id, " +
@@ -200,5 +224,44 @@ class NhatKyThayDoiDAOTest {
         List<NguoiDungOptionDTO> users = dao.layDanhSachNguoiDungOption();
         assertNotNull(users);
         assertEquals(3, users.size());
+    }
+
+    @Test
+    @DisplayName("S2-04 Actor Role: Người dùng có 1 vai trò (Admin) hiển thị đúng tên vai trò")
+    void testActorRole_DonVaiTro() {
+        NhatKyThayDoi nk = dao.timTheoId(1L); // Actor là 101 (Admin)
+        assertNotNull(nk);
+        assertEquals("Quản trị hệ thống", nk.getVaiTroNguoiThucHien());
+    }
+
+    @Test
+    @DisplayName("S2-04 Actor Role: Người dùng có nhiều vai trò hiển thị đầy đủ, không nhân bản audit row")
+    void testActorRole_DaVaiTro_KhongDuplicateRow() {
+        // Actor 102 có 2 vai trò: SALES_REP + MARKETING
+        NhatKyThayDoi nk = dao.timTheoId(2L);
+        assertNotNull(nk);
+        assertEquals("Nhân viên kinh doanh, Nhân viên Marketing", nk.getVaiTroNguoiThucHien());
+
+        // Kiểm tra danh sách không bị nhân bản row khi user có nhiều vai trò
+        BoLocNhatKyDTO boLoc = new BoLocNhatKyDTO();
+        boLoc.setNguoiDungId(102L);
+        List<NhatKyThayDoi> ds = dao.layDanhSach(boLoc);
+        assertEquals(1, ds.size(), "Bản ghi của actor 102 phải đúng 1 dòng, không bị duplicate");
+        assertEquals("Nhân viên kinh doanh, Nhân viên Marketing", ds.get(0).getVaiTroNguoiThucHien());
+    }
+
+    @Test
+    @DisplayName("S2-04 Actor Role: Actor NULL thì fallback 'Không xác định', không có literal null")
+    void testActorRole_ActorNull_FallbackKhongXacDinh() throws Exception {
+        try (Statement st = connection.createStatement()) {
+            st.execute("INSERT INTO nhat_ky_he_thong (id, nguoi_thuc_hien_id, hanh_dong, loai_doi_tuong, doi_tuong_id) " +
+                    "VALUES (99, NULL, 'CAP_NHAT', 'CHIET_KHAU', 1)");
+        }
+
+        NhatKyThayDoi nk = dao.timTheoId(99L);
+        assertNotNull(nk);
+        assertEquals("Không xác định", nk.getVaiTroNguoiThucHien());
+        assertEquals("Hệ thống", nk.getTenNguoiThucHien());
+        assertEquals("-", nk.getEmailNguoiThucHien());
     }
 }
