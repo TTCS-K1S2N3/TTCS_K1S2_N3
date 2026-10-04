@@ -85,14 +85,23 @@ Kết quả build sẽ tạo ra tệp:
 
 ## 7. Tài Khoản Kiểm Thử Mẫu (Seed Accounts)
 
-Hệ thống đã thiết lập sẵn các tài khoản phân quyền mẫu để phục vụ kiểm thử theo role:
+Các tài khoản dưới đây chỉ dùng cho môi trường local/dev.
 
-| Vai trò | Email đăng nhập | Mật khẩu mẫu | Ghi chú quyền hạn |
+Mật khẩu chung:
+
+`123456@Aa`
+
+| Vai trò | Email đăng nhập | Mật khẩu | Ghi chú |
 | :--- | :--- | :--- | :--- |
-| **Quản trị hệ thống** | `admin@crm.vn` | `Admin@123` | Quản trị tài khoản, cơ cấu tổ chức, trường tùy chỉnh, nhật ký thay đổi |
-| **Giám đốc kinh doanh** | `giamdoc@crm.vn` | `Giamdoc@123` | Cấu hình pipeline giai đoạn, giá vốn sản phẩm, lý do thắng/thua |
-| **Trưởng nhóm kinh doanh**| `lead@crm.vn` | `Lead@123` | Phân bổ cơ hội, quản lý nhóm bán hàng, xem danh mục |
-| **Nhân viên kinh doanh** | `sales@crm.vn` | `Sales@123` | Tra cứu sản phẩm, khai báo cơ hội, cập nhật hồ sơ cá nhân |
+| Quản trị hệ thống | `admin@crm.vn` | `123456@Aa` | Quản trị hệ thống |
+| Giám đốc kinh doanh | `director@crm.vn` | `123456@Aa` | Toàn bộ dữ liệu kinh doanh |
+| Trưởng nhóm kinh doanh | `teamlead@crm.vn` | `123456@Aa` | Phạm vi nhóm |
+| Nhân viên kinh doanh | `sales@crm.vn` | `123456@Aa` | Phạm vi cá nhân |
+| Marketing | `marketing@crm.vn` | `123456@Aa` | Marketing / Lead |
+| Chăm sóc khách hàng | `cskh@crm.vn` | `123456@Aa` | CSKH |
+| Kế toán | `accountant@crm.vn` | `123456@Aa` | Báo giá / Hợp đồng |
+
+> Không sử dụng các credential mẫu này trên staging hoặc production.
 
 ---
 
