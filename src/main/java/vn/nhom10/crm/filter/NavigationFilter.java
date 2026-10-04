@@ -56,7 +56,7 @@ public class NavigationFilter implements Filter {
         NguoiDung nguoiDung = (session != null) ? (NguoiDung) session.getAttribute("nguoiDung") : null;
 
         // Chuẩn bị dữ liệu hiển thị cho menu và thông tin người dùng
-        ThongTinDieuHuongDTO thongTinDieuHuong = menuService.layThongTinDieuHuong(nguoiDung, relativeUri);
+        ThongTinDieuHuongDTO thongTinDieuHuong = menuService.layThongTinDieuHuong(nguoiDung, relativeUri, contextPath);
         httpRequest.setAttribute("thongTinDieuHuong", thongTinDieuHuong);
 
         // Kiểm tra phân quyền truy cập phía server (Server-side authorization)

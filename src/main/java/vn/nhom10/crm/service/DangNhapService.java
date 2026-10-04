@@ -88,6 +88,12 @@ public class DangNhapService {
             user.setThoiGianKhoa(null);
         }
 
+        // Kích hoạt tài khoản lần đầu nếu đang ở trạng thái CHO_KICH_HOAT (Story S1-08, S2-01)
+        if (NguoiDung.TRANG_THAI_CHO_KICH_HOAT.equalsIgnoreCase(user.getTrangThai())) {
+            nguoiDungDAO.kichHoatTaiKhoan(user.getId());
+            user.setTrangThai(NguoiDung.TRANG_THAI_HOAT_DONG);
+        }
+
         // AC: Đăng nhập đúng thì vào được trang chủ tương ứng với vai trò
         String trangChuUrl = xacDinhTrangChu(user);
         return KetQuaDangNhapDTO.thanhCong(user, trangChuUrl);

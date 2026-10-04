@@ -8,6 +8,22 @@ import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.PhamViDuLieu;
 import vn.nhom10.crm.model.VaiTroEnum;
 
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,14 +45,20 @@ public class PhanQuyenDuLieuService {
     private static final Logger LOGGER = Logger.getLogger(PhanQuyenDuLieuService.class.getName());
 
     private final PhanQuyenDuLieuDAO dao;
+    private final CoCauToChucService coCauToChucService;
     private final List<BanGhiNghiepVuDTO> danhSachBoNho;
 
     public PhanQuyenDuLieuService() {
-        this(new PhanQuyenDuLieuDAO());
+        this(new PhanQuyenDuLieuDAO(), new CoCauToChucService());
     }
 
     public PhanQuyenDuLieuService(PhanQuyenDuLieuDAO dao) {
+        this(dao, new CoCauToChucService());
+    }
+
+    public PhanQuyenDuLieuService(PhanQuyenDuLieuDAO dao, CoCauToChucService coCauToChucService) {
         this.dao = dao;
+        this.coCauToChucService = coCauToChucService != null ? coCauToChucService : new CoCauToChucService();
         this.danhSachBoNho = new java.util.concurrent.CopyOnWriteArrayList<>(layDanhSachDuLieuMau());
     }
 
@@ -107,9 +129,20 @@ public class PhanQuyenDuLieuService {
         // 1. Thử truy vấn qua DAO từ cơ sở dữ liệu
         if (dao != null) {
             try {
-                List<BanGhiNghiepVuDTO> dbList = dao.layDanhSachTongHopTheoPhamVi(
+                java.util.Set<Long> dsNhomIds = new java.util.HashSet<>();
+                if (user.getNhomKinhDoanhId() != null && user.getNhomKinhDoanhId() > 0) {
+                    dsNhomIds.add(user.getNhomKinhDoanhId());
+                }
+                if (phamViHieuLuc == PhamViDuLieu.NHOM && coCauToChucService != null && user.getId() != null) {
+                    java.util.Set<Long> cayNhom = coCauToChucService.layDsIdNhomDuocXemBoiTruongNhom(user.getId());
+                    if (cayNhom != null && !cayNhom.isEmpty()) {
+                        dsNhomIds.addAll(cayNhom);
+                    }
+                }
+
+                List<BanGhiNghiepVuDTO> dbList = dao.layDanhSachTongHopTheoTapHopNhom(
                         user.getId(),
-                        user.getNhomKinhDoanhId(),
+                        dsNhomIds,
                         phamViHieuLuc,
                         tuKhoa,
                         loaiEnum
@@ -185,10 +218,21 @@ public class PhanQuyenDuLieuService {
             return new KetQuaKiemTra(true, "Truy cập hợp lệ với tư cách người phụ trách trực tiếp.", banGhi);
         }
 
-        // 3. Trưởng nhóm (nếu có quyền NHOM xác thực từ DB): được xem dữ liệu của thành viên trong nhóm mình
+        // 3. Trưởng nhóm (nếu có quyền NHOM xác thực từ DB): được xem dữ liệu của thành viên trong nhóm mình và các nhóm con cháu (Story S2-06, AC3)
         if (phamViToiDa == PhamViDuLieu.NHOM) {
+            boolean coQuyenNhom = false;
             if (banGhi.getNhomKinhDoanhId() != null && banGhi.getNhomKinhDoanhId().equals(user.getNhomKinhDoanhId())) {
-                return new KetQuaKiemTra(true, "Truy cập hợp lệ với tư cách Trưởng nhóm quản lý " + user.getTenNhom() + ".", banGhi);
+                coQuyenNhom = true;
+            } else if (coCauToChucService != null && banGhi.getNhomKinhDoanhId() != null && user.getId() != null) {
+                try {
+                    coQuyenNhom = coCauToChucService.kiemTraThuocPhamViCayToChuc(user.getId(), banGhi.getNhomKinhDoanhId());
+                } catch (Exception e) {
+                    LOGGER.log(Level.FINE, "Lỗi kiểm tra phạm vi cây tổ chức: " + e.getMessage());
+                }
+            }
+
+            if (coQuyenNhom) {
+                return new KetQuaKiemTra(true, "Truy cập hợp lệ với tư cách Trưởng nhóm quản lý " + user.getTenNhom() + " (theo cây tổ chức).", banGhi);
             } else {
                 String thongBao = String.format(
                         "Từ chối truy cập: Bản ghi '%s' (Mã: %s) thuộc về %s (%s), không nằm trong phạm vi nhóm quản lý của bạn (%s).",
@@ -372,8 +416,18 @@ public class PhanQuyenDuLieuService {
                         return true;
                     }
                     if (phamViThucTe == PhamViDuLieu.NHOM) {
-                        return bg.getNhomKinhDoanhId() != null
-                                && bg.getNhomKinhDoanhId().equals(user.getNhomKinhDoanhId());
+                        if (bg.getNhomKinhDoanhId() == null) {
+                            return false;
+                        }
+                        if (bg.getNhomKinhDoanhId().equals(user.getNhomKinhDoanhId())) {
+                            return true;
+                        }
+                        if (coCauToChucService != null && user.getId() != null) {
+                            try {
+                                return coCauToChucService.kiemTraThuocPhamViCayToChuc(user.getId(), bg.getNhomKinhDoanhId());
+                            } catch (Exception ignored) {}
+                        }
+                        return false;
                     }
                     // Mặc định: CA_NHAN
                     return bg.getNguoiPhuTrachId() != null
@@ -423,6 +477,230 @@ public class PhanQuyenDuLieuService {
             }
         }
         return csv.toString();
+    }
+
+    /**
+     * Xuất dữ liệu đã lọc theo phạm vi sang định dạng bảng tính Excel (.xlsx).
+     * Tuân thủ Data Scope, chỉ xuất các bản ghi trong danh sách đã lọc hợp lệ (AC2).
+     */
+    public byte[] xuatDuLieuExcel(List<BanGhiNghiepVuDTO> danhSachDaLoc) {
+        try (Workbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            Sheet sheet = workbook.createSheet("Du lieu CRM");
+            sheet.setDisplayGridlines(true);
+            sheet.createFreezePane(0, 1);
+
+            // Font Header
+            Font headerFont = workbook.createFont();
+            headerFont.setFontName("Segoe UI");
+            headerFont.setFontHeightInPoints((short) 10);
+            headerFont.setBold(true);
+
+            // Style Header
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(headerFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            datVienCell(headerStyle);
+
+            // Font Dữ liệu
+            Font textFont = workbook.createFont();
+            textFont.setFontName("Segoe UI");
+            textFont.setFontHeightInPoints((short) 10);
+
+            // Style Text thường (trái)
+            CellStyle textStyle = workbook.createCellStyle();
+            textStyle.setFont(textFont);
+            textStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            datVienCell(textStyle);
+
+            // Style Căn giữa (Mã, Loại, Trạng thái)
+            CellStyle centerStyle = workbook.createCellStyle();
+            centerStyle.setFont(textFont);
+            centerStyle.setAlignment(HorizontalAlignment.CENTER);
+            centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            datVienCell(centerStyle);
+
+            // Style Số (Giá trị tiền/số)
+            DataFormat dataFormat = workbook.createDataFormat();
+            CellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.setFont(textFont);
+            numberStyle.setAlignment(HorizontalAlignment.RIGHT);
+            numberStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            numberStyle.setDataFormat(dataFormat.getFormat("#,##0"));
+            datVienCell(numberStyle);
+
+            // Style Ngày tháng (dd/MM/yyyy)
+            CellStyle dateStyle = workbook.createCellStyle();
+            dateStyle.setFont(textFont);
+            dateStyle.setAlignment(HorizontalAlignment.CENTER);
+            dateStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            dateStyle.setDataFormat(dataFormat.getFormat("dd/MM/yyyy"));
+            datVienCell(dateStyle);
+
+            String[] headers = {
+                    "Mã",
+                    "Loại nghiệp vụ",
+                    "Tiêu đề / Đối tượng",
+                    "Người phụ trách",
+                    "Nhóm kinh doanh",
+                    "Giá trị",
+                    "Trạng thái",
+                    "Ngày tạo"
+            };
+
+            Row headerRow = sheet.createRow(0);
+            headerRow.setHeightInPoints(24);
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int rowIdx = 1;
+            if (danhSachDaLoc != null) {
+                for (BanGhiNghiepVuDTO bg : danhSachDaLoc) {
+                    Row row = sheet.createRow(rowIdx++);
+                    row.setHeightInPoints(20);
+
+                    // Col 0: Mã
+                    Cell c0 = row.createCell(0);
+                    c0.setCellValue(bg.getMaBanGhi() != null ? bg.getMaBanGhi() : "");
+                    c0.setCellStyle(centerStyle);
+
+                    // Col 1: Loại nghiệp vụ
+                    Cell c1 = row.createCell(1);
+                    c1.setCellValue(bg.getLoaiNghiepVu() != null ? bg.getLoaiNghiepVu().getTenHienThi() : "");
+                    c1.setCellStyle(centerStyle);
+
+                    // Col 2: Tiêu đề / Đối tượng
+                    Cell c2 = row.createCell(2);
+                    c2.setCellValue(bg.getTieuDe() != null ? bg.getTieuDe() : "");
+                    c2.setCellStyle(textStyle);
+
+                    // Col 3: Người phụ trách
+                    Cell c3 = row.createCell(3);
+                    c3.setCellValue(bg.getTenNguoiPhuTrach() != null ? bg.getTenNguoiPhuTrach() : "");
+                    c3.setCellStyle(textStyle);
+
+                    // Col 4: Nhóm kinh doanh
+                    Cell c4 = row.createCell(4);
+                    c4.setCellValue(bg.getTenNhom() != null ? bg.getTenNhom() : "");
+                    c4.setCellStyle(textStyle);
+
+                    // Col 5: Giá trị
+                    Cell c5 = row.createCell(5);
+                    String rawGiaTri = bg.getGiaTri();
+                    Double numVal = parseGiaTriNumeric(rawGiaTri);
+                    if (numVal != null) {
+                        c5.setCellValue(numVal);
+                        c5.setCellStyle(numberStyle);
+                    } else {
+                        c5.setCellValue(rawGiaTri != null ? rawGiaTri : "");
+                        c5.setCellStyle(textStyle);
+                    }
+
+                    // Col 6: Trạng thái
+                    Cell c6 = row.createCell(6);
+                    c6.setCellValue(bg.getTrangThai() != null ? bg.getTrangThai() : "");
+                    c6.setCellStyle(centerStyle);
+
+                    // Col 7: Ngày tạo
+                    Cell c7 = row.createCell(7);
+                    if (bg.getNgayTao() != null) {
+                        c7.setCellValue(bg.getNgayTao());
+                        c7.setCellStyle(dateStyle);
+                    } else {
+                        c7.setCellValue("");
+                        c7.setCellStyle(centerStyle);
+                    }
+                }
+            }
+
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+                int currentWidth = sheet.getColumnWidth(i);
+                int minWidth = 14 * 256;
+                int maxWidth = 50 * 256;
+                if (currentWidth < minWidth) {
+                    sheet.setColumnWidth(i, minWidth);
+                } else if (currentWidth > maxWidth) {
+                    sheet.setColumnWidth(i, maxWidth);
+                } else {
+                    sheet.setColumnWidth(i, currentWidth + 256 * 2);
+                }
+            }
+
+            workbook.write(out);
+            return out.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException("Lỗi tạo file Excel .xlsx: " + e.getMessage(), e);
+        }
+    }
+
+    private static void datVienCell(CellStyle style) {
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+        style.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+        style.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+        style.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+        style.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+    }
+
+    private Double parseGiaTriNumeric(String giaTri) {
+        if (giaTri == null || giaTri.trim().isEmpty()) {
+            return null;
+        }
+        String lettersOnly = giaTri.replaceAll("[0-9.,\\s]", "");
+        if (!lettersOnly.isEmpty() && !lettersOnly.equalsIgnoreCase("đ")
+                && !lettersOnly.equalsIgnoreCase("vnd") && !lettersOnly.equalsIgnoreCase("usd")) {
+            return null;
+        }
+        String numStr = giaTri.replaceAll("[^0-9.,]", "").trim();
+        if (numStr.isEmpty()) {
+            return null;
+        }
+        if (numStr.contains(".") && numStr.contains(",")) {
+            int lastDot = numStr.lastIndexOf('.');
+            int lastComma = numStr.lastIndexOf(',');
+            if (lastDot > lastComma) {
+                numStr = numStr.replace(",", "");
+            } else {
+                numStr = numStr.replace(".", "").replace(",", ".");
+            }
+        } else if (numStr.contains(".")) {
+            int firstDot = numStr.indexOf('.');
+            int lastDot = numStr.lastIndexOf('.');
+            if (firstDot != lastDot) {
+                numStr = numStr.replace(".", "");
+            } else {
+                if (numStr.length() - lastDot - 1 == 3 && (lettersOnly.equalsIgnoreCase("đ") || lettersOnly.equalsIgnoreCase("vnd"))) {
+                    numStr = numStr.replace(".", "");
+                }
+            }
+        } else if (numStr.contains(",")) {
+            int firstComma = numStr.indexOf(',');
+            int lastComma = numStr.lastIndexOf(',');
+            if (firstComma != lastComma) {
+                numStr = numStr.replace(",", "");
+            } else {
+                if (numStr.length() - lastComma - 1 == 3) {
+                    numStr = numStr.replace(",", "");
+                } else {
+                    numStr = numStr.replace(",", ".");
+                }
+            }
+        }
+        try {
+            return Double.parseDouble(numStr);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private String escapeCsv(String value) {

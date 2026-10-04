@@ -121,34 +121,43 @@
                 <p class="page-subtitle">Quản lý và chăm sóc danh mục khách hàng thuộc quyền phụ trách</p>
             </div>
             <div class="page-actions">
-                <button type="button" class="btn btn-outline" id="btnExportExcel">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button type="button" class="btn btn-outline" id="btnExportExcel" title="Tải danh sách khách hàng dưới dạng file Excel (.xlsx)">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                     </svg>
-                    Xuất Excel
+                    <span>Xuất Excel</span>
                 </button>
                 <button type="button" class="btn btn-primary" id="btnThemKhachHang">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
-                    Thêm Khách Hàng
+                    <span>Thêm Khách Hàng</span>
                 </button>
             </div>
         </div>
 
         <!-- Bảng danh sách khách hàng lọc theo Data Scope -->
         <div class="table-container">
-            <div style="padding: 12px 16px; background: #f8fafc; border-bottom: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center;">
+            <div style="padding: 12px 16px; background: #f8fafc; border-bottom: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                 <span style="font-size: 13px; color: var(--slate-600);">
                     Phạm vi dữ liệu: <strong><c:out value="${not empty phamViHienTai ? phamViHienTai.tenHienThi : 'Của tôi'}" /></strong>
                     • Đang hiển thị: <strong><c:out value="${not empty tongSoKhachHang ? tongSoKhachHang : 0}" /></strong> khách hàng
                 </span>
-                <a href="${pageContext.request.contextPath}/phan-quyen-du-lieu" style="font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 600;">
-                    🛡️ Quản lý 4 nghiệp vụ Data Scope &rarr;
-                </a>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <c:set var="userHienTai" value="${not empty nguoiDung ? nguoiDung : sessionScope.nguoiDung}" />
+                    <c:set var="laQuanTriDanhMuc" value="${coQuyenDanhMuc or (not empty userHienTai and (userHienTai.coVaiTro('ADMIN') or userHienTai.coVaiTro('DIRECTOR')))}" />
+                    <c:if test="${!laQuanTriDanhMuc}">
+                        <a href="${pageContext.request.contextPath}/san-pham" style="font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 600;" id="linkSanPhamBangGia">
+                            Sản phẩm & Bảng giá &rarr;
+                        </a>
+                    </c:if>
+                    <a href="${pageContext.request.contextPath}/phan-quyen-du-lieu" style="font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 600;">
+                        Quản lý 4 nghiệp vụ Data Scope &rarr;
+                    </a>
+                </div>
             </div>
             <table class="data-table">
                 <thead>
@@ -177,7 +186,7 @@
                                     <td><c:out value="${kh.giaTri}" /></td>
                                     <td><span class="badge badge-success"><c:out value="${kh.trangThai}" /></span></td>
                                     <td style="text-align: center;">
-                                        <a href="${pageContext.request.contextPath}/khach-hang?id=${kh.id}" class="btn-action" title="Xem chi tiết khách hàng (kiểm tra Data Scope)">
+                                        <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" class="btn-action" title="Xem chi tiết khách hàng">
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                                         </a>
                                     </td>

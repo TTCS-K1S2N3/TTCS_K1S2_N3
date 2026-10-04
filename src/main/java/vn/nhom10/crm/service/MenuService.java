@@ -14,7 +14,7 @@ import java.util.Set;
 
 /**
  * Service xử lý logic điều hướng menu, kiểm tra quyền truy cập module
- * và chuẩn bị dữ liệu hiển thị cho thanh điều hướng hệ thống.
+ * và chuẩn bị dữ liệu hiển thị cho thanh điều hướng hệ thống (bao gồm avatar).
  */
 public class MenuService {
 
@@ -57,6 +57,9 @@ public class MenuService {
         if (urlPath == null || urlPath.isBlank()) {
             return true;
         }
+        if (urlPath.startsWith("/nhat-ky-thay-doi") || urlPath.startsWith("/nguoi-dung/nhat-ky-thay-doi")) {
+            return nguoiDung != null && nguoiDung.coVaiTro(VaiTroEnum.ADMIN);
+        }
         ModuleHeThong module = ModuleHeThong.tuDuongDan(urlPath);
         if (module == null) {
             // URL không thuộc phạm vi các module nghiệp vụ cần phân quyền
@@ -83,7 +86,23 @@ public class MenuService {
                 boolean active = false;
                 if (currentUri != null && !currentUri.isBlank()) {
                     active = currentUri.equals(mod.getDuongDanUrl())
-                            || currentUri.startsWith(mod.getDuongDanUrl() + "/");
+                            || currentUri.startsWith(mod.getDuongDanUrl() + "/")
+                            || (mod == ModuleHeThong.NGUOI_DUNG && (
+                                    currentUri.startsWith("/nhat-ky-thay-doi")
+                                    || currentUri.startsWith("/nguoi-dung/nhat-ky-thay-doi")
+                                    || currentUri.startsWith("/co-cau-to-chuc")
+                                    || currentUri.startsWith("/phan-quyen-du-lieu")
+                               ))
+                            || (mod == ModuleHeThong.DANH_MUC && (
+                                    currentUri.startsWith("/danh-muc-ban-hang")
+                                    || currentUri.startsWith("/san-pham")
+                                    || currentUri.startsWith("/truong-tuy-chinh")
+                                    || currentUri.startsWith("/pipeline")
+                                    || currentUri.startsWith("/co-hoi/pipeline")
+                                    || currentUri.startsWith("/danh-muc/ly-do-thang-thua")
+                                    || currentUri.startsWith("/co-hoi/ly-do-thang-thua")
+                                    || currentUri.startsWith("/danh-muc/doi-thu")
+                               ));
                 }
                 MucMenuDTO dto = new MucMenuDTO(
                         mod.getMaModule(),
@@ -91,7 +110,8 @@ public class MenuService {
                         mod.getDuongDanUrl(),
                         mod.getBieuTuong(),
                         mod.getThuTu(),
-                        active
+                        active,
+                        mod.isDaTrienKhai()
                 );
                 ketQua.add(dto);
             }
@@ -100,13 +120,23 @@ public class MenuService {
     }
 
     /**
-     * Tạo thông tin điều hướng hoàn chỉnh cho thanh header/sidebar bao gồm:
-     * - Họ tên
-     * - Danh sách vai trò hiển thị
-     * - Tên nhóm kinh doanh
-     * - Danh sách menu tương ứng theo quyền
+     * Tạo thông tin điều hướng hoàn chỉnh cho thanh header/sidebar.
      */
     public ThongTinDieuHuongDTO layThongTinDieuHuong(NguoiDung nguoiDung, String currentUri) {
+        return layThongTinDieuHuong(nguoiDung, currentUri, "");
+    }
+
+    /**
+     * Tạo đối tượng ThongTinDieuHuongDTO chứa toàn bộ thông tin người dùng:
+     * - Tên
+     * - Vai trò
+     * - Nhóm kinh doanh
+     * - Đường dẫn ảnh đại diện và thumbnail
+     * - Danh sách menu đúng quyền
+     */
+    public ThongTinDieuHuongDTO layThongTinDieuHuong(NguoiDung nguoiDung, String currentUri, String contextPath) {
+        String prefix = (contextPath != null && !contextPath.isBlank() && !"/".equals(contextPath)) ? contextPath : "";
+
         if (nguoiDung == null) {
             return new ThongTinDieuHuongDTO(
                     "Khách",
@@ -121,14 +151,25 @@ public class MenuService {
 
         List<MucMenuDTO> dsMenu = layDanhSachMenuChoNguoiDung(nguoiDung, currentUri);
 
-        return new ThongTinDieuHuongDTO(
+        String avatarUrl = null;
+        String thumbUrl = null;
+        if (nguoiDung.coAnhDaiDien()) {
+            avatarUrl = prefix + "/avatar?id=" + nguoiDung.getId();
+            thumbUrl = prefix + "/avatar?id=" + nguoiDung.getId() + "&thumb=true";
+        }
+
+        ThongTinDieuHuongDTO dto = new ThongTinDieuHuongDTO(
+                (int) nguoiDung.getId(),
                 nguoiDung.getHoTen(),
                 nguoiDung.getEmail(),
                 nguoiDung.getChuoiVaiTroHienThi(),
                 nguoiDung.getTenNhomKinhDoanh(),
                 nguoiDung.getTenVietTat(),
                 true,
+                avatarUrl,
+                thumbUrl,
                 dsMenu
         );
+        return dto;
     }
 }

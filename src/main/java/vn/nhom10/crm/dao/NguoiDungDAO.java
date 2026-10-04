@@ -51,20 +51,50 @@ public class NguoiDungDAO {
             return null;
         }
 
-        String sql = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, "
+        String sql = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, chu_ky_email, "
+                + "anh_dai_dien_path, anh_dai_dien_thumb_path, trang_thai, "
                 + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
                 + "FROM nguoi_dung WHERE LOWER(email) = LOWER(?) LIMIT 1";
 
-        try (Connection conn = DatabaseConnection.layKetNoi();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, email.trim());
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    NguoiDung nd = mapResultSetToNguoiDung(rs);
-                    nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
-                    return nd;
+        try (Connection conn = DatabaseConnection.layKetNoi()) {
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, email.trim());
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        NguoiDung nd = mapResultSetToNguoiDung(rs);
+                        nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
+                        return nd;
+                    }
+                }
+            } catch (SQLException e) {
+                // Fallback nếu bảng chưa có cột avatar
+                String sqlFallback = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, chu_ky_email, trang_thai, "
+                        + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
+                        + "FROM nguoi_dung WHERE LOWER(email) = LOWER(?) LIMIT 1";
+                try (PreparedStatement ps = conn.prepareStatement(sqlFallback)) {
+                    ps.setString(1, email.trim());
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            NguoiDung nd = mapResultSetToNguoiDung(rs);
+                            nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
+                            return nd;
+                        }
+                    }
+                } catch (SQLException e2) {
+                    // Fallback nếu bảng chưa có cả cột chu_ky_email
+                    String sqlFallback2 = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, "
+                            + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
+                            + "FROM nguoi_dung WHERE LOWER(email) = LOWER(?) LIMIT 1";
+                    try (PreparedStatement ps = conn.prepareStatement(sqlFallback2)) {
+                        ps.setString(1, email.trim());
+                        try (ResultSet rs = ps.executeQuery()) {
+                            if (rs.next()) {
+                                NguoiDung nd = mapResultSetToNguoiDung(rs);
+                                nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
+                                return nd;
+                            }
+                        }
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -80,20 +110,50 @@ public class NguoiDungDAO {
      * @return NguoiDung nếu tìm thấy, hoặc null
      */
     public NguoiDung timTheoId(long id) {
-        String sql = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, "
+        String sql = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, chu_ky_email, "
+                + "anh_dai_dien_path, anh_dai_dien_thumb_path, trang_thai, "
                 + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
                 + "FROM nguoi_dung WHERE id = ? LIMIT 1";
 
-        try (Connection conn = DatabaseConnection.layKetNoi();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setLong(1, id);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    NguoiDung nd = mapResultSetToNguoiDung(rs);
-                    nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
-                    return nd;
+        try (Connection conn = DatabaseConnection.layKetNoi()) {
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setLong(1, id);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        NguoiDung nd = mapResultSetToNguoiDung(rs);
+                        nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
+                        return nd;
+                    }
+                }
+            } catch (SQLException e) {
+                // Fallback nếu bảng chưa có cột avatar
+                String sqlFallback = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, chu_ky_email, trang_thai, "
+                        + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
+                        + "FROM nguoi_dung WHERE id = ? LIMIT 1";
+                try (PreparedStatement ps = conn.prepareStatement(sqlFallback)) {
+                    ps.setLong(1, id);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            NguoiDung nd = mapResultSetToNguoiDung(rs);
+                            nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
+                            return nd;
+                        }
+                    }
+                } catch (SQLException e2) {
+                    // Fallback nếu bảng chưa có cả cột chu_ky_email
+                    String sqlFallback2 = "SELECT id, ho_ten, email, mat_khau, so_dien_thoai, trang_thai, "
+                            + "so_lan_sai, thoi_gian_khoa, nhom_kinh_doanh_id, created_at, updated_at "
+                            + "FROM nguoi_dung WHERE id = ? LIMIT 1";
+                    try (PreparedStatement ps = conn.prepareStatement(sqlFallback2)) {
+                        ps.setLong(1, id);
+                        try (ResultSet rs = ps.executeQuery()) {
+                            if (rs.next()) {
+                                NguoiDung nd = mapResultSetToNguoiDung(rs);
+                                nd.setDanhSachVaiTro(layDanhSachVaiTroTheoNguoiDungId(nd.getId()));
+                                return nd;
+                            }
+                        }
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -514,7 +574,63 @@ public class NguoiDungDAO {
     }
 
     /**
-     * Cập nhật thông tin tài khoản người dùng và gán lại vai trò trong một TRANSACTION duy nhất.
+     * Cập nhật thông tin tài khoản người dùng và gán lại vai trò trong Connection/Transaction được cung cấp.
+     *
+     * @param nguoiDung   thông tin người dùng cần cập nhật
+     * @param dsVaiTroIds danh sách ID vai trò mới
+     * @param conn        kết nối DB đang trong transaction
+     * @return true nếu cập nhật thành công
+     * @throws SQLException khi thao tác database lỗi
+     */
+    public boolean capNhatNguoiDung(NguoiDung nguoiDung, List<Integer> dsVaiTroIds, Connection conn) throws SQLException {
+        String sqlUser = "UPDATE nguoi_dung SET ho_ten = ?, email = ?, trang_thai = ?, nhom_kinh_doanh_id = ?, " +
+                         "so_dien_thoai = ? WHERE id = ?";
+        String sqlDeleteRoles = "DELETE FROM nguoi_dung_vai_tro WHERE nguoi_dung_id = ?";
+        String sqlInsertRoles = "INSERT INTO nguoi_dung_vai_tro (nguoi_dung_id, vai_tro_id) VALUES (?, ?)";
+
+        try (PreparedStatement psUser = conn.prepareStatement(sqlUser)) {
+            psUser.setString(1, nguoiDung.getHoTen());
+            psUser.setString(2, nguoiDung.getEmail());
+            psUser.setString(3, nguoiDung.getTrangThai());
+            if (nguoiDung.getNhomKinhDoanhId() != null) {
+                psUser.setInt(4, nguoiDung.getNhomKinhDoanhId());
+            } else {
+                psUser.setNull(4, java.sql.Types.INTEGER);
+            }
+            psUser.setString(5, nguoiDung.getSoDienThoai());
+            psUser.setLong(6, nguoiDung.getId());
+
+            int affected = psUser.executeUpdate();
+            if (affected == 0) {
+                return false;
+            }
+        }
+
+        if (dsVaiTroIds != null) {
+            try (PreparedStatement psDel = conn.prepareStatement(sqlDeleteRoles)) {
+                psDel.setLong(1, nguoiDung.getId());
+                psDel.executeUpdate();
+            }
+
+            if (!dsVaiTroIds.isEmpty()) {
+                try (PreparedStatement psIns = conn.prepareStatement(sqlInsertRoles)) {
+                    for (Integer vtId : dsVaiTroIds) {
+                        if (vtId != null) {
+                            psIns.setLong(1, nguoiDung.getId());
+                            psIns.setInt(2, vtId);
+                            psIns.addBatch();
+                        }
+                    }
+                    psIns.executeBatch();
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Cập nhật thông tin tài khoản người dùng và gán lại vai trò trong một TRANSACTION tự quản lý.
      *
      * @param nguoiDung  thông tin người dùng cần cập nhật
      * @param dsVaiTroIds danh sách ID vai trò mới
@@ -522,76 +638,61 @@ public class NguoiDungDAO {
      * @throws SQLException khi thao tác database lỗi
      */
     public boolean capNhatNguoiDung(NguoiDung nguoiDung, List<Integer> dsVaiTroIds) throws SQLException {
-        String sqlUser = "UPDATE nguoi_dung SET ho_ten = ?, email = ?, trang_thai = ?, nhom_kinh_doanh_id = ?, " +
-                         "so_dien_thoai = ? WHERE id = ?";
-        String sqlDeleteRoles = "DELETE FROM nguoi_dung_vai_tro WHERE nguoi_dung_id = ?";
-        String sqlInsertRoles = "INSERT INTO nguoi_dung_vai_tro (nguoi_dung_id, vai_tro_id) VALUES (?, ?)";
-
-        Connection conn = null;
-        try {
-            conn = DatabaseConnection.layKetNoi();
-            conn.setAutoCommit(false);
-
-            try (PreparedStatement psUser = conn.prepareStatement(sqlUser)) {
-                psUser.setString(1, nguoiDung.getHoTen());
-                psUser.setString(2, nguoiDung.getEmail());
-                psUser.setString(3, nguoiDung.getTrangThai());
-                if (nguoiDung.getNhomKinhDoanhId() != null) {
-                    psUser.setInt(4, nguoiDung.getNhomKinhDoanhId());
-                } else {
-                    psUser.setNull(4, java.sql.Types.INTEGER);
-                }
-                psUser.setString(5, nguoiDung.getSoDienThoai());
-                psUser.setLong(6, nguoiDung.getId());
-
-                int affected = psUser.executeUpdate();
-                if (affected == 0) {
-                    conn.rollback();
-                    return false;
-                }
+        try (Connection conn = DatabaseConnection.layKetNoi()) {
+            boolean autoCommit = conn.getAutoCommit();
+            if (autoCommit) {
+                conn.setAutoCommit(false);
             }
-
-            if (dsVaiTroIds != null) {
-                try (PreparedStatement psDel = conn.prepareStatement(sqlDeleteRoles)) {
-                    psDel.setLong(1, nguoiDung.getId());
-                    psDel.executeUpdate();
+            try {
+                boolean ok = capNhatNguoiDung(nguoiDung, dsVaiTroIds, conn);
+                if (ok && autoCommit) {
+                    conn.commit();
+                } else if (!ok && autoCommit) {
+                    conn.rollback();
                 }
-
-                if (!dsVaiTroIds.isEmpty()) {
-                    try (PreparedStatement psIns = conn.prepareStatement(sqlInsertRoles)) {
-                        for (Integer vtId : dsVaiTroIds) {
-                            if (vtId != null) {
-                                psIns.setLong(1, nguoiDung.getId());
-                                psIns.setInt(2, vtId);
-                                psIns.addBatch();
-                            }
-                        }
-                        psIns.executeBatch();
+                return ok;
+            } catch (SQLException e) {
+                if (autoCommit) {
+                    try {
+                        conn.rollback();
+                    } catch (SQLException ex) {
+                        LOGGER.log(Level.SEVERE, "Rollback cập nhật người dùng thất bại: " + ex.getMessage(), ex);
+                    }
+                }
+                LOGGER.log(Level.SEVERE, "Lỗi cập nhật người dùng: " + e.getMessage(), e);
+                throw e;
+            } finally {
+                if (autoCommit) {
+                    try {
+                        conn.setAutoCommit(true);
+                    } catch (SQLException ignored) {
                     }
                 }
             }
+        }
+    }
 
-            conn.commit();
-            return true;
-
-        } catch (SQLException e) {
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException ex) {
-                    LOGGER.log(Level.SEVERE, "Rollback cập nhật người dùng thất bại: " + ex.getMessage(), ex);
-                }
-            }
-            LOGGER.log(Level.SEVERE, "Lỗi cập nhật người dùng: " + e.getMessage(), e);
-            throw e;
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException ignored) {
-                }
-            }
+    /**
+     * Cập nhật hồ sơ cá nhân người dùng (Story S2-02).
+     * AC1: Sửa được họ tên, số điện thoại, chữ ký email.
+     * AC2: Không tự đổi được email, nhóm và vai trò (phương thức này tuyệt đối không chạm vào email, nhóm, role).
+     *
+     * @param id          ID người dùng
+     * @param hoTen       Họ và tên mới
+     * @param soDienThoai Số điện thoại mới
+     * @param chuKyEmail  Chữ ký email mới
+     * @return true nếu cập nhật thành công, false nếu không tìm thấy bản ghi
+     * @throws SQLException khi có lỗi kết nối hoặc truy vấn DB
+     */
+    public boolean capNhatHoSo(long id, String hoTen, String soDienThoai, String chuKyEmail) throws SQLException {
+        String sql = "UPDATE nguoi_dung SET ho_ten = ?, so_dien_thoai = ?, chu_ky_email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, hoTen != null ? hoTen.trim() : null);
+            ps.setString(2, soDienThoai != null ? soDienThoai.trim() : null);
+            ps.setString(3, chuKyEmail != null ? chuKyEmail.trim() : null);
+            ps.setLong(4, id);
+            return ps.executeUpdate() > 0;
         }
     }
 
@@ -603,6 +704,18 @@ public class NguoiDungDAO {
         nd.setMatKhau(rs.getString("mat_khau"));
         nd.setSoDienThoai(rs.getString("so_dien_thoai"));
         nd.setTrangThai(rs.getString("trang_thai"));
+
+        try {
+            nd.setChuKyEmail(rs.getString("chu_ky_email"));
+        } catch (SQLException ignored) {}
+
+        try {
+            nd.setAnhDaiDienPath(rs.getString("anh_dai_dien_path"));
+        } catch (SQLException ignored) {}
+
+        try {
+            nd.setAnhDaiDienThumbPath(rs.getString("anh_dai_dien_thumb_path"));
+        } catch (SQLException ignored) {}
 
         try {
             int soLanSai = rs.getInt("so_lan_sai");
@@ -692,7 +805,9 @@ public class NguoiDungDAO {
                 psNhom.setInt(2, nguoiDungId);
                 int aff = psNhom.executeUpdate();
                 if (aff == 0) {
-                    conn.rollback();
+                    if (autoCommit) {
+                        conn.rollback();
+                    }
                     return false;
                 }
             }
@@ -722,11 +837,13 @@ public class NguoiDungDAO {
             }
             return true;
         } catch (SQLException e) {
-            try {
-                LOGGER.log(Level.WARNING, "Lỗi khi gán vai trò & nhóm, đang rollback: " + e.getMessage());
-                conn.rollback();
-            } catch (SQLException ex) {
-                LOGGER.log(Level.SEVERE, "Lỗi khi rollback: " + ex.getMessage(), ex);
+            if (autoCommit) {
+                try {
+                    LOGGER.log(Level.WARNING, "Lỗi khi gán vai trò & nhóm, đang rollback: " + e.getMessage());
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    LOGGER.log(Level.SEVERE, "Lỗi khi rollback: " + ex.getMessage(), ex);
+                }
             }
             throw e;
         } finally {
@@ -836,5 +953,38 @@ public class NguoiDungDAO {
             LOGGER.log(Level.SEVERE, "Lỗi truy vấn danh sách người dùng khả dụng tiếp nhận: " + e.getMessage(), e);
         }
         return danhSach;
+    }
+
+    /**
+     * Cập nhật đường dẫn ảnh đại diện và ảnh thumbnail cho người dùng (Story S2-03).
+     */
+    public boolean capNhatAnhDaiDien(long nguoiDungId, String anhDaiDienPath, String anhDaiDienThumbPath) {
+        String sql = "UPDATE nguoi_dung SET anh_dai_dien_path = ?, anh_dai_dien_thumb_path = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, anhDaiDienPath);
+            ps.setString(2, anhDaiDienThumbPath);
+            ps.setLong(3, nguoiDungId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi cập nhật ảnh đại diện người dùng ID=" + nguoiDungId + ": " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    public boolean capNhatAnhDaiDien(int nguoiDungId, String anhDaiDienPath, String anhDaiDienThumbPath) {
+        return capNhatAnhDaiDien((long) nguoiDungId, anhDaiDienPath, anhDaiDienThumbPath);
+    }
+
+    /**
+     * Cập nhật thông tin hồ sơ cơ bản (họ tên, số điện thoại, chữ ký email) cho int ID.
+     */
+    public boolean capNhatHoSo(int nguoiDungId, String hoTen, String soDienThoai, String chuKyEmail) {
+        try {
+            return capNhatHoSo((long) nguoiDungId, hoTen, soDienThoai, chuKyEmail);
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi cập nhật hồ sơ người dùng ID=" + nguoiDungId + ": " + e.getMessage(), e);
+            return false;
+        }
     }
 }

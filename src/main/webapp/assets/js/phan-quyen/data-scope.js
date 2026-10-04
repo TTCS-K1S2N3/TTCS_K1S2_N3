@@ -93,17 +93,17 @@ function hienThiThongBaoToast(message, type) {
         toast.style.background = "#fffbeb";
         toast.style.color = "#b45309";
         toast.style.border = "1px solid #fde68a";
-        toast.innerText = "⚠️ " + message;
+        toast.textContent = message;
     } else if (type === "danger") {
         toast.style.background = "#fef2f2";
         toast.style.color = "#b91c1c";
         toast.style.border = "1px solid #fecaca";
-        toast.innerText = "⛔ " + message;
+        toast.textContent = message;
     } else {
         toast.style.background = "#ecfdf5";
         toast.style.color = "#047857";
         toast.style.border = "1px solid #a7f3d0";
-        toast.innerText = "✓ " + message;
+        toast.textContent = message;
     }
 
     toastContainer.appendChild(toast);

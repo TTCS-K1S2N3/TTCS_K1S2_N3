@@ -9,6 +9,10 @@ import vn.nhom10.crm.dto.NguoiDungDTO;
 import vn.nhom10.crm.model.PhamViDuLieu;
 import vn.nhom10.crm.model.VaiTroEnum;
 
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -351,5 +355,160 @@ class PhanQuyenDuLieuServiceTest {
         assertThrows(SecurityException.class, () -> {
             service.themKhachHang((NguoiDungDTO) null, "KH-VALID-02", "Công ty Hợp Lệ", "0 đ", "Tiềm năng", "");
         });
+    }
+
+    @Test
+    @DisplayName("Export Excel .xlsx: ADMIN Tất cả xuất toàn bộ dữ liệu hợp lệ")
+    void testXuatExcel_AdminToanBo() throws Exception {
+        NguoiDungDTO admin = new NguoiDungDTO(99L, "Nguyễn Quản Trị", "admin@crm.vn",
+                VaiTroEnum.ADMIN, null, "Ban Giám Đốc", PhamViDuLieu.TOAN_BO);
+        List<BanGhiNghiepVuDTO> list = service.locTheoPhamVi(danhSachMau, admin, PhamViDuLieu.TOAN_BO, null, "ALL");
+        byte[] bytes = service.xuatDuLieuExcel(list);
+        assertNotNull(bytes);
+        assertTrue(bytes.length > 0);
+
+        try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(bytes))) {
+            Sheet sheet = wb.getSheet("Du lieu CRM");
+            assertNotNull(sheet);
+            // Có 12 bản ghi mẫu + 1 header = 13 dòng
+            assertEquals(13, sheet.getPhysicalNumberOfRows());
+
+            boolean hasFPT = false;
+            boolean hasViettel = false;
+            boolean hasVNG = false;
+            for (Row row : sheet) {
+                for (Cell cell : row) {
+                    String str = cell.toString();
+                    if (str.contains("FPT")) hasFPT = true;
+                    if (str.contains("Viettel")) hasViettel = true;
+                    if (str.contains("VNG")) hasVNG = true;
+                }
+            }
+            assertTrue(hasFPT, "ADMIN phải thấy FPT trong file Excel");
+            assertTrue(hasViettel, "ADMIN phải thấy Viettel trong file Excel");
+            assertTrue(hasVNG, "ADMIN phải thấy VNG trong file Excel");
+        }
+    }
+
+    @Test
+    @DisplayName("Export Excel .xlsx: TEAM_LEAD Nhóm của tôi chỉ xuất dữ liệu cùng nhóm")
+    void testXuatExcel_TeamLeadNhom() throws Exception {
+        List<BanGhiNghiepVuDTO> list = service.locTheoPhamVi(danhSachMau, truongNhomBac, PhamViDuLieu.NHOM, null, "ALL");
+        byte[] bytes = service.xuatDuLieuExcel(list);
+        assertNotNull(bytes);
+
+        try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(bytes))) {
+            Sheet sheet = wb.getSheet("Du lieu CRM");
+            assertNotNull(sheet);
+
+            boolean hasFPT = false;
+            boolean hasViettel = false;
+            boolean hasVNG = false;
+            for (Row row : sheet) {
+                for (Cell cell : row) {
+                    String str = cell.toString();
+                    if (str.contains("FPT")) hasFPT = true;
+                    if (str.contains("Viettel")) hasViettel = true;
+                    if (str.contains("VNG")) hasVNG = true;
+                }
+            }
+            assertTrue(hasFPT, "Team Lead Miền Bắc phải xuất được dữ liệu FPT (của A - cùng nhóm)");
+            assertTrue(hasViettel, "Team Lead Miền Bắc phải xuất được dữ liệu Viettel (của B - cùng nhóm)");
+            assertFalse(hasVNG, "Team Lead Miền Bắc tuyệt đối không được xuất dữ liệu VNG (của C - nhóm Miền Nam)");
+        }
+    }
+
+    @Test
+    @DisplayName("Export Excel .xlsx: SALES_REP Của tôi chỉ xuất dữ liệu bản thân sở hữu")
+    void testXuatExcel_SalesRepCaNhan() throws Exception {
+        List<BanGhiNghiepVuDTO> list = service.locTheoPhamVi(danhSachMau, nhanVienA, PhamViDuLieu.CA_NHAN, null, "ALL");
+        byte[] bytes = service.xuatDuLieuExcel(list);
+        assertNotNull(bytes);
+
+        try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(bytes))) {
+            Sheet sheet = wb.getSheet("Du lieu CRM");
+            assertNotNull(sheet);
+
+            boolean hasFPT = false;
+            boolean hasViettel = false;
+            boolean hasVNG = false;
+            for (Row row : sheet) {
+                for (Cell cell : row) {
+                    String str = cell.toString();
+                    if (str.contains("FPT")) hasFPT = true;
+                    if (str.contains("Viettel")) hasViettel = true;
+                    if (str.contains("VNG")) hasVNG = true;
+                }
+            }
+            assertTrue(hasFPT, "Sales A phải xuất được dữ liệu của chính mình (FPT)");
+            assertFalse(hasViettel, "Sales A tuyệt đối không được xuất dữ liệu của B (Viettel)");
+            assertFalse(hasVNG, "Sales A tuyệt đối không được xuất dữ liệu của C (VNG)");
+        }
+    }
+
+    @Test
+    @DisplayName("Export Excel .xlsx: Lọc từng loại nghiệp vụ và tìm kiếm từ khóa")
+    void testXuatExcel_LocNghiepVuVaTimKiem() throws Exception {
+        // 1. Lọc theo nghiệp vụ KHACH_HANG
+        List<BanGhiNghiepVuDTO> listKhachHang = service.locTheoPhamVi(danhSachMau, giamDoc, PhamViDuLieu.TOAN_BO, null, "KHACH_HANG");
+        byte[] bytesKh = service.xuatDuLieuExcel(listKhachHang);
+        try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(bytesKh))) {
+            Sheet sheet = wb.getSheet("Du lieu CRM");
+            for (int r = 1; r < sheet.getPhysicalNumberOfRows(); r++) {
+                Row row = sheet.getRow(r);
+                assertEquals("Khách hàng", row.getCell(1).getStringCellValue(), "Mọi dòng phải là Khách hàng");
+            }
+        }
+
+        // 2. Tìm kiếm + xuất Excel
+        List<BanGhiNghiepVuDTO> listSearch = service.locTheoPhamVi(danhSachMau, giamDoc, PhamViDuLieu.TOAN_BO, "FPT", "ALL");
+        byte[] bytesSearch = service.xuatDuLieuExcel(listSearch);
+        try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(bytesSearch))) {
+            Sheet sheet = wb.getSheet("Du lieu CRM");
+            // Có 4 bản ghi FPT + 1 header = 5 dòng
+            assertEquals(5, sheet.getPhysicalNumberOfRows());
+            for (int r = 1; r < sheet.getPhysicalNumberOfRows(); r++) {
+                Row row = sheet.getRow(r);
+                assertTrue(row.getCell(2).getStringCellValue().contains("FPT"), "Tất cả các dòng phải liên quan FPT");
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("Export Excel .xlsx: Cấu trúc sheet, header bold, freeze row, numeric cell và date cell")
+    void testXuatExcel_DinhDangVaCauTruc() throws Exception {
+        List<BanGhiNghiepVuDTO> list = service.locTheoPhamVi(danhSachMau, giamDoc, PhamViDuLieu.TOAN_BO, null, "ALL");
+        byte[] bytes = service.xuatDuLieuExcel(list);
+
+        try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(bytes))) {
+            Sheet sheet = wb.getSheet("Du lieu CRM");
+            assertNotNull(sheet, "Sheet tên phải là 'Du lieu CRM'");
+
+            // Kiểm tra header row (8 cột)
+            Row headerRow = sheet.getRow(0);
+            assertNotNull(headerRow);
+            String[] expectedHeaders = {"Mã", "Loại nghiệp vụ", "Tiêu đề / Đối tượng", "Người phụ trách", "Nhóm kinh doanh", "Giá trị", "Trạng thái", "Ngày tạo"};
+            assertEquals(expectedHeaders.length, headerRow.getPhysicalNumberOfCells());
+            for (int i = 0; i < expectedHeaders.length; i++) {
+                assertEquals(expectedHeaders[i], headerRow.getCell(i).getStringCellValue());
+                Font f = wb.getFontAt(headerRow.getCell(i).getCellStyle().getFontIndex());
+                assertTrue(f.getBold(), "Header cell " + i + " phải in đậm");
+            }
+
+            // Kiểm tra dòng dữ liệu cơ hội (có giá trị số 850,000,000 đ)
+            // Bản ghi CH-101 ở dòng index 2
+            Row coHoiRow = sheet.getRow(2);
+            assertNotNull(coHoiRow);
+            assertEquals("CH-101", coHoiRow.getCell(0).getStringCellValue());
+            Cell valCell = coHoiRow.getCell(5);
+            assertEquals(CellType.NUMERIC, valCell.getCellType(), "Giá trị tiền tệ phải là Numeric cell");
+            assertEquals(850000000.0, valCell.getNumericCellValue(), 0.01);
+
+            // Kiểm tra ô ngày tạo
+            Cell dateCell = coHoiRow.getCell(7);
+            assertNotNull(dateCell);
+            assertNotNull(dateCell.getCellStyle().getDataFormatString());
+            assertTrue(dateCell.getCellStyle().getDataFormatString().contains("dd/MM/yyyy") || dateCell.getCellStyle().getDataFormatString().contains("m/d/yy"));
+        }
     }
 }

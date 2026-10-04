@@ -56,11 +56,50 @@ public class PhanQuyenDuLieuDAO {
     }
 
     /**
+     * Lấy danh sách bản ghi theo tập hợp các nhóm thuộc cây phân cấp (Story S2-06, AC3).
+     */
+    public List<BanGhiNghiepVuDTO> layDanhSachTongHopTheoTapHopNhom(Long userId,
+                                                                    java.util.Set<Long> dsNhomIds,
+                                                                    PhamViDuLieu phamVi,
+                                                                    String tuKhoa,
+                                                                    LoaiNghiepVu loaiNghiepVu) throws SQLException {
+        if (phamVi == null) {
+            phamVi = PhamViDuLieu.CA_NHAN;
+        }
+
+        List<BanGhiNghiepVuDTO> ketQua = new ArrayList<>();
+
+        if (loaiNghiepVu != null) {
+            ketQua.addAll(layDanhSachTheoTapHopNhom(loaiNghiepVu, userId, dsNhomIds, phamVi, tuKhoa));
+        } else {
+            // Khi không chỉ định loại, truy vấn tổng hợp cả 4 đối tượng nghiệp vụ cốt lõi
+            ketQua.addAll(layDanhSachTheoTapHopNhom(LoaiNghiepVu.KHACH_HANG, userId, dsNhomIds, phamVi, tuKhoa));
+            ketQua.addAll(layDanhSachTheoTapHopNhom(LoaiNghiepVu.CO_HOI, userId, dsNhomIds, phamVi, tuKhoa));
+            ketQua.addAll(layDanhSachTheoTapHopNhom(LoaiNghiepVu.BAO_GIA, userId, dsNhomIds, phamVi, tuKhoa));
+            ketQua.addAll(layDanhSachTheoTapHopNhom(LoaiNghiepVu.HOAT_DONG, userId, dsNhomIds, phamVi, tuKhoa));
+        }
+
+        return ketQua;
+    }
+
+    /**
      * Truy vấn bản ghi từ một bảng cụ thể với điều kiện Data Scope trong SQL.
      */
     public List<BanGhiNghiepVuDTO> layDanhSachTheoBang(LoaiNghiepVu loaiNghiepVu,
                                                        Long userId,
                                                        Long nhomId,
+                                                       PhamViDuLieu phamVi,
+                                                       String tuKhoa) throws SQLException {
+        java.util.Set<Long> dsNhomIds = new java.util.HashSet<>();
+        if (nhomId != null) {
+            dsNhomIds.add(nhomId);
+        }
+        return layDanhSachTheoTapHopNhom(loaiNghiepVu, userId, dsNhomIds, phamVi, tuKhoa);
+    }
+
+    public List<BanGhiNghiepVuDTO> layDanhSachTheoTapHopNhom(LoaiNghiepVu loaiNghiepVu,
+                                                             Long userId,
+                                                             java.util.Set<Long> dsNhomIds,
                                                        PhamViDuLieu phamVi,
                                                        String tuKhoa) throws SQLException {
         String tenBang = layTenBang(loaiNghiepVu);
@@ -88,8 +127,19 @@ public class PhanQuyenDuLieuDAO {
             sql.append("AND t.").append(cotOwner).append(" = ? ");
             thamSo.add(userId != null ? userId : -1L);
         } else if (phamVi == PhamViDuLieu.NHOM) {
-            sql.append("AND t.nhom_kinh_doanh_id = ? ");
-            thamSo.add(nhomId != null ? nhomId : -1L);
+            if (dsNhomIds != null && !dsNhomIds.isEmpty()) {
+                sql.append("AND t.nhom_kinh_doanh_id IN (");
+                int idx = 0;
+                for (Long nId : dsNhomIds) {
+                    if (idx > 0) sql.append(", ");
+                    sql.append("?");
+                    thamSo.add(nId);
+                    idx++;
+                }
+                sql.append(") ");
+            } else {
+                sql.append("AND t.nhom_kinh_doanh_id = -1 ");
+            }
         }
         // TOAN_BO: Không thêm điều kiện người phụ trách hay nhóm
 

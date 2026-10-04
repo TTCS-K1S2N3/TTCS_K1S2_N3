@@ -108,8 +108,11 @@ public class PhanQuyenServlet extends HttpServlet {
             }
         }
 
+        String diaChiIp = request.getRemoteAddr();
+        String thietBi = request.getHeader("User-Agent");
+
         GanVaiTroNhomDTO ketQua = phanQuyenService.ganVaiTroVaNhomKinhDoanh(
-                nguoiDungId, dsVaiTroId, nhomKinhDoanhId, nguoiThucHienId);
+                nguoiDungId, dsVaiTroId, nhomKinhDoanhId, nguoiThucHienId, diaChiIp, thietBi);
 
         request.setAttribute("thanhCong", ketQua.isThanhCong());
         request.setAttribute("thongBao", ketQua.getThongBao());

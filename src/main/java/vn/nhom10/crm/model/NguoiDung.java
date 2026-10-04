@@ -2,6 +2,7 @@ package vn.nhom10.crm.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 
 /**
  * Model đại diện cho người dùng hệ thống CRM.
+ * Chứa đầy đủ thông tin định danh, vai trò, nhóm kinh doanh, bảo mật tài khoản và ảnh đại diện.
  */
 public class NguoiDung implements Serializable {
 
@@ -24,6 +26,9 @@ public class NguoiDung implements Serializable {
     private String email;
     private String matKhau;
     private String soDienThoai;
+    private String chuKyEmail;
+    private String anhDaiDienPath;
+    private String anhDaiDienThumbPath;
     private String trangThai = TRANG_THAI_HOAT_DONG;
     private int soLanSai = 0;
     private Timestamp thoiGianKhoa;
@@ -33,6 +38,7 @@ public class NguoiDung implements Serializable {
     private Set<VaiTro> danhSachVaiTro = new HashSet<>();
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    private String ngayTao;
 
     public NguoiDung() {
     }
@@ -43,12 +49,20 @@ public class NguoiDung implements Serializable {
         this.email = email;
     }
 
+    public NguoiDung(int id, String hoTen, String email) {
+        this((long) id, hoTen, email);
+    }
+
     public NguoiDung(long id, String hoTen, String email, String trangThai, Integer nhomKinhDoanhId) {
         this.id = id;
         this.hoTen = hoTen;
         this.email = email;
         this.trangThai = trangThai;
         this.nhomKinhDoanhId = nhomKinhDoanhId;
+    }
+
+    public NguoiDung(int id, String hoTen, String email, String trangThai, Integer nhomKinhDoanhId) {
+        this((long) id, hoTen, email, trangThai, nhomKinhDoanhId);
     }
 
     public NguoiDung(long id, String hoTen, String email, String matKhau, String soDienThoai, String trangThai) {
@@ -65,6 +79,10 @@ public class NguoiDung implements Serializable {
     }
 
     public void setId(long id) {
+        this.id = id;
+    }
+
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -98,6 +116,30 @@ public class NguoiDung implements Serializable {
 
     public void setSoDienThoai(String soDienThoai) {
         this.soDienThoai = soDienThoai;
+    }
+
+    public String getChuKyEmail() {
+        return chuKyEmail;
+    }
+
+    public void setChuKyEmail(String chuKyEmail) {
+        this.chuKyEmail = chuKyEmail;
+    }
+
+    public String getAnhDaiDienPath() {
+        return anhDaiDienPath;
+    }
+
+    public void setAnhDaiDienPath(String anhDaiDienPath) {
+        this.anhDaiDienPath = anhDaiDienPath;
+    }
+
+    public String getAnhDaiDienThumbPath() {
+        return anhDaiDienThumbPath;
+    }
+
+    public void setAnhDaiDienThumbPath(String anhDaiDienThumbPath) {
+        this.anhDaiDienThumbPath = anhDaiDienThumbPath;
     }
 
     public String getTrangThai() {
@@ -214,8 +256,8 @@ public class NguoiDung implements Serializable {
         }
         return danhSachVaiTro.stream()
                 .map(vt -> vt.getTenHienThi() != null ? vt.getTenHienThi() : vt.getMaVaiTro())
-                .filter(java.util.Objects::nonNull)
-                .collect(java.util.stream.Collectors.joining(", "));
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining(", "));
     }
 
     /**
@@ -268,17 +310,23 @@ public class NguoiDung implements Serializable {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+        if (createdAt != null) {
+            this.ngayTao = createdAt.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        }
     }
 
     public String getNgayTao() {
+        if (ngayTao != null && !ngayTao.isBlank()) {
+            return ngayTao;
+        }
         if (createdAt != null) {
-            return createdAt.toLocalDateTime().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+            return createdAt.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
         }
         return "";
     }
 
     public void setNgayTao(String ngayTao) {
-        // Hỗ trợ trường hợp gán từ view nếu có
+        this.ngayTao = ngayTao;
     }
 
     public Timestamp getUpdatedAt() {
@@ -314,6 +362,11 @@ public class NguoiDung implements Serializable {
      */
     public boolean dangHoatDong() {
         return TRANG_THAI_HOAT_DONG.equalsIgnoreCase(trangThai);
+    }
+
+    public boolean coAnhDaiDien() {
+        return (anhDaiDienPath != null && !anhDaiDienPath.isBlank())
+                || (anhDaiDienThumbPath != null && !anhDaiDienThumbPath.isBlank());
     }
 
     /**

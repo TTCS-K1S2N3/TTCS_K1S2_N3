@@ -14,17 +14,23 @@ public class MucMenuDTO implements Serializable {
     private String bieuTuong;
     private int thuTu;
     private boolean active;
+    private boolean daTrienKhai = true;
 
     public MucMenuDTO() {
     }
 
     public MucMenuDTO(String maModule, String tenHienThi, String url, String bieuTuong, int thuTu, boolean active) {
+        this(maModule, tenHienThi, url, bieuTuong, thuTu, active, true);
+    }
+
+    public MucMenuDTO(String maModule, String tenHienThi, String url, String bieuTuong, int thuTu, boolean active, boolean daTrienKhai) {
         this.maModule = maModule;
         this.tenHienThi = tenHienThi;
         this.url = url;
         this.bieuTuong = bieuTuong;
         this.thuTu = thuTu;
         this.active = active;
+        this.daTrienKhai = daTrienKhai;
     }
 
     public String getMaModule() {
@@ -51,6 +57,14 @@ public class MucMenuDTO implements Serializable {
         this.url = url;
     }
 
+    public String getDuongDanUrl() {
+        return url;
+    }
+
+    public void setDuongDanUrl(String duongDanUrl) {
+        this.url = duongDanUrl;
+    }
+
     public String getBieuTuong() {
         return bieuTuong;
     }
@@ -73,6 +87,22 @@ public class MucMenuDTO implements Serializable {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public boolean isDangChon() {
+        return active;
+    }
+
+    public void setDangChon(boolean dangChon) {
+        this.active = dangChon;
+    }
+
+    public boolean isDaTrienKhai() {
+        return daTrienKhai;
+    }
+
+    public void setDaTrienKhai(boolean daTrienKhai) {
+        this.daTrienKhai = daTrienKhai;
     }
 
     @Override
