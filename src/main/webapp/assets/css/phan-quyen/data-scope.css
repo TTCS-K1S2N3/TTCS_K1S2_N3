@@ -14,8 +14,6 @@
     --warning-light: #fffbeb;
     --danger-color: #ef4444;
     --danger-light: #fef2f2;
-    --purple-color: #8b5cf6;
-    --purple-light: #f5f3ff;
     --gray-50: #f8fafc;
     --gray-100: #f1f5f9;
     --gray-200: #e2e8f0;
@@ -227,18 +225,7 @@ body {
     background: #ffffff;
     box-shadow: var(--shadow-md);
     border-color: var(--gray-200);
-}
-
-.scope-tab.active.scope-canhan {
-    border-left: 4px solid var(--success-color);
-}
-
-.scope-tab.active.scope-nhom {
     border-left: 4px solid var(--primary-color);
-}
-
-.scope-tab.active.scope-toanbo {
-    border-left: 4px solid var(--purple-color);
 }
 
 .scope-tab.disabled {
@@ -269,19 +256,11 @@ body {
     text-transform: uppercase;
 }
 
-.scope-tag.tag-canhan {
-    background: var(--success-light);
-    color: var(--success-color);
-}
-
-.scope-tag.tag-nhom {
+.scope-tag.tag-canhan,
+.scope-tag.tag-nhom,
+.scope-tag.tag-toanbo {
     background: var(--primary-light);
     color: var(--primary-color);
-}
-
-.scope-tag.tag-toanbo {
-    background: var(--purple-light);
-    color: var(--purple-color);
 }
 
 .scope-tag.tag-locked {
@@ -328,7 +307,7 @@ body {
 }
 
 .pill-link.active {
-    background: var(--gray-900);
+    background: var(--primary-color);
     color: #ffffff;
 }
 
@@ -364,28 +343,32 @@ body {
     left: 11px;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--gray-500);
-    font-size: 14px;
+    color: var(--gray-400);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
 }
 
 .btn-export {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     padding: 8px 16px;
-    background: var(--success-color);
-    color: #ffffff;
+    background: #ffffff;
+    color: var(--gray-700);
     font-size: 13px;
     font-weight: 600;
     border-radius: var(--radius-sm);
     text-decoration: none;
     transition: var(--transition);
-    border: none;
+    border: 1px solid var(--gray-300);
     cursor: pointer;
 }
 
 .btn-export:hover {
-    background: #059669;
+    background: var(--gray-50);
+    border-color: #94a3b8;
+    color: var(--gray-900);
     box-shadow: var(--shadow-sm);
 }
 
@@ -481,28 +464,20 @@ body {
     display: inline-block;
     padding: 3px 8px;
     border-radius: var(--radius-sm);
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 600;
+    background: var(--gray-100);
+    color: var(--gray-700);
+    border: 1px solid var(--gray-200);
 }
 
-.badge-khach-hang {
-    background: #e0f2fe;
-    color: #0369a1;
-}
-
-.badge-co-hoi {
-    background: #fef3c7;
-    color: #b45309;
-}
-
-.badge-bao-gia {
-    background: #dcfce7;
-    color: #15803d;
-}
-
+.badge-khach-hang,
+.badge-co-hoi,
+.badge-bao-gia,
 .badge-hoat-dong {
-    background: #f3e8ff;
-    color: #7e22ce;
+    background: var(--gray-100);
+    color: var(--gray-700);
+    border: 1px solid var(--gray-200);
 }
 
 .badge-owner {
@@ -512,7 +487,7 @@ body {
 }
 
 .badge-owner-mine {
-    color: var(--success-color);
+    color: var(--primary-color);
     font-weight: 600;
 }
 
@@ -594,8 +569,11 @@ body {
 }
 
 .error-shield-icon {
-    font-size: 54px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     margin-bottom: 8px;
+    color: #ffffff;
 }
 
 .error-card-title {

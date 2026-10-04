@@ -20,7 +20,13 @@
 <div class="error-screen-wrapper">
     <div class="error-card">
         <div class="error-card-header">
-            <div class="error-shield-icon">🛡️⛔</div>
+            <div class="error-shield-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+            </div>
             <h1 class="error-card-title">Từ Chối Quyền Truy Cập Dữ Liệu</h1>
             <div class="error-card-subtitle">Quy tắc phân quyền phạm vi sở hữu (Data Scope Policy)</div>
         </div>
@@ -43,12 +49,11 @@
 
             <div class="error-actions">
                 <a href="${pageContext.request.contextPath}/phan-quyen-du-lieu" class="btn-primary-action">
-                    <span>←</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
                     <span>Quay lại danh sách dữ liệu của bạn</span>
                 </a>
 
                 <a href="${pageContext.request.contextPath}/khach-hang" class="btn-secondary-action">
-                    <span>🏢</span>
                     <span>Về trang Khách hàng</span>
                 </a>
             </div>
