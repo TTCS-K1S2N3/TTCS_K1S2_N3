@@ -57,6 +57,9 @@ public class MenuService {
         if (urlPath == null || urlPath.isBlank()) {
             return true;
         }
+        if (urlPath.startsWith("/nhat-ky-thay-doi") || urlPath.startsWith("/nguoi-dung/nhat-ky-thay-doi")) {
+            return nguoiDung != null && nguoiDung.coVaiTro(VaiTroEnum.ADMIN);
+        }
         ModuleHeThong module = ModuleHeThong.tuDuongDan(urlPath);
         if (module == null) {
             // URL không thuộc phạm vi các module nghiệp vụ cần phân quyền
@@ -83,7 +86,8 @@ public class MenuService {
                 boolean active = false;
                 if (currentUri != null && !currentUri.isBlank()) {
                     active = currentUri.equals(mod.getDuongDanUrl())
-                            || currentUri.startsWith(mod.getDuongDanUrl() + "/");
+                            || currentUri.startsWith(mod.getDuongDanUrl() + "/")
+                            || (mod == ModuleHeThong.NGUOI_DUNG && (currentUri.startsWith("/nhat-ky-thay-doi") || currentUri.startsWith("/nguoi-dung/nhat-ky-thay-doi")));
                 }
                 MucMenuDTO dto = new MucMenuDTO(
                         mod.getMaModule(),
