@@ -147,7 +147,7 @@ class PhanQuyenDuLieuServletTest {
     }
 
     @Test
-    @DisplayName("AC2: Xuất file Excel / CSV tự động lọc theo phạm vi và trả về HTTP header hợp lệ")
+    @DisplayName("AC2: Xuất file Excel tự động lọc theo phạm vi và trả về HTTP header hợp lệ (.xlsx)")
     void testServlet_XuatExcel() throws Exception {
         when(request.getServletPath()).thenReturn("/phan-quyen-du-lieu");
         when(request.getParameter("xuatExcel")).thenReturn("true");
@@ -175,11 +175,24 @@ class PhanQuyenDuLieuServletTest {
 
         servlet.doGet(request, response);
 
-        verify(response).setContentType("text/csv; charset=UTF-8");
-        verify(response).setHeader(eq("Content-Disposition"), contains("attachment; filename="));
+        verify(response).setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        verify(response).setHeader(eq("Content-Disposition"), contains("attachment; filename=\"du-lieu-crm-ca_nhan.xlsx\""));
 
-        String csvData = baos.toString("UTF-8");
-        assertTrue(csvData.contains("FPT"), "File xuất của A phải chứa FPT");
-        assertFalse(csvData.contains("Viettel"), "File xuất của A tuyệt đối không được chứa Viettel (của B)");
+        // Kiểm tra nội dung file Excel .xlsx
+        try (org.apache.poi.xssf.usermodel.XSSFWorkbook wb = new org.apache.poi.xssf.usermodel.XSSFWorkbook(new java.io.ByteArrayInputStream(baos.toByteArray()))) {
+            org.apache.poi.ss.usermodel.Sheet sheet = wb.getSheet("Du lieu CRM");
+            assertNotNull(sheet, "Sheet 'Du lieu CRM' phải tồn tại");
+            boolean hasFpt = false;
+            boolean hasViettel = false;
+            for (org.apache.poi.ss.usermodel.Row row : sheet) {
+                for (org.apache.poi.ss.usermodel.Cell cell : row) {
+                    String str = cell.toString();
+                    if (str.contains("FPT")) hasFpt = true;
+                    if (str.contains("Viettel")) hasViettel = true;
+                }
+            }
+            assertTrue(hasFpt, "File xuất của A phải chứa FPT");
+            assertFalse(hasViettel, "File xuất của A tuyệt đối không được chứa Viettel (của B)");
+        }
     }
 }

@@ -124,14 +124,15 @@ public class PhanQuyenDuLieuServlet extends HttpServlet {
                 currentUser, phamViHieuLuc, tuKhoa, loaiNghiepVu
         );
 
-        // 4. Kiểm tra nếu là yêu cầu Xuất Excel / CSV (AC2)
+        // 4. Kiểm tra nếu là yêu cầu Xuất Excel (AC2)
         String xuatExcel = request.getParameter("xuatExcel");
         if ("true".equalsIgnoreCase(xuatExcel)) {
-            response.setContentType("text/csv; charset=UTF-8");
-            response.setHeader("Content-Disposition", "attachment; filename=\"du-lieu-crm-" + phamViHieuLuc.getMa().toLowerCase() + ".csv\"");
-            String csvContent = phanQuyenService.xuatDuLieuCSV(danhSachDaLoc);
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"du-lieu-crm-" + phamViHieuLuc.getMa().toLowerCase() + ".xlsx\"");
+            byte[] excelBytes = phanQuyenService.xuatDuLieuExcel(danhSachDaLoc);
+            response.setContentLength(excelBytes.length);
             try (OutputStream os = response.getOutputStream()) {
-                os.write(csvContent.getBytes(StandardCharsets.UTF_8));
+                os.write(excelBytes);
                 os.flush();
             }
             return;
