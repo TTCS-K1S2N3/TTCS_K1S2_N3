@@ -22,10 +22,22 @@
     <main class="crm-main-content" id="crm-main-content">
         <div class="import-container">
 
+            <!-- Breadcrumb điều hướng chuẩn -->
+            <nav class="crm-breadcrumb" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div style="font-size: 13.5px; color: var(--slate-500, #64748b);">
+                    <a href="${pageContext.request.contextPath}/dieu-huong" style="color: var(--primary, #2563eb); text-decoration: none;">Trang chủ</a>
+                    <span style="margin: 0 6px;">/</span>
+                    <a href="${pageContext.request.contextPath}/nguoi-dung" style="color: var(--primary, #2563eb); text-decoration: none;">Người dùng & Phân quyền</a>
+                    <span style="margin: 0 6px;">/</span>
+                    <span style="color: var(--slate-700, #334155); font-weight: 500;">Nhập danh sách Excel</span>
+                </div>
+                <a href="${pageContext.request.contextPath}/nguoi-dung" class="btn btn-outline btn-sm">&larr; Quay lại Quản lý tài khoản</a>
+            </nav>
+
             <!-- HEADER TRANG -->
             <div class="import-page-header">
                 <div class="import-header-title">
-                    <h1>&#128203; Nhập danh sách người dùng từ tệp Excel</h1>
+                    <h1>Nhập danh sách người dùng từ tệp Excel</h1>
                     <p>Tạo tài khoản hàng loạt cho khối kinh doanh, xem trước lỗi từng dòng và tự động bỏ qua dòng lỗi.</p>
                 </div>
                 <div>
@@ -63,7 +75,6 @@
             <!-- THÔNG BÁO LỖI HỆ THỐNG NẾU CÓ -->
             <c:if test="${not empty thongBaoLoi}">
                 <div class="alert alert-error" role="alert" style="margin-bottom: 20px;">
-                    <span class="alert-icon">&#9888;</span>
                     <div>
                         <strong>Thông báo lỗi:</strong> <c:out value="${thongBaoLoi}" />
                     </div>
@@ -74,7 +85,7 @@
             <section class="import-card" aria-labelledby="card-title-step1">
                 <div class="card-header-flex">
                     <div>
-                        <h2 id="card-title-step1" class="card-title-lg">&#128229; Bước 1: Chuẩn bị dữ liệu theo tệp mẫu chuẩn</h2>
+                        <h2 id="card-title-step1" class="card-title-lg">Bước 1: Chuẩn bị dữ liệu theo tệp mẫu chuẩn</h2>
                         <div class="card-subtitle-text">Tải tệp mẫu Excel có định dạng chuẩn kèm các hướng dẫn vai trò và nhóm kinh doanh.</div>
                     </div>
                     <div>
@@ -82,13 +93,13 @@
                            href="${pageContext.request.contextPath}/nguoi-dung/tai-tep-mau"
                            class="btn-download-template"
                            title="Tải tệp mẫu Excel về máy tính">
-                            &#11015; Tải tệp mẫu Excel (.xlsx)
+                            Tải tệp mẫu Excel (.xlsx)
                         </a>
                     </div>
                 </div>
 
                 <div class="guideline-box">
-                    <div class="guideline-title">&#128161; Quy tắc kiểm tra dữ liệu đầu vào:</div>
+                    <div class="guideline-title">Quy tắc kiểm tra dữ liệu đầu vào:</div>
                     <ul class="guideline-list">
                         <li>Các trường thông tin bắt buộc: <strong>Họ và tên</strong>, <strong>Email công ty</strong> và <strong>Mã vai trò</strong>.</li>
                         <li>Mã vai trò hợp lệ trong hệ thống:
@@ -111,7 +122,7 @@
             <section class="import-card" aria-labelledby="card-title-step2">
                 <div class="card-header-flex">
                     <div>
-                        <h2 id="card-title-step2" class="card-title-lg">&#128228; Bước 2: Tải tệp Excel lên hệ thống</h2>
+                        <h2 id="card-title-step2" class="card-title-lg">Bước 2: Tải tệp Excel lên hệ thống</h2>
                         <div class="card-subtitle-text">Chọn hoặc kéo thả tệp Excel chứa danh sách người dùng để hệ thống kiểm tra và xử lý.</div>
                     </div>
                 </div>

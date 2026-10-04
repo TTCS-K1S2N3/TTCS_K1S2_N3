@@ -15,7 +15,7 @@
 
     <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb-nav" aria-label="Đường dẫn điều hướng">
-        <a href="${pageContext.request.contextPath}/">Trang chủ</a>
+        <a href="${pageContext.request.contextPath}/dieu-huong">Trang chủ</a>
         <span class="sep">/</span>
         <a href="${pageContext.request.contextPath}/pipeline/giai-doan">Cấu hình Pipeline</a>
         <span class="sep">/</span>
@@ -25,7 +25,7 @@
     <!-- Header -->
     <header class="crm-header">
         <div class="crm-header-title">
-            <h1>➕ Thêm Giai đoạn Pipeline Mới (AC 1)</h1>
+            <h1>Thêm Giai đoạn Pipeline Mới (AC 1)</h1>
             <p>Định nghĩa một bước trong chuỗi phễu bán hàng, xác suất thắng mặc định dùng để tính dự báo và tiêu chuẩn bắt buộc rời giai đoạn.</p>
         </div>
         <div>
@@ -40,7 +40,7 @@
     <!-- Flash Error nếu có -->
     <c:if test="${not empty thongBaoLoi}">
         <div class="alert alert-danger" role="alert">
-            <span>⚠️ <strong>Lỗi:</strong> <c:out value="${thongBaoLoi}"/></span>
+            <span><strong>Lỗi:</strong> <c:out value="${thongBaoLoi}"/></span>
             <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
         </div>
     </c:if>
@@ -215,7 +215,7 @@
                     Hủy bỏ
                 </a>
                 <button type="submit" class="btn btn-primary" id="btnSubmitForm">
-                    💾 Lưu giai đoạn pipeline
+                    Lưu giai đoạn pipeline
                 </button>
             </div>
         </form>

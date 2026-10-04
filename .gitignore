@@ -28,6 +28,10 @@ logs/
 # Local configuration
 application-local.properties
 database-local.properties
+**/application-local.properties
+**/database-local.properties
+!application-local.properties.example
+!database-local.properties.example
 
 # Tomcat temporary files
 work/

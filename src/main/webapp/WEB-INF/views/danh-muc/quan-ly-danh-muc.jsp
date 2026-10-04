@@ -47,7 +47,7 @@
     <!-- 1. HEADER CHÍNH & THÔNG TIN GIÁM ĐỐC KINH DOANH -->
     <header class="category-header">
         <div class="header-left-col">
-            <a href="<%= contextPath %>/dieu-huong" class="back-nav-link" title="Quay lại bảng điều hướng">
+            <a href="<%= contextPath %>/dieu-huong" class="back-nav-link" title="Quay lại Trang chủ">
                 <i class="bi bi-arrow-left"></i>
                 <span>Trang tổng quan</span>
             </a>
@@ -70,7 +70,6 @@
                     <% } else { %>
                         <span class="director-avatar-initials"><%= currentUser != null ? currentUser.getTenVietTat() : "BL" %></span>
                     <% } %>
-                    <span class="director-crown-badge" title="Quyền cấu hình Giám đốc">👑</span>
                 </div>
                 <div class="director-info">
                     <div class="director-name"><%= userFullName %></div>
@@ -79,6 +78,25 @@
             </div>
         </div>
     </header>
+
+    <!-- CẤU HÌNH LIÊN KẾT NHÓM DANH MỤC VÀ HỆ THỐNG SPRINT 2 -->
+    <nav class="submodule-nav-bar" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;" aria-label="Các phân hệ danh mục và cấu hình">
+        <a href="<%= contextPath %>/danh-muc-ban-hang" class="submodule-tab-link active" style="padding: 8px 16px; border-radius: 6px; background: #2563eb; color: #fff; text-decoration: none; font-weight: 600; font-size: 13.5px; white-space: nowrap;">
+            Danh mục dùng chung
+        </a>
+        <a href="<%= contextPath %>/san-pham" class="submodule-tab-link" style="padding: 8px 16px; border-radius: 6px; background: #f1f5f9; color: #334155; text-decoration: none; font-weight: 600; font-size: 13.5px; white-space: nowrap;">
+            Sản phẩm & Bảng giá
+        </a>
+        <a href="<%= contextPath %>/truong-tuy-chinh" class="submodule-tab-link" style="padding: 8px 16px; border-radius: 6px; background: #f1f5f9; color: #334155; text-decoration: none; font-weight: 600; font-size: 13.5px; white-space: nowrap;">
+            Trường tùy chỉnh
+        </a>
+        <a href="<%= contextPath %>/pipeline/giai-doan" class="submodule-tab-link" style="padding: 8px 16px; border-radius: 6px; background: #f1f5f9; color: #334155; text-decoration: none; font-weight: 600; font-size: 13.5px; white-space: nowrap;">
+            Giai đoạn Pipeline
+        </a>
+        <a href="<%= contextPath %>/danh-muc/ly-do-thang-thua" class="submodule-tab-link" style="padding: 8px 16px; border-radius: 6px; background: #f1f5f9; color: #334155; text-decoration: none; font-weight: 600; font-size: 13.5px; white-space: nowrap;">
+            Lý do thắng/thua & Đối thủ
+        </a>
+    </nav>
 
     <!-- CÁC THÔNG BÁO HỆ THỐNG (FLASH ALERTS) -->
     <% if (thongBaoThanhCong != null && !thongBaoThanhCong.trim().isEmpty()) { %>

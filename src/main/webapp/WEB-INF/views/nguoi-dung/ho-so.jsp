@@ -36,10 +36,10 @@
                     <h1 id="hero-user-name"><c:out value="${nguoiDung.hoTen}"/></h1>
                     <div class="ho-so-hero-badges">
                         <span class="badge-pill badge-pill-role" title="Vai trò người dùng">
-                            &#128100; <c:out value="${nguoiDung.chuoiVaiTroHienThi}"/>
+                            <c:out value="${nguoiDung.chuoiVaiTroHienThi}"/>
                         </span>
                         <span class="badge-pill badge-pill-team" title="Nhóm kinh doanh">
-                            &#128101; <c:out value="${nguoiDung.tenNhomKinhDoanh}"/>
+                            <c:out value="${nguoiDung.tenNhomKinhDoanh}"/>
                         </span>
                     </div>
                 </div>

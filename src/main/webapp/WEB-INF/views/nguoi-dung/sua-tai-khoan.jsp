@@ -31,12 +31,24 @@
     <main class="crm-main-content" id="crm-main-content">
         <div class="nguoi-dung-container">
 
+    <!-- Breadcrumb điều hướng chuẩn -->
+    <nav class="crm-breadcrumb" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div style="font-size: 13.5px; color: var(--slate-500, #64748b);">
+            <a href="${pageContext.request.contextPath}/dieu-huong" style="color: var(--primary, #2563eb); text-decoration: none;">Trang chủ</a>
+            <span style="margin: 0 6px;">/</span>
+            <a href="${pageContext.request.contextPath}/nguoi-dung" style="color: var(--primary, #2563eb); text-decoration: none;">Người dùng & Phân quyền</a>
+            <span style="margin: 0 6px;">/</span>
+            <span style="color: var(--slate-700, #334155); font-weight: 500;">Sửa tài khoản</span>
+        </div>
+        <a href="${pageContext.request.contextPath}/nguoi-dung" class="btn btn-outline btn-sm">&larr; Quay lại danh sách</a>
+    </nav>
+
     <!-- ===== HEADER ===== -->
     <div class="page-header">
-        <h1>&#9998; Sửa Tài khoản</h1>
+        <h1>Sửa Tài khoản</h1>
         <a href="${pageContext.request.contextPath}/nguoi-dung"
            class="btn btn-secondary">
-            &#8592; Quay lại danh sách
+            &larr; Quay lại danh sách
         </a>
     </div>
 

@@ -15,7 +15,7 @@
     <!-- Header & Navigation -->
     <header class="crm-header">
         <div class="crm-header-title">
-            <h1><span>➕</span> Khai báo Sản phẩm / Dịch vụ mới</h1>
+            <h1>Khai báo Sản phẩm / Dịch vụ mới</h1>
             <p>Thiết lập danh mục và bảng giá niêm yết chuẩn để chuẩn hóa quy trình xuất báo giá kinh doanh</p>
         </div>
         <div class="header-actions">
@@ -30,7 +30,6 @@
     <c:if test="${not empty thongBaoLoi}">
         <div class="alert alert-danger" role="alert">
             <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 18px;">⚠️</span>
                 <span><strong>Lỗi nhập liệu:</strong> ${thongBaoLoi}</span>
             </div>
             <span class="alert-close" onclick="this.parentElement.style.display='none';">&times;</span>
@@ -171,7 +170,7 @@
                                     <span class="field-error">${danhSachLoi['giaVon']}</span>
                                 </c:if>
                                 <div class="form-hint" style="margin-top: 6px; color: #15803d;">
-                                    🛡️ <strong>Chính sách bảo mật AC3:</strong> Giá vốn được kiểm soát hoàn toàn ở phía máy chủ. Nhân viên kinh doanh không thể xem được giá trị này trong API hoặc giao diện.
+                                    <strong>Chính sách bảo mật AC3:</strong> Giá vốn được kiểm soát hoàn toàn ở phía máy chủ. Nhân viên kinh doanh không thể xem được giá trị này trong API hoặc giao diện.
                                 </div>
                             </div>
                         </div>
@@ -180,7 +179,6 @@
                         <div class="form-group form-full">
                             <div class="security-cost-box">
                                 <div style="display: flex; align-items: center; gap: 8px; color: var(--slate-600); font-size: 13.5px;">
-                                    <span>🔒</span>
                                     <span><strong>Giá vốn (Cost Price):</strong> Chỉ Giám đốc kinh doanh mới có quyền xem và cấu hình giá vốn. Dữ liệu này được bảo mật hoàn toàn.</span>
                                 </div>
                             </div>
@@ -203,7 +201,7 @@
                     Hủy bỏ
                 </a>
                 <button type="submit" class="btn btn-primary" id="btnLuuSanPham">
-                    <span>💾</span> Lưu sản phẩm vào Bảng giá
+                    Lưu sản phẩm vào Bảng giá
                 </button>
             </div>
         </form>

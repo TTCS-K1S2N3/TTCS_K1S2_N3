@@ -15,7 +15,7 @@
     <!-- Header & Navigation -->
     <header class="crm-header">
         <div class="crm-header-title">
-            <h1><span>✏️</span> Cập nhật Sản phẩm & Bảng giá niêm yết</h1>
+            <h1>Cập nhật Sản phẩm & Bảng giá niêm yết</h1>
             <p>
                 Điều chỉnh thông số mặt hàng hoặc cập nhật biểu giá chuẩn cho sản phẩm
                 <strong style="color: var(--primary);">${sanPham.maSanPham} - ${sanPham.tenSanPham}</strong>
@@ -33,7 +33,6 @@
     <c:if test="${sanPham.daXuatHienTrongBaoGia}">
         <div class="alert alert-info" role="status">
             <div style="display: flex; align-items: flex-start; gap: 10px;">
-                <span style="font-size: 20px; line-height: 1;">🔒</span>
                 <div>
                     <strong>Ràng buộc nghiệp vụ (Acceptance Criteria 4):</strong><br/>
                     Sản phẩm này đã phát sinh trong các báo giá khách hàng thực tế. Hệ thống sẽ
@@ -48,7 +47,6 @@
     <c:if test="${not empty thongBaoLoi}">
         <div class="alert alert-danger" role="alert">
             <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 18px;">⚠️</span>
                 <span><strong>Lỗi cập nhật:</strong> ${thongBaoLoi}</span>
             </div>
             <span class="alert-close" onclick="this.parentElement.style.display='none';">&times;</span>
@@ -172,7 +170,7 @@
                             <div class="security-cost-box authorized">
                                 <div class="security-cost-header">
                                     <span class="security-cost-title">
-                                        🔒 Giá vốn (Cost Price) - Phân quyền Giám đốc kinh doanh
+                                        Giá vốn (Cost Price) - Phân quyền Giám đốc kinh doanh
                                     </span>
                                     <span class="badge badge-director-only">
                                         CHỈ GIÁM ĐỐC KINH DOANH (DIRECTOR)
@@ -187,7 +185,7 @@
                                     <span class="field-error">${danhSachLoi['giaVon']}</span>
                                 </c:if>
                                 <div class="form-hint" style="margin-top: 6px; color: #15803d;">
-                                    🛡️ <strong>Chính sách bảo mật AC3:</strong> Giá vốn được kiểm soát hoàn toàn ở phía máy chủ. Nhân viên kinh doanh không thể xem được giá trị này.
+                                    <strong>Chính sách bảo mật AC3:</strong> Giá vốn được kiểm soát hoàn toàn ở phía máy chủ. Nhân viên kinh doanh không thể xem được giá trị này.
                                 </div>
                             </div>
                         </div>
@@ -196,7 +194,6 @@
                         <div class="form-group form-full">
                             <div class="security-cost-box">
                                 <div style="display: flex; align-items: center; gap: 8px; color: var(--slate-600); font-size: 13.5px;">
-                                    <span>🔒</span>
                                     <span><strong>Giá vốn (Cost Price):</strong> Chỉ Giám đốc kinh doanh mới có quyền xem và sửa giá vốn. Dữ liệu này được bảo mật.</span>
                                 </div>
                             </div>
@@ -218,7 +215,7 @@
                     Hủy bỏ
                 </a>
                 <button type="submit" class="btn btn-primary" id="btnCapNhatSanPham">
-                    <span>💾</span> Cập nhật thông tin Bảng giá
+                    Cập nhật thông tin Bảng giá
                 </button>
             </div>
         </form>

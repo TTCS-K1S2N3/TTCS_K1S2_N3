@@ -43,22 +43,27 @@
 
     <!-- ===== HEADER ===== -->
     <div class="page-header">
-        <h1>&#128100; Quản lý Tài khoản Người dùng</h1>
-        <div style="display: flex; gap: 10px;">
+        <h1>Quản lý Tài khoản Người dùng</h1>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a id="btn-co-cau-to-chuc"
+               href="${pageContext.request.contextPath}/co-cau-to-chuc"
+               class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;">
+                Cơ cấu tổ chức
+            </a>
             <a id="btn-nhat-ky-thay-doi"
                href="${pageContext.request.contextPath}/nhat-ky-thay-doi"
                class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;">
-                &#128737;&#65039; Nhật ký dữ liệu nhạy cảm
+                Nhật ký dữ liệu nhạy cảm
             </a>
             <a id="btn-import-excel"
                href="${pageContext.request.contextPath}/nguoi-dung/import"
                class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;">
-                &#128229; Nhập từ Excel
+                Nhập từ Excel
             </a>
             <a id="btn-tao-tai-khoan"
                href="${pageContext.request.contextPath}/nguoi-dung/tao"
                class="btn btn-primary">
-                &#43; Tạo tài khoản mới
+                + Tạo tài khoản mới
             </a>
         </div>
     </div>

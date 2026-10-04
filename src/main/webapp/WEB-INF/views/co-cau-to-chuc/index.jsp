@@ -18,22 +18,33 @@
 
     <main class="crm-main-content" id="crm-main-content">
         <div class="cctc-container">
+            <!-- Breadcrumb Navigation -->
+            <nav class="crm-breadcrumb" aria-label="Đường dẫn điều hướng" style="display: flex; gap: 8px; font-size: 13.5px; color: #64748b; margin-bottom: 16px;">
+                <a href="${pageContext.request.contextPath}/dieu-huong" style="color: #2563eb; text-decoration: none;">Trang chủ</a>
+                <span>/</span>
+                <a href="${pageContext.request.contextPath}/nguoi-dung" style="color: #2563eb; text-decoration: none;">Người dùng & Hệ thống</a>
+                <span>/</span>
+                <span style="color: #0f172a; font-weight: 600;">Cơ cấu tổ chức kinh doanh</span>
+            </nav>
 
             <!-- Title & Quick Actions -->
             <div class="cctc-header">
                 <div class="cctc-title">
-                    <h1>&#128188; Cơ cấu tổ chức kinh doanh</h1>
+                    <h1>Cơ cấu tổ chức kinh doanh</h1>
                     <p>Khai báo cây tổ chức, phân bổ Trưởng nhóm và gắn khu vực địa lý cho các nhóm kinh doanh (Story S2-06)</p>
                 </div>
                 <div class="cctc-actions">
+                    <a href="${pageContext.request.contextPath}/nguoi-dung" class="btn-cctc btn-cctc-secondary" id="btn-back-to-users" title="Quay lại Quản lý tài khoản">
+                        &larr; Quản lý người dùng
+                    </a>
                     <button class="btn-cctc btn-cctc-primary" onclick="moModalThemNhom()">
-                        &#43; Thêm nhóm kinh doanh
+                        + Thêm nhóm kinh doanh
                     </button>
                     <button class="btn-cctc btn-cctc-secondary" onclick="moModalThemKhuVuc()">
-                        &#127757; Khai báo khu vực
+                        Khai báo khu vực
                     </button>
                     <button class="btn-cctc btn-cctc-secondary" onclick="moModalChuyenNhom()">
-                        &#128101; Chuyển nhóm nhân viên
+                        Chuyển nhóm nhân viên
                     </button>
                 </div>
             </div>
@@ -41,14 +52,14 @@
             <!-- Flash Notifications -->
             <c:if test="${not empty sessionScope.flashSuccess}">
                 <div class="cctc-alert cctc-alert-success">
-                    &#10004; ${sessionScope.flashSuccess}
+                    Thành công: ${sessionScope.flashSuccess}
                 </div>
                 <c:remove var="flashSuccess" scope="session" />
             </c:if>
 
             <c:if test="${not empty sessionScope.flashError}">
                 <div class="cctc-alert cctc-alert-danger">
-                    &#9888; ${sessionScope.flashError}
+                    Lỗi: ${sessionScope.flashError}
                 </div>
                 <c:remove var="flashError" scope="session" />
             </c:if>
@@ -60,7 +71,7 @@
                 <div>
                     <div class="cctc-card">
                         <div class="cctc-card-header">
-                            <h2>&#128451; Cây cơ cấu nhóm kinh doanh</h2>
+                            <h2>Cây cơ cấu nhóm kinh doanh</h2>
                             <span style="font-size: 12px; color: #64748b;">(Tổng: ${fn:length(dsNhom)} nhóm)</span>
                         </div>
                         <div class="cctc-table-wrap">

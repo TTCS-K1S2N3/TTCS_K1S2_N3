@@ -87,7 +87,22 @@ public class MenuService {
                 if (currentUri != null && !currentUri.isBlank()) {
                     active = currentUri.equals(mod.getDuongDanUrl())
                             || currentUri.startsWith(mod.getDuongDanUrl() + "/")
-                            || (mod == ModuleHeThong.NGUOI_DUNG && (currentUri.startsWith("/nhat-ky-thay-doi") || currentUri.startsWith("/nguoi-dung/nhat-ky-thay-doi")));
+                            || (mod == ModuleHeThong.NGUOI_DUNG && (
+                                    currentUri.startsWith("/nhat-ky-thay-doi")
+                                    || currentUri.startsWith("/nguoi-dung/nhat-ky-thay-doi")
+                                    || currentUri.startsWith("/co-cau-to-chuc")
+                                    || currentUri.startsWith("/phan-quyen-du-lieu")
+                               ))
+                            || (mod == ModuleHeThong.DANH_MUC && (
+                                    currentUri.startsWith("/danh-muc-ban-hang")
+                                    || currentUri.startsWith("/san-pham")
+                                    || currentUri.startsWith("/truong-tuy-chinh")
+                                    || currentUri.startsWith("/pipeline")
+                                    || currentUri.startsWith("/co-hoi/pipeline")
+                                    || currentUri.startsWith("/danh-muc/ly-do-thang-thua")
+                                    || currentUri.startsWith("/co-hoi/ly-do-thang-thua")
+                                    || currentUri.startsWith("/danh-muc/doi-thu")
+                               ));
                 }
                 MucMenuDTO dto = new MucMenuDTO(
                         mod.getMaModule(),
@@ -95,7 +110,8 @@ public class MenuService {
                         mod.getDuongDanUrl(),
                         mod.getBieuTuong(),
                         mod.getThuTu(),
-                        active
+                        active,
+                        mod.isDaTrienKhai()
                 );
                 ketQua.add(dto);
             }

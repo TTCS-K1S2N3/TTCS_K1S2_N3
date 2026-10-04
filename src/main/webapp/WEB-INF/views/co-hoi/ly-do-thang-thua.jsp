@@ -22,12 +22,15 @@
         <div class="crm-catalog-page">
 
             <!-- Breadcrumb điều hướng -->
-            <nav class="crm-catalog-breadcrumb" aria-label="Đường dẫn điều hướng">
-                <a href="${pageContext.request.contextPath}/dieu-huong">Trang chủ</a>
-                <span class="separator">/</span>
-                <a href="${pageContext.request.contextPath}/co-hoi">Cơ hội & Pipeline</a>
-                <span class="separator">/</span>
-                <span class="current">Lý do Thắng Thua & Đối thủ</span>
+            <nav class="crm-catalog-breadcrumb" aria-label="Đường dẫn điều hướng" style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <a href="${pageContext.request.contextPath}/dieu-huong">Trang chủ</a>
+                    <span class="separator">/</span>
+                    <a href="${pageContext.request.contextPath}/danh-muc">Danh mục & Cấu hình</a>
+                    <span class="separator">/</span>
+                    <span class="current">Lý do Thắng Thua & Đối thủ</span>
+                </div>
+                <a href="${pageContext.request.contextPath}/danh-muc" class="crm-btn crm-btn-outline" style="padding: 4px 12px; font-size: 13px; text-decoration: none;">&larr; Quay lại Danh mục</a>
             </nav>
 
             <!-- Page Header Banner -->

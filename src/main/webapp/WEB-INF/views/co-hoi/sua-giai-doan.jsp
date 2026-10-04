@@ -15,7 +15,7 @@
 
     <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb-nav" aria-label="Đường dẫn điều hướng">
-        <a href="${pageContext.request.contextPath}/">Trang chủ</a>
+        <a href="${pageContext.request.contextPath}/dieu-huong">Trang chủ</a>
         <span class="sep">/</span>
         <a href="${pageContext.request.contextPath}/pipeline/giai-doan">Cấu hình Pipeline</a>
         <span class="sep">/</span>
@@ -25,7 +25,7 @@
     <!-- Header -->
     <header class="crm-header">
         <div class="crm-header-title">
-            <h1>✏️ Cập nhật Giai đoạn: <c:out value="${giaiDoan.tenGiaiDoan}"/></h1>
+            <h1>Cập nhật Giai đoạn: <c:out value="${giaiDoan.tenGiaiDoan}"/></h1>
             <p>Điều chỉnh xác suất thắng mặc định, thứ tự chuỗi quy trình và tiêu chuẩn bắt buộc rời giai đoạn (AC 1, AC 2, AC 3).</p>
         </div>
         <div>
@@ -42,7 +42,7 @@
         <c:when test="${giaiDoan.soCoHoiHienTai > 0}">
             <div class="alert alert-info" role="alert">
                 <div>
-                    <strong>🛡️ BẢO VỆ DỮ LIỆU CƠ HỘI ĐANG CHẠY (AC 4):</strong><br/>
+                    <strong>BẢO VỆ DỮ LIỆU CƠ HỘI ĐANG CHẠY (AC 4):</strong><br/>
                     Giai đoạn này đang có <strong style="color: var(--primary-800);">${giaiDoan.soCoHoiHienTai} cơ hội</strong> bán hàng đang hoạt động.
                     Mọi thay đổi về xác suất thắng hoặc tiêu chuẩn rời bước sẽ được cập nhật an toàn cho các kỳ dự báo tiếp theo mà <strong>không làm gián đoạn hay mất mát dữ liệu</strong> của các cơ hội đang chạy.
                 </div>
@@ -230,7 +230,7 @@
                     Hủy bỏ
                 </a>
                 <button type="submit" class="btn btn-primary" id="btnSubmitForm">
-                    💾 Cập nhật thay đổi
+                    Cập nhật thay đổi
                 </button>
             </div>
         </form>

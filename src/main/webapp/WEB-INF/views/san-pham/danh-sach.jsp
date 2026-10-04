@@ -13,11 +13,23 @@
 
 <div class="crm-container">
 
+    <!-- Breadcrumb điều hướng chuẩn -->
+    <nav class="crm-breadcrumb" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div style="font-size: 13.5px; color: var(--slate-500);">
+            <a href="${pageContext.request.contextPath}/dieu-huong" style="color: var(--primary); text-decoration: none;">Trang chủ</a>
+            <span style="margin: 0 6px;">/</span>
+            <a href="${pageContext.request.contextPath}/danh-muc" style="color: var(--primary); text-decoration: none;">Danh mục & Cấu hình</a>
+            <span style="margin: 0 6px;">/</span>
+            <span style="color: var(--slate-700); font-weight: 500;">Sản phẩm & Bảng giá</span>
+        </div>
+        <a href="${pageContext.request.contextPath}/danh-muc" class="btn btn-outline btn-sm">&larr; Quay lại Danh mục</a>
+    </nav>
+
     <!-- Header Section -->
     <header class="crm-header">
         <div class="crm-header-title">
             <h1>
-                <span>🏷️</span> Danh mục Sản phẩm & Bảng giá niêm yết
+                Danh mục Sản phẩm & Bảng giá niêm yết
             </h1>
             <p>
                 Quản lý danh mục hàng hóa, dịch vụ và khung giá chuẩn của doanh nghiệp. Mọi báo giá kinh doanh đều bắt buộc xuất phát từ bảng giá chuẩn này thay vì giá tự tính.
@@ -27,18 +39,15 @@
         <div class="header-actions">
             <!-- Thông tin người dùng hiện tại -->
             <div class="role-badge-box">
-                <a href="${pageContext.request.contextPath}/dieu-huong" class="btn btn-outline btn-sm" style="margin-right: 8px;" title="Quay lại bảng điều hướng">
-                    ⬅️ Điều hướng
-                </a>
                 <c:choose>
                     <c:when test="${coQuyenGiaVon}">
                         <span class="role-badge role-badge-director" title="Đang ở vai trò Giám đốc: Toàn quyền quản trị và xem/sửa Giá vốn">
-                            👔 Giám đốc kinh doanh (${not empty nguoiDungHienTai ? nguoiDungHienTai.hoTen : 'Director'})
+                            Giám đốc kinh doanh (${not empty nguoiDungHienTai ? nguoiDungHienTai.hoTen : 'Director'})
                         </span>
                     </c:when>
                     <c:otherwise>
                         <span class="role-badge role-badge-sales" title="Đang ở vai trò người dùng: Không xem Giá vốn">
-                            👤 ${not empty nguoiDungHienTai ? nguoiDungHienTai.hoTen : 'Nhân viên'} (${not empty nguoiDungHienTai ? nguoiDungHienTai.chuoiVaiTroHienThi : 'Xem'})
+                            ${not empty nguoiDungHienTai ? nguoiDungHienTai.hoTen : 'Nhân viên'} (${not empty nguoiDungHienTai ? nguoiDungHienTai.chuoiVaiTroHienThi : 'Xem'})
                         </span>
                     </c:otherwise>
                 </c:choose>
@@ -47,7 +56,7 @@
             <c:if test="${coQuyenQuanLy}">
                 <a href="${pageContext.request.contextPath}/san-pham/tao"
                    class="btn btn-primary" id="btnThemSanPhamMoi">
-                    <span>➕</span> Khai báo sản phẩm mới
+                    Khai báo sản phẩm mới
                 </a>
             </c:if>
         </div>
@@ -57,7 +66,6 @@
     <c:if test="${not empty thongBaoThanhCong}">
         <div class="alert alert-success" role="alert">
             <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 18px;">✅</span>
                 <span><strong>Thành công:</strong> ${thongBaoThanhCong}</span>
             </div>
             <span class="alert-close" onclick="this.parentElement.style.display='none';">&times;</span>
@@ -67,7 +75,6 @@
     <c:if test="${not empty thongBaoLoi}">
         <div class="alert alert-danger" role="alert">
             <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 18px;">⚠️</span>
                 <span><strong>Thông báo:</strong> ${thongBaoLoi}</span>
             </div>
             <span class="alert-close" onclick="this.parentElement.style.display='none';">&times;</span>
@@ -77,7 +84,6 @@
     <!-- Thống kê tổng quan nhanh -->
     <section class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon primary">📦</div>
             <div class="stat-content">
                 <span class="stat-value">${phanTrang.tongSoBanGhi}</span>
                 <span class="stat-label">Tổng mặt hàng trong danh mục</span>
@@ -85,7 +91,6 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon purple">🔄</div>
             <div class="stat-content">
                 <span class="stat-value">Dịch vụ & Sản phẩm</span>
                 <span class="stat-label">Thuê bao định kỳ / Một lần</span>
@@ -93,7 +98,6 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon warning">⚡</div>
             <div class="stat-content">
                 <span class="stat-value">Giá sàn niêm yết</span>
                 <span class="stat-label">Ngưỡng kiểm soát chiết khấu</span>
@@ -101,7 +105,6 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon success">🔒</div>
             <div class="stat-content">
                 <span class="stat-value">${coQuyenGiaVon ? 'Được bảo mật' : 'Ẩn hoàn toàn'}</span>
                 <span class="stat-label">Giá vốn & Tỷ suất lợi nhuận</span>
@@ -114,7 +117,6 @@
         <!-- Bộ lọc tìm kiếm -->
         <form method="get" action="${pageContext.request.contextPath}/san-pham" class="filter-bar">
             <div class="filter-input-group">
-                <span class="filter-icon">🔍</span>
                 <input type="text" name="tuKhoa" value="${tuKhoa}"
                        placeholder="Tìm theo mã hàng, tên sản phẩm hoặc dịch vụ..."
                        class="filter-input" autocomplete="off">
@@ -162,7 +164,7 @@
                     </th>
                     <c:if test="${coQuyenGiaVon}">
                         <th style="text-align: right; width: 160px; background-color: #f1f5f9;" title="Chỉ Giám đốc kinh doanh xem được (AC3)">
-                            🔒 Giá vốn (Director)
+                            Giá vốn (Director)
                         </th>
                     </c:if>
                     <th style="text-align: center; width: 130px;">Trạng thái</th>
@@ -177,7 +179,6 @@
                     <c:when test="${empty phanTrang.danhSach}">
                         <tr>
                             <td colspan="${coQuyenGiaVon ? 10 : 9}" style="text-align: center; padding: 48px 16px; color: var(--slate-500);">
-                                <div style="font-size: 32px; margin-bottom: 8px;">🔍</div>
                                 <div style="font-weight: 600; font-size: 15px; color: var(--slate-700);">Không tìm thấy sản phẩm nào</div>
                                 <div style="font-size: 13px; margin-top: 4px;">Thử thay đổi từ khóa hoặc điều kiện lọc để hiển thị kết quả.</div>
                             </td>
@@ -199,12 +200,12 @@
                                     <c:choose>
                                         <c:when test="${sp.dichVuThueBao}">
                                             <span class="badge badge-subscription">
-                                                🔄 ${sp.tenLoai}
+                                                ${sp.tenLoai}
                                             </span>
                                         </c:when>
                                         <c:otherwise>
                                             <span class="badge badge-onetime">
-                                                📦 ${sp.tenLoai}
+                                                ${sp.tenLoai}
                                             </span>
                                         </c:otherwise>
                                     </c:choose>
@@ -262,7 +263,7 @@
                                         <c:when test="${sp.daXuatHienTrongBaoGia}">
                                             <span class="badge badge-quote"
                                                   title="Sản phẩm đã xuất hiện trong báo giá thực tế. Theo quy định, không thể xoá, chỉ được ngừng kinh doanh.">
-                                                🔒 Đã có báo giá
+                                                Đã có báo giá
                                             </span>
                                         </c:when>
                                         <c:otherwise>
@@ -282,14 +283,14 @@
                                                 data-gia-san="${sp.giaSan}"
                                                 onclick="moModalThuGiaSan(this)"
                                                 title="Kiểm tra xem đơn giá báo giá có cần Giám đốc duyệt chiết khấu không">
-                                            ⚡ Thử giá sàn
+                                            Thử giá sàn
                                         </button>
 
                                         <c:if test="${coQuyenQuanLy}">
                                             <!-- Sửa thông tin & bảng giá -->
                                             <a href="${pageContext.request.contextPath}/san-pham/sua?id=${sp.id}"
                                                class="btn btn-outline btn-sm" title="Sửa thông tin sản phẩm và bảng giá">
-                                                ✏️ Sửa
+                                                Sửa
                                             </a>
 
                                             <!-- Ngừng kinh doanh / Bán lại -->
@@ -301,14 +302,14 @@
                                                         <button type="submit" class="btn btn-outline btn-sm" style="color: #b45309;"
                                                                 onclick="return confirm('Bạn có chắc chắn muốn chuyển sản phẩm này sang trạng thái Ngừng kinh doanh?')"
                                                                 title="Ngừng đưa vào các báo giá mới">
-                                                            ⏸️ Ngừng KD
+                                                            Ngừng KD
                                                         </button>
                                                     </c:when>
                                                     <c:otherwise>
                                                         <input type="hidden" name="trangThaiMoi" value="DANG_KINH_DOANH">
                                                         <button type="submit" class="btn btn-outline btn-sm" style="color: #15803d;"
                                                                 title="Kích hoạt bán lại trong báo giá">
-                                                            ▶️ Mở bán lại
+                                                            Mở bán lại
                                                         </button>
                                                     </c:otherwise>
                                                 </c:choose>
@@ -322,7 +323,7 @@
                                                             data-ten="<c:out value='${sp.tenSanPham}'/>"
                                                             onclick="moModalKhongTheXoa(this)"
                                                             title="Sản phẩm đã xuất hiện trong báo giá thì không xoá được, chỉ ngừng kinh doanh (AC4)">
-                                                        🚫 Không thể xoá
+                                                        Không thể xoá
                                                     </button>
                                                 </c:when>
                                                 <c:otherwise>
@@ -332,7 +333,7 @@
                                                         <button type="submit" class="btn btn-danger btn-sm"
                                                                 onclick="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn xoá hoàn toàn sản phẩm này khỏi hệ thống? Thao tác này không thể hoàn tác.')"
                                                                 title="Xoá vĩnh viễn khỏi danh mục">
-                                                            🗑️ Xoá
+                                                            Xoá
                                                         </button>
                                                     </form>
                                                 </c:otherwise>
@@ -387,7 +388,7 @@
 <div id="modalKiemTraGiaSan" class="modal-overlay" role="dialog" aria-modal="true">
     <div class="modal-card">
         <div class="modal-header">
-            <h3>⚡ Kiểm tra Ngưỡng Giá sàn Báo giá</h3>
+            <h3>Kiểm tra Ngưỡng Giá sàn Báo giá</h3>
             <button type="button" class="modal-close-btn" onclick="dongModalGiaSan()">&times;</button>
         </div>
 
@@ -428,7 +429,7 @@
 <div id="modalKhongTheXoa" class="modal-overlay" role="dialog" aria-modal="true">
     <div class="modal-card">
         <div class="modal-header">
-            <h3 style="color: var(--danger);">🚫 Không thể xoá sản phẩm</h3>
+            <h3 style="color: var(--danger);">Không thể xoá sản phẩm</h3>
             <button type="button" class="modal-close-btn" onclick="dongModalKhongTheXoa()">&times;</button>
         </div>
 

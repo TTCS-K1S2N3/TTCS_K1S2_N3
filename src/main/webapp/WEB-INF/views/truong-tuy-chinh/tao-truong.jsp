@@ -25,7 +25,7 @@
     <!-- ===== HEADER ===== -->
     <header class="page-header">
         <div class="page-header-title">
-            <h1><span>➕</span> Khai báo Trường Tuỳ Chỉnh Mới</h1>
+            <h1>Khai báo Trường Tuỳ Chỉnh Mới</h1>
             <p>Định nghĩa trường mở rộng cho phép nhân sự thu thập các thông tin đặc thù của doanh nghiệp.</p>
         </div>
         <div class="page-header-actions">
@@ -38,7 +38,6 @@
     <!-- ===== THÔNG BÁO LỖI ===== -->
     <c:if test="${not empty formError['_global'] or not empty formError['global']}">
         <div class="alert alert-error" role="alert">
-            <span style="font-size: 1.1rem;">⚠️</span>
             <div><strong>Lỗi:</strong> <c:out value="${not empty formError['_global'] ? formError['_global'] : formError['global']}"/></div>
             <span class="alert-close" onclick="this.parentElement.style.display='none';">&times;</span>
         </div>
@@ -269,7 +268,7 @@
                 <!-- 3. LIVE FIELD PREVIEW WIDGET -->
                 <div class="live-preview-box">
                     <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                        <span>👁️</span> Trực quan hoá thời gian thực (Live Field Preview)
+                        Trực quan hoá thời gian thực (Live Field Preview)
                     </div>
                     <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 14px;">
                         Hình ảnh thực tế mà nhân viên sẽ nhìn thấy khi nhập liệu trên form:
@@ -296,7 +295,7 @@
                     Hủy bỏ
                 </a>
                 <button type="submit" id="btn-luu-truong" class="btn btn-primary">
-                    <span>💾</span> Lưu trường tuỳ chỉnh
+                    Lưu trường tuỳ chỉnh
                 </button>
             </div>
 

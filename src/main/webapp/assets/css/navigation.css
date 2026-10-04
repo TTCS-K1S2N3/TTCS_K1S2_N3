@@ -592,6 +592,32 @@ body.crm-drawer-open {
     right: 8px;
 }
 
+/* Disabled / Unimplemented menu item for future sprints */
+.crm-menu-link.crm-menu-link-disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    background: transparent;
+    color: #64748b;
+}
+
+.crm-menu-link.crm-menu-link-disabled:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+    color: #94a3b8;
+    transform: none;
+}
+
+.crm-menu-badge-dev {
+    font-size: 10px;
+    font-weight: 500;
+    color: #94a3b8;
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
 /* Empty state menu */
 .crm-menu-empty {
     display: flex;

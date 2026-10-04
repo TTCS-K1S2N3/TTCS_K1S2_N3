@@ -16,9 +16,9 @@
 
     <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb-nav" aria-label="Đường dẫn điều hướng">
-        <a href="${pageContext.request.contextPath}/">Trang chủ</a>
+        <a href="${pageContext.request.contextPath}/dieu-huong">Trang chủ</a>
         <span class="sep">/</span>
-        <a href="${pageContext.request.contextPath}/co-hoi">Quản lý Cơ hội</a>
+        <a href="${pageContext.request.contextPath}/danh-muc">Danh mục & Cấu hình</a>
         <span class="sep">/</span>
         <span class="current">Cấu hình Pipeline & Xác suất Thắng</span>
     </nav>
@@ -26,23 +26,26 @@
     <!-- Header & Giả lập phân quyền xem -->
     <header class="crm-header">
         <div class="crm-header-title">
-            <h1>⚙️ Cấu hình Giai đoạn Pipeline & Xác suất Thắng</h1>
+            <h1>Cấu hình Giai đoạn Pipeline & Xác suất Thắng</h1>
             <p>
                 Thiết lập chuỗi quy trình bán hàng chuẩn hoá, xác suất thắng trọng số theo từng bước và tiêu chuẩn bắt buộc rời giai đoạn để con số dự báo doanh số có cơ sở khoa học thay vì dựa vào cảm nhận.
             </p>
         </div>
 
-        <div class="role-switcher-card">
+        <div class="role-switcher-card" style="display: flex; align-items: center; gap: 10px;">
+            <a href="${pageContext.request.contextPath}/danh-muc" class="btn btn-outline" id="btnQuayLaiDanhMuc" title="Quay lại Danh mục cấu hình">
+                &larr; Danh mục cấu hình
+            </a>
             <span class="role-label">Vai trò:</span>
             <c:choose>
                 <c:when test="${coQuyenCauHinh}">
                     <span class="role-pill role-pill-director" title="Tài khoản có quyền cấu hình pipeline">
-                        👔 Giám đốc kinh doanh / Quản trị
+                        Giám đốc kinh doanh / Quản trị
                     </span>
                 </c:when>
                 <c:otherwise>
                     <span class="role-pill role-pill-sales" title="Tài khoản chỉ xem">
-                        👤 Nhân viên kinh doanh (Chỉ xem)
+                        Nhân viên kinh doanh (Chỉ xem)
                     </span>
                 </c:otherwise>
             </c:choose>
@@ -52,14 +55,14 @@
     <!-- Flash Messages (Thông báo thành công / lỗi) -->
     <c:if test="${not empty thongBaoThanhCong}">
         <div class="alert alert-success" role="alert">
-            <span>✅ <strong>Thành công:</strong> <c:out value="${thongBaoThanhCong}"/></span>
+            <span><strong>Thành công:</strong> <c:out value="${thongBaoThanhCong}"/></span>
             <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
         </div>
     </c:if>
 
     <c:if test="${not empty thongBaoLoi}">
         <div class="alert alert-danger" role="alert">
-            <span>⚠️ <strong>Cảnh báo:</strong> <c:out value="${thongBaoLoi}"/></span>
+            <span><strong>Cảnh báo:</strong> <c:out value="${thongBaoLoi}"/></span>
             <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
         </div>
     </c:if>
@@ -68,7 +71,9 @@
     <section class="kpi-grid" aria-label="Chỉ số tổng quan quy trình pipeline">
         <!-- 1. Tổng số giai đoạn -->
         <div class="kpi-card">
-            <div class="kpi-icon-box icon-blue">📋</div>
+            <div class="kpi-icon-box icon-blue">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect></svg>
+            </div>
             <div class="kpi-info">
                 <div class="kpi-label">Số bước quy trình</div>
                 <div class="kpi-value">${danhSachGiaiDoan.size()} bước</div>
@@ -88,7 +93,9 @@
 
         <!-- 3. Tổng cơ hội mở -->
         <div class="kpi-card">
-            <div class="kpi-icon-box icon-amber">💼</div>
+            <div class="kpi-icon-box icon-blue">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
             <div class="kpi-info">
                 <div class="kpi-label">Cơ hội đang chạy (AC 4)</div>
                 <div class="kpi-value">${tongSoCoHoi} cơ hội</div>
@@ -98,7 +105,9 @@
 
         <!-- 4. Tổng giá trị cơ hội mở -->
         <div class="kpi-card">
-            <div class="kpi-icon-box icon-purple">🏷️</div>
+            <div class="kpi-icon-box icon-blue">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+            </div>
             <div class="kpi-info">
                 <div class="kpi-label">Tổng giá trị phễu mở</div>
                 <div class="kpi-value">
@@ -110,7 +119,9 @@
 
         <!-- 5. Doanh số dự báo có trọng số (Weighted Forecast - AC 2) -->
         <div class="kpi-card">
-            <div class="kpi-icon-box icon-emerald">💰</div>
+            <div class="kpi-icon-box icon-emerald">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </div>
             <div class="kpi-info">
                 <div class="kpi-label">Doanh số dự báo trọng số (AC 2)</div>
                 <div class="kpi-value" style="color: var(--success-600);">
@@ -125,7 +136,6 @@
     <section class="crm-card" aria-labelledby="heading-flow">
         <div class="card-header-bar">
             <div class="card-heading">
-                <span style="font-size: 20px;">📊</span>
                 <div>
                     <h2 id="heading-flow">Chuỗi quy trình Pipeline bán hàng chuẩn hoá (AC 1)</h2>
                     <p class="card-subtext">Quy trình tuyến tính nối tiếp: Tiếp cận &rarr; Xác định nhu cầu &rarr; Đề xuất giải pháp &rarr; Báo giá &rarr; Đàm phán &rarr; Chốt</p>
@@ -503,66 +513,66 @@
                                     data-dieu-kien-bat-buoc="<c:out value='${gd.dieuKienBatBuoc}'/>"
                                     onclick="moModalDieuKienTuBtn(this)"
                                     title="Thử nghiệm kiểm tra cơ hội có đủ điều kiện rời giai đoạn hay không">
-                                🔍 Thử điều kiện
-                            </button>
+                            Thử điều kiện
+                        </button>
 
-                            <c:if test="${coQuyenCauHinh}">
-                                <!-- Nút Sửa -->
-                                <a href="${pageContext.request.contextPath}/pipeline/giai-doan/sua?id=${gd.id}"
-                                   class="btn btn-outline btn-sm"
-                                   title="Chỉnh sửa xác suất, tên, hoặc tiêu chuẩn điều kiện">
-                                    ✏️ Sửa
-                                </a>
+                        <c:if test="${coQuyenCauHinh}">
+                            <!-- Nút Sửa -->
+                            <a href="${pageContext.request.contextPath}/pipeline/giai-doan/sua?id=${gd.id}"
+                               class="btn btn-outline btn-sm"
+                               title="Chỉnh sửa xác suất, tên, hoặc tiêu chuẩn điều kiện">
+                                Sửa
+                            </a>
 
-                                <!-- Nút Chuyển trạng thái (Đang áp dụng <-> Ngừng áp dụng) -->
-                                <form method="post" action="${pageContext.request.contextPath}/pipeline/giai-doan/trang-thai" style="display:inline;">
-                                    <input type="hidden" name="id" value="${gd.id}">
-                                    <c:choose>
-                                        <c:when test="${gd.dangApDung}">
-                                            <input type="hidden" name="trangThai" value="NGUNG_AP_DUNG">
-                                            <button type="submit" class="btn btn-outline btn-sm" style="color: var(--warning-600);"
-                                                    onclick="return confirm('Chuyển giai đoạn này sang trạng thái Ngừng áp dụng? Các cơ hội đang chạy vẫn được bảo toàn nguyên vẹn.')"
-                                                    title="Tạm ngừng nhận cơ hội mới vào giai đoạn này">
-                                                ⏸️ Ngừng
-                                            </button>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <input type="hidden" name="trangThai" value="DANG_AP_DUNG">
-                                            <button type="submit" class="btn btn-outline btn-sm" style="color: var(--success-600);"
-                                                    title="Kích hoạt lại giai đoạn này trong chuỗi pipeline">
-                                                ▶️ Dùng lại
-                                            </button>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </form>
-
-                                <!-- AC 4: Nút Xóa có ràng buộc bảo vệ cơ hội đang chạy -->
+                            <!-- Nút Chuyển trạng thái (Đang áp dụng <-> Ngừng áp dụng) -->
+                            <form method="post" action="${pageContext.request.contextPath}/pipeline/giai-doan/trang-thai" style="display:inline;">
+                                <input type="hidden" name="id" value="${gd.id}">
                                 <c:choose>
-                                    <c:when test="${gd.soCoHoiHienTai > 0}">
-                                        <!-- Đang có cơ hội: Chặn xóa cứng, giải thích cho người dùng -->
-                                        <button type="button" class="btn btn-outline btn-sm" style="color: var(--gray-400); cursor: help;"
-                                                data-ten-giai-doan="<c:out value='${gd.tenGiaiDoan}'/>"
-                                                data-so-co-hoi="${gd.soCoHoiHienTai}"
-                                                onclick="xacNhanXoaTuBtn(null, this)"
-                                                title="Đang có ${gd.soCoHoiHienTai} cơ hội đang chạy. Hệ thống bảo vệ dữ liệu, không cho phép xoá cứng. Nhấn để xem chi tiết.">
-                                            🔒 Không thể xoá
+                                    <c:when test="${gd.dangApDung}">
+                                        <input type="hidden" name="trangThai" value="NGUNG_AP_DUNG">
+                                        <button type="submit" class="btn btn-outline btn-sm" style="color: var(--warning-600);"
+                                                onclick="return confirm('Chuyển giai đoạn này sang trạng thái Ngừng áp dụng? Các cơ hội đang chạy vẫn được bảo toàn nguyên vẹn.')"
+                                                title="Tạm ngừng nhận cơ hội mới vào giai đoạn này">
+                                            Ngừng
                                         </button>
                                     </c:when>
                                     <c:otherwise>
-                                        <!-- Không có cơ hội nào: Cho phép xóa với modal xác nhận -->
-                                        <form method="post" action="${pageContext.request.contextPath}/pipeline/giai-doan/xoa" style="display:inline;">
-                                            <input type="hidden" name="id" value="${gd.id}">
-                                            <button type="button" class="btn btn-danger btn-sm"
-                                                    data-ten-giai-doan="<c:out value='${gd.tenGiaiDoan}'/>"
-                                                    data-so-co-hoi="0"
-                                                    onclick="xacNhanXoaTuBtn(this.form, this)"
-                                                    title="Xoá vĩnh viễn giai đoạn khỏi hệ thống">
-                                                🗑️ Xoá
-                                            </button>
-                                        </form>
+                                        <input type="hidden" name="trangThai" value="DANG_AP_DUNG">
+                                        <button type="submit" class="btn btn-outline btn-sm" style="color: var(--success-600);"
+                                                title="Kích hoạt lại giai đoạn này trong chuỗi pipeline">
+                                            Dùng lại
+                                        </button>
                                     </c:otherwise>
                                 </c:choose>
-                            </c:if>
+                            </form>
+
+                            <!-- AC 4: Nút Xóa có ràng buộc bảo vệ cơ hội đang chạy -->
+                            <c:choose>
+                                <c:when test="${gd.soCoHoiHienTai > 0}">
+                                    <!-- Đang có cơ hội: Chặn xóa cứng, giải thích cho người dùng -->
+                                    <button type="button" class="btn btn-outline btn-sm" style="color: var(--gray-400); cursor: help;"
+                                            data-ten-giai-doan="<c:out value='${gd.tenGiaiDoan}'/>"
+                                            data-so-co-hoi="${gd.soCoHoiHienTai}"
+                                            onclick="xacNhanXoaTuBtn(null, this)"
+                                            title="Đang có ${gd.soCoHoiHienTai} cơ hội đang chạy. Hệ thống bảo vệ dữ liệu, không cho phép xoá cứng. Nhấn để xem chi tiết.">
+                                        Không thể xoá
+                                    </button>
+                                </c:when>
+                                <c:otherwise>
+                                    <!-- Không có cơ hội nào: Cho phép xóa với modal xác nhận -->
+                                    <form method="post" action="${pageContext.request.contextPath}/pipeline/giai-doan/xoa" style="display:inline;">
+                                        <input type="hidden" name="id" value="${gd.id}">
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                                data-ten-giai-doan="<c:out value='${gd.tenGiaiDoan}'/>"
+                                                data-so-co-hoi="0"
+                                                onclick="xacNhanXoaTuBtn(this.form, this)"
+                                                title="Xoá vĩnh viễn giai đoạn khỏi hệ thống">
+                                            Xoá
+                                        </button>
+                                    </form>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:if>
                         </td>
                     </tr>
                 </c:forEach>
@@ -578,7 +588,7 @@
      data-endpoint="${pageContext.request.contextPath}/pipeline/giai-doan/kiem-tra-dieu-kien">
     <div class="modal-card">
         <h3 id="modalTitleDieuKien" class="modal-title">
-            <span>🔒 Kiểm tra Điều kiện Rời Giai đoạn (AC 3)</span>
+            <span>Kiểm tra Điều kiện Rời Giai đoạn (AC 3)</span>
         </h3>
         <p class="modal-desc">
             Hệ thống tự động kiểm tra xem hoạt động thực tế của cơ hội đã đủ điều kiện để chuyển sang giai đoạn tiếp theo hay chưa.
@@ -624,7 +634,7 @@
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
             <button type="button" class="btn btn-outline" onclick="dongModalDieuKien()">Đóng</button>
             <button type="button" class="btn btn-primary" onclick="thucHienKiemTraDieuKien()">
-                🔍 Xác minh điều kiện
+                Xác minh điều kiện
             </button>
         </div>
     </div>
@@ -634,7 +644,7 @@
 <div id="modalBaoVeCoHoi" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitleBaoVe">
     <div class="modal-card">
         <h3 id="modalTitleBaoVe" class="modal-title" style="color: var(--danger-600);">
-            <span>🛡️ Bảo vệ Cơ hội Đang Chạy (AC 4)</span>
+            <span>Bảo vệ Cơ hội Đang Chạy (AC 4)</span>
         </h3>
         <p class="modal-desc">
             Hệ thống không cho phép xoá cứng giai đoạn đang liên kết với các cơ hội bán hàng nhằm bảo toàn dữ liệu lịch sử và phễu doanh thu.
@@ -649,7 +659,7 @@
                 Nếu xoá cứng, các cơ hội trên sẽ bị mồ côi hoặc sai lệch báo cáo dự báo.
             </div>
             <div style="font-size: 13px; color: var(--gray-600); margin-top: 10px;">
-                💡 <strong>Giải pháp đề xuất:</strong> Bạn hãy chuyển giai đoạn này sang trạng thái <strong>Ngừng áp dụng</strong>. Khi đó, không cơ hội mới nào được đưa vào giai đoạn này, đồng thời các cơ hội cũ vẫn được lưu giữ an toàn.
+                <strong>Giải pháp đề xuất:</strong> Bạn hãy chuyển giai đoạn này sang trạng thái <strong>Ngừng áp dụng</strong>. Khi đó, không cơ hội mới nào được đưa vào giai đoạn này, đồng thời các cơ hội cũ vẫn được lưu giữ an toàn.
             </div>
         </div>
 
@@ -663,7 +673,7 @@
 <div id="modalXacNhanXoa" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitleXoa">
     <div class="modal-card">
         <h3 id="modalTitleXoa" class="modal-title" style="color: var(--danger-600);">
-            <span>🗑️ Xác nhận Xoá Giai đoạn</span>
+            <span>Xác nhận Xoá Giai đoạn</span>
         </h3>
         <p class="modal-desc">
             Hành động này sẽ xoá hoàn toàn giai đoạn khỏi chuỗi quy trình pipeline. Giai đoạn này hiện không có cơ hội nào đang chạy.

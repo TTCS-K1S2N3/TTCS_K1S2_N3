@@ -53,9 +53,9 @@
     <header class="crm-page-header">
         <div class="crm-header-content">
             <div class="crm-breadcrumb">
-                <a href="<%= contextPath %>/" class="breadcrumb-item">Trang chủ</a>
+                <a href="<%= contextPath %>/dieu-huong" class="breadcrumb-item">Trang chủ</a>
                 <span class="breadcrumb-separator">/</span>
-                <span class="breadcrumb-item">Quản trị hệ thống</span>
+                <a href="<%= contextPath %>/nguoi-dung" class="breadcrumb-item">Người dùng & Hệ thống</a>
                 <span class="breadcrumb-separator">/</span>
                 <span class="breadcrumb-item active">Nhật ký dữ liệu nhạy cảm</span>
             </div>
@@ -76,6 +76,10 @@
                     </div>
                 </div>
 
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <a href="<%= contextPath %>/nguoi-dung" class="crm-btn-back" id="btn-back-to-users" title="Quay lại Quản lý tài khoản" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #334155; font-size: 13.5px; font-weight: 600; text-decoration: none;">
+                        &larr; Quản lý người dùng
+                    </a>
                 <%
                     vn.nhom10.crm.model.NguoiDung ndHienTai = (session != null) ? (vn.nhom10.crm.model.NguoiDung) session.getAttribute("nguoiDung") : null;
                     String tenAdmin = (ndHienTai != null && ndHienTai.getHoTen() != null) ? ndHienTai.getHoTen() : "Quản trị hệ thống";
@@ -95,6 +99,7 @@
                     <span class="crm-live-badge" title="Hệ thống tự động ghi nhật ký bất biến theo chuẩn kiểm toán">
                         <span class="pulse-dot"></span> LIVE AUDIT
                     </span>
+                </div>
                 </div>
             </div>
         </div>
