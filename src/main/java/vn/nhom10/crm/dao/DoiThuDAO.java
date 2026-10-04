@@ -35,7 +35,7 @@ public class DoiThuDAO {
 
             while (rs.next()) {
                 DoiThu item = mapResultSet(rs);
-                item.setSoCoHoiThamChieu(demSoCoHoiThamChieu(conn, item.getId()));
+                item.setSoCoHoiThamChieu(Math.max(0, demSoCoHoiThamChieu(conn, item.getId())));
                 danhSach.add(item);
             }
         } catch (SQLException e) {
@@ -80,7 +80,7 @@ public class DoiThuDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     DoiThu item = mapResultSet(rs);
-                    item.setSoCoHoiThamChieu(demSoCoHoiThamChieu(conn, item.getId()));
+                    item.setSoCoHoiThamChieu(Math.max(0, demSoCoHoiThamChieu(conn, item.getId())));
                     return item;
                 }
             }
@@ -235,13 +235,15 @@ public class DoiThuDAO {
 
     /**
      * Đếm số lượng cơ hội bán hàng đang tham chiếu đối thủ này trong bảng 'co_hoi'.
+     * Áp dụng nguyên tắc Fail-closed: trả về -1 khi gặp lỗi truy vấn cơ sở dữ liệu.
      */
     public int demSoCoHoiThamChieu(Long doiThuId) {
         if (doiThuId == null) return 0;
         try (Connection conn = DatabaseConnection.layKetNoi()) {
             return demSoCoHoiThamChieu(conn, doiThuId);
         } catch (SQLException e) {
-            return 0;
+            LOGGER.log(Level.SEVERE, "Lỗi kết nối khi đếm số cơ hội tham chiếu đối thủ [" + doiThuId + "]: " + e.getMessage(), e);
+            return -1;
         }
     }
 
@@ -255,8 +257,16 @@ public class DoiThuDAO {
                     return rs.getInt(1);
                 }
             }
-        } catch (SQLException ignored) {
-            // Bảng co_hoi có thể chưa có trong môi trường test
+        } catch (SQLException e) {
+            String state = e.getSQLState();
+            int code = e.getErrorCode();
+            String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+            if ("42S02".equalsIgnoreCase(state) || code == 1146 || code == 42102 || msg.contains("not found") || msg.contains("doesn't exist")) {
+                LOGGER.log(Level.FINE, "Bảng co_hoi chưa tồn tại trong môi trường hiện tại: " + e.getMessage());
+                return 0;
+            }
+            LOGGER.log(Level.SEVERE, "Lỗi kiểm tra tham chiếu cơ hội cho đối thủ [" + doiThuId + "]: " + e.getMessage(), e);
+            return -1;
         }
         return 0;
     }

@@ -142,6 +142,10 @@ public class LyDoThangThuaService {
                 throw new IllegalStateException("Không thể lưu lý do mới vào cơ sở dữ liệu");
             }
         } else {
+            LyDoThangThua hienTai = lyDoDAO.timTheoId(lyDo.getId());
+            if (hienTai == null) {
+                throw new IllegalArgumentException("Lý do với ID " + lyDo.getId() + " không tồn tại trong hệ thống");
+            }
             boolean ok = lyDoDAO.capNhat(lyDo);
             if (!ok) {
                 throw new IllegalStateException("Không thể cập nhật thông tin lý do");
@@ -153,8 +157,12 @@ public class LyDoThangThuaService {
      * Bật/tắt trạng thái hoạt động của lý do.
      */
     public void doiTrangThaiLyDo(Long id, boolean hoatDong) {
-        if (id == null) {
+        if (id == null || id <= 0) {
             throw new IllegalArgumentException("ID lý do không hợp lệ");
+        }
+        LyDoThangThua hienTai = lyDoDAO.timTheoId(id);
+        if (hienTai == null) {
+            throw new IllegalArgumentException("Lý do với ID " + id + " không tồn tại trong hệ thống");
         }
         boolean ok = lyDoDAO.capNhatTrangThai(id, hoatDong);
         if (!ok) {
@@ -166,8 +174,12 @@ public class LyDoThangThuaService {
      * Thay đổi thứ tự hiển thị của lý do.
      */
     public void capNhatThuTuLyDo(Long id, int thuTu) {
-        if (id == null) {
+        if (id == null || id <= 0) {
             throw new IllegalArgumentException("ID lý do không hợp lệ");
+        }
+        LyDoThangThua hienTai = lyDoDAO.timTheoId(id);
+        if (hienTai == null) {
+            throw new IllegalArgumentException("Lý do với ID " + id + " không tồn tại trong hệ thống");
         }
         lyDoDAO.capNhatThuTu(id, Math.max(0, thuTu));
     }
@@ -176,17 +188,20 @@ public class LyDoThangThuaService {
      * Xóa lý do thắng/thua. Chặn xóa nếu đã được cơ hội tham chiếu.
      */
     public void xoaLyDo(Long id) {
-        if (id == null) {
+        if (id == null || id <= 0) {
             throw new IllegalArgumentException("ID lý do không hợp lệ");
         }
         int soThamChieu = lyDoDAO.demSoCoHoiThamChieu(id);
+        if (soThamChieu < 0) {
+            throw new IllegalStateException("Không thể kiểm tra dữ liệu tham chiếu do lỗi hệ thống. Để bảo đảm an toàn dữ liệu, thao tác xóa bị từ chối.");
+        }
         if (soThamChieu > 0) {
             throw new IllegalStateException("Không thể xóa lý do này vì đang được " + soThamChieu +
                     " cơ hội bán hàng tham chiếu. Hãy chuyển trạng thái sang 'Ngừng hoạt động' để bảo toàn dữ liệu lịch sử.");
         }
         boolean ok = lyDoDAO.xoa(id);
         if (!ok) {
-            throw new IllegalStateException("Không thể xóa lý do từ cơ sở dữ liệu");
+            throw new IllegalStateException("Không thể xóa lý do từ cơ sở dữ liệu (có thể bản ghi không tồn tại hoặc đã bị xóa)");
         }
     }
 
@@ -270,6 +285,10 @@ public class LyDoThangThuaService {
                 throw new IllegalStateException("Không thể thêm mới đối thủ vào cơ sở dữ liệu");
             }
         } else {
+            DoiThu hienTai = doiThuDAO.timTheoId(doiThu.getId());
+            if (hienTai == null) {
+                throw new IllegalArgumentException("Đối thủ với ID " + doiThu.getId() + " không tồn tại trong hệ thống");
+            }
             boolean ok = doiThuDAO.capNhat(doiThu);
             if (!ok) {
                 throw new IllegalStateException("Không thể cập nhật thông tin đối thủ");
@@ -281,8 +300,12 @@ public class LyDoThangThuaService {
      * Bật/tắt trạng thái hoạt động của đối thủ.
      */
     public void doiTrangThaiDoiThu(Long id, boolean hoatDong) {
-        if (id == null) {
+        if (id == null || id <= 0) {
             throw new IllegalArgumentException("ID đối thủ không hợp lệ");
+        }
+        DoiThu hienTai = doiThuDAO.timTheoId(id);
+        if (hienTai == null) {
+            throw new IllegalArgumentException("Đối thủ với ID " + id + " không tồn tại trong hệ thống");
         }
         boolean ok = doiThuDAO.capNhatTrangThai(id, hoatDong);
         if (!ok) {
@@ -294,17 +317,20 @@ public class LyDoThangThuaService {
      * Xóa đối thủ cạnh tranh. Chặn xóa nếu đã được cơ hội tham chiếu.
      */
     public void xoaDoiThu(Long id) {
-        if (id == null) {
+        if (id == null || id <= 0) {
             throw new IllegalArgumentException("ID đối thủ không hợp lệ");
         }
         int soThamChieu = doiThuDAO.demSoCoHoiThamChieu(id);
+        if (soThamChieu < 0) {
+            throw new IllegalStateException("Không thể kiểm tra dữ liệu tham chiếu do lỗi hệ thống. Để bảo đảm an toàn dữ liệu, thao tác xóa bị từ chối.");
+        }
         if (soThamChieu > 0) {
             throw new IllegalStateException("Không thể xóa đối thủ này vì đang được " + soThamChieu +
                     " cơ hội bán hàng tham chiếu. Hãy chuyển trạng thái sang 'Ngừng theo dõi' để bảo toàn dữ liệu.");
         }
         boolean ok = doiThuDAO.xoa(id);
         if (!ok) {
-            throw new IllegalStateException("Không thể xóa đối thủ khỏi cơ sở dữ liệu");
+            throw new IllegalStateException("Không thể xóa đối thủ khỏi cơ sở dữ liệu (có thể bản ghi không tồn tại hoặc đã bị xóa)");
         }
     }
 

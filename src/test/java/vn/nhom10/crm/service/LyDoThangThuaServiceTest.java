@@ -144,6 +144,33 @@ class LyDoThangThuaServiceTest {
         verify(lyDoDAO, never()).xoa(1L);
     }
 
+    @Test
+    @DisplayName("Fail-closed: Chặn xóa lý do khi truy vấn kiểm tra tham chiếu bị lỗi")
+    void testChanXoaLyDoKhiLoiHeThong() {
+        when(lyDoDAO.demSoCoHoiThamChieu(1L)).thenReturn(-1);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> service.xoaLyDo(1L));
+        assertTrue(ex.getMessage().contains("Không thể kiểm tra dữ liệu tham chiếu"));
+
+        verify(lyDoDAO, never()).xoa(1L);
+    }
+
+    @Test
+    @DisplayName("Kiểm tra ID không tồn tại hoặc không hợp lệ khi sửa/xóa lý do")
+    void testKiemTraIdLyDo() {
+        assertThrows(IllegalArgumentException.class, () -> service.xoaLyDo(null));
+        assertThrows(IllegalArgumentException.class, () -> service.xoaLyDo(0L));
+        assertThrows(IllegalArgumentException.class, () -> service.xoaLyDo(-5L));
+
+        assertThrows(IllegalArgumentException.class, () -> service.doiTrangThaiLyDo(0L, true));
+
+        // Cập nhật lý do không tồn tại
+        LyDoThangThua lyDo = new LyDoThangThua(999L, "WIN_TEST", "Test", LyDoThangThua.LOAI_THANG, 1, true, null);
+        when(lyDoDAO.timTheoId(999L)).thenReturn(null);
+        when(lyDoDAO.tonTaiMa(eq("WIN_TEST"), eq(999L))).thenReturn(false);
+        assertThrows(IllegalArgumentException.class, () -> service.luuLyDo(lyDo));
+    }
+
     // =========================================================================
     // AC2: DANH SÁCH ĐỐI THỦ CẠNH TRANH
     // =========================================================================
@@ -166,6 +193,11 @@ class LyDoThangThuaServiceTest {
         when(doiThuDAO.demSoCoHoiThamChieu(2L)).thenReturn(5);
         assertThrows(IllegalStateException.class, () -> service.xoaDoiThu(2L));
         verify(doiThuDAO, never()).xoa(2L);
+
+        // Test fail-closed khi lỗi truy vấn tham chiếu
+        when(doiThuDAO.demSoCoHoiThamChieu(3L)).thenReturn(-1);
+        assertThrows(IllegalStateException.class, () -> service.xoaDoiThu(3L));
+        verify(doiThuDAO, never()).xoa(3L);
     }
 
     // =========================================================================

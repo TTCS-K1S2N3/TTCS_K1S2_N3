@@ -172,4 +172,17 @@ class LyDoThangThuaServletTest {
         verify(service).napDuLieuMauNeuTrong();
         verify(response).sendRedirect(contains("msg=success"));
     }
+
+    @Test
+    @DisplayName("doPost với ID không phải số (ID=abc) -> Bắt lỗi và không gây ra 500")
+    void testDoPostIdKhongPhaiSo() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(directorUser);
+        when(request.getParameter("action")).thenReturn("xoa-ly-do");
+        when(request.getParameter("id")).thenReturn("abc");
+
+        servlet.doPost(request, response);
+
+        verify(service, never()).xoaLyDo(any());
+        verify(response).sendRedirect(contains("msg=error"));
+    }
 }

@@ -223,8 +223,19 @@ public class LyDoThangThuaServlet extends HttpServlet {
         String hoatDongStr = request.getParameter("hoatDong");
 
         LyDoThangThua lyDo = new LyDoThangThua();
-        if (isUpdate && idStr != null && !idStr.isBlank()) {
-            lyDo.setId(Long.parseLong(idStr.trim()));
+        if (isUpdate) {
+            if (idStr == null || idStr.isBlank()) {
+                throw new IllegalArgumentException("Thiếu ID lý do cần cập nhật");
+            }
+            try {
+                long parsedId = Long.parseLong(idStr.trim());
+                if (parsedId <= 0) {
+                    throw new IllegalArgumentException("ID lý do không hợp lệ: " + idStr);
+                }
+                lyDo.setId(parsedId);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("ID lý do không hợp lệ: " + idStr);
+            }
         }
         lyDo.setMaLyDo(maLyDo);
         lyDo.setTenLyDo(tenLyDo);
@@ -254,7 +265,15 @@ public class LyDoThangThuaServlet extends HttpServlet {
         if (idStr == null || idStr.isBlank()) {
             throw new IllegalArgumentException("Thiếu ID lý do cần thay đổi trạng thái");
         }
-        Long id = Long.parseLong(idStr.trim());
+        Long id;
+        try {
+            id = Long.parseLong(idStr.trim());
+            if (id <= 0) {
+                throw new IllegalArgumentException("ID lý do không hợp lệ: " + idStr);
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("ID lý do không hợp lệ: " + idStr);
+        }
         boolean hoatDong = "1".equals(hoatDongStr) || "true".equalsIgnoreCase(hoatDongStr);
 
         lyDoService.doiTrangThaiLyDo(id, hoatDong);
@@ -272,8 +291,21 @@ public class LyDoThangThuaServlet extends HttpServlet {
         if (idStr == null || idStr.isBlank() || thuTuStr == null || thuTuStr.isBlank()) {
             throw new IllegalArgumentException("Thiếu thông tin ID hoặc thứ tự sắp xếp");
         }
-        Long id = Long.parseLong(idStr.trim());
-        int thuTu = Integer.parseInt(thuTuStr.trim());
+        Long id;
+        try {
+            id = Long.parseLong(idStr.trim());
+            if (id <= 0) {
+                throw new IllegalArgumentException("ID lý do không hợp lệ: " + idStr);
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("ID lý do không hợp lệ: " + idStr);
+        }
+        int thuTu;
+        try {
+            thuTu = Integer.parseInt(thuTuStr.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Thứ tự hiển thị phải là số nguyên: " + thuTuStr);
+        }
 
         lyDoService.capNhatThuTuLyDo(id, thuTu);
 
@@ -287,7 +319,15 @@ public class LyDoThangThuaServlet extends HttpServlet {
         if (idStr == null || idStr.isBlank()) {
             throw new IllegalArgumentException("Thiếu ID lý do cần xóa");
         }
-        Long id = Long.parseLong(idStr.trim());
+        Long id;
+        try {
+            id = Long.parseLong(idStr.trim());
+            if (id <= 0) {
+                throw new IllegalArgumentException("ID lý do không hợp lệ: " + idStr);
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("ID lý do không hợp lệ: " + idStr);
+        }
         lyDoService.xoaLyDo(id);
 
         String tab = request.getParameter("tab");
@@ -304,8 +344,19 @@ public class LyDoThangThuaServlet extends HttpServlet {
         String hoatDongStr = request.getParameter("hoatDong");
 
         DoiThu doiThu = new DoiThu();
-        if (isUpdate && idStr != null && !idStr.isBlank()) {
-            doiThu.setId(Long.parseLong(idStr.trim()));
+        if (isUpdate) {
+            if (idStr == null || idStr.isBlank()) {
+                throw new IllegalArgumentException("Thiếu ID đối thủ cần cập nhật");
+            }
+            try {
+                long parsedId = Long.parseLong(idStr.trim());
+                if (parsedId <= 0) {
+                    throw new IllegalArgumentException("ID đối thủ không hợp lệ: " + idStr);
+                }
+                doiThu.setId(parsedId);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("ID đối thủ không hợp lệ: " + idStr);
+            }
         }
         doiThu.setMaDoiThu(maDoiThu);
         doiThu.setTenDoiThu(tenDoiThu);
@@ -327,7 +378,15 @@ public class LyDoThangThuaServlet extends HttpServlet {
         if (idStr == null || idStr.isBlank()) {
             throw new IllegalArgumentException("Thiếu ID đối thủ cần thay đổi trạng thái");
         }
-        Long id = Long.parseLong(idStr.trim());
+        Long id;
+        try {
+            id = Long.parseLong(idStr.trim());
+            if (id <= 0) {
+                throw new IllegalArgumentException("ID đối thủ không hợp lệ: " + idStr);
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("ID đối thủ không hợp lệ: " + idStr);
+        }
         boolean hoatDong = "1".equals(hoatDongStr) || "true".equalsIgnoreCase(hoatDongStr);
 
         lyDoService.doiTrangThaiDoiThu(id, hoatDong);
@@ -343,7 +402,15 @@ public class LyDoThangThuaServlet extends HttpServlet {
         if (idStr == null || idStr.isBlank()) {
             throw new IllegalArgumentException("Thiếu ID đối thủ cần xóa");
         }
-        Long id = Long.parseLong(idStr.trim());
+        Long id;
+        try {
+            id = Long.parseLong(idStr.trim());
+            if (id <= 0) {
+                throw new IllegalArgumentException("ID đối thủ không hợp lệ: " + idStr);
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("ID đối thủ không hợp lệ: " + idStr);
+        }
         lyDoService.xoaDoiThu(id);
 
         phanHoiThanhCong(request, response, "Đã xóa đối thủ cạnh tranh thành công.", "doi-thu");
@@ -358,8 +425,22 @@ public class LyDoThangThuaServlet extends HttpServlet {
         String ngayKyStr = request.getParameter("ngayKy");
         String ghiChu = request.getParameter("ghiChu");
 
-        Long lyDoId = (lyDoIdStr != null && !lyDoIdStr.isBlank()) ? Long.parseLong(lyDoIdStr.trim()) : null;
-        Long doiThuId = (doiThuIdStr != null && !doiThuIdStr.isBlank()) ? Long.parseLong(doiThuIdStr.trim()) : null;
+        Long lyDoId = null;
+        if (lyDoIdStr != null && !lyDoIdStr.isBlank()) {
+            try {
+                lyDoId = Long.parseLong(lyDoIdStr.trim());
+            } catch (NumberFormatException ignored) {
+                lyDoId = -1L;
+            }
+        }
+        Long doiThuId = null;
+        if (doiThuIdStr != null && !doiThuIdStr.isBlank()) {
+            try {
+                doiThuId = Long.parseLong(doiThuIdStr.trim());
+            } catch (NumberFormatException ignored) {
+                doiThuId = -1L;
+            }
+        }
 
         BigDecimal giaTri = null;
         if (giaTriStr != null && !giaTriStr.isBlank()) {
