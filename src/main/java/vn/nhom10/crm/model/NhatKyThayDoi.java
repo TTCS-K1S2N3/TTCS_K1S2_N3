@@ -169,8 +169,22 @@ public class NhatKyThayDoi implements Serializable {
         return truongThayDoi;
     }
 
-    public void setTruongThayDoi(String truongThayDoi) {
-        this.truongThayDoi = truongThayDoi;
+    public static final Pattern SENSITIVE_KEY_PATTERN = Pattern.compile(
+            "(?i).*(password|mat_khau|matkhau|token|secret|smtp_password|api_key|authorization|session_id|sessiontoken).*"
+    );
+
+    public static String cheGiaTriNhayCam(String truong, String giaTri) {
+        if (giaTri == null || giaTri.isBlank()) {
+            return giaTri;
+        }
+        if (truong != null && SENSITIVE_KEY_PATTERN.matcher(truong).matches()) {
+            return "******";
+        }
+        String result = giaTri;
+        result = result.replaceAll("(?i)(\"(?:password|mat_khau|matkhau|token|secret|smtp_password|api_key|authorization|session_id|sessiontoken)\"\\s*:\\s*)\"(?:\\\\.|[^\"\\\\])*\"", "$1\"******\"");
+        result = result.replaceAll("(?i)(\"(?:password|mat_khau|matkhau|token|secret|smtp_password|api_key|authorization|session_id|sessiontoken)\"\\s*:\\s*)[^,}\\]\\s]+", "$1\"******\"");
+        result = result.replaceAll("(?i)\\b(password|mat_khau|matkhau|token|secret|smtp_password|api_key|authorization|session_id|sessiontoken)\\s*[:=]\\s*[^\\s,;}]+", "$1: ******");
+        return result;
     }
 
     public String getGiaTriTruoc() {
@@ -178,7 +192,7 @@ public class NhatKyThayDoi implements Serializable {
     }
 
     public void setGiaTriTruoc(String giaTriTruoc) {
-        this.giaTriTruoc = giaTriTruoc;
+        this.giaTriTruoc = cheGiaTriNhayCam(this.truongThayDoi, giaTriTruoc);
     }
 
     public String getGiaTriSau() {
@@ -186,7 +200,7 @@ public class NhatKyThayDoi implements Serializable {
     }
 
     public void setGiaTriSau(String giaTriSau) {
-        this.giaTriSau = giaTriSau;
+        this.giaTriSau = cheGiaTriNhayCam(this.truongThayDoi, giaTriSau);
     }
 
     public String getGiaTriTruocJson() {
@@ -197,8 +211,8 @@ public class NhatKyThayDoi implements Serializable {
     }
 
     public void setGiaTriTruocJson(String giaTriTruocJson) {
-        this.giaTriTruocJson = giaTriTruocJson;
-        giaiMaJson(giaTriTruocJson, true);
+        this.giaTriTruocJson = cheGiaTriNhayCam(null, giaTriTruocJson);
+        giaiMaJson(this.giaTriTruocJson, true);
     }
 
     public String getGiaTriSauJson() {
@@ -209,8 +223,18 @@ public class NhatKyThayDoi implements Serializable {
     }
 
     public void setGiaTriSauJson(String giaTriSauJson) {
-        this.giaTriSauJson = giaTriSauJson;
-        giaiMaJson(giaTriSauJson, false);
+        this.giaTriSauJson = cheGiaTriNhayCam(null, giaTriSauJson);
+        giaiMaJson(this.giaTriSauJson, false);
+    }
+
+    public void setTruongThayDoi(String truongThayDoi) {
+        this.truongThayDoi = truongThayDoi;
+        if (this.giaTriTruoc != null) {
+            this.giaTriTruoc = cheGiaTriNhayCam(truongThayDoi, this.giaTriTruoc);
+        }
+        if (this.giaTriSau != null) {
+            this.giaTriSau = cheGiaTriNhayCam(truongThayDoi, this.giaTriSau);
+        }
     }
 
     public HanhDongThayDoi getHanhDong() {
@@ -286,6 +310,7 @@ public class NhatKyThayDoi implements Serializable {
     // =========================================================================
 
     public static String dongGoiJson(String maDoiTuong, String tenDoiTuong, String truongThayDoi, String giaTri) {
+        String safeGiaTri = cheGiaTriNhayCam(truongThayDoi, giaTri);
         StringBuilder sb = new StringBuilder("{");
         appendJsonField(sb, "maDoiTuong", maDoiTuong);
         sb.append(",");
@@ -293,7 +318,7 @@ public class NhatKyThayDoi implements Serializable {
         sb.append(",");
         appendJsonField(sb, "truongThayDoi", truongThayDoi);
         sb.append(",");
-        appendJsonField(sb, "giaTri", giaTri);
+        appendJsonField(sb, "giaTri", safeGiaTri);
         sb.append("}");
         return sb.toString();
     }

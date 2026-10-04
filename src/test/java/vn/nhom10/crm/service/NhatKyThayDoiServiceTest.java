@@ -3,247 +3,256 @@ package vn.nhom10.crm.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import vn.nhom10.crm.dao.NguoiDungDAO;
+import vn.nhom10.crm.dao.NhatKyThayDoiDAO;
+import vn.nhom10.crm.dao.NhomKinhDoanhDAO;
+import vn.nhom10.crm.dao.VaiTroDAO;
 import vn.nhom10.crm.dto.BoLocNhatKyDTO;
+import vn.nhom10.crm.dto.GanVaiTroNhomDTO;
 import vn.nhom10.crm.dto.KetQuaPhanTrangDTO;
 import vn.nhom10.crm.dto.NguoiDungOptionDTO;
 import vn.nhom10.crm.dto.NhatKyThayDoiDTO;
 import vn.nhom10.crm.dto.ThongKeNhatKyDTO;
 import vn.nhom10.crm.model.HanhDongThayDoi;
 import vn.nhom10.crm.model.LoaiDoiTuongNhayCam;
+import vn.nhom10.crm.model.NguoiDung;
+import vn.nhom10.crm.model.NhatKyThayDoi;
+import vn.nhom10.crm.model.VaiTro;
+import vn.nhom10.crm.model.VaiTroEnum;
 
+import java.lang.reflect.Method;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-@DisplayName("Kiểm thử NhatKyThayDoiService - Story S2-04")
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+@DisplayName("Kiểm thử toàn diện NhatKyThayDoiService - Story S2-04")
 class NhatKyThayDoiServiceTest {
+
+    @Mock
+    private NhatKyThayDoiDAO mockDAO;
 
     private NhatKyThayDoiService service;
 
     @BeforeEach
     void setUp() {
-        service = new NhatKyThayDoiService();
+        service = new NhatKyThayDoiService(mockDAO);
     }
 
     @Test
-    @DisplayName("AC1 & AC2: Dữ liệu khởi tạo có đủ 4 loại đối tượng nhạy cảm và đầy đủ trường thông tin")
-    void testKhoiTaoDuLieuMauDayDuThongTin() {
-        List<NhatKyThayDoiDTO> tatCa = service.layTatCa();
-        assertNotNull(tatCa);
-        assertFalse(tatCa.isEmpty(), "Danh sách không được rỗng");
-        assertTrue(tatCa.size() >= 12, "Cần có ít nhất 12 bản ghi mô phỏng nghiệp vụ");
+    @DisplayName("DB trống: GET danh sách không tự nạp log mẫu, trả về danh sách rỗng (Empty State)")
+    void testDbTrongKhongSinhLogMau() {
+        when(mockDAO.demTongSoBanGhi(any())).thenReturn(0L);
 
-        // Kiểm tra từng bản ghi phải có đủ: người thực hiện, thời điểm, giá trị trước và sau
-        for (NhatKyThayDoiDTO item : tatCa) {
-            assertNotNull(item.getId(), "Bản ghi phải có ID");
-            assertNotNull(item.getMaTruyVet(), "Bản ghi phải có mã truy vết");
-            assertNotNull(item.getNguoiThucHienId(), "Phải có ID người thực hiện");
-            assertNotNull(item.getTenNguoiThucHien(), "Phải có tên người thực hiện");
-            assertNotNull(item.getThoiDiem(), "Phải có thời điểm thay đổi");
-            assertNotNull(item.getLoaiDoiTuong(), "Phải có loại đối tượng nhạy cảm");
-            assertNotNull(item.getGiaTriTruoc(), "Phải có giá trị trước (old value)");
-            assertNotNull(item.getGiaTriSau(), "Phải có giá trị sau (new value)");
-            assertNotNull(item.getTruongThayDoi(), "Phải có trường thay đổi");
-        }
-
-        // Kiểm tra đủ cả 4 loại dữ liệu nhạy cảm
-        boolean coChietKhau = tatCa.stream().anyMatch(i -> i.getLoaiDoiTuong() == LoaiDoiTuongNhayCam.CHIET_KHAU);
-        boolean coChiTieu = tatCa.stream().anyMatch(i -> i.getLoaiDoiTuong() == LoaiDoiTuongNhayCam.CHI_TIEU);
-        boolean coQuyenSoHuu = tatCa.stream().anyMatch(i -> i.getLoaiDoiTuong() == LoaiDoiTuongNhayCam.QUYEN_SO_HUU);
-        boolean coVaiTro = tatCa.stream().anyMatch(i -> i.getLoaiDoiTuong() == LoaiDoiTuongNhayCam.VAI_TRO_NGUOI_DUNG);
-
-        assertTrue(coChietKhau, "Phải ghi lại thay đổi trên chiết khấu");
-        assertTrue(coChiTieu, "Phải ghi lại thay đổi trên chỉ tiêu");
-        assertTrue(coQuyenSoHuu, "Phải ghi lại thay đổi trên quyền sở hữu dữ liệu");
-        assertTrue(coVaiTro, "Phải ghi lại thay đổi trên vai trò người dùng");
-    }
-
-    @Test
-    @DisplayName("AC3: Lọc theo người dùng thực hiện")
-    void testLocTheoNguoiDung() {
         BoLocNhatKyDTO boLoc = new BoLocNhatKyDTO();
-        boLoc.setNguoiDungId(101L); // Lê Minh Tuấn
+        KetQuaPhanTrangDTO<NhatKyThayDoiDTO> ketQua = service.timKiemNhatKy(boLoc);
 
-        KetQuaPhanTrangDTO<NhatKyThayDoiDTO> ketQua = service.layDanhSach(boLoc);
         assertNotNull(ketQua);
-        assertFalse(ketQua.getDanhSach().isEmpty(), "Phải có bản ghi của người dùng 101");
+        assertNotNull(ketQua.getDanhSach());
+        assertTrue(ketQua.getDanhSach().isEmpty(), "CSDL trống thì danh sách phải rỗng hoàn toàn, không được có demo data");
+        assertEquals(0, ketQua.getTongSoBanGhi());
 
-        for (NhatKyThayDoiDTO item : ketQua.getDanhSach()) {
-            assertEquals(101L, item.getNguoiThucHienId(), "Tất cả bản ghi phải do người dùng 101 thực hiện");
-        }
+        // Đảm bảo không có lệnh INSERT ghi log mẫu tự động nào được gọi
+        verify(mockDAO, never()).ghiNhatKy(any(NhatKyThayDoi.class));
+        verify(mockDAO, never()).layDanhSach(any());
     }
 
     @Test
-    @DisplayName("AC3: Lọc theo loại đối tượng nhạy cảm (CHIET_KHAU)")
-    void testLocTheoLoaiDoiTuong() {
+    @DisplayName("DB lỗi: fail-safe trả về danh sách rỗng, không sập 500, không fallback dữ liệu giả")
+    void testDbLoiKhongFallbackDuLieuGia() {
+        when(mockDAO.demTongSoBanGhi(any())).thenThrow(new RuntimeException("Database connection timeout"));
+
+        BoLocNhatKyDTO boLoc = new BoLocNhatKyDTO();
+        KetQuaPhanTrangDTO<NhatKyThayDoiDTO> ketQua = service.timKiemNhatKy(boLoc);
+
+        assertNotNull(ketQua);
+        assertNotNull(ketQua.getDanhSach());
+        assertTrue(ketQua.getDanhSach().isEmpty(), "Khi DB lỗi phải trả về danh sách rỗng, không được fallback log mẫu");
+        assertEquals(0, ketQua.getTongSoBanGhi());
+    }
+
+    @Test
+    @DisplayName("Filter người dùng: truyền đúng điều kiện lọc vào DAO")
+    void testFilterNguoiDung() {
+        BoLocNhatKyDTO boLoc = new BoLocNhatKyDTO();
+        boLoc.setNguoiDungId(101L);
+
+        NhatKyThayDoi model = new NhatKyThayDoi();
+        model.setId(1L);
+        model.setNguoiThucHienId(101L);
+        model.setTenNguoiThucHien("Lê Minh Tuấn");
+        model.setLoaiDoiTuong(LoaiDoiTuongNhayCam.CHI_TIEU);
+        model.setTruongThayDoi("Chỉ tiêu");
+        model.setGiaTriTruoc("500tr");
+        model.setGiaTriSau("350tr");
+        model.setCreatedAt(LocalDateTime.now());
+
+        when(mockDAO.demTongSoBanGhi(boLoc)).thenReturn(1L);
+        when(mockDAO.layDanhSach(boLoc)).thenReturn(Collections.singletonList(model));
+
+        KetQuaPhanTrangDTO<NhatKyThayDoiDTO> ketQua = service.timKiemNhatKy(boLoc);
+        assertEquals(1, ketQua.getDanhSach().size());
+        assertEquals(101L, ketQua.getDanhSach().get(0).getNguoiThucHienId());
+        verify(mockDAO).demTongSoBanGhi(boLoc);
+        verify(mockDAO).layDanhSach(boLoc);
+    }
+
+    @Test
+    @DisplayName("Filter loại đối tượng: truyền đúng loại nhạy cảm vào DAO")
+    void testFilterLoaiDoiTuong() {
         BoLocNhatKyDTO boLoc = new BoLocNhatKyDTO();
         boLoc.setLoaiDoiTuong("CHIET_KHAU");
 
-        KetQuaPhanTrangDTO<NhatKyThayDoiDTO> ketQua = service.layDanhSach(boLoc);
-        assertNotNull(ketQua);
-        assertFalse(ketQua.getDanhSach().isEmpty());
+        NhatKyThayDoi model = new NhatKyThayDoi();
+        model.setId(2L);
+        model.setLoaiDoiTuong(LoaiDoiTuongNhayCam.CHIET_KHAU);
+        model.setTruongThayDoi("Tỷ lệ chiết khấu");
+        model.setGiaTriTruoc("10%");
+        model.setGiaTriSau("25%");
+        model.setCreatedAt(LocalDateTime.now());
 
-        for (NhatKyThayDoiDTO item : ketQua.getDanhSach()) {
-            assertEquals(LoaiDoiTuongNhayCam.CHIET_KHAU, item.getLoaiDoiTuong());
-        }
+        when(mockDAO.demTongSoBanGhi(boLoc)).thenReturn(1L);
+        when(mockDAO.layDanhSach(boLoc)).thenReturn(Collections.singletonList(model));
+
+        KetQuaPhanTrangDTO<NhatKyThayDoiDTO> ketQua = service.timKiemNhatKy(boLoc);
+        assertEquals(1, ketQua.getDanhSach().size());
+        assertEquals(LoaiDoiTuongNhayCam.CHIET_KHAU, ketQua.getDanhSach().get(0).getLoaiDoiTuong());
+        verify(mockDAO).layDanhSach(boLoc);
     }
 
     @Test
-    @DisplayName("AC3: Lọc theo khoảng thời gian (Từ ngày - Đến ngày)")
-    void testLocTheoKhoangThoiGian() {
+    @DisplayName("Filter khoảng ngày: truyền đúng từ ngày - đến ngày vào DAO")
+    void testFilterKhoangNgay() {
         BoLocNhatKyDTO boLoc = new BoLocNhatKyDTO();
-        boLoc.setTuNgay(LocalDate.of(2026, 9, 25));
-        boLoc.setDenNgay(LocalDate.of(2026, 9, 30));
-
-        KetQuaPhanTrangDTO<NhatKyThayDoiDTO> ketQua = service.layDanhSach(boLoc);
-        assertNotNull(ketQua);
-        assertFalse(ketQua.getDanhSach().isEmpty());
-
-        for (NhatKyThayDoiDTO item : ketQua.getDanhSach()) {
-            LocalDate ngay = item.getThoiDiem().toLocalDate();
-            assertFalse(ngay.isBefore(LocalDate.of(2026, 9, 25)), "Ngày không được trước 25/09/2026");
-            assertFalse(ngay.isAfter(LocalDate.of(2026, 9, 30)), "Ngày không được sau 30/09/2026");
-        }
-    }
-
-    @Test
-    @DisplayName("AC3: Lọc kết hợp đa tiêu chí (Người dùng + Loại đối tượng + Thời gian)")
-    void testLocKetHopDaTieuChi() {
-        BoLocNhatKyDTO boLoc = new BoLocNhatKyDTO();
-        boLoc.setNguoiDungId(101L);
-        boLoc.setLoaiDoiTuong("CHI_TIEU");
         boLoc.setTuNgay(LocalDate.of(2026, 9, 1));
         boLoc.setDenNgay(LocalDate.of(2026, 9, 30));
 
-        KetQuaPhanTrangDTO<NhatKyThayDoiDTO> ketQua = service.layDanhSach(boLoc);
-        assertNotNull(ketQua);
-        assertFalse(ketQua.getDanhSach().isEmpty());
+        when(mockDAO.demTongSoBanGhi(boLoc)).thenReturn(0L);
 
-        for (NhatKyThayDoiDTO item : ketQua.getDanhSach()) {
-            assertEquals(101L, item.getNguoiThucHienId());
-            assertEquals(LoaiDoiTuongNhayCam.CHI_TIEU, item.getLoaiDoiTuong());
-            LocalDate ngay = item.getThoiDiem().toLocalDate();
-            assertFalse(ngay.isBefore(LocalDate.of(2026, 9, 1)));
-            assertFalse(ngay.isAfter(LocalDate.of(2026, 9, 30)));
+        KetQuaPhanTrangDTO<NhatKyThayDoiDTO> ketQua = service.timKiemNhatKy(boLoc);
+        assertNotNull(ketQua);
+        verify(mockDAO).demTongSoBanGhi(boLoc);
+    }
+
+    @Test
+    @DisplayName("Tính bất biến (Immutability): Service và DAO không có API sửa hoặc xóa nhật ký")
+    void testAuditImmutability() {
+        Method[] serviceMethods = NhatKyThayDoiService.class.getDeclaredMethods();
+        for (Method m : serviceMethods) {
+            String name = m.getName().toLowerCase();
+            assertFalse(name.contains("update"), "Service không được có phương thức update audit log: " + m.getName());
+            assertFalse(name.contains("delete"), "Service không được có phương thức delete audit log: " + m.getName());
+            assertFalse(name.contains("sua"), "Service không được có phương thức sửa audit log: " + m.getName());
+            assertFalse(name.contains("xoa"), "Service không được có phương thức xóa audit log: " + m.getName());
+        }
+
+        Method[] daoMethods = NhatKyThayDoiDAO.class.getDeclaredMethods();
+        for (Method m : daoMethods) {
+            String name = m.getName().toLowerCase();
+            assertFalse(name.contains("update"), "DAO không được có phương thức update audit log: " + m.getName());
+            assertFalse(name.contains("delete"), "DAO không được có phương thức delete audit log: " + m.getName());
+            assertFalse(name.contains("xoa"), "DAO không được có phương thức xóa audit log: " + m.getName());
         }
     }
 
     @Test
-    @DisplayName("Lọc theo từ khóa tìm kiếm nhanh")
-    void testLocTheoTuKhoa() {
-        BoLocNhatKyDTO boLoc = new BoLocNhatKyDTO();
-        boLoc.setTuKhoa("Sao Mai");
+    @DisplayName("Bảo mật dữ liệu nhạy cảm: Tự động redact mật khẩu, token, secret")
+    void testRedactionSensitiveData() {
+        NhatKyThayDoi nk = new NhatKyThayDoi();
+        nk.setTruongThayDoi("mat_khau");
+        nk.setGiaTriTruoc("SuperSecret123!");
+        nk.setGiaTriSau("NewSecret456@");
 
-        KetQuaPhanTrangDTO<NhatKyThayDoiDTO> ketQua = service.layDanhSach(boLoc);
-        assertNotNull(ketQua);
-        assertFalse(ketQua.getDanhSach().isEmpty());
+        assertEquals("******", nk.getGiaTriTruoc(), "Mật khẩu cũ phải được redact");
+        assertEquals("******", nk.getGiaTriSau(), "Mật khẩu mới phải được redact");
 
-        for (NhatKyThayDoiDTO item : ketQua.getDanhSach()) {
-            boolean coTuKhoa = (item.getTenDoiTuong() != null && item.getTenDoiTuong().toLowerCase().contains("sao mai"))
-                    || (item.getGiaTriSau() != null && item.getGiaTriSau().toLowerCase().contains("sao mai"));
-            assertTrue(coTuKhoa, "Bản ghi phải chứa từ khóa tìm kiếm");
-        }
+        // Kiểm tra với chuỗi JSON chứa secret/token
+        String rawJson = "{\"token\":\"xyz123secret\",\"status\":\"ACTIVE\"}";
+        String safeJson = NhatKyThayDoi.cheGiaTriNhayCam(null, rawJson);
+        assertFalse(safeJson.contains("xyz123secret"), "Token bí mật không được lộ trong JSON");
+        assertTrue(safeJson.contains("\"token\":\"******\""));
     }
 
     @Test
-    @DisplayName("Tính toán số liệu thống kê đầy đủ cho KPI cards")
-    void testTinhThongKe() {
-        ThongKeNhatKyDTO thongKe = service.tinhThongKe();
-        assertNotNull(thongKe);
-        assertTrue(thongKe.getTongSoBanGhi() >= 12);
-        assertTrue(thongKe.getSoThayDoiChietKhau() > 0);
-        assertTrue(thongKe.getSoThayDoiChiTieu() > 0);
-        assertTrue(thongKe.getSoThayDoiQuyenSoHuu() > 0);
-        assertTrue(thongKe.getSoThayDoiVaiTro() > 0);
-        assertTrue(thongKe.getSoNguoiThucHien() > 0);
+    @DisplayName("Chi tiết bản ghi theo ID: ID không hợp lệ hoặc không tồn tại trả về null")
+    void testLayChiTietId() {
+        assertNull(service.layChiTiet(-1L));
+        assertNull(service.layChiTiet(0L));
+
+        when(mockDAO.timTheoId(999L)).thenReturn(null);
+        assertNull(service.layChiTiet(999L));
+
+        NhatKyThayDoi model = new NhatKyThayDoi();
+        model.setId(10L);
+        model.setMaDoiTuong("BG-088");
+        model.setTruongThayDoi("Chiết khấu");
+        model.setGiaTriTruoc("10%");
+        model.setGiaTriSau("20%");
+        model.setCreatedAt(LocalDateTime.now());
+
+        when(mockDAO.timTheoId(10L)).thenReturn(model);
+        NhatKyThayDoiDTO dto = service.layChiTiet(10L);
+        assertNotNull(dto);
+        assertEquals(10L, dto.getId());
+        assertEquals("BG-088", dto.getMaDoiTuong());
     }
 
     @Test
-    @DisplayName("AC1 & AC2: Ghi nhận thành công thay đổi nhạy cảm mới")
-    void testGhiNhatKyThayDoiMoi() {
-        int soLuongTruoc = service.layTatCa().size();
+    @DisplayName("Audit Write Hook: Phân quyền thay đổi vai trò người dùng -> tự động tạo bản ghi nhật ký")
+    void testWriteHookPhanQuyenNguoiDung() throws SQLException {
+        NguoiDungDAO mockUserDAO = mock(NguoiDungDAO.class);
+        VaiTroDAO mockRoleDAO = mock(VaiTroDAO.class);
+        NhomKinhDoanhDAO mockTeamDAO = mock(NhomKinhDoanhDAO.class);
 
-        boolean ketQua = service.ghiNhatKyThayDoi(
-                105L, "Hoàng Văn Nam", "nam.hv@crm.vn",
-                LoaiDoiTuongNhayCam.CHIET_KHAU,
-                "BG-2026-999", "Báo giá Thiết bị Mạng Cisco",
-                "Tỷ lệ chiết khấu (%)",
-                "5.0%", "18.0%",
-                HanhDongThayDoi.CAP_NHAT,
-                "Giám đốc phê duyệt đặc biệt",
-                "192.168.1.200", "Chrome 128 / Windows 11"
-        );
+        NguoiDung targetUser = new NguoiDung(5, "Trần Văn Nam", "nam.tv@crm.vn");
+        targetUser.themVaiTro(new VaiTro(4, "SALES_REP", "Nhân viên kinh doanh", "Sales Rep"));
 
-        assertTrue(ketQua, "Ghi nhận thay đổi phải thành công");
-        assertEquals(soLuongTruoc + 1, service.layTatCa().size());
+        NguoiDung adminActor = new NguoiDung(1, "Admin Tổng", "admin@crm.vn");
+        adminActor.themVaiTro(new VaiTro(1, "ADMIN", "Quản trị hệ thống", "Admin"));
 
-        // Kiểm tra bản ghi mới nhất được đưa lên đầu danh sách
-        NhatKyThayDoiDTO moiNhat = service.layTatCa().get(0);
-        assertEquals("BG-2026-999", moiNhat.getMaDoiTuong());
-        assertEquals("5.0%", moiNhat.getGiaTriTruoc());
-        assertEquals("18.0%", moiNhat.getGiaTriSau());
-        assertEquals(LoaiDoiTuongNhayCam.CHIET_KHAU, moiNhat.getLoaiDoiTuong());
-    }
+        when(mockUserDAO.timTheoId(5)).thenReturn(targetUser);
+        when(mockUserDAO.timTheoId(1)).thenReturn(adminActor);
 
-    @Test
-    @DisplayName("Lấy chi tiết bản ghi theo ID")
-    void testLayChiTiet() {
-        NhatKyThayDoiDTO chiTiet = service.layChiTiet(1L);
-        assertNotNull(chiTiet);
-        assertEquals(1L, chiTiet.getId());
-        assertEquals("KPI-2026-Q3-T01", chiTiet.getMaDoiTuong());
-        assertEquals("500,000,000 đ", chiTiet.getGiaTriTruoc());
-        assertEquals("350,000,000 đ", chiTiet.getGiaTriSau());
+        VaiTro roleLeader = new VaiTro(3, "TEAM_LEAD", "Trưởng nhóm kinh doanh", "Team Lead");
+        when(mockRoleDAO.timTheoId(3)).thenReturn(roleLeader);
+        when(mockTeamDAO.timTheoId(2)).thenReturn(new vn.nhom10.crm.model.NhomKinhDoanh(2, "KD1", "Nhóm 1", "Mô tả", 1));
+        when(mockUserDAO.capNhatVaiTroVaNhomTransaction(eq(5), anyList(), eq(2))).thenReturn(true);
 
-        NhatKyThayDoiDTO khongTonTai = service.layChiTiet(99999L);
-        assertNull(khongTonTai);
-    }
+        when(mockDAO.ghiNhatKy(any(NhatKyThayDoi.class))).thenReturn(101L);
 
-    @Test
-    @DisplayName("Lấy danh sách người dùng cho dropdown bộ lọc")
-    void testLayDanhSachNguoiDung() {
-        List<NguoiDungOptionDTO> danhSach = service.layDanhSachNguoiDung();
-        assertNotNull(danhSach);
-        assertFalse(danhSach.isEmpty());
-        assertTrue(danhSach.stream().anyMatch(u -> "Lê Minh Tuấn".equals(u.getHoTen())));
-    }
+        PhanQuyenService phanQuyenService = new PhanQuyenService(mockUserDAO, mockRoleDAO, mockTeamDAO, service);
 
-    @Test
-    @DisplayName("Kiểm tra phân trang hợp lệ")
-    void testPhanTrangHopLe() {
-        BoLocNhatKyDTO boLoc = new BoLocNhatKyDTO();
-        boLoc.setTrang(1);
-        boLoc.setSoBanGhiTrenTrang(5);
+        GanVaiTroNhomDTO result = phanQuyenService.ganVaiTroVaNhomKinhDoanh(
+                5, Collections.singletonList(3), 2, 1, "192.168.1.50", "Firefox/Linux");
 
-        KetQuaPhanTrangDTO<NhatKyThayDoiDTO> trang1 = service.layDanhSach(boLoc);
-        assertNotNull(trang1);
-        assertEquals(5, trang1.getDanhSach().size());
-        assertEquals(1, trang1.getTrangHienTai());
-        assertTrue(trang1.isCoTrangSau());
-        assertFalse(trang1.isCoTrangTruoc());
-        assertTrue(trang1.getTongSoTrang() >= 3);
+        assertTrue(result.isThanhCong());
 
-        // Lấy trang 2
-        boLoc.setTrang(2);
-        KetQuaPhanTrangDTO<NhatKyThayDoiDTO> trang2 = service.layDanhSach(boLoc);
-        assertEquals(5, trang2.getDanhSach().size());
-        assertEquals(2, trang2.getTrangHienTai());
-        assertTrue(trang2.isCoTrangTruoc());
-    }
+        // Kiểm tra audit hook đã được gọi và ghi đúng thông tin actor, target, before, after
+        ArgumentCaptor<NhatKyThayDoi> captor = ArgumentCaptor.forClass(NhatKyThayDoi.class);
+        verify(mockDAO).ghiNhatKy(captor.capture());
 
-    @Test
-    @DisplayName("Kiểm tra tính hợp lệ của khoảng thời gian trong BoLocNhatKyDTO")
-    void testValidateKhoangThoiGian() {
-        BoLocNhatKyDTO boLocHopLe = new BoLocNhatKyDTO();
-        boLocHopLe.setTuNgay(LocalDate.of(2026, 9, 1));
-        boLocHopLe.setDenNgay(LocalDate.of(2026, 9, 30));
-        assertTrue(boLocHopLe.isKhoangThoiGianHopLe());
-
-        BoLocNhatKyDTO boLocKhongHopLe = new BoLocNhatKyDTO();
-        boLocKhongHopLe.setTuNgay(LocalDate.of(2026, 10, 1));
-        boLocKhongHopLe.setDenNgay(LocalDate.of(2026, 9, 1));
-        assertFalse(boLocKhongHopLe.isKhoangThoiGianHopLe(), "Từ ngày sau đến ngày phải báo không hợp lệ");
+        NhatKyThayDoi captured = captor.getValue();
+        assertEquals(1L, captured.getNguoiThucHienId(), "Actor phải là ID 1");
+        assertEquals("Admin Tổng", captured.getTenNguoiThucHien());
+        assertEquals(LoaiDoiTuongNhayCam.VAI_TRO_NGUOI_DUNG, captured.getLoaiDoiTuong());
+        assertEquals("ND-5", captured.getMaDoiTuong());
+        assertTrue(captured.getGiaTriTruoc().contains("Nhân viên kinh doanh"), "Giá trị trước phải có vai trò cũ");
+        assertTrue(captured.getGiaTriSau().contains("Trưởng nhóm kinh doanh"), "Giá trị sau phải có vai trò mới");
+        assertEquals("192.168.1.50", captured.getDiaChiIp());
+        assertEquals("Firefox/Linux", captured.getThietBi());
     }
 }

@@ -9,11 +9,15 @@ import vn.nhom10.crm.model.NhomKinhDoanh;
 import vn.nhom10.crm.model.VaiTro;
 import vn.nhom10.crm.model.VaiTroEnum;
 
+import vn.nhom10.crm.model.HanhDongThayDoi;
+import vn.nhom10.crm.model.LoaiDoiTuongNhayCam;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Service xử lý nghiệp vụ gán vai trò và gắn người dùng vào nhóm kinh doanh (Story S1-09).
@@ -29,6 +33,7 @@ public class PhanQuyenService {
     private final NguoiDungDAO nguoiDungDAO;
     private final VaiTroDAO vaiTroDAO;
     private final NhomKinhDoanhDAO nhomKinhDoanhDAO;
+    private final NhatKyThayDoiService nhatKyThayDoiService;
 
     private static final PhanQuyenService INSTANCE = new PhanQuyenService();
 
@@ -37,16 +42,19 @@ public class PhanQuyenService {
     }
 
     public PhanQuyenService() {
-        this.nguoiDungDAO = new NguoiDungDAO();
-        this.vaiTroDAO = new VaiTroDAO();
-        this.nhomKinhDoanhDAO = new NhomKinhDoanhDAO();
+        this(new NguoiDungDAO(), new VaiTroDAO(), new NhomKinhDoanhDAO(), new NhatKyThayDoiService());
     }
 
     /** Constructor hỗ trợ Dependency Injection cho Unit Test. */
     public PhanQuyenService(NguoiDungDAO nguoiDungDAO, VaiTroDAO vaiTroDAO, NhomKinhDoanhDAO nhomKinhDoanhDAO) {
+        this(nguoiDungDAO, vaiTroDAO, nhomKinhDoanhDAO, new NhatKyThayDoiService());
+    }
+
+    public PhanQuyenService(NguoiDungDAO nguoiDungDAO, VaiTroDAO vaiTroDAO, NhomKinhDoanhDAO nhomKinhDoanhDAO, NhatKyThayDoiService nhatKyThayDoiService) {
         this.nguoiDungDAO = nguoiDungDAO;
         this.vaiTroDAO = vaiTroDAO;
         this.nhomKinhDoanhDAO = nhomKinhDoanhDAO;
+        this.nhatKyThayDoiService = nhatKyThayDoiService != null ? nhatKyThayDoiService : new NhatKyThayDoiService();
     }
 
     /**
@@ -60,6 +68,12 @@ public class PhanQuyenService {
      */
     public GanVaiTroNhomDTO ganVaiTroVaNhomKinhDoanh(int nguoiDungId, List<Integer> danhSachVaiTroId,
                                                       Integer nhomKinhDoanhId, int nguoiThucHienId) {
+        return ganVaiTroVaNhomKinhDoanh(nguoiDungId, danhSachVaiTroId, nhomKinhDoanhId, nguoiThucHienId, null, null);
+    }
+
+    public GanVaiTroNhomDTO ganVaiTroVaNhomKinhDoanh(int nguoiDungId, List<Integer> danhSachVaiTroId,
+                                                      Integer nhomKinhDoanhId, int nguoiThucHienId,
+                                                      String diaChiIp, String thietBi) {
         // 1. Kiểm tra người dùng tồn tại
         NguoiDung nguoiDung = nguoiDungDAO.timTheoId(nguoiDungId);
         if (nguoiDung == null) {
@@ -115,6 +129,33 @@ public class PhanQuyenService {
         try {
             boolean kq = nguoiDungDAO.capNhatVaiTroVaNhomTransaction(nguoiDungId, danhSachVaiTroId, nhomKinhDoanhId);
             if (kq) {
+                // Hook ghi nhật ký thay đổi dữ liệu nhạy cảm (Story S2-04)
+                try {
+                    String vaiTroTruoc = nguoiDung.getChuoiVaiTroHienThi();
+                    String vaiTroSau = dsVaiTroMoi.stream().map(VaiTro::getTenVaiTro).collect(Collectors.joining(", "));
+                    NguoiDung actor = nguoiDungDAO.timTheoId(nguoiThucHienId);
+                    String actorName = actor != null ? actor.getHoTen() : "Quản trị hệ thống";
+                    String actorEmail = actor != null ? actor.getEmail() : "";
+
+                    nhatKyThayDoiService.ghiNhatKyThayDoi(
+                            (long) nguoiThucHienId,
+                            actorName,
+                            actorEmail,
+                            LoaiDoiTuongNhayCam.VAI_TRO_NGUOI_DUNG,
+                            "ND-" + nguoiDungId,
+                            "Tài khoản: " + nguoiDung.getHoTen(),
+                            "Vai trò người dùng",
+                            vaiTroTruoc != null && !vaiTroTruoc.isBlank() ? vaiTroTruoc : "Chưa có vai trò",
+                            vaiTroSau,
+                            HanhDongThayDoi.CAP_NHAT,
+                            "Phân quyền vai trò tài khoản người dùng",
+                            diaChiIp != null ? diaChiIp : "127.0.0.1",
+                            thietBi != null ? thietBi : "Trình duyệt CRM"
+                    );
+                } catch (Exception ex) {
+                    LOGGER.log(Level.WARNING, "Không thể ghi nhật ký audit log cho phân quyền: " + ex.getMessage(), ex);
+                }
+
                 return GanVaiTroNhomDTO.thanhCong(
                         "Gán vai trò và nhóm kinh doanh thành công cho người dùng " + nguoiDung.getHoTen() + ".");
             } else {

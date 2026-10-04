@@ -226,6 +226,11 @@ public class NhatKyThayDoiServlet extends HttpServlet {
 
         try {
             Long id = Long.parseLong(idParam.trim());
+            if (id <= 0) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.write("{\"error\": \"Mã bản ghi nhật ký không hợp lệ\"}");
+                return;
+            }
             NhatKyThayDoiDTO item = nhatKyService.layChiTiet(id);
             if (item == null) {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -233,7 +238,10 @@ public class NhatKyThayDoiServlet extends HttpServlet {
                 return;
             }
 
-            // Tạo chuỗi JSON an toàn
+            // Tạo chuỗi JSON an toàn và redact dữ liệu nhạy cảm
+            String giaTriTruocAnToan = vn.nhom10.crm.model.NhatKyThayDoi.cheGiaTriNhayCam(item.getTruongThayDoi(), item.getGiaTriTruoc());
+            String giaTriSauAnToan = vn.nhom10.crm.model.NhatKyThayDoi.cheGiaTriNhayCam(item.getTruongThayDoi(), item.getGiaTriSau());
+
             StringBuilder json = new StringBuilder();
             json.append("{");
             json.append("\"id\":").append(item.getId()).append(",");
@@ -249,8 +257,8 @@ public class NhatKyThayDoiServlet extends HttpServlet {
             json.append("\"maDoiTuong\":").append(escapeJson(item.getMaDoiTuong())).append(",");
             json.append("\"tenDoiTuong\":").append(escapeJson(item.getTenDoiTuong())).append(",");
             json.append("\"truongThayDoi\":").append(escapeJson(item.getTruongThayDoi())).append(",");
-            json.append("\"giaTriTruoc\":").append(escapeJson(item.getGiaTriTruoc())).append(",");
-            json.append("\"giaTriSau\":").append(escapeJson(item.getGiaTriSau())).append(",");
+            json.append("\"giaTriTruoc\":").append(escapeJson(giaTriTruocAnToan)).append(",");
+            json.append("\"giaTriSau\":").append(escapeJson(giaTriSauAnToan)).append(",");
             json.append("\"hanhDong\":").append(escapeJson(item.getHanhDong() != null ? item.getHanhDong().getTenHienThi() : "")).append(",");
             json.append("\"lyDoThayDoi\":").append(escapeJson(item.getLyDoThayDoi())).append(",");
             json.append("\"diaChiIp\":").append(escapeJson(item.getDiaChiIp())).append(",");
@@ -285,7 +293,7 @@ public class NhatKyThayDoiServlet extends HttpServlet {
             }
         } else {
             String role = (String) session.getAttribute("vaiTro");
-            if (role != null && !role.equalsIgnoreCase("ADMIN") && !role.contains("QUAN_TRI")) {
+            if (role == null || (!role.equalsIgnoreCase("ADMIN") && !role.contains("QUAN_TRI"))) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 request.setAttribute("errorMessage", "Chỉ Quản trị hệ thống (Admin) mới có quyền xem nhật ký thay đổi dữ liệu nhạy cảm.");
                 request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
