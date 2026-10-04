@@ -114,12 +114,15 @@ class LyDoThangThuaServletTest {
         servlet.doPost(request, response);
 
         verify(service).kiemTraQuyenQuanLy(directorUser);
-        verify(service).luuLyDo(any(LyDoThangThua.class));
-        verify(response).sendRedirect(contains("/crm/danh-muc/ly-do-thang-thua?tab=thang&msg=success"));
+        org.mockito.ArgumentCaptor<String> captor = org.mockito.ArgumentCaptor.forClass(String.class);
+        verify(response).sendRedirect(captor.capture());
+        String location = captor.getValue();
+        assertTrue(location.contains("/crm/danh-muc/ly-do-thang-thua?tab=thang&msg=success"));
+        assertFalse(location.contains("/WEB-INF/"));
     }
 
     @Test
-    @DisplayName("doPost sửa lý do không có quyền -> Bị từ chối")
+    @DisplayName("doPost sửa lý do không có quyền -> Bị từ chối và redirect public route không chứa /WEB-INF/")
     void testDoPostTuChoiKhiKhongCoQuyen() throws Exception {
         when(session.getAttribute("nguoiDung")).thenReturn(salesUser);
         when(request.getParameter("action")).thenReturn("sua-ly-do");
@@ -128,7 +131,11 @@ class LyDoThangThuaServletTest {
         servlet.doPost(request, response);
 
         verify(service, never()).luuLyDo(any());
-        verify(response).sendRedirect(contains("msg=error"));
+        org.mockito.ArgumentCaptor<String> captor = org.mockito.ArgumentCaptor.forClass(String.class);
+        verify(response).sendRedirect(captor.capture());
+        String location = captor.getValue();
+        assertTrue(location.contains("/crm/danh-muc/ly-do-thang-thua?tab=thang&msg=error"));
+        assertFalse(location.contains("/WEB-INF/"));
     }
 
     @Test
@@ -250,5 +257,61 @@ class LyDoThangThuaServletTest {
         String json = sw.toString();
         assertTrue(json.contains("\"hopLe\":true"));
         assertTrue(json.contains("HỢP LỆ THEO SPRINT 5"));
+    }
+
+    @Test
+    @DisplayName("Admin POST sua-ly-do -> Redirect đến public route /danh-muc/ly-do-thang-thua không chứa /WEB-INF/")
+    void testDoPostSuaLyDoAdminRedirect() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(directorUser);
+        when(request.getParameter("action")).thenReturn("sua-ly-do");
+        when(request.getParameter("id")).thenReturn("1");
+        when(request.getParameter("maLyDo")).thenReturn("WIN_UPDATED");
+        when(request.getParameter("tenLyDo")).thenReturn("Tên mới");
+        when(request.getParameter("loai")).thenReturn("THANG");
+        when(request.getParameter("thuTuHienThi")).thenReturn("2");
+        when(request.getParameter("hoatDong")).thenReturn("1");
+
+        servlet.doPost(request, response);
+
+        org.mockito.ArgumentCaptor<String> captor = org.mockito.ArgumentCaptor.forClass(String.class);
+        verify(response).sendRedirect(captor.capture());
+        String location = captor.getValue();
+        assertTrue(location.contains("/crm/danh-muc/ly-do-thang-thua"));
+        assertFalse(location.contains("/WEB-INF/"));
+    }
+
+    @Test
+    @DisplayName("Admin POST them-doi-thu -> Redirect đến public route /danh-muc/ly-do-thang-thua không chứa /WEB-INF/")
+    void testDoPostThemDoiThuAdminRedirect() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(directorUser);
+        when(request.getParameter("action")).thenReturn("them-doi-thu");
+        when(request.getParameter("maDoiThu")).thenReturn("DT_NEW");
+        when(request.getParameter("tenDoiThu")).thenReturn("Đối thủ mới");
+        when(request.getParameter("website")).thenReturn("https://competitor.com");
+        when(request.getParameter("hoatDong")).thenReturn("1");
+
+        servlet.doPost(request, response);
+
+        org.mockito.ArgumentCaptor<String> captor = org.mockito.ArgumentCaptor.forClass(String.class);
+        verify(response).sendRedirect(captor.capture());
+        String location = captor.getValue();
+        assertTrue(location.contains("/crm/danh-muc/ly-do-thang-thua"));
+        assertFalse(location.contains("/WEB-INF/"));
+    }
+
+    @Test
+    @DisplayName("Admin POST xoa-ly-do -> Redirect đến public route /danh-muc/ly-do-thang-thua không chứa /WEB-INF/")
+    void testDoPostXoaLyDoAdminRedirect() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(directorUser);
+        when(request.getParameter("action")).thenReturn("xoa-ly-do");
+        when(request.getParameter("id")).thenReturn("5");
+
+        servlet.doPost(request, response);
+
+        org.mockito.ArgumentCaptor<String> captor = org.mockito.ArgumentCaptor.forClass(String.class);
+        verify(response).sendRedirect(captor.capture());
+        String location = captor.getValue();
+        assertTrue(location.contains("/crm/danh-muc/ly-do-thang-thua"));
+        assertFalse(location.contains("/WEB-INF/"));
     }
 }

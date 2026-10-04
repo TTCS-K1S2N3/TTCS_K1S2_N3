@@ -540,11 +540,7 @@ public class LyDoThangThuaServlet extends HttpServlet {
             out.print("{\"thanhCong\":true,\"thongBao\":\"" + escapeJson(message) + "\",\"tab\":\"" + escapeJson(tab) + "\"}");
             out.flush();
         } else {
-            String servletPath = request.getServletPath();
-            if (servletPath == null || servletPath.isBlank()) {
-                servletPath = "/danh-muc/ly-do-thang-thua";
-            }
-            response.sendRedirect(request.getContextPath() + servletPath + "?tab=" + tab + "&msg=success&info=" + java.net.URLEncoder.encode(message, "UTF-8"));
+            response.sendRedirect(request.getContextPath() + "/danh-muc/ly-do-thang-thua?tab=" + tab + "&msg=success&info=" + java.net.URLEncoder.encode(message, "UTF-8"));
         }
     }
 
@@ -563,13 +559,9 @@ public class LyDoThangThuaServlet extends HttpServlet {
             out.print("{\"thanhCong\":false,\"thongBao\":\"" + escapeJson(errorMsg) + "\"}");
             out.flush();
         } else {
-            String servletPath = request.getServletPath();
-            if (servletPath == null || servletPath.isBlank()) {
-                servletPath = "/danh-muc/ly-do-thang-thua";
-            }
             String tab = request.getParameter("tab");
             if (tab == null || tab.isBlank()) tab = "thang";
-            response.sendRedirect(request.getContextPath() + servletPath + "?tab=" + tab + "&msg=error&info=" + java.net.URLEncoder.encode(errorMsg, "UTF-8"));
+            response.sendRedirect(request.getContextPath() + "/danh-muc/ly-do-thang-thua?tab=" + tab + "&msg=error&info=" + java.net.URLEncoder.encode(errorMsg, "UTF-8"));
         }
     }
 

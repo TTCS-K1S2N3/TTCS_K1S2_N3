@@ -60,7 +60,7 @@
                 </div>
                 <div class="crm-header-actions">
                     <c:if test="${coQuyenQuanLy}">
-                        <form method="POST" action="${pageContext.request.requestURI}" style="display:inline;">
+                        <form method="POST" action="${pageContext.request.contextPath}/danh-muc/ly-do-thang-thua" style="display:inline;">
                             <input type="hidden" name="action" value="nap-du-lieu-mau">
                             <input type="hidden" name="tab" value="${currentTab}">
                             <button type="submit" class="crm-btn crm-btn-outline" id="btn-seed-sample" title="Tự động nạp danh mục lý do và đối thủ mẫu chuẩn">
@@ -746,7 +746,7 @@
                 <h3 class="crm-modal-title" id="modal-ly-do-title">Khai báo lý do thắng thua</h3>
                 <button type="button" class="crm-modal-close-btn" aria-label="Đóng">&times;</button>
             </div>
-            <form id="form-ly-do" method="POST" action="${pageContext.request.requestURI}">
+            <form id="form-ly-do" method="POST" action="${pageContext.request.contextPath}/danh-muc/ly-do-thang-thua">
                 <input type="hidden" name="action" id="ly-do-action" value="them-ly-do">
                 <input type="hidden" name="id" id="ly-do-id" value="">
 
@@ -800,7 +800,7 @@
                 <h3 class="crm-modal-title" id="modal-doi-thu-title">Khai báo đối thủ cạnh tranh</h3>
                 <button type="button" class="crm-modal-close-btn" aria-label="Đóng">&times;</button>
             </div>
-            <form id="form-doi-thu" method="POST" action="${pageContext.request.requestURI}">
+            <form id="form-doi-thu" method="POST" action="${pageContext.request.contextPath}/danh-muc/ly-do-thang-thua">
                 <input type="hidden" name="action" id="doi-thu-action" value="them-doi-thu">
                 <input type="hidden" name="id" id="doi-thu-id" value="">
 
@@ -852,7 +852,7 @@
                 <h3 class="crm-modal-title" style="color:#ef4444;">Xác nhận xóa bản ghi</h3>
                 <button type="button" class="crm-modal-close-btn" aria-label="Đóng">&times;</button>
             </div>
-            <form id="form-xoa" method="POST" action="${pageContext.request.requestURI}">
+            <form id="form-xoa" method="POST" action="${pageContext.request.contextPath}/danh-muc/ly-do-thang-thua">
                 <input type="hidden" name="action" id="xoa-action" value="">
                 <input type="hidden" name="id" id="xoa-id" value="">
 
@@ -872,6 +872,9 @@
     </div>
 
     <!-- Scripts chuẩn của hệ thống -->
+    <script>
+        window.CRM_CONTEXT_PATH = '${pageContext.request.contextPath}';
+    </script>
     <script src="${pageContext.request.contextPath}/assets/js/navigation.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/co-hoi/ly-do-thang-thua.js"></script>
 </body>

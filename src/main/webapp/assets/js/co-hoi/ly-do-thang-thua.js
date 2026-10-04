@@ -344,9 +344,7 @@ document.addEventListener('DOMContentLoaded', function () {
             formData.append('id', id);
             formData.append('hoatDong', hoatDong ? '1' : '0');
 
-            const toggleEndpoint = window.location.pathname.includes('/co-hoi/')
-                ? (contextPath + '/co-hoi/ly-do-thang-thua')
-                : (contextPath + '/danh-muc/ly-do-thang-thua');
+            const toggleEndpoint = contextPath + '/danh-muc/ly-do-thang-thua';
 
             fetch(toggleEndpoint, {
                 method: 'POST',
@@ -434,9 +432,7 @@ document.addEventListener('DOMContentLoaded', function () {
             formData.append('giaTriChotThucTe', giaTriChotThucTe);
             formData.append('ngayKy', ngayKy);
 
-            const simEndpoint = window.location.pathname.includes('/co-hoi/')
-                ? (contextPath + '/co-hoi/ly-do-thang-thua')
-                : (contextPath + '/danh-muc/ly-do-thang-thua');
+            const simEndpoint = contextPath + '/co-hoi/ly-do-thang-thua';
 
             fetch(simEndpoint, {
                 method: 'POST',
