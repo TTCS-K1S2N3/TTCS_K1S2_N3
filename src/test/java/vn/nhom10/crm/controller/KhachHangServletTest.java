@@ -14,6 +14,14 @@ import vn.nhom10.crm.model.VaiTro;
 import vn.nhom10.crm.model.VaiTroEnum;
 import vn.nhom10.crm.service.PhanQuyenDuLieuService;
 
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -253,5 +261,115 @@ class KhachHangServletTest {
 
         verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
         verify(request).setAttribute(eq("thongBaoLoi"), contains("đã tồn tại"));
+    }
+
+    @Test
+    @DisplayName("Khách hàng: Xem chi tiết với ID không tồn tại trả về HTTP 404 Not Found")
+    void testKhachHang_XemChiTiet_IdKhongTonTai_TraVe404() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getParameter("id")).thenReturn("999999");
+
+        servlet.doGet(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_NOT_FOUND);
+        verify(response).sendError(eq(HttpServletResponse.SC_NOT_FOUND), anyString());
+    }
+
+    @Test
+    @DisplayName("Khách hàng Export: Sales Rep A xuất XLSX chỉ chứa khách hàng cá nhân (FPT), không lộ B, C")
+    void testKhachHang_XuatExcel_Xlsx_SalesRepA() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getParameter("xuatExcel")).thenReturn("true");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ServletOutputStream sos = new ServletOutputStream() {
+            @Override public boolean isReady() { return true; }
+            @Override public void setWriteListener(WriteListener writeListener) {}
+            @Override public void write(int b) throws IOException { baos.write(b); }
+        };
+        when(response.getOutputStream()).thenReturn(sos);
+
+        servlet.doGet(request, response);
+
+        verify(response).setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        verify(response).setHeader(eq("Content-Disposition"), contains("du-lieu-khach-hang-ca_nhan.xlsx"));
+
+        try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(baos.toByteArray()))) {
+            Sheet sheet = wb.getSheet("Du lieu CRM");
+            assertNotNull(sheet);
+            boolean hasFPT = false;
+            boolean hasViettel = false;
+            boolean hasVNG = false;
+            for (Row row : sheet) {
+                for (Cell cell : row) {
+                    String str = cell.toString();
+                    if (str.contains("FPT")) hasFPT = true;
+                    if (str.contains("Viettel")) hasViettel = true;
+                    if (str.contains("VNG")) hasVNG = true;
+                }
+            }
+            assertTrue(hasFPT, "File xuất của A phải chứa khách hàng của A (FPT)");
+            assertFalse(hasViettel, "File xuất của A tuyệt đối không được chứa khách hàng của B (Viettel)");
+            assertFalse(hasVNG, "File xuất của A tuyệt đối không được chứa khách hàng của C (VNG)");
+        }
+    }
+
+    @Test
+    @DisplayName("Khách hàng Export: Team Lead Bắc xuất XLSX chứa dữ liệu nhóm (FPT, Viettel), không chứa VNG")
+    void testKhachHang_XuatExcel_Xlsx_TeamLeadBac() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userLeadBac);
+        when(request.getParameter("xuatExcel")).thenReturn("true");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ServletOutputStream sos = new ServletOutputStream() {
+            @Override public boolean isReady() { return true; }
+            @Override public void setWriteListener(WriteListener writeListener) {}
+            @Override public void write(int b) throws IOException { baos.write(b); }
+        };
+        when(response.getOutputStream()).thenReturn(sos);
+
+        servlet.doGet(request, response);
+
+        verify(response).setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        verify(response).setHeader(eq("Content-Disposition"), contains("du-lieu-khach-hang-nhom.xlsx"));
+
+        try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(baos.toByteArray()))) {
+            Sheet sheet = wb.getSheet("Du lieu CRM");
+            assertNotNull(sheet);
+            boolean hasFPT = false;
+            boolean hasViettel = false;
+            boolean hasVNG = false;
+            for (Row row : sheet) {
+                for (Cell cell : row) {
+                    String str = cell.toString();
+                    if (str.contains("FPT")) hasFPT = true;
+                    if (str.contains("Viettel")) hasViettel = true;
+                    if (str.contains("VNG")) hasVNG = true;
+                }
+            }
+            assertTrue(hasFPT, "Trưởng nhóm Bắc phải thấy FPT trong nhóm");
+            assertTrue(hasViettel, "Trưởng nhóm Bắc phải thấy Viettel trong nhóm");
+            assertFalse(hasVNG, "Trưởng nhóm Bắc không được thấy VNG (nhóm Nam)");
+        }
+    }
+
+    @Test
+    @DisplayName("Khách hàng Export: Định dạng xuất là XLSX, không dùng CSV")
+    void testKhachHang_XuatExcel_KhongDungCsv() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getParameter("xuatExcel")).thenReturn("true");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ServletOutputStream sos = new ServletOutputStream() {
+            @Override public boolean isReady() { return true; }
+            @Override public void setWriteListener(WriteListener writeListener) {}
+            @Override public void write(int b) throws IOException { baos.write(b); }
+        };
+        when(response.getOutputStream()).thenReturn(sos);
+
+        servlet.doGet(request, response);
+
+        verify(response, never()).setContentType("text/csv; charset=UTF-8");
+        verify(response).setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     }
 }

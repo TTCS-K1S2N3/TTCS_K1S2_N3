@@ -104,8 +104,24 @@ class PhanQuyenDuLieuServletTest {
 
         verify(response).setStatus(HttpServletResponse.SC_OK);
         verify(request).setAttribute(eq("thongBaoThanhCong"), anyString());
-        verify(request).getRequestDispatcher("/WEB-INF/views/phan-quyen/danh-sach-theo-pham-vi.jsp");
+        verify(request).getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp");
         verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("AC3: Truy cập bản ghi với ID không tồn tại trả về HTTP 404 Not Found")
+    void testServlet_XemChiTiet_IdKhongTonTai_TraVe404() throws Exception {
+        when(request.getServletPath()).thenReturn("/chi-tiet-ban-ghi");
+        when(request.getParameter("id")).thenReturn("999999");
+
+        NguoiDungDTO salesA = new NguoiDungDTO(101L, "Nguyễn Văn A (Sales)", "sales.a@crm.vn",
+                VaiTroEnum.SALES_REP, 1L, "Nhóm Miền Bắc");
+        when(session.getAttribute("nguoiDung")).thenReturn(salesA);
+
+        servlet.doGet(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_NOT_FOUND);
+        verify(response).sendError(eq(HttpServletResponse.SC_NOT_FOUND), anyString());
     }
 
     @Test
@@ -142,7 +158,7 @@ class PhanQuyenDuLieuServletTest {
 
         verify(response).setStatus(HttpServletResponse.SC_OK);
         verify(request).setAttribute(eq("thongBaoThanhCong"), contains("Cập nhật dữ liệu thành công"));
-        verify(request).getRequestDispatcher("/WEB-INF/views/phan-quyen/danh-sach-theo-pham-vi.jsp");
+        verify(request).getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp");
         verify(dispatcher).forward(request, response);
     }
 

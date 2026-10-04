@@ -90,7 +90,9 @@ document.addEventListener('DOMContentLoaded', function () {
         btnExportExcel.addEventListener('click', function (e) {
             e.preventDefault();
             const contextPath = window.CONTEXT_PATH || '';
-            window.location.href = contextPath + '/phan-quyen-du-lieu?xuat=csv&loai=KHACH_HANG';
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('xuatExcel', 'true');
+            window.location.href = contextPath + '/khach-hang?' + urlParams.toString();
         });
     }
 });

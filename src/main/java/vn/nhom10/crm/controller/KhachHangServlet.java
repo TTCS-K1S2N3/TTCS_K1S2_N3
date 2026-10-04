@@ -58,6 +58,12 @@ public class KhachHangServlet extends HttpServlet {
             } catch (NumberFormatException ignored) {}
 
             BanGhiNghiepVuDTO banGhi = phanQuyenService.timBanGhiTheoId(id, "KHACH_HANG");
+            if (id == null || banGhi == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy khách hàng.");
+                return;
+            }
+
             PhanQuyenDuLieuService.KetQuaKiemTra ketQua = phanQuyenService.kiemTraQuyenTruyCap(userDTO, banGhi);
 
             if (!ketQua.isCoQuyen()) {
@@ -71,6 +77,7 @@ public class KhachHangServlet extends HttpServlet {
             }
 
             request.setAttribute("banGhiChiTiet", banGhi);
+            request.setAttribute("banGhi", banGhi);
             request.setAttribute("thongBaoThanhCong", ketQua.getThongBao());
         }
 
@@ -96,6 +103,20 @@ public class KhachHangServlet extends HttpServlet {
         List<BanGhiNghiepVuDTO> danhSachKhachHang = phanQuyenService.layDanhSachDuLieu(
                 userDTO, phamViHieuLuc, tuKhoa, "KHACH_HANG"
         );
+
+        // 4. Xử lý Xuất Excel danh mục khách hàng (.xlsx)
+        String xuatExcel = request.getParameter("xuatExcel");
+        if ("true".equalsIgnoreCase(xuatExcel)) {
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"du-lieu-khach-hang-" + phamViHieuLuc.getMa().toLowerCase() + ".xlsx\"");
+            byte[] excelBytes = phanQuyenService.xuatDuLieuExcel(danhSachKhachHang);
+            response.setContentLength(excelBytes.length);
+            try (java.io.OutputStream os = response.getOutputStream()) {
+                os.write(excelBytes);
+                os.flush();
+            }
+            return;
+        }
 
         boolean coQuyenDanhMuc = user != null && (user.coVaiTro("ADMIN") || user.coVaiTro("DIRECTOR"));
         request.setAttribute("coQuyenDanhMuc", coQuyenDanhMuc);
