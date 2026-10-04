@@ -269,7 +269,10 @@ public class NguoiDungServlet extends HttpServlet {
             nguoiThucHienId = (int) loggedIn.getId();
         }
 
-        KetQuaNguoiDungDTO ketQua = nguoiDungService.capNhatTaiKhoan(nguoiDung, dsVaiTroIds, nguoiThucHienId);
+        String diaChiIp = request.getRemoteAddr();
+        String thietBi = request.getHeader("User-Agent");
+
+        KetQuaNguoiDungDTO ketQua = nguoiDungService.capNhatTaiKhoan(nguoiDung, dsVaiTroIds, nguoiThucHienId, diaChiIp, thietBi);
 
         if (ketQua.isThanhCong()) {
             if (session == null) {

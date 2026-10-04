@@ -234,6 +234,42 @@ public class NhatKyThayDoiService {
         nk.setCreatedAt(LocalDateTime.now());
 
         long id = nhatKyDAO.ghiNhatKy(conn, nk);
-        return id > 0;
+        if (id <= 0) {
+            throw new SQLException("Không thể ghi nhật ký hệ thống vào bảng nhat_ky_he_thong");
+        }
+        return true;
+    }
+
+    /**
+     * Ghi nhật ký trong một Transaction đang mở có đầy đủ doiTuongId, giaTriTruocJson, giaTriSauJson.
+     * Ném SQLException để Caller Transaction quản lý rollback fail-closed chuẩn xác.
+     */
+    public boolean ghiNhatKyThayDoi(Connection conn, Long nguoiThucHienId, String tenNguoiThucHien, String emailNguoiThucHien,
+                                     LoaiDoiTuongNhayCam loaiDoiTuong, Long doiTuongId, String maDoiTuong, String tenDoiTuong,
+                                     String truongThayDoi, String giaTriTruocJson, String giaTriSauJson,
+                                     HanhDongThayDoi hanhDong, String lyDo, String diaChiIp, String thietBi) throws SQLException {
+
+        NhatKyThayDoi nk = new NhatKyThayDoi();
+        nk.setNguoiThucHienId(nguoiThucHienId);
+        nk.setTenNguoiThucHien(tenNguoiThucHien);
+        nk.setEmailNguoiThucHien(emailNguoiThucHien);
+        nk.setLoaiDoiTuong(loaiDoiTuong);
+        nk.setDoiTuongId(doiTuongId);
+        nk.setMaDoiTuong(maDoiTuong != null ? maDoiTuong : (doiTuongId != null ? "ND-" + doiTuongId : null));
+        nk.setTenDoiTuong(tenDoiTuong);
+        nk.setTruongThayDoi(truongThayDoi);
+        nk.setGiaTriTruocJson(giaTriTruocJson);
+        nk.setGiaTriSauJson(giaTriSauJson);
+        nk.setHanhDong(hanhDong != null ? hanhDong : HanhDongThayDoi.CAP_NHAT);
+        nk.setLyDoThayDoi(lyDo);
+        nk.setDiaChiIp(diaChiIp);
+        nk.setThietBi(thietBi);
+        nk.setCreatedAt(LocalDateTime.now());
+
+        long id = nhatKyDAO.ghiNhatKy(conn, nk);
+        if (id <= 0) {
+            throw new SQLException("Không thể ghi nhật ký hệ thống vào bảng nhat_ky_he_thong");
+        }
+        return true;
     }
 }

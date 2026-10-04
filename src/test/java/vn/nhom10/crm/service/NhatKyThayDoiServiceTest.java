@@ -233,6 +233,7 @@ class NhatKyThayDoiServiceTest {
         when(mockUserDAO.capNhatVaiTroVaNhomTransaction(eq(5), anyList(), eq(2))).thenReturn(true);
 
         when(mockDAO.ghiNhatKy(any(NhatKyThayDoi.class))).thenReturn(101L);
+        when(mockDAO.ghiNhatKy(any(), any(NhatKyThayDoi.class))).thenReturn(101L);
 
         PhanQuyenService phanQuyenService = new PhanQuyenService(mockUserDAO, mockRoleDAO, mockTeamDAO, service);
 
@@ -243,15 +244,16 @@ class NhatKyThayDoiServiceTest {
 
         // Kiểm tra audit hook đã được gọi và ghi đúng thông tin actor, target, before, after
         ArgumentCaptor<NhatKyThayDoi> captor = ArgumentCaptor.forClass(NhatKyThayDoi.class);
-        verify(mockDAO).ghiNhatKy(captor.capture());
+        verify(mockDAO).ghiNhatKy(any(), captor.capture());
 
         NhatKyThayDoi captured = captor.getValue();
         assertEquals(1L, captured.getNguoiThucHienId(), "Actor phải là ID 1");
         assertEquals("Admin Tổng", captured.getTenNguoiThucHien());
         assertEquals(LoaiDoiTuongNhayCam.VAI_TRO_NGUOI_DUNG, captured.getLoaiDoiTuong());
         assertEquals("ND-5", captured.getMaDoiTuong());
-        assertTrue(captured.getGiaTriTruoc().contains("Nhân viên kinh doanh"), "Giá trị trước phải có vai trò cũ");
-        assertTrue(captured.getGiaTriSau().contains("Trưởng nhóm kinh doanh"), "Giá trị sau phải có vai trò mới");
+        assertEquals(5L, captured.getDoiTuongId());
+        assertTrue(captured.getGiaTriTruoc().contains("SALES_REP"), "Giá trị trước phải có vai trò cũ");
+        assertTrue(captured.getGiaTriSau().contains("TEAM_LEAD"), "Giá trị sau phải có vai trò mới");
         assertEquals("192.168.1.50", captured.getDiaChiIp());
         assertEquals("Firefox/Linux", captured.getThietBi());
     }

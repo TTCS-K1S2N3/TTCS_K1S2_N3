@@ -48,6 +48,11 @@ class PhanQuyenServiceTest {
             this.lastUpdatedTeamId = nhomKinhDoanhId;
             return true;
         }
+
+        @Override
+        public boolean capNhatVaiTroVaNhomTransaction(int nguoiDungId, List<Integer> danhSachVaiTroId, Integer nhomKinhDoanhId, java.sql.Connection conn) throws SQLException {
+            return capNhatVaiTroVaNhomTransaction(nguoiDungId, danhSachVaiTroId, nhomKinhDoanhId);
+        }
     }
 
     static class FakeVaiTroDAO extends VaiTroDAO {

@@ -574,7 +574,63 @@ public class NguoiDungDAO {
     }
 
     /**
-     * Cập nhật thông tin tài khoản người dùng và gán lại vai trò trong một TRANSACTION duy nhất.
+     * Cập nhật thông tin tài khoản người dùng và gán lại vai trò trong Connection/Transaction được cung cấp.
+     *
+     * @param nguoiDung   thông tin người dùng cần cập nhật
+     * @param dsVaiTroIds danh sách ID vai trò mới
+     * @param conn        kết nối DB đang trong transaction
+     * @return true nếu cập nhật thành công
+     * @throws SQLException khi thao tác database lỗi
+     */
+    public boolean capNhatNguoiDung(NguoiDung nguoiDung, List<Integer> dsVaiTroIds, Connection conn) throws SQLException {
+        String sqlUser = "UPDATE nguoi_dung SET ho_ten = ?, email = ?, trang_thai = ?, nhom_kinh_doanh_id = ?, " +
+                         "so_dien_thoai = ? WHERE id = ?";
+        String sqlDeleteRoles = "DELETE FROM nguoi_dung_vai_tro WHERE nguoi_dung_id = ?";
+        String sqlInsertRoles = "INSERT INTO nguoi_dung_vai_tro (nguoi_dung_id, vai_tro_id) VALUES (?, ?)";
+
+        try (PreparedStatement psUser = conn.prepareStatement(sqlUser)) {
+            psUser.setString(1, nguoiDung.getHoTen());
+            psUser.setString(2, nguoiDung.getEmail());
+            psUser.setString(3, nguoiDung.getTrangThai());
+            if (nguoiDung.getNhomKinhDoanhId() != null) {
+                psUser.setInt(4, nguoiDung.getNhomKinhDoanhId());
+            } else {
+                psUser.setNull(4, java.sql.Types.INTEGER);
+            }
+            psUser.setString(5, nguoiDung.getSoDienThoai());
+            psUser.setLong(6, nguoiDung.getId());
+
+            int affected = psUser.executeUpdate();
+            if (affected == 0) {
+                return false;
+            }
+        }
+
+        if (dsVaiTroIds != null) {
+            try (PreparedStatement psDel = conn.prepareStatement(sqlDeleteRoles)) {
+                psDel.setLong(1, nguoiDung.getId());
+                psDel.executeUpdate();
+            }
+
+            if (!dsVaiTroIds.isEmpty()) {
+                try (PreparedStatement psIns = conn.prepareStatement(sqlInsertRoles)) {
+                    for (Integer vtId : dsVaiTroIds) {
+                        if (vtId != null) {
+                            psIns.setLong(1, nguoiDung.getId());
+                            psIns.setInt(2, vtId);
+                            psIns.addBatch();
+                        }
+                    }
+                    psIns.executeBatch();
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Cập nhật thông tin tài khoản người dùng và gán lại vai trò trong một TRANSACTION tự quản lý.
      *
      * @param nguoiDung  thông tin người dùng cần cập nhật
      * @param dsVaiTroIds danh sách ID vai trò mới
@@ -582,74 +638,35 @@ public class NguoiDungDAO {
      * @throws SQLException khi thao tác database lỗi
      */
     public boolean capNhatNguoiDung(NguoiDung nguoiDung, List<Integer> dsVaiTroIds) throws SQLException {
-        String sqlUser = "UPDATE nguoi_dung SET ho_ten = ?, email = ?, trang_thai = ?, nhom_kinh_doanh_id = ?, " +
-                         "so_dien_thoai = ? WHERE id = ?";
-        String sqlDeleteRoles = "DELETE FROM nguoi_dung_vai_tro WHERE nguoi_dung_id = ?";
-        String sqlInsertRoles = "INSERT INTO nguoi_dung_vai_tro (nguoi_dung_id, vai_tro_id) VALUES (?, ?)";
-
-        Connection conn = null;
-        try {
-            conn = DatabaseConnection.layKetNoi();
-            conn.setAutoCommit(false);
-
-            try (PreparedStatement psUser = conn.prepareStatement(sqlUser)) {
-                psUser.setString(1, nguoiDung.getHoTen());
-                psUser.setString(2, nguoiDung.getEmail());
-                psUser.setString(3, nguoiDung.getTrangThai());
-                if (nguoiDung.getNhomKinhDoanhId() != null) {
-                    psUser.setInt(4, nguoiDung.getNhomKinhDoanhId());
-                } else {
-                    psUser.setNull(4, java.sql.Types.INTEGER);
-                }
-                psUser.setString(5, nguoiDung.getSoDienThoai());
-                psUser.setLong(6, nguoiDung.getId());
-
-                int affected = psUser.executeUpdate();
-                if (affected == 0) {
-                    conn.rollback();
-                    return false;
-                }
+        try (Connection conn = DatabaseConnection.layKetNoi()) {
+            boolean autoCommit = conn.getAutoCommit();
+            if (autoCommit) {
+                conn.setAutoCommit(false);
             }
-
-            if (dsVaiTroIds != null) {
-                try (PreparedStatement psDel = conn.prepareStatement(sqlDeleteRoles)) {
-                    psDel.setLong(1, nguoiDung.getId());
-                    psDel.executeUpdate();
+            try {
+                boolean ok = capNhatNguoiDung(nguoiDung, dsVaiTroIds, conn);
+                if (ok && autoCommit) {
+                    conn.commit();
+                } else if (!ok && autoCommit) {
+                    conn.rollback();
                 }
-
-                if (!dsVaiTroIds.isEmpty()) {
-                    try (PreparedStatement psIns = conn.prepareStatement(sqlInsertRoles)) {
-                        for (Integer vtId : dsVaiTroIds) {
-                            if (vtId != null) {
-                                psIns.setLong(1, nguoiDung.getId());
-                                psIns.setInt(2, vtId);
-                                psIns.addBatch();
-                            }
-                        }
-                        psIns.executeBatch();
+                return ok;
+            } catch (SQLException e) {
+                if (autoCommit) {
+                    try {
+                        conn.rollback();
+                    } catch (SQLException ex) {
+                        LOGGER.log(Level.SEVERE, "Rollback cập nhật người dùng thất bại: " + ex.getMessage(), ex);
                     }
                 }
-            }
-
-            conn.commit();
-            return true;
-
-        } catch (SQLException e) {
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException ex) {
-                    LOGGER.log(Level.SEVERE, "Rollback cập nhật người dùng thất bại: " + ex.getMessage(), ex);
-                }
-            }
-            LOGGER.log(Level.SEVERE, "Lỗi cập nhật người dùng: " + e.getMessage(), e);
-            throw e;
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException ignored) {
+                LOGGER.log(Level.SEVERE, "Lỗi cập nhật người dùng: " + e.getMessage(), e);
+                throw e;
+            } finally {
+                if (autoCommit) {
+                    try {
+                        conn.setAutoCommit(true);
+                    } catch (SQLException ignored) {
+                    }
                 }
             }
         }
@@ -788,7 +805,9 @@ public class NguoiDungDAO {
                 psNhom.setInt(2, nguoiDungId);
                 int aff = psNhom.executeUpdate();
                 if (aff == 0) {
-                    conn.rollback();
+                    if (autoCommit) {
+                        conn.rollback();
+                    }
                     return false;
                 }
             }
@@ -818,11 +837,13 @@ public class NguoiDungDAO {
             }
             return true;
         } catch (SQLException e) {
-            try {
-                LOGGER.log(Level.WARNING, "Lỗi khi gán vai trò & nhóm, đang rollback: " + e.getMessage());
-                conn.rollback();
-            } catch (SQLException ex) {
-                LOGGER.log(Level.SEVERE, "Lỗi khi rollback: " + ex.getMessage(), ex);
+            if (autoCommit) {
+                try {
+                    LOGGER.log(Level.WARNING, "Lỗi khi gán vai trò & nhóm, đang rollback: " + e.getMessage());
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    LOGGER.log(Level.SEVERE, "Lỗi khi rollback: " + ex.getMessage(), ex);
+                }
             }
             throw e;
         } finally {

@@ -11,10 +11,17 @@ import vn.nhom10.crm.model.VaiTroEnum;
 
 import vn.nhom10.crm.model.HanhDongThayDoi;
 import vn.nhom10.crm.model.LoaiDoiTuongNhayCam;
+import vn.nhom10.crm.util.DatabaseConnection;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -125,46 +132,121 @@ public class PhanQuyenService {
             }
         }
 
-        // 5. Thực thi cập nhật với Transaction
-        try {
-            boolean kq = nguoiDungDAO.capNhatVaiTroVaNhomTransaction(nguoiDungId, danhSachVaiTroId, nhomKinhDoanhId);
-            if (kq) {
-                // Hook ghi nhật ký thay đổi dữ liệu nhạy cảm (Story S2-04)
-                try {
-                    String vaiTroTruoc = nguoiDung.getChuoiVaiTroHienThi();
-                    String vaiTroSau = dsVaiTroMoi.stream().map(VaiTro::getTenVaiTro).collect(Collectors.joining(", "));
-                    NguoiDung actor = nguoiDungDAO.timTheoId(nguoiThucHienId);
-                    String actorName = actor != null ? actor.getHoTen() : "Quản trị hệ thống";
-                    String actorEmail = actor != null ? actor.getEmail() : "";
+        // Đọc vai trò hiện tại từ DB TRƯỚC KHI MUTATE (Story S2-04)
+        Set<VaiTro> vaiTroHienTai = nguoiDungDAO.layDanhSachVaiTroTheoNguoiDungId(nguoiDungId);
+        if (vaiTroHienTai == null || vaiTroHienTai.isEmpty()) {
+            vaiTroHienTai = nguoiDung.getDanhSachVaiTro();
+        }
+        if (vaiTroHienTai == null) {
+            vaiTroHienTai = Collections.emptySet();
+        }
 
-                    nhatKyThayDoiService.ghiNhatKyThayDoi(
-                            (long) nguoiThucHienId,
-                            actorName,
-                            actorEmail,
-                            LoaiDoiTuongNhayCam.VAI_TRO_NGUOI_DUNG,
-                            "ND-" + nguoiDungId,
-                            "Tài khoản: " + nguoiDung.getHoTen(),
-                            "Vai trò người dùng",
-                            vaiTroTruoc != null && !vaiTroTruoc.isBlank() ? vaiTroTruoc : "Chưa có vai trò",
-                            vaiTroSau,
-                            HanhDongThayDoi.CAP_NHAT,
-                            "Phân quyền vai trò tài khoản người dùng",
-                            diaChiIp != null ? diaChiIp : "127.0.0.1",
-                            thietBi != null ? thietBi : "Trình duyệt CRM"
-                    );
-                } catch (Exception ex) {
-                    LOGGER.log(Level.WARNING, "Không thể ghi nhật ký audit log cho phân quyền: " + ex.getMessage(), ex);
+        Set<String> setTruoc = vaiTroHienTai.stream()
+                .filter(Objects::nonNull)
+                .map(VaiTro::getMaVaiTro)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .collect(Collectors.toSet());
+
+        Set<String> setSau = dsVaiTroMoi.stream()
+                .filter(Objects::nonNull)
+                .map(VaiTro::getMaVaiTro)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .collect(Collectors.toSet());
+
+        boolean vaiTroThayDoi = !setTruoc.equals(setSau);
+
+        // 5. Thực thi cập nhật với Transaction an toàn & Atomic Audit Log
+        try (Connection conn = DatabaseConnection.layKetNoi()) {
+            conn.setAutoCommit(false);
+            try {
+                boolean kq = false;
+                try {
+                    kq = nguoiDungDAO.capNhatVaiTroVaNhomTransaction(nguoiDungId, danhSachVaiTroId, nhomKinhDoanhId, conn);
+                } catch (Exception e) {
+                    throw e;
+                }
+                if (!kq) {
+                    kq = nguoiDungDAO.capNhatVaiTroVaNhomTransaction(nguoiDungId, danhSachVaiTroId, nhomKinhDoanhId);
                 }
 
+                if (!kq) {
+                    conn.rollback();
+                    return GanVaiTroNhomDTO.thatBai("Không thể cập nhật phân quyền cho người dùng.");
+                }
+
+                if (vaiTroThayDoi) {
+                    ghiAuditThayDoiVaiTro(conn, nguoiThucHienId, nguoiDungId, nguoiDung.getHoTen(),
+                            vaiTroHienTai, dsVaiTroMoi, diaChiIp, thietBi);
+                }
+
+                conn.commit();
                 return GanVaiTroNhomDTO.thanhCong(
                         "Gán vai trò và nhóm kinh doanh thành công cho người dùng " + nguoiDung.getHoTen() + ".");
-            } else {
-                return GanVaiTroNhomDTO.thatBai("Không thể cập nhật phân quyền cho người dùng.");
+            } catch (SQLException e) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    LOGGER.log(Level.SEVERE, "Rollback phân quyền thất bại: " + ex.getMessage(), ex);
+                }
+                LOGGER.log(Level.SEVERE, "Lỗi cập nhật phân quyền hoặc audit log: " + e.getMessage(), e);
+                return GanVaiTroNhomDTO.thatBai("Lỗi hệ thống khi cập nhật cơ sở dữ liệu: " + e.getMessage());
+            } finally {
+                try {
+                    conn.setAutoCommit(true);
+                } catch (SQLException ignored) {
+                }
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi cập nhật phân quyền: " + e.getMessage(), e);
-            return GanVaiTroNhomDTO.thatBai("Lỗi hệ thống khi cập nhật cơ sở dữ liệu: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Lỗi kết nối CSDL khi phân quyền: " + e.getMessage(), e);
+            return GanVaiTroNhomDTO.thatBai("Lỗi kết nối cơ sở dữ liệu: " + e.getMessage());
         }
+    }
+
+    private void ghiAuditThayDoiVaiTro(Connection conn, int nguoiThucHienId, int targetUserId, String targetHoTen,
+                                       Collection<VaiTro> vaiTroTruoc, Collection<VaiTro> vaiTroSau,
+                                       String diaChiIp, String thietBi) throws SQLException {
+        NguoiDung actor = nguoiDungDAO.timTheoId(nguoiThucHienId);
+        String actorName = actor != null ? actor.getHoTen() : "Quản trị hệ thống";
+        String actorEmail = actor != null ? actor.getEmail() : "";
+
+        List<String> listTruoc = vaiTroTruoc.stream()
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparingInt(VaiTro::getId))
+                .map(VaiTro::getMaVaiTro)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .collect(Collectors.toList());
+
+        List<String> listSau = vaiTroSau.stream()
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparingInt(VaiTro::getId))
+                .map(VaiTro::getMaVaiTro)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .collect(Collectors.toList());
+
+        String jsonTruoc = listTruoc.isEmpty() ? "[]" : "[\"" + String.join("\",\"", listTruoc) + "\"]";
+        String jsonSau = listSau.isEmpty() ? "[]" : "[\"" + String.join("\",\"", listSau) + "\"]";
+
+        nhatKyThayDoiService.ghiNhatKyThayDoi(
+                conn,
+                (long) nguoiThucHienId,
+                actorName,
+                actorEmail,
+                LoaiDoiTuongNhayCam.VAI_TRO_NGUOI_DUNG,
+                (long) targetUserId,
+                "ND-" + targetUserId,
+                targetHoTen != null ? targetHoTen : ("Người dùng ID " + targetUserId),
+                "Vai trò người dùng",
+                jsonTruoc,
+                jsonSau,
+                HanhDongThayDoi.CAP_NHAT,
+                "Phân quyền vai trò tài khoản người dùng",
+                diaChiIp != null && !diaChiIp.isBlank() ? diaChiIp : "127.0.0.1",
+                thietBi != null && !thietBi.isBlank() ? thietBi : "Trình duyệt CRM"
+        );
     }
 
     public List<VaiTro> layDanhSachTatCaVaiTro() {
