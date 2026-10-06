@@ -106,6 +106,10 @@
                 <p class="page-subtitle">Quản lý và chăm sóc danh mục khách hàng thuộc quyền phụ trách</p>
             </div>
             <div class="page-actions">
+                <a href="${pageContext.request.contextPath}/khach-hang/import-excel" class="btn btn-outline" id="btnImportExcel" title="Nhập danh sách khách hàng từ file Excel (.xlsx, .xls)">
+                    <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
+                    <span>Nhập Excel</span>
+                </a>
                 <button type="button" class="btn btn-outline" id="btnExportExcel" title="Tải danh sách khách hàng dưới dạng file Excel (.xlsx)">
                     <span class="material-symbols-outlined" aria-hidden="true">table_view</span>
                     <span>Xuất Excel</span>
