@@ -41,7 +41,7 @@
                 toggleBtn.setAttribute("aria-expanded", isExpanded ? "true" : "false");
                 const arrow = toggleBtn.querySelector(".toggle-arrow");
                 if (arrow) {
-                    arrow.textContent = isExpanded ? "▲" : "▼";
+                    arrow.textContent = isExpanded ? "expand_less" : "expand_more";
                 }
             });
         }
@@ -104,7 +104,7 @@
             document.body.appendChild(toast);
         }
 
-        toast.innerHTML = "<span>📋</span><span>" + message + "</span>";
+        toast.innerHTML = '<span class="material-symbols-outlined icon-xs" aria-hidden="true">content_copy</span><span>' + message + '</span>';
         toast.classList.add("show");
 
         setTimeout(function () {

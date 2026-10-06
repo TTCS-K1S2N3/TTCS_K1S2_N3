@@ -20,8 +20,9 @@
         </div>
         <div class="header-actions">
             <a href="${pageContext.request.contextPath}/san-pham"
-               class="btn btn-outline" id="btnQuayLai">
-                <span>&larr;</span> Quay lại danh sách
+               class="btn btn-outline" id="btnQuayLai" style="display: inline-flex; align-items: center; gap: 4px;">
+                <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span>
+                <span>Quay lại danh sách</span>
             </a>
         </div>
     </header>
@@ -30,9 +31,12 @@
     <c:if test="${not empty thongBaoLoi}">
         <div class="alert alert-danger" role="alert">
             <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="material-symbols-outlined icon-sm" style="color: var(--danger);" aria-hidden="true">error</span>
                 <span><strong>Lỗi nhập liệu:</strong> ${thongBaoLoi}</span>
             </div>
-            <span class="alert-close" onclick="this.parentElement.style.display='none';">&times;</span>
+            <span class="alert-close" onclick="this.parentElement.style.display='none';" title="Đóng" aria-label="Đóng">
+                <span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span>
+            </span>
         </div>
     </c:if>
 
@@ -63,7 +67,7 @@
                     <select id="loai" name="loai" required>
                         <c:forEach var="l" items="${danhSachLoai}">
                             <option value="${l.maLoai}" ${sanPham.maLoai == l.maLoai ? 'selected' : ''}>
-                                ${l.maLoai == 'DICH_VU_THUE_BAO' ? '🔄 ' : '📦 '}${l.tenHienThi} (${l.moTa})
+                                ${l.tenHienThi} (${l.moTa})
                             </option>
                         </c:forEach>
                     </select>
@@ -143,8 +147,9 @@
                     <input type="number" id="giaSan" name="giaSan" value="${sanPham.giaSan}"
                            min="0" step="1000" placeholder="VD: 12000000" required>
                     <span id="errGiaSan" class="field-error">${danhSachLoi['giaSan']}</span>
-                    <span class="form-hint" style="color: #b45309; font-weight: 500;">
-                        ⚡ <strong>Ngưỡng duyệt chiết khấu:</strong> Đơn giá bán dưới mức này sẽ yêu cầu Giám đốc phê duyệt.
+                    <span class="form-hint" style="color: #b45309; font-weight: 500; display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">bolt</span>
+                        <span><strong>Ngưỡng duyệt chiết khấu:</strong> Đơn giá bán dưới mức này sẽ yêu cầu Giám đốc phê duyệt.</span>
                     </span>
                 </div>
 
@@ -154,8 +159,9 @@
                         <div class="form-group form-full">
                             <div class="security-cost-box authorized">
                                 <div class="security-cost-header">
-                                    <span class="security-cost-title">
-                                        🔒 Giá vốn (Cost Price) - Phân quyền Giám đốc kinh doanh
+                                    <span class="security-cost-title" style="display: inline-flex; align-items: center; gap: 6px;">
+                                        <span class="material-symbols-outlined icon-sm" style="color: #166534;" aria-hidden="true">lock</span>
+                                        <span>Giá vốn (Cost Price) - Phân quyền Giám đốc kinh doanh</span>
                                     </span>
                                     <span class="badge badge-director-only">
                                         CHỈ GIÁM ĐỐC KINH DOANH (DIRECTOR)
@@ -179,6 +185,7 @@
                         <div class="form-group form-full">
                             <div class="security-cost-box">
                                 <div style="display: flex; align-items: center; gap: 8px; color: var(--slate-600); font-size: 13.5px;">
+                                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">lock</span>
                                     <span><strong>Giá vốn (Cost Price):</strong> Chỉ Giám đốc kinh doanh mới có quyền xem và cấu hình giá vốn. Dữ liệu này được bảo mật hoàn toàn.</span>
                                 </div>
                             </div>
@@ -197,11 +204,13 @@
             <!-- Nút hành động -->
             <div style="margin-top: 28px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; padding-top: 20px; border-top: 1px solid var(--border-color);">
                 <a href="${pageContext.request.contextPath}/san-pham"
-                   class="btn btn-outline">
-                    Hủy bỏ
+                   class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span>
+                    <span>Hủy bỏ</span>
                 </a>
-                <button type="submit" class="btn btn-primary" id="btnLuuSanPham">
-                    Lưu sản phẩm vào Bảng giá
+                <button type="submit" class="btn btn-primary" id="btnLuuSanPham" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">save</span>
+                    <span>Lưu sản phẩm vào Bảng giá</span>
                 </button>
             </div>
         </form>

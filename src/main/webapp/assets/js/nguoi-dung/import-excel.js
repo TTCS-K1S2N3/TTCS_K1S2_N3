@@ -327,7 +327,7 @@
                     [btnThucHienTop, btnThucHienBottom, btnNhapCard2].forEach(b => {
                         if (b) {
                             b.disabled = true;
-                            b.innerHTML = '&#9203; Đang nhập dữ liệu...';
+                            b.innerHTML = '<span class="material-symbols-outlined icon-sm" aria-hidden="true">hourglass_empty</span> Đang nhập dữ liệu...';
                         }
                     });
 
@@ -361,11 +361,11 @@
 
                     if (btnXemTruoc) {
                         btnXemTruoc.disabled = true;
-                        btnXemTruoc.innerHTML = '&#9203; Đang phân tích tệp...';
+                        btnXemTruoc.innerHTML = '<span class="material-symbols-outlined icon-sm" aria-hidden="true">hourglass_empty</span> Đang phân tích tệp...';
                     }
                     if (btnNhap) {
                         btnNhap.disabled = true;
-                        btnNhap.innerHTML = '&#9203; Đang nhập dữ liệu...';
+                        btnNhap.innerHTML = '<span class="material-symbols-outlined icon-sm" aria-hidden="true">hourglass_empty</span> Đang nhập dữ liệu...';
                     }
                 });
             }
@@ -380,7 +380,7 @@
                     btns.forEach(b => {
                         if (b) {
                             b.disabled = true;
-                            b.innerHTML = '&#9203; Đang nhập dữ liệu...';
+                            b.innerHTML = '<span class="material-symbols-outlined icon-sm" aria-hidden="true">hourglass_empty</span> Đang nhập dữ liệu...';
                         }
                     });
                 });

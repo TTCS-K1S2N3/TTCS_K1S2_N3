@@ -103,7 +103,9 @@ const TruongTuyChinhForm = {
                    placeholder="Nhập giá trị lựa chọn ${soThuTu}..."
                    maxlength="200"
                    value="${defaultVal ? defaultVal : ''}">
-            <button type="button" class="btn-remove-option" title="Xóa lựa chọn này">&times;</button>
+            <button type="button" class="btn-remove-option" title="Xóa lựa chọn này" aria-label="Xóa lựa chọn này">
+                <span class="material-symbols-outlined icon-xs" aria-hidden="true">delete</span>
+            </button>
         `;
         container.appendChild(div);
 

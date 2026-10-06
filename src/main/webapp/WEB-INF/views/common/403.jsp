@@ -66,13 +66,14 @@
 <body class="crm-body">
     <div class="error-container">
         <div class="error-card">
+            <div style="margin-bottom: 12px; color: #dc2626;"><span class="material-symbols-outlined" style="font-size: 56px;" aria-hidden="true">gpp_bad</span></div>
             <div class="error-badge">LỖI 403 - TỪ CHỐI TRUY CẬP</div>
             <h1 class="error-title">Bạn không có quyền truy cập</h1>
             <p class="error-desc">
                 ${requestScope.errorMessage != null ? requestScope.errorMessage : "Chức năng này không thuộc phạm vi quyền hạn của vai trò hiện tại của bạn trong hệ thống CRM."}
             </p>
             <a href="${pageContext.request.contextPath}/dieu-huong" class="btn-back">
-                Quay lại trang điều hướng
+                <span class="material-symbols-outlined icon-xs" style="margin-right: 6px;" aria-hidden="true">arrow_back</span> Quay lại trang điều hướng
             </a>
         </div>
     </div>

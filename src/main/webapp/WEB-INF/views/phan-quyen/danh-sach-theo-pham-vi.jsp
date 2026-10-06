@@ -37,9 +37,7 @@
     <div class="page-header">
         <div class="page-title-group">
             <h1>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-color); vertical-align: -3px; margin-right: 4px;" aria-hidden="true">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                </svg>Phân Quyền Theo Dữ Liệu Sở Hữu (Data Scope)
+                <span class="material-symbols-outlined" style="color: var(--primary-color); vertical-align: -3px; margin-right: 4px;" aria-hidden="true">security</span>Phân Quyền Theo Dữ Liệu Sở Hữu (Data Scope)
             </h1>
             <p>Story S1-05: Quản lý và lọc dữ liệu đa cấp cho Khách hàng, Cơ hội, Báo giá và Hoạt động</p>
         </div>
@@ -62,18 +60,14 @@
     <!-- CÁC THÔNG BÁO HỆ THỐNG -->
     <% if (thongBaoCanhBao != null && !thongBaoCanhBao.trim().isEmpty()) { %>
         <div class="alert-box alert-warning">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 2px;" aria-hidden="true">
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
+            <span class="material-symbols-outlined" style="flex-shrink:0; margin-top: 2px;" aria-hidden="true">warning</span>
             <div><%= thongBaoCanhBao %></div>
         </div>
     <% } %>
 
     <% if (thongBaoThanhCong != null && !thongBaoThanhCong.trim().isEmpty()) { %>
         <div class="alert-box alert-success">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 2px;" aria-hidden="true">
-                <polyline points="20 6 9 17 4 12"/>
-            </svg>
+            <span class="material-symbols-outlined" style="flex-shrink:0; margin-top: 2px;" aria-hidden="true">check_circle</span>
             <div><%= thongBaoThanhCong %></div>
         </div>
     <% } %>
@@ -95,9 +89,7 @@
            class="scope-tab scope-canhan <%= isCurrentCaNhan ? "active" : "" %>">
             <div>
                 <div class="scope-tab-title">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                    </svg>
+                    <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: -3px;" aria-hidden="true">person</span>
                     <span>Của tôi</span>
                 </div>
                 <div class="scope-tab-desc">Chỉ dữ liệu do chính bạn phụ trách</div>
@@ -110,14 +102,10 @@
            class="scope-tab scope-nhom <%= isCurrentNhom ? "active" : "" %> <%= !canChonNhom ? "disabled" : "" %>">
             <div>
                 <div class="scope-tab-title">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
+                    <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: -3px;" aria-hidden="true">groups</span>
                     <span>Nhóm của tôi</span>
                     <% if (!canChonNhom) { %>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--gray-500);" aria-label="Bị khóa">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
+                        <span class="material-symbols-outlined icon-xs" style="color: var(--gray-500); vertical-align: -2px;" aria-label="Bị khóa">lock</span>
                     <% } %>
                 </div>
                 <div class="scope-tab-desc">Toàn bộ dữ liệu của <%= currentUser != null ? currentUser.getTenNhom() : "nhóm" %></div>
@@ -132,14 +120,10 @@
            class="scope-tab scope-toanbo <%= isCurrentToanBo ? "active" : "" %> <%= !canChonToanBo ? "disabled" : "" %>">
             <div>
                 <div class="scope-tab-title">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                    </svg>
+                    <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: -3px;" aria-hidden="true">public</span>
                     <span>Tất cả</span>
                     <% if (!canChonToanBo) { %>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--gray-500);" aria-label="Bị khóa">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
+                        <span class="material-symbols-outlined icon-xs" style="color: var(--gray-500); vertical-align: -2px;" aria-label="Bị khóa">lock</span>
                     <% } %>
                 </div>
                 <div class="scope-tab-desc">Toàn bộ khách hàng & giao dịch toàn công ty</div>
@@ -170,9 +154,7 @@
             <form action="${pageContext.request.contextPath}/phan-quyen-du-lieu" method="get" class="search-box">
                 <input type="hidden" name="phamVi" value="<%= phamViHienTai.getMa() %>">
                 <input type="hidden" name="loai" value="<%= loaiHienTai %>">
-                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
+                <span class="material-symbols-outlined search-icon icon-sm" aria-hidden="true">search</span>
                 <input type="text" id="searchBoxInput" name="tuKhoa" value="<%= tuKhoaHienTai %>"
                        class="search-input" placeholder="Tìm theo tên, mã, người phụ trách...">
             </form>
@@ -180,9 +162,7 @@
             <!-- NÚT XUẤT EXCEL TỰ ĐỘNG LỌC THEO PHẠM VI (AC2) -->
             <a href="${pageContext.request.contextPath}/phan-quyen-du-lieu?phamVi=<%= phamViHienTai.getMa() %>&loai=<%= loaiHienTai %>&tuKhoa=<%= tuKhoaHienTai %>&xuatExcel=true"
                class="btn-export" title="Xuất dữ liệu theo đúng phạm vi hiện tại ra file Excel (.xlsx)">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">table_view</span>
                 <span>Xuất Excel</span>
             </a>
         </div>
@@ -200,7 +180,9 @@
                     <span style="font-size: 13px; color: var(--gray-500);">
                         Từ khóa: "<strong><%= tuKhoaHienTai %></strong>"
                         <a href="${pageContext.request.contextPath}/phan-quyen-du-lieu?phamVi=<%= phamViHienTai.getMa() %>&loai=<%= loaiHienTai %>"
-                           style="color: var(--danger-color); text-decoration: none; margin-left: 6px;">✕ Xóa lọc</a>
+                           style="color: var(--danger-color); text-decoration: none; margin-left: 6px; display: inline-flex; align-items: center; gap: 2px;">
+                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span> Xóa lọc
+                        </a>
                     </span>
                 <% } %>
             </div>
@@ -227,10 +209,7 @@
                             <td colspan="9">
                                 <div class="empty-state">
                                     <div class="empty-icon">
-                                        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--gray-400);">
-                                            <path d="M22 12h-6l-2 3h-4l-2-3H2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-7z"/>
-                                            <path d="M5.45 5.11L2 12v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-7l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
-                                        </svg>
+                                        <span class="material-symbols-outlined" style="font-size: 48px; color: var(--gray-400);" aria-hidden="true">inbox</span>
                                     </div>
                                     <div class="empty-title">Không tìm thấy dữ liệu trong phạm vi này</div>
                                     <div class="empty-desc">
@@ -272,8 +251,9 @@
                                 <td style="font-size: 13px; color: var(--gray-500);"><%= bg.getNgayTao() %></td>
                                 <td style="text-align: right;">
                                     <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=<%= bg.getId() %>"
-                                       class="action-link" title="Xem chi tiết bản ghi">
-                                        Xem chi tiết
+                                       class="action-link" title="Xem chi tiết bản ghi" style="display: inline-flex; align-items: center; gap: 4px;">
+                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">visibility</span>
+                                        <span>Xem chi tiết</span>
                                     </a>
                                 </td>
                             </tr>
@@ -287,7 +267,8 @@
     <!-- 6. KHUNG KIỂM TRA TRUY CẬP NGOÀI PHẠM VI (AC3 & AC4 TEST PANEL) -->
     <div style="margin-top: 32px; background: #ffffff; border-radius: var(--radius-md); padding: 20px 24px; border: 1px dashed var(--gray-300);">
         <h3 style="font-size: 15px; font-weight: 700; color: var(--gray-900); display: flex; align-items: center; gap: 8px;">
-            Kiểm thử nhanh hành vi truy cập ngoài phạm vi (Acceptance Criteria 3 & 4)
+            <span class="material-symbols-outlined icon-sm" style="color: var(--primary-color);" aria-hidden="true">science</span>
+            <span>Kiểm thử nhanh hành vi truy cập ngoài phạm vi (Acceptance Criteria 3 & 4)</span>
         </h3>
         <p style="font-size: 13px; color: var(--gray-500); margin: 6px 0 14px;">
             Khi bạn đang đăng nhập với tư cách <strong><%= currentUser != null ? currentUser.getHoTen() : "" %></strong> (<%= currentUser != null ? currentUser.getVaiTro().getTenHienThi() : "" %>),

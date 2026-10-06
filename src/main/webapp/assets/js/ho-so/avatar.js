@@ -569,7 +569,7 @@ document.addEventListener("DOMContentLoaded", function () {
             btnConfirmCropAndUpload.disabled = false;
         }
         if (btnConfirmText) {
-            btnConfirmText.innerHTML = '<i class="bi bi-check2-circle"></i> Cắt & Lưu ảnh đại diện';
+            btnConfirmText.innerHTML = '<span class="material-symbols-outlined icon-xs" aria-hidden="true">check_circle</span> Cắt & Lưu ảnh đại diện';
         }
     }
 
@@ -593,12 +593,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const toast = document.createElement("div");
         toast.className = "crm-toast " + (type === "success" ? "success" : "error");
 
-        const iconClass = type === "success" ? "bi-check-circle-fill" : "bi-exclamation-octagon-fill";
+        const iconName = type === "success" ? "check_circle" : "error";
 
         toast.innerHTML =
-            '<i class="bi ' + iconClass + ' crm-toast-icon"></i>' +
+            '<span class="material-symbols-outlined crm-toast-icon" aria-hidden="true">' + iconName + '</span>' +
             '<div class="crm-toast-body">' + escapeHtml(message) + '</div>' +
-            '<button type="button" class="crm-toast-close" aria-label="Đóng">&times;</button>';
+            '<button type="button" class="crm-toast-close" aria-label="Đóng" title="Đóng"><span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span></button>';
 
         container.appendChild(toast);
 

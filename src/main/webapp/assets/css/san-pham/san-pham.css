@@ -4,6 +4,7 @@
    Quy chuẩn giao diện: Thẩm mỹ cao cấp, Responsive, Micro-interactions
    ========================================================================== */
 
+@import url('../material-symbols.css');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {

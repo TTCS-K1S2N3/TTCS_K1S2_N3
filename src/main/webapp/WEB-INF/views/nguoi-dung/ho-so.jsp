@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hồ sơ cá nhân & Chữ ký email - CRM Bán Hàng</title>
     <meta name="description" content="Xem và cập nhật hồ sơ cá nhân, ảnh đại diện cắt vuông và chữ ký email phục vụ gửi báo giá cho khách hàng.">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/nguoi-dung/nguoi-dung.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/nguoi-dung/ho-so.css">
@@ -48,7 +47,7 @@
             <!-- Thông báo thành công -->
             <c:if test="${not empty thongBaoThanhCong}">
                 <div class="alert alert-success" role="alert" id="alert-thanh-cong">
-                    <span class="alert-icon">&#10004;</span>
+                    <span class="material-symbols-outlined alert-icon" aria-hidden="true">check_circle</span>
                     <span><c:out value="${thongBaoThanhCong}"/></span>
                 </div>
             </c:if>
@@ -56,7 +55,7 @@
             <!-- Thông báo lỗi tổng quát -->
             <c:if test="${not empty thongBaoLoi}">
                 <div class="alert alert-error" role="alert" id="alert-loi">
-                    <span class="alert-icon">&#9888;</span>
+                    <span class="material-symbols-outlined alert-icon" aria-hidden="true">warning</span>
                     <span><c:out value="${thongBaoLoi}"/></span>
                 </div>
             </c:if>
@@ -66,9 +65,12 @@
                  =============================================================== -->
             <div class="ho-so-card" style="margin-bottom: 24px;">
                 <div class="ho-so-card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                    <h2 style="margin: 0; font-size: 1.15rem;"><i class="bi bi-camera-fill"></i> Tải ảnh đại diện (Cắt vuông & Thumbnail)</h2>
-                    <span class="hint-text" style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 20px; font-weight: 500;">
-                        <i class="bi bi-check2-circle"></i> Chấp nhận JPG/PNG &le; 2MB
+                    <h2 style="margin: 0; font-size: 1.15rem; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined icon-md" aria-hidden="true">photo_camera</span>
+                        Tải ảnh đại diện (Cắt vuông & Thumbnail)
+                    </h2>
+                    <span class="hint-text" style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 20px; font-weight: 500; display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">check_circle</span> Chấp nhận JPG/PNG &le; 2MB
                     </span>
                 </div>
                 <div class="ho-so-card-body">
@@ -87,12 +89,12 @@
                                    aria-label="Chọn file ảnh đại diện">
                             <div class="dropzone-inner">
                                 <div class="upload-icon-circle">
-                                    <i class="bi bi-cloud-arrow-up-fill upload-icon" style="font-size: 2rem;"></i>
+                                    <span class="material-symbols-outlined icon-2xl upload-icon" aria-hidden="true">cloud_upload</span>
                                 </div>
                                 <div class="upload-text" style="font-weight: 600; font-size: 1rem; margin-top: 8px;">Kéo thả ảnh vào đây</div>
                                 <div class="upload-subtext" style="color: #64748b; font-size: 0.9rem;">hoặc <span class="browse-link" id="btnTriggerFileSelect" style="color: #2563eb; text-decoration: underline; cursor: pointer;">nhấn để duyệt file</span></div>
-                                <div class="upload-hint" style="color: #94a3b8; font-size: 0.8rem; margin-top: 4px;">
-                                    <i class="bi bi-info-circle"></i> Định dạng JPG, PNG • Tối đa 2MB
+                                <div class="upload-hint" style="color: #94a3b8; font-size: 0.8rem; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">info</span> Định dạng JPG, PNG • Tối đa 2MB
                                 </div>
                             </div>
                         </div>
@@ -104,31 +106,31 @@
                                     <div class="file-name" id="fileName" style="font-weight: 600; color: #1e293b;">chua-chon-file.png</div>
                                     <div class="file-meta" style="font-size: 0.85rem; color: #64748b; margin-top: 2px;">
                                         <span id="fileSize">0 KB</span> •
-                                        <span class="badge-valid-status" id="badgeValidStatus" style="color: #10b981; font-weight: 600;">
-                                            <i class="bi bi-check-circle-fill"></i> Hợp lệ (&le; 2MB)
+                                        <span class="badge-valid-status" id="badgeValidStatus" style="color: #10b981; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">check_circle</span> Hợp lệ (&le; 2MB)
                                         </span>
                                     </div>
                                 </div>
-                                <button type="button" class="btn-clear-file" id="btnClearFile" title="Hủy chọn file" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #ef4444;">
-                                    <i class="bi bi-x-circle-fill"></i>
+                                <button type="button" class="btn-clear-file" id="btnClearFile" title="Hủy chọn file" aria-label="Hủy chọn file" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #ef4444;">
+                                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">cancel</span>
                                 </button>
                             </div>
                         </div>
 
                         <!-- Hộp thông báo lỗi phía Client (Validate AC: JPG/PNG <= 2MB) -->
-                        <div class="client-error-box" id="clientErrorBox" style="display: none; margin-top: 12px; padding: 10px; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 6px; color: #b91c1c; font-size: 0.9rem;">
-                            <i class="bi bi-exclamation-octagon-fill"></i>
+                        <div class="client-error-box" id="clientErrorBox" style="display: none; margin-top: 12px; padding: 10px; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 6px; color: #b91c1c; font-size: 0.9rem; align-items: center; gap: 6px;">
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">error</span>
                             <span id="clientErrorText"></span>
                         </div>
 
                         <!-- Hàng nút hành động: Cắt vuông trực quan & Tải lên -->
                         <div class="upload-action-buttons" style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
-                            <button type="button" class="btn btn-primary" id="btnOpenCropModal" disabled style="padding: 10px 20px; background: #2563eb; color: #fff; border: 1px solid #1d4ed8; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                                <i class="bi bi-crop"></i>
+                            <button type="button" class="btn btn-primary" id="btnOpenCropModal" disabled style="padding: 10px 20px; background: #2563eb; color: #fff; border: 1px solid #1d4ed8; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">crop</span>
                                 <span>Cắt vuông & Tải lên</span>
                             </button>
-                            <button type="submit" class="btn btn-secondary" id="btnSubmitDirect" disabled style="padding: 10px 20px; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                                <i class="bi bi-arrow-up-circle"></i>
+                            <button type="submit" class="btn btn-secondary" id="btnSubmitDirect" disabled style="padding: 10px 20px; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">upload</span>
                                 <span>Tải lên nhanh</span>
                             </button>
                         </div>
@@ -142,7 +144,10 @@
             <div class="ho-so-grid">
                 <div class="ho-so-card">
                     <div class="ho-so-card-header">
-                        <h2>&#9998; Chỉnh sửa thông tin cá nhân & Chữ ký</h2>
+                        <h2 style="display: flex; align-items: center; gap: 6px;">
+                            <span class="material-symbols-outlined icon-md" aria-hidden="true">edit</span>
+                            Chỉnh sửa thông tin cá nhân & Chữ ký
+                        </h2>
                         <span class="hint-text">Dấu (<span class="required" style="color: #dc2626;">*</span>) là trường bắt buộc</span>
                     </div>
 
@@ -186,8 +191,8 @@
                                        class="<c:if test='${not empty formError["soDienThoai"]}'>input-error</c:if>"
                                        value="<c:out value='${nguoiDung.soDienThoai}'/>"
                                        style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem;">
-                                <div class="hint-text" style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
-                                    &#9432; Định dạng số điện thoại Việt Nam (10 chữ số di động 03x, 05x, 07x, 08x, 09x hoặc 11 chữ số cố định). Chấp nhận đầu số quốc tế +84.
+                                <div class="hint-text" style="font-size: 0.8rem; color: #64748b; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">info</span> Định dạng số điện thoại Việt Nam (10 chữ số di động 03x, 05x, 07x, 08x, 09x hoặc 11 chữ số cố định). Chấp nhận đầu số quốc tế +84.
                                 </div>
                                 <span class="form-error-msg <c:if test='${not empty formError["soDienThoai"]}'>visible</c:if>"
                                       id="soDienThoai-error" style="color: #dc2626; font-size: 0.85rem; display: ${not empty formError['soDienThoai'] ? 'block' : 'none'}; margin-top: 4px;">
@@ -206,8 +211,8 @@
                                           placeholder="Ví dụ:&#10;Trân trọng,&#10;Nguyễn Văn A - Chuyên viên Kinh doanh&#10;Công ty Cổ phần Giải pháp Doanh nghiệp CRM&#10;Hotline: 0901234567 | Email: a.nguyen@crm.vn"
                                           class="<c:if test='${not empty formError["chuKyEmail"]}'>input-error</c:if>"
                                           style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; font-family: inherit; resize: vertical;"><c:out value="${nguoiDung.chuKyEmail}"/></textarea>
-                                <div class="hint-text" style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
-                                    &#9432; Chữ ký này sẽ được tự động chèn vào phần cuối email khi bạn gửi báo giá hoặc tài liệu cho khách hàng.
+                                <div class="hint-text" style="font-size: 0.8rem; color: #64748b; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">info</span> Chữ ký này sẽ được tự động chèn vào phần cuối email khi bạn gửi báo giá hoặc tài liệu cho khách hàng.
                                 </div>
                                 <span class="form-error-msg <c:if test='${not empty formError["chuKyEmail"]}'>visible</c:if>"
                                       id="chuKyEmail-error" style="color: #dc2626; font-size: 0.85rem; display: ${not empty formError['chuKyEmail'] ? 'block' : 'none'}; margin-top: 4px;">
@@ -216,7 +221,10 @@
 
                                 <!-- Khung xem trước chữ ký email thực tế -->
                                 <div class="signature-preview-box" id="signature-preview-box">
-                                    <div class="signature-preview-title">&#9993; Xem trước chữ ký trong email báo giá</div>
+                                    <div class="signature-preview-title" style="display: flex; align-items: center; gap: 6px;">
+                                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">mail</span>
+                                        Xem trước chữ ký trong email báo giá
+                                    </div>
                                     <div style="font-style: italic; color: #64748b; margin-bottom: 8px;">Kính gửi Quý khách hàng, chúng tôi xin gửi báo giá chi tiết theo yêu cầu...</div>
                                     <hr style="border: 0; border-top: 1px dashed #cbd5e1; margin: 8px 0;">
                                     <div class="signature-preview-content" id="signature-preview-text"><c:out value="${not empty nguoiDung.chuKyEmail ? nguoiDung.chuKyEmail : '[Chưa thiết lập chữ ký email]'}" /></div>
@@ -225,8 +233,9 @@
 
                             <!-- AC2: Các thông tin KHÔNG được tự đổi (Chỉ đọc) -->
                             <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
-                                <h3 style="font-size: 1rem; font-weight: 600; color: #475569; margin-bottom: 16px;">
-                                    &#128274; Thông tin tài khoản hệ thống (Không thể tự thay đổi)
+                                <h3 style="font-size: 1rem; font-weight: 600; color: #475569; margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">
+                                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">lock</span>
+                                    Thông tin tài khoản hệ thống (Không thể tự thay đổi)
                                 </h3>
 
                                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
@@ -237,7 +246,9 @@
                                         </label>
                                         <div class="readonly-field-wrap">
                                             <span class="readonly-val" id="readonly-email"><c:out value="${nguoiDung.email}"/></span>
-                                            <span class="lock-tag">&#128274; Cố định</span>
+                                            <span class="lock-tag" style="display: inline-flex; align-items: center; gap: 4px;">
+                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">lock</span> Cố định
+                                            </span>
                                         </div>
                                     </div>
 
@@ -248,7 +259,9 @@
                                         </label>
                                         <div class="readonly-field-wrap">
                                             <span class="readonly-val" id="readonly-team"><c:out value="${nguoiDung.tenNhomKinhDoanh}"/></span>
-                                            <span class="lock-tag">&#128274; Cố định</span>
+                                            <span class="lock-tag" style="display: inline-flex; align-items: center; gap: 4px;">
+                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">lock</span> Cố định
+                                            </span>
                                         </div>
                                     </div>
 
@@ -259,7 +272,9 @@
                                         </label>
                                         <div class="readonly-field-wrap">
                                             <span class="readonly-val" id="readonly-role"><c:out value="${nguoiDung.chuoiVaiTroHienThi}"/></span>
-                                            <span class="lock-tag">&#128274; Do Quản trị viên cấp</span>
+                                            <span class="lock-tag" style="display: inline-flex; align-items: center; gap: 4px;">
+                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">lock</span> Do Quản trị viên cấp
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -297,14 +312,14 @@
             <!-- Modal Header -->
             <div class="crop-modal-header">
                 <div class="crop-modal-title-wrap">
-                    <i class="bi bi-crop crop-modal-icon"></i>
+                    <span class="material-symbols-outlined crop-modal-icon" aria-hidden="true">crop</span>
                     <div>
                         <h3 class="crop-modal-title" id="cropModalTitle">Cắt ảnh vuông & Tạo thumbnail</h3>
                         <div class="crop-modal-subtitle">Điều chỉnh khung hình vuông (1:1) để nhận diện rõ nét nhất</div>
                     </div>
                 </div>
-                <button type="button" class="crop-modal-close" id="btnCloseCropModal" aria-label="Đóng cửa sổ">
-                    <i class="bi bi-x-lg"></i>
+                <button type="button" class="crop-modal-close" id="btnCloseCropModal" aria-label="Đóng cửa sổ" title="Đóng cửa sổ">
+                    <span class="material-symbols-outlined" aria-hidden="true">close</span>
                 </button>
             </div>
 
@@ -327,11 +342,11 @@
 
                     <!-- Thanh công cụ điều khiển tương tác (Zoom, Rotate, Reset) -->
                     <div class="crop-toolbar">
-                        <button type="button" class="btn-tool" id="btnZoomOut" title="Thu nhỏ (-)">
-                            <i class="bi bi-dash-lg"></i>
+                        <button type="button" class="btn-tool" id="btnZoomOut" title="Thu nhỏ (-)" aria-label="Thu nhỏ">
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">remove</span>
                         </button>
                         <div class="zoom-slider-wrap">
-                            <i class="bi bi-zoom-in slider-icon"></i>
+                            <span class="material-symbols-outlined slider-icon" aria-hidden="true">zoom_in</span>
                             <input type="range"
                                    id="zoomSlider"
                                    min="0.5"
@@ -340,30 +355,30 @@
                                    value="1.0"
                                    aria-label="Thanh trượt thu phóng ảnh">
                         </div>
-                        <button type="button" class="btn-tool" id="btnZoomIn" title="Phóng to (+)">
-                            <i class="bi bi-plus-lg"></i>
+                        <button type="button" class="btn-tool" id="btnZoomIn" title="Phóng to (+)" aria-label="Phóng to">
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">add</span>
                         </button>
                         <div class="tool-divider"></div>
-                        <button type="button" class="btn-tool" id="btnRotateLeft" title="Xoay trái 90°">
-                            <i class="bi bi-arrow-counterclockwise"></i>
+                        <button type="button" class="btn-tool" id="btnRotateLeft" title="Xoay trái 90°" aria-label="Xoay trái 90°">
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">rotate_left</span>
                         </button>
-                        <button type="button" class="btn-tool" id="btnRotateRight" title="Xoay phải 90°">
-                            <i class="bi bi-arrow-clockwise"></i>
+                        <button type="button" class="btn-tool" id="btnRotateRight" title="Xoay phải 90°" aria-label="Xoay phải 90°">
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">rotate_right</span>
                         </button>
-                        <button type="button" class="btn-tool" id="btnResetCrop" title="Đặt lại vị trí ban đầu">
-                            <i class="bi bi-aspect-ratio"></i> Đặt lại
+                        <button type="button" class="btn-tool" id="btnResetCrop" title="Đặt lại vị trí ban đầu" style="display: inline-flex; align-items: center; gap: 4px;">
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">restart_alt</span> Đặt lại
                         </button>
                     </div>
-                    <div class="crop-drag-hint">
-                        <i class="bi bi-arrows-move"></i> Kéo giữ chuột hoặc chạm vuốt trên điện thoại để điều chỉnh vị trí ảnh
+                    <div class="crop-drag-hint" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">drag_pan</span> Kéo giữ chuột hoặc chạm vuốt trên điện thoại để điều chỉnh vị trí ảnh
                     </div>
                 </div>
 
                 <!-- Preview Sidebar: Xem trước đồng thời Ảnh vuông chuẩn & Thumbnail -->
                 <div class="crop-preview-sidebar">
                     <div class="preview-group">
-                        <div class="preview-group-title">
-                            <i class="bi bi-aspect-ratio"></i> Ảnh vuông chuẩn (1:1 - 400x400)
+                        <div class="preview-group-title" style="display: flex; align-items: center; gap: 6px;">
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">crop_square</span> Ảnh vuông chuẩn (1:1 - 400x400)
                         </div>
                         <div class="preview-circle-large-wrap">
                             <canvas id="previewSquareCanvas" width="140" height="140" class="preview-canvas-round"></canvas>
@@ -373,8 +388,8 @@
                     </div>
 
                     <div class="preview-group">
-                        <div class="preview-group-title">
-                            <i class="bi bi-eye"></i> Bản thu nhỏ (Thumbnail - 120x120)
+                        <div class="preview-group-title" style="display: flex; align-items: center; gap: 6px;">
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">visibility</span> Bản thu nhỏ (Thumbnail - 120x120)
                         </div>
                         <div class="preview-thumb-demo-wrap">
                             <canvas id="previewThumbCanvas" width="48" height="48" class="preview-canvas-thumb"></canvas>
@@ -409,8 +424,8 @@
                 <button type="button" class="btn btn-light" id="btnCancelCrop">
                     Hủy bỏ
                 </button>
-                <button type="button" class="btn btn-primary" id="btnConfirmCropAndUpload">
-                    <i class="bi bi-check2-circle"></i>
+                <button type="button" class="btn btn-primary" id="btnConfirmCropAndUpload" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">check_circle</span>
                     <span id="btnConfirmText">Cắt & Lưu ảnh đại diện</span>
                 </button>
             </div>

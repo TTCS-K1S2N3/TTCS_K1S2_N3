@@ -393,7 +393,7 @@ function thucHienKiemTraDieuKien() {
             if (data.thoaDieuKien) {
                 resultBox.innerHTML =
                     "<div class='alert alert-success' style='margin-top:14px; display:block;'>" +
-                    "<div style='font-weight: 700; margin-bottom: 4px;'>✅ THỎA MÃN ĐIỀU KIỆN RỜI GIAI ĐOẠN</div>" +
+                    "<div style='font-weight: 700; margin-bottom: 4px; display:flex; align-items:center; gap:6px;'><span class='material-symbols-outlined icon-sm' aria-hidden='true'>check_circle</span> THỎA MÃN ĐIỀU KIỆN RỜI GIAI ĐOẠN</div>" +
                     "<div>Cơ hội này đã đáp ứng đầy đủ tiêu chuẩn quy định để chuyển sang bước kế tiếp trong quy trình bán hàng.</div>" +
                     "</div>";
             } else {
@@ -409,7 +409,7 @@ function thucHienKiemTraDieuKien() {
 
                 resultBox.innerHTML =
                     "<div class='alert alert-danger' style='margin-top:14px; display:block;'>" +
-                    "<div style='font-weight: 700; margin-bottom: 4px;'>⚠️ CHƯA ĐỦ ĐIỀU KIỆN RỜI GIAI ĐOẠN (AC 3)</div>" +
+                    "<div style='font-weight: 700; margin-bottom: 4px; display:flex; align-items:center; gap:6px;'><span class='material-symbols-outlined icon-sm' aria-hidden='true'>warning</span> CHƯA ĐỦ ĐIỀU KIỆN RỜI GIAI ĐOẠN (AC 3)</div>" +
                     "<div style='font-size: 13px;'>" + escapeHtml(data.thongBao || "Hệ thống ngăn không cho chuyển giai đoạn nhằm đảm bảo tính xác thực của dữ liệu:") + "</div>" +
                     listHtml +
                     "</div>";

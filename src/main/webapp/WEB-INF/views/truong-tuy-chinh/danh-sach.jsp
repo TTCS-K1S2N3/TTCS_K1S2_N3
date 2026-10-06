@@ -32,7 +32,7 @@
             <span style="margin: 0 6px;">/</span>
             <span style="color: var(--slate-700, #334155); font-weight: 500;">Trường tùy chỉnh</span>
         </div>
-        <a href="${pageContext.request.contextPath}/danh-muc" class="btn btn-outline btn-sm">&larr; Quay lại Danh mục</a>
+        <a href="${pageContext.request.contextPath}/danh-muc" class="btn btn-outline btn-sm"><span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span> Quay lại Danh mục</a>
     </nav>
 
     <!-- ===== HEADER ===== -->
@@ -49,14 +49,14 @@
                href="${pageContext.request.contextPath}/truong-tuy-chinh/xuat-excel?doiTuong=${not empty tabHienTai ? tabHienTai : 'KHACH_HANG'}"
                class="btn btn-excel"
                title="Tải bản xuất Excel chứa các cột chuẩn và các trường tuỳ chỉnh đã khai báo">
-                Tải file Excel mẫu
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">table_view</span> Tải file Excel mẫu
             </a>
             <!-- Nút thêm trường mới -->
             <a id="btn-them-truong"
                href="${pageContext.request.contextPath}/truong-tuy-chinh/tao?doiTuong=${not empty tabHienTai ? tabHienTai : 'KHACH_HANG'}"
                class="btn btn-primary"
                data-base-url="${pageContext.request.contextPath}/truong-tuy-chinh/tao">
-                Khai báo trường mới
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">add</span> Khai báo trường mới
             </a>
         </div>
     </header>
@@ -65,19 +65,20 @@
     <c:if test="${not empty thongBaoThanhCong}">
         <div class="alert alert-success" role="alert">
             <div><strong>Thành công:</strong> <c:out value="${thongBaoThanhCong}"/></div>
-            <span class="alert-close" onclick="this.parentElement.style.display='none';">&times;</span>
+            <button type="button" class="alert-close" onclick="this.parentElement.style.display='none';" title="Đóng" aria-label="Đóng"><span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span></button>
         </div>
     </c:if>
     <c:if test="${not empty thongBaoLoi}">
         <div class="alert alert-error" role="alert">
             <div><strong>Thông báo:</strong> <c:out value="${thongBaoLoi}"/></div>
-            <span class="alert-close" onclick="this.parentElement.style.display='none';">&times;</span>
+            <button type="button" class="alert-close" onclick="this.parentElement.style.display='none';" title="Đóng" aria-label="Đóng"><span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span></button>
         </div>
     </c:if>
 
     <!-- ===== STATS OVERVIEW CARDS ===== -->
     <section class="stats-grid">
         <div class="stat-card">
+            <div class="stat-icon primary"><span class="material-symbols-outlined" aria-hidden="true">domain</span></div>
             <div class="stat-content">
                 <span class="stat-value">${fn:length(dsTruongKhachHang)}</span>
                 <span class="stat-label">Trường Khách hàng</span>
@@ -85,6 +86,7 @@
         </div>
 
         <div class="stat-card">
+            <div class="stat-icon info"><span class="material-symbols-outlined" aria-hidden="true">conversion_path</span></div>
             <div class="stat-content">
                 <span class="stat-value">${fn:length(dsTruongCoHoi)}</span>
                 <span class="stat-label">Trường Cơ hội bán hàng</span>
@@ -92,6 +94,7 @@
         </div>
 
         <div class="stat-card">
+            <div class="stat-icon warning"><span class="material-symbols-outlined" aria-hidden="true">star</span></div>
             <div class="stat-content">
                 <c:set var="demBatBuoc" value="0"/>
                 <c:forEach var="t" items="${dsTruongKhachHang}">
@@ -106,6 +109,7 @@
         </div>
 
         <div class="stat-card">
+            <div class="stat-icon success"><span class="material-symbols-outlined" aria-hidden="true">table_view</span></div>
             <div class="stat-content">
                 <c:set var="demExcel" value="0"/>
                 <c:forEach var="t" items="${dsTruongKhachHang}">
@@ -158,7 +162,7 @@
                 <span class="table-count">${fn:length(dsTruongKhachHang)} trường</span>
                 <a href="${pageContext.request.contextPath}/truong-tuy-chinh/xuat-excel?doiTuong=KHACH_HANG"
                    class="btn btn-excel btn-sm" title="Tải mẫu Excel Khách hàng kèm các trường tuỳ chỉnh">
-                    Xuất Excel
+                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">table_view</span> Xuất Excel
                 </a>
             </div>
         </div>
@@ -169,7 +173,7 @@
                     <p><strong>Chưa có trường tuỳ chỉnh nào cho Khách hàng</strong></p>
                     <p>Nhấn nút "Khai báo trường mới" để thêm các cột mở rộng như: Số nhân sự, Ngân sách dự kiến, Nguồn giới thiệu...</p>
                     <a href="${pageContext.request.contextPath}/truong-tuy-chinh/tao?doiTuong=KHACH_HANG" class="btn btn-primary" style="margin-top: 12px;">
-                        Thêm trường Khách hàng đầu tiên
+                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">add</span> Thêm trường Khách hàng đầu tiên
                     </a>
                 </div>
             </c:when>
@@ -216,7 +220,7 @@
                                     <td style="text-align:center;">
                                         <c:choose>
                                             <c:when test="${t.batBuoc}">
-                                                <span class="bat-buoc-badge bat-buoc-yes" title="Bắt buộc người dùng phải nhập">★ Bắt buộc</span>
+                                                <span class="bat-buoc-badge bat-buoc-yes" title="Bắt buộc người dùng phải nhập"><span class="material-symbols-outlined icon-xs" aria-hidden="true">star</span> Bắt buộc</span>
                                             </c:when>
                                             <c:otherwise>
                                                 <span class="bat-buoc-badge bat-buoc-no" title="Không bắt buộc">Tùy chọn</span>
@@ -226,7 +230,7 @@
                                     <td style="text-align:center;">
                                         <c:choose>
                                             <c:when test="${t.hienThiBoDac}">
-                                                <span class="feature-active" title="Xuất hiện trong thanh tìm kiếm/lọc">✓ Có</span>
+                                                <span class="feature-active" title="Xuất hiện trong thanh tìm kiếm/lọc"><span class="material-symbols-outlined icon-xs" aria-hidden="true">check</span> Có</span>
                                             </c:when>
                                             <c:otherwise><span class="feature-inactive">—</span></c:otherwise>
                                         </c:choose>
@@ -234,7 +238,7 @@
                                     <td style="text-align:center;">
                                         <c:choose>
                                             <c:when test="${t.hienThiExcel}">
-                                                <span class="feature-active" title="Xuất hiện thành cột trong file xuất Excel">✓ Có</span>
+                                                <span class="feature-active" title="Xuất hiện thành cột trong file xuất Excel"><span class="material-symbols-outlined icon-xs" aria-hidden="true">check</span> Có</span>
                                             </c:when>
                                             <c:otherwise><span class="feature-inactive">—</span></c:otherwise>
                                         </c:choose>
@@ -242,10 +246,10 @@
                                     <td style="text-align:center;">
                                         <c:choose>
                                             <c:when test="${t.dangHoatDong}">
-                                                <span class="trang-thai-badge trang-thai-on">● Bật</span>
+                                                <span class="trang-thai-badge trang-thai-on"><span class="material-symbols-outlined icon-xs" aria-hidden="true">check_circle</span> Bật</span>
                                             </c:when>
                                             <c:otherwise>
-                                                <span class="trang-thai-badge trang-thai-off">○ Tắt</span>
+                                                <span class="trang-thai-badge trang-thai-off"><span class="material-symbols-outlined icon-xs" aria-hidden="true">cancel</span> Tắt</span>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
@@ -254,14 +258,14 @@
                                             <a id="btn-sua-kh-${t.id}"
                                                href="${pageContext.request.contextPath}/truong-tuy-chinh/sua?id=${t.id}"
                                                class="btn btn-secondary btn-sm" title="Sửa nhãn và cài đặt">
-                                                Sửa
+                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">edit</span> Sửa
                                             </a>
                                             <form method="post" action="${pageContext.request.contextPath}/truong-tuy-chinh/trang-thai" style="display:inline;">
                                                 <input type="hidden" name="id" value="${t.id}">
                                                 <input type="hidden" name="trangThai" value="${!t.dangHoatDong}">
                                                 <button type="submit" class="btn btn-outline btn-sm"
                                                         title="${t.dangHoatDong ? 'Tạm ngưng kích hoạt trường' : 'Kích hoạt lại trường'}">
-                                                    ${t.dangHoatDong ? 'Tắt' : 'Bật'}
+                                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">${t.dangHoatDong ? 'pause_circle' : 'play_circle'}</span> ${t.dangHoatDong ? 'Tắt' : 'Bật'}
                                                 </button>
                                             </form>
                                         </div>
@@ -288,7 +292,7 @@
                 <span class="table-count">${fn:length(dsTruongCoHoi)} trường</span>
                 <a href="${pageContext.request.contextPath}/truong-tuy-chinh/xuat-excel?doiTuong=CO_HOI"
                    class="btn btn-excel btn-sm" title="Tải mẫu Excel Cơ hội kèm các trường tuỳ chỉnh">
-                    Xuất Excel
+                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">table_view</span> Xuất Excel
                 </a>
             </div>
         </div>
@@ -299,7 +303,7 @@
                     <p><strong>Chưa có trường tuỳ chỉnh nào cho Cơ hội</strong></p>
                     <p>Nhấn nút "Khai báo trường mới" để thêm các trường như: Lý do thắng thua dự kiến, Đối thủ cạnh tranh, Kênh chốt deal...</p>
                     <a href="${pageContext.request.contextPath}/truong-tuy-chinh/tao?doiTuong=CO_HOI" class="btn btn-primary" style="margin-top: 12px;">
-                        Thêm trường Cơ hội đầu tiên
+                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">add</span> Thêm trường Cơ hội đầu tiên
                     </a>
                 </div>
             </c:when>
@@ -346,7 +350,7 @@
                                     <td style="text-align:center;">
                                         <c:choose>
                                             <c:when test="${t.batBuoc}">
-                                                <span class="bat-buoc-badge bat-buoc-yes" title="Bắt buộc người dùng phải nhập">★ Bắt buộc</span>
+                                                <span class="bat-buoc-badge bat-buoc-yes" title="Bắt buộc người dùng phải nhập"><span class="material-symbols-outlined icon-xs" aria-hidden="true">star</span> Bắt buộc</span>
                                             </c:when>
                                             <c:otherwise>
                                                 <span class="bat-buoc-badge bat-buoc-no" title="Không bắt buộc">Tùy chọn</span>
@@ -356,7 +360,7 @@
                                     <td style="text-align:center;">
                                         <c:choose>
                                             <c:when test="${t.hienThiBoDac}">
-                                                <span class="feature-active" title="Xuất hiện trong thanh tìm kiếm/lọc">✓ Có</span>
+                                                <span class="feature-active" title="Xuất hiện trong thanh tìm kiếm/lọc"><span class="material-symbols-outlined icon-xs" aria-hidden="true">check</span> Có</span>
                                             </c:when>
                                             <c:otherwise><span class="feature-inactive">—</span></c:otherwise>
                                         </c:choose>
@@ -364,7 +368,7 @@
                                     <td style="text-align:center;">
                                         <c:choose>
                                             <c:when test="${t.hienThiExcel}">
-                                                <span class="feature-active" title="Xuất hiện thành cột trong file xuất Excel">✓ Có</span>
+                                                <span class="feature-active" title="Xuất hiện thành cột trong file xuất Excel"><span class="material-symbols-outlined icon-xs" aria-hidden="true">check</span> Có</span>
                                             </c:when>
                                             <c:otherwise><span class="feature-inactive">—</span></c:otherwise>
                                         </c:choose>
@@ -372,10 +376,10 @@
                                     <td style="text-align:center;">
                                         <c:choose>
                                             <c:when test="${t.dangHoatDong}">
-                                                <span class="trang-thai-badge trang-thai-on">● Bật</span>
+                                                <span class="trang-thai-badge trang-thai-on"><span class="material-symbols-outlined icon-xs" aria-hidden="true">check_circle</span> Bật</span>
                                             </c:when>
                                             <c:otherwise>
-                                                <span class="trang-thai-badge trang-thai-off">○ Tắt</span>
+                                                <span class="trang-thai-badge trang-thai-off"><span class="material-symbols-outlined icon-xs" aria-hidden="true">cancel</span> Tắt</span>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
@@ -384,14 +388,14 @@
                                             <a id="btn-sua-co-${t.id}"
                                                href="${pageContext.request.contextPath}/truong-tuy-chinh/sua?id=${t.id}"
                                                class="btn btn-secondary btn-sm" title="Sửa nhãn và cài đặt">
-                                                Sửa
+                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">edit</span> Sửa
                                             </a>
                                             <form method="post" action="${pageContext.request.contextPath}/truong-tuy-chinh/trang-thai" style="display:inline;">
                                                 <input type="hidden" name="id" value="${t.id}">
                                                 <input type="hidden" name="trangThai" value="${!t.dangHoatDong}">
                                                 <button type="submit" class="btn btn-outline btn-sm"
                                                         title="${t.dangHoatDong ? 'Tạm ngưng kích hoạt trường' : 'Kích hoạt lại trường'}">
-                                                    ${t.dangHoatDong ? 'Tắt' : 'Bật'}
+                                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">${t.dangHoatDong ? 'pause_circle' : 'play_circle'}</span> ${t.dangHoatDong ? 'Tắt' : 'Bật'}
                                                 </button>
                                             </form>
                                         </div>
@@ -492,8 +496,8 @@
                     <jsp:include page="/WEB-INF/views/truong-tuy-chinh/fragment-bo-loc.jsp"/>
 
                     <div style="margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px;">
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="alert('Demo: Đã làm mới các điều kiện lọc!')">Đặt lại</button>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="alert('Demo: Đang lọc theo các trường tuỳ chỉnh đã chọn!')">Áp dụng lọc</button>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="alert('Demo: Đã làm mới các điều kiện lọc!')"><span class="material-symbols-outlined icon-xs" aria-hidden="true">restart_alt</span> Đặt lại</button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="alert('Demo: Đang lọc theo các trường tuỳ chỉnh đã chọn!')"><span class="material-symbols-outlined icon-xs" aria-hidden="true">filter_alt</span> Áp dụng lọc</button>
                     </div>
                 </div>
             </div>
@@ -510,7 +514,7 @@
                             <strong>Microsoft Excel Preview: danh-sach-khach-hang.csv</strong>
                         </div>
                         <a href="${pageContext.request.contextPath}/truong-tuy-chinh/xuat-excel?doiTuong=KHACH_HANG" class="btn btn-excel btn-sm">
-                            Tải file CSV / Excel thực tế
+                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">download</span> Tải file CSV / Excel thực tế
                         </a>
                     </div>
 

@@ -34,32 +34,38 @@
                     <p>Khai báo cây tổ chức, phân bổ Trưởng nhóm và gắn khu vực địa lý cho các nhóm kinh doanh (Story S2-06)</p>
                 </div>
                 <div class="cctc-actions">
-                    <a href="${pageContext.request.contextPath}/nguoi-dung" class="btn-cctc btn-cctc-secondary" id="btn-back-to-users" title="Quay lại Quản lý tài khoản">
-                        &larr; Quản lý người dùng
+                    <a href="${pageContext.request.contextPath}/nguoi-dung" class="btn-cctc btn-cctc-secondary" id="btn-back-to-users" title="Quay lại Quản lý tài khoản" style="display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span>
+                        <span>Quản lý người dùng</span>
                     </a>
-                    <button class="btn-cctc btn-cctc-primary" onclick="moModalThemNhom()">
-                        + Thêm nhóm kinh doanh
+                    <button class="btn-cctc btn-cctc-primary" onclick="moModalThemNhom()" style="display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">add</span>
+                        <span>Thêm nhóm kinh doanh</span>
                     </button>
-                    <button class="btn-cctc btn-cctc-secondary" onclick="moModalThemKhuVuc()">
-                        Khai báo khu vực
+                    <button class="btn-cctc btn-cctc-secondary" onclick="moModalThemKhuVuc()" style="display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">public</span>
+                        <span>Khai báo khu vực</span>
                     </button>
-                    <button class="btn-cctc btn-cctc-secondary" onclick="moModalChuyenNhom()">
-                        Chuyển nhóm nhân viên
+                    <button class="btn-cctc btn-cctc-secondary" onclick="moModalChuyenNhom()" style="display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">swap_horiz</span>
+                        <span>Chuyển nhóm nhân viên</span>
                     </button>
                 </div>
             </div>
 
             <!-- Flash Notifications -->
             <c:if test="${not empty sessionScope.flashSuccess}">
-                <div class="cctc-alert cctc-alert-success">
-                    Thành công: ${sessionScope.flashSuccess}
+                <div class="cctc-alert cctc-alert-success" style="display: flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">check_circle</span>
+                    <span>Thành công: ${sessionScope.flashSuccess}</span>
                 </div>
                 <c:remove var="flashSuccess" scope="session" />
             </c:if>
 
             <c:if test="${not empty sessionScope.flashError}">
-                <div class="cctc-alert cctc-alert-danger">
-                    Lỗi: ${sessionScope.flashError}
+                <div class="cctc-alert cctc-alert-danger" style="display: flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">error</span>
+                    <span>Lỗi: ${sessionScope.flashError}</span>
                 </div>
                 <c:remove var="flashError" scope="session" />
             </c:if>
@@ -71,7 +77,10 @@
                 <div>
                     <div class="cctc-card">
                         <div class="cctc-card-header">
-                            <h2>Cây cơ cấu nhóm kinh doanh</h2>
+                            <h2 style="display: flex; align-items: center; gap: 6px;">
+                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">account_tree</span>
+                                <span>Cây cơ cấu nhóm kinh doanh</span>
+                            </h2>
                             <span style="font-size: 12px; color: #64748b;">(Tổng: ${fn:length(dsNhom)} nhóm)</span>
                         </div>
                         <div class="cctc-table-wrap">
@@ -101,7 +110,7 @@
                                                     <td>
                                                         <div class="tree-indent-box tree-level-${nhom.capDo}">
                                                             <c:if test="${nhom.capDo > 1}">
-                                                                <span class="tree-branch-icon">&#8627;</span>
+                                                                <span class="material-symbols-outlined tree-branch-icon" style="font-size: 16px; vertical-align: -2px;" aria-hidden="true">subdirectory_arrow_right</span>
                                                             </c:if>
                                                             <strong>${nhom.maNhom}</strong> - ${nhom.tenNhom}
                                                             <c:if test="${not empty nhom.tenNhomCha}">
@@ -112,7 +121,10 @@
                                                     <td>
                                                         <c:choose>
                                                             <c:when test="${not empty nhom.tenTruongNhom}">
-                                                                <span class="badge-leader">&#128100; ${nhom.tenTruongNhom}</span>
+                                                                <span class="badge-leader" style="display: inline-flex; align-items: center; gap: 3px;">
+                                                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">person</span>
+                                                                    <span>${nhom.tenTruongNhom}</span>
+                                                                </span>
                                                             </c:when>
                                                             <c:otherwise>
                                                                 <span class="badge-empty">Chưa có</span>
@@ -122,7 +134,10 @@
                                                     <td>
                                                         <c:choose>
                                                             <c:when test="${not empty nhom.tenKhuVuc}">
-                                                                <span class="badge-region">&#127757; ${nhom.tenKhuVuc}</span>
+                                                                <span class="badge-region" style="display: inline-flex; align-items: center; gap: 3px;">
+                                                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">public</span>
+                                                                    <span>${nhom.tenKhuVuc}</span>
+                                                                </span>
                                                             </c:when>
                                                             <c:otherwise>
                                                                 <span class="badge-empty">Chưa gán</span>
@@ -134,8 +149,9 @@
                                                            data-id="${nhom.idLong}"
                                                            data-ten="${fn:escapeXml(nhom.tenNhom)}"
                                                            onclick="xemThanhVien(this)"
-                                                           style="color: #2563eb; text-decoration: none; font-weight: 600;">
-                                                            ${nhom.soLuongThanhVien} thành viên
+                                                           style="color: #2563eb; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;">
+                                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">group</span>
+                                                            <span>${nhom.soLuongThanhVien} thành viên</span>
                                                         </a>
                                                     </td>
                                                     <td>
@@ -158,8 +174,10 @@
                                                                 data-khu-vuc-id="${nhom.khuVucId}"
                                                                 data-truong-nhom-id="${nhom.truongNhomId}"
                                                                 data-hoat-dong="${nhom.hoatDong}"
-                                                                onclick="moModalSuaNhom(this)">
-                                                            Sửa
+                                                                onclick="moModalSuaNhom(this)"
+                                                                style="display: inline-flex; align-items: center; gap: 2px;">
+                                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">edit</span>
+                                                            <span>Sửa</span>
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -177,9 +195,13 @@
                     <!-- Danh mục khu vực địa lý -->
                     <div class="cctc-card">
                         <div class="cctc-card-header">
-                            <h2>&#127757; Khu vực địa lý</h2>
-                            <button class="btn-cctc btn-cctc-secondary btn-cctc-sm" onclick="moModalThemKhuVuc()">
-                                &#43; Thêm
+                            <h2 style="display: flex; align-items: center; gap: 6px;">
+                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">public</span>
+                                <span>Khu vực địa lý</span>
+                            </h2>
+                            <button class="btn-cctc btn-cctc-secondary btn-cctc-sm" onclick="moModalThemKhuVuc()" style="display: inline-flex; align-items: center; gap: 2px;">
+                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">add</span>
+                                <span>Thêm</span>
                             </button>
                         </div>
                         <div class="cctc-table-wrap">
@@ -221,8 +243,10 @@
                                                                 data-khu-vuc-cha-id="${kv.khuVucChaId}"
                                                                 data-thu-tu="${kv.thuTuHienThi}"
                                                                 data-hoat-dong="${kv.hoatDong}"
-                                                                onclick="moModalSuaKhuVuc(this)">
-                                                            Sửa
+                                                                onclick="moModalSuaKhuVuc(this)"
+                                                                style="display: inline-flex; align-items: center; gap: 2px;">
+                                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">edit</span>
+                                                            <span>Sửa</span>
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -237,7 +261,10 @@
                     <!-- Nhân viên chưa thuộc nhóm nào (AC2: mỗi nhân viên thuộc đúng 1 nhóm) -->
                     <div class="cctc-card">
                         <div class="cctc-card-header">
-                            <h2>&#9888; Nhân sự chưa gán nhóm</h2>
+                            <h2 style="display: flex; align-items: center; gap: 6px;">
+                                <span class="material-symbols-outlined icon-sm" style="color: #ef4444;" aria-hidden="true">warning</span>
+                                <span>Nhân sự chưa gán nhóm</span>
+                            </h2>
                             <span style="font-size: 12px; color: #ef4444; font-weight: 600;">(${fn:length(dsNhanVienChuaCoNhom)})</span>
                         </div>
                         <div class="cctc-table-wrap">
@@ -254,7 +281,8 @@
                                         <c:when test="${empty dsNhanVienChuaCoNhom}">
                                             <tr>
                                                 <td colspan="3" style="text-align: center; color: #16a34a; padding: 16px; font-size: 12px;">
-                                                    &#10004; Toàn bộ nhân viên đã được phân bổ vào các nhóm kinh doanh.
+                                                    <span class="material-symbols-outlined icon-xs" style="vertical-align: -2px;" aria-hidden="true">check_circle</span>
+                                                    Toàn bộ nhân viên đã được phân bổ vào các nhóm kinh doanh.
                                                 </td>
                                             </tr>
                                         </c:when>
@@ -267,8 +295,10 @@
                                                         <button class="btn-cctc btn-cctc-primary btn-cctc-sm"
                                                                 data-id="${nv.id}"
                                                                 data-ho-ten="${fn:escapeXml(nv.hoTen)}"
-                                                                onclick="moModalChuyenNhomChoNhanVien(this)">
-                                                            Gán nhóm
+                                                                onclick="moModalChuyenNhomChoNhanVien(this)"
+                                                                style="display: inline-flex; align-items: center; gap: 2px;">
+                                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">group_add</span>
+                                                            <span>Gán nhóm</span>
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -291,7 +321,9 @@
         <div class="cctc-modal-content">
             <div class="cctc-modal-header">
                 <h3 id="modalNhomTitle">Thêm nhóm kinh doanh mới</h3>
-                <button type="button" class="btn-close" onclick="dongModal('modalNhom')">&times;</button>
+                <button type="button" class="btn-close" onclick="dongModal('modalNhom')" title="Đóng" aria-label="Đóng">
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span>
+                </button>
             </div>
             <form action="${pageContext.request.contextPath}/co-cau-to-chuc" method="POST" id="formNhom">
                 <input type="hidden" name="action" id="formNhomAction" value="them-nhom">
@@ -351,7 +383,10 @@
 
                 <div class="cctc-modal-footer">
                     <button type="button" class="btn-cctc btn-cctc-secondary" onclick="dongModal('modalNhom')">Hủy</button>
-                    <button type="submit" class="btn-cctc btn-cctc-primary" id="btnSubmitNhom">Lưu thông tin</button>
+                    <button type="submit" class="btn-cctc btn-cctc-primary" id="btnSubmitNhom" style="display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">save</span>
+                        <span>Lưu thông tin</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -362,7 +397,9 @@
         <div class="cctc-modal-content">
             <div class="cctc-modal-header">
                 <h3 id="modalKhuVucTitle">Khai báo khu vực địa lý</h3>
-                <button type="button" class="btn-close" onclick="dongModal('modalKhuVuc')">&times;</button>
+                <button type="button" class="btn-close" onclick="dongModal('modalKhuVuc')" title="Đóng" aria-label="Đóng">
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span>
+                </button>
             </div>
             <form action="${pageContext.request.contextPath}/co-cau-to-chuc" method="POST" id="formKhuVuc">
                 <input type="hidden" name="action" id="formKhuVucAction" value="them-khu-vuc">
@@ -412,7 +449,10 @@
 
                 <div class="cctc-modal-footer">
                     <button type="button" class="btn-cctc btn-cctc-secondary" onclick="dongModal('modalKhuVuc')">Hủy</button>
-                    <button type="submit" class="btn-cctc btn-cctc-primary">Lưu khu vực</button>
+                    <button type="submit" class="btn-cctc btn-cctc-primary" style="display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">save</span>
+                        <span>Lưu khu vực</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -423,7 +463,9 @@
         <div class="cctc-modal-content">
             <div class="cctc-modal-header">
                 <h3>Gán / Chuyển nhóm nhân viên</h3>
-                <button type="button" class="btn-close" onclick="dongModal('modalChuyenNhom')">&times;</button>
+                <button type="button" class="btn-close" onclick="dongModal('modalChuyenNhom')" title="Đóng" aria-label="Đóng">
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span>
+                </button>
             </div>
             <form action="${pageContext.request.contextPath}/co-cau-to-chuc" method="POST">
                 <input type="hidden" name="action" value="chuyen-nhom-nhan-vien">
@@ -450,7 +492,10 @@
 
                 <div class="cctc-modal-footer">
                     <button type="button" class="btn-cctc btn-cctc-secondary" onclick="dongModal('modalChuyenNhom')">Hủy</button>
-                    <button type="submit" class="btn-cctc btn-cctc-primary">Xác nhận chuyển nhóm</button>
+                    <button type="submit" class="btn-cctc btn-cctc-primary" style="display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">swap_horiz</span>
+                        <span>Xác nhận chuyển nhóm</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -461,7 +506,9 @@
         <div class="cctc-modal-content">
             <div class="cctc-modal-header">
                 <h3 id="modalThanhVienTitle">Thành viên nhóm</h3>
-                <button type="button" class="btn-close" onclick="dongModal('modalThanhVien')">&times;</button>
+                <button type="button" class="btn-close" onclick="dongModal('modalThanhVien')" title="Đóng" aria-label="Đóng">
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span>
+                </button>
             </div>
             <div id="modalThanhVienContent" style="min-height: 100px;">
                 Đang tải dữ liệu...

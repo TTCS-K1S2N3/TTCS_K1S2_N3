@@ -8,6 +8,8 @@
    Tối ưu hóa hiển thị responsive từ màn hình di động 360px đến Desktop
    ========================================================================== */
 
+@import url('../material-symbols.css');
+
 :root {
     --primary: #2563eb;
     --primary-hover: #1d4ed8;

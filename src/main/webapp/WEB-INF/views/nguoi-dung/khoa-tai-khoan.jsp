@@ -57,13 +57,13 @@
             <!-- Acceptance Criteria Checklist Status -->
             <div class="crm-ac-card">
                 <h2 class="crm-section-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px; color: #16a34a;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <span class="material-symbols-outlined" style="font-size: 20px; color: #16a34a;" aria-hidden="true">check_circle</span>
                     Tiêu chuẩn nghiệm thu được giao (Acceptance Criteria)
                 </h2>
                 <div class="crm-ac-grid">
                     <div class="crm-ac-item pass">
                         <div class="crm-ac-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">check</span>
                         </div>
                         <div class="crm-ac-info">
                             <strong>Tài khoản bị khoá & thu hồi phiên đang mở</strong>
@@ -72,7 +72,7 @@
                     </div>
                     <div class="crm-ac-item pass">
                         <div class="crm-ac-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">check</span>
                         </div>
                         <div class="crm-ac-info">
                             <strong>Bắt buộc chọn người tiếp nhận trước khi khoá</strong>
@@ -81,7 +81,7 @@
                     </div>
                     <div class="crm-ac-item pass">
                         <div class="crm-ac-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">check</span>
                         </div>
                         <div class="crm-ac-info">
                             <strong>Ghi nhật ký, dữ liệu không bị mất chủ</strong>
@@ -90,7 +90,7 @@
                     </div>
                     <div class="crm-ac-item pass">
                         <div class="crm-ac-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">check</span>
                         </div>
                         <div class="crm-ac-info">
                             <strong>Tối ưu trải nghiệm màn hình 360px</strong>
@@ -105,9 +105,9 @@
                 <div class="alert <%= ketQua.isThanhCong() ? "alert-success" : "alert-danger" %>" role="alert">
                     <div class="alert-icon">
                         <% if (ketQua.isThanhCong()) { %>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
                         <% } else { %>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">error</span>
                         <% } %>
                     </div>
                     <div>
@@ -132,7 +132,7 @@
                 <% if (isSelf) { %>
                     <div class="alert alert-danger" role="alert">
                         <div class="alert-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">error</span>
                         </div>
                         <div>
                             <strong>Cảnh báo an ninh:</strong> Bạn không thể tự khoá tài khoản quản trị của <strong>chính mình</strong>. Vui lòng nhờ một Quản trị viên khác thực hiện nếu cần bàn giao tài khoản này.
@@ -141,7 +141,7 @@
                 <% } else if (isLocked) { %>
                     <div class="alert alert-warning" role="alert">
                         <div class="alert-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">lock</span>
                         </div>
                         <div>
                             <strong>Trạng thái tài khoản:</strong> Tài khoản này hiện tại <strong>ĐÃ BỊ KHOÁ</strong> trước đó. Mọi phiên đăng nhập đều đã bị vô hiệu hoá.
@@ -154,7 +154,7 @@
                     <!-- THẺ 1: Thông tin nhân viên sắp nghỉ & Dữ liệu đang sở hữu -->
                     <div class="card">
                         <h2 class="card-title">
-                            <svg class="card-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            <span class="material-symbols-outlined card-title-icon" aria-hidden="true">person</span>
                             1. Thông tin nhân sự & Dữ liệu cần bàn giao
                         </h2>
 
@@ -198,14 +198,14 @@
 
                         <!-- Chỉ báo cơ chế thu hồi phiên làm việc (AC 1) -->
                         <div style="margin-top: 14px; padding: 12px; background: #fff1f2; border: 1px solid #fecdd3; border-radius: var(--radius-sm); font-size: 12.5px; color: #9f1239; line-height: 1.45;">
-                            <strong>🛡️ Cơ chế an ninh AC 1:</strong> Khi hoàn tất khoá tài khoản, hệ thống sẽ tự động kích hoạt <code>ActiveSessionManager</code> để <strong>thu hồi ngay lập tức toàn bộ phiên làm việc (Session)</strong> đang mở của nhân viên này trên mọi trình duyệt.
+                            <strong><span class="material-symbols-outlined" style="font-size: 16px; vertical-align: -3px;" aria-hidden="true">security</span> Cơ chế an ninh AC 1:</strong> Khi hoàn tất khoá tài khoản, hệ thống sẽ tự động kích hoạt <code>ActiveSessionManager</code> để <strong>thu hồi ngay lập tức toàn bộ phiên làm việc (Session)</strong> đang mở của nhân viên này trên mọi trình duyệt.
                         </div>
                     </div>
 
                     <!-- THẺ 2: Chỉ định người tiếp nhận & Xác nhận khoá (AC 2) -->
                     <div class="card">
                         <h2 class="card-title">
-                            <svg class="card-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7.5" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+                            <span class="material-symbols-outlined card-title-icon" aria-hidden="true">assignment_ind</span>
                             2. Chỉ định người tiếp nhận & Khoá tài khoản
                         </h2>
 
@@ -244,7 +244,7 @@
                                 </div>
                                 <div class="flow-arrow-container">
                                     <span class="flow-arrow-badge"><%= thongTin.getSoKhachHangHienTai() %> KH & <%= thongTin.getSoCoHoiHienTai() %> Cơ hội</span>
-                                    <svg class="flow-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                                    <span class="material-symbols-outlined flow-arrow-svg" aria-hidden="true">arrow_forward</span>
                                 </div>
                                 <div class="flow-node flow-node-receiver">
                                     <span class="flow-node-badge">Tiếp nhận</span>
@@ -273,10 +273,11 @@
 
                             <div class="form-actions">
                                 <button type="button" class="btn btn-danger" id="btnXacNhanKhoa" <%= (isSelf || isLocked) ? "disabled" : "" %>>
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                    <span class="material-symbols-outlined" aria-hidden="true">lock</span>
                                     Khoá Tài Khoản & Bàn Giao Dữ Liệu
                                 </button>
                                 <a href="<%= request.getContextPath() %>/nguoi-dung/phan-quyen" class="btn btn-secondary">
+                                    <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
                                     Quay Lại Phân Quyền
                                 </a>
                             </div>
@@ -288,13 +289,13 @@
             <% } else { %>
                 <!-- Khi chưa có nhân viên được chọn -->
                 <div class="card" style="text-align: center; padding: 36px 20px;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px; color: var(--text-muted); margin-bottom: 12px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <span class="material-symbols-outlined" style="font-size: 48px; color: var(--text-muted); margin-bottom: 12px; display: inline-block;" aria-hidden="true">lock</span>
                     <h3 style="font-size: 17px; margin-bottom: 8px;">Chưa chọn nhân viên cần khoá tài khoản</h3>
                     <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 16px auto; font-size: 14px;">
                         Vui lòng truy cập danh sách người dùng để chọn nhân viên cần khoá và bàn giao dữ liệu khách hàng & cơ hội.
                     </p>
                     <a href="<%= request.getContextPath() %>/nguoi-dung/phan-quyen" class="btn btn-primary" style="background: var(--primary-color); color: #fff;">
-                        Đến Danh Sách Quản Lý Phân Quyền &rarr;
+                        Đến Danh Sách Quản Lý Phân Quyền <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: -3px;" aria-hidden="true">arrow_forward</span>
                     </a>
                 </div>
             <% } %>
@@ -304,7 +305,7 @@
                 <div class="card">
                     <div class="history-toolbar">
                         <h2 class="card-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">
-                            <svg class="card-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            <span class="material-symbols-outlined card-title-icon" aria-hidden="true">history</span>
                             Nhật ký bàn giao dữ liệu gần đây (AC 3)
                         </h2>
                         <div style="display: flex; align-items: center; gap: 8px;">
@@ -386,10 +387,10 @@
         <div class="crm-modal-dialog">
             <div class="crm-modal-header">
                 <h3 id="modalTitle">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 20px; height: 20px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    <span class="material-symbols-outlined" style="font-size: 20px; color: #dc2626; vertical-align: -3px;" aria-hidden="true">warning</span>
                     Xác Nhận Khoá Tài Khoản & Bàn Giao Dữ Liệu
                 </h3>
-                <button type="button" class="crm-modal-close" id="modalBtnClose" aria-label="Đóng">&times;</button>
+                <button type="button" class="crm-modal-close" id="modalBtnClose" aria-label="Đóng"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
             </div>
             <div class="crm-modal-body">
                 <p style="margin-bottom: 10px;">
@@ -426,7 +427,7 @@
             <div class="crm-modal-footer">
                 <button type="button" class="btn btn-secondary" id="modalBtnCancel">Hủy Bỏ</button>
                 <button type="button" class="btn btn-danger" id="modalBtnConfirm" disabled>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <span class="material-symbols-outlined" aria-hidden="true">lock</span>
                     Xác Nhận Khoá & Bàn Giao
                 </button>
             </div>

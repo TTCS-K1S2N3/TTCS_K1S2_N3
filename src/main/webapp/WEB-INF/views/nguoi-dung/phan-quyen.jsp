@@ -61,13 +61,13 @@
             <!-- Acceptance Criteria Checklist Status -->
             <div class="crm-ac-card">
                 <h2 class="crm-section-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px; color: #16a34a;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <span class="material-symbols-outlined" style="font-size: 20px; color: #16a34a;" aria-hidden="true">check_circle</span>
                     Tiêu chuẩn nghiệm thu được giao (Acceptance Criteria)
                 </h2>
                 <div class="crm-ac-grid">
                     <div class="crm-ac-item pass">
                         <div class="crm-ac-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">check</span>
                         </div>
                         <div class="crm-ac-info">
                             <strong>Một người dùng có thể giữ nhiều vai trò cùng lúc</strong>
@@ -76,7 +76,7 @@
                     </div>
                     <div class="crm-ac-item pass">
                         <div class="crm-ac-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">check</span>
                         </div>
                         <div class="crm-ac-info">
                             <strong>Trưởng nhóm bắt buộc phải được gán một nhóm cụ thể</strong>
@@ -85,7 +85,7 @@
                     </div>
                     <div class="crm-ac-item pass">
                         <div class="crm-ac-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">check</span>
                         </div>
                         <div class="crm-ac-info">
                             <strong>Không thể tự thu hồi vai trò quản trị của chính mình</strong>
@@ -94,7 +94,7 @@
                     </div>
                     <div class="crm-ac-item pass">
                         <div class="crm-ac-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">check</span>
                         </div>
                         <div class="crm-ac-info">
                             <strong>Tối ưu trải nghiệm màn hình 360px</strong>
@@ -109,9 +109,9 @@
                 <div class="crm-alert <%= (thanhCong != null && thanhCong) ? "crm-alert-success" : "crm-alert-danger" %>" role="alert">
                     <div class="crm-alert-icon">
                         <% if (thanhCong != null && thanhCong) { %>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
                         <% } else { %>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">error</span>
                         <% } %>
                     </div>
                     <div class="crm-alert-text">
@@ -125,7 +125,7 @@
             <div class="crm-card">
                 <div class="crm-card-header">
                     <h2 class="crm-card-title">
-                        <svg class="crm-card-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <span class="material-symbols-outlined crm-card-title-icon" aria-hidden="true">person_search</span>
                         1. Chọn người dùng cần phân quyền & gán nhóm
                     </h2>
                     <span class="crm-badge crm-badge-count" id="user-display-count">
@@ -135,13 +135,13 @@
 
                 <!-- Ô tìm kiếm người dùng nhanh -->
                 <div class="crm-user-search-bar">
-                    <svg class="crm-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <span class="material-symbols-outlined crm-search-icon" aria-hidden="true">search</span>
                     <input type="text"
                            id="user-search-input"
                            class="crm-search-input"
                            placeholder="Tìm nhanh nhân sự theo họ tên, email hoặc vai trò hiện tại..."
                            aria-label="Tìm kiếm người dùng">
-                    <button type="button" id="user-search-clear" class="crm-search-clear" title="Xóa tìm kiếm">&times;</button>
+                    <button type="button" id="user-search-clear" class="crm-search-clear" title="Xóa tìm kiếm" aria-label="Xóa tìm kiếm"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
                 </div>
 
                 <!-- Grid danh sách nhân sự -->
@@ -162,7 +162,7 @@
                                 <div class="crm-user-item-name"><%= nd.getHoTen() %></div>
                                 <div class="crm-user-item-email"><%= nd.getEmail() %></div>
                                 <div class="crm-user-item-role">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 12px; height: 12px; flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                                    <span class="material-symbols-outlined" style="font-size: 13px; vertical-align: -2px;" aria-hidden="true">badge</span>
                                     <span><%= roleStr %></span>
                                 </div>
                             </div>
@@ -172,7 +172,7 @@
 
                     <!-- Trạng thái rỗng khi tìm kiếm không có kết quả -->
                     <div class="crm-user-empty-state" id="user-empty-state" style="display: none;">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <span class="material-symbols-outlined" style="font-size: 32px; color: var(--crm-text-muted); margin-bottom: 8px;" aria-hidden="true">search_off</span>
                         <p style="margin-bottom: 4px; font-weight: 600;">Không tìm thấy nhân sự phù hợp với từ khóa</p>
                         <span style="font-size: 12px;">Vui lòng thử tìm kiếm bằng tên hoặc địa chỉ email khác.</span>
                     </div>
@@ -199,15 +199,15 @@
                             </div>
                             <div class="crm-selected-user-meta">
                                 <span class="crm-meta-item">
-                                    <svg class="crm-meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                    <span class="material-symbols-outlined crm-meta-icon" aria-hidden="true">mail</span>
                                     <strong><%= selectedUser.getEmail() %></strong>
                                 </span>
                                 <span class="crm-meta-item">
-                                    <svg class="crm-meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                                    <span class="material-symbols-outlined crm-meta-icon" aria-hidden="true">verified_user</span>
                                     Trạng thái: <strong class="crm-badge-success" style="padding: 2px 8px; font-size: 11px;"><%= selectedUser.getTrangThai() %></strong>
                                 </span>
                                 <span class="crm-meta-item">
-                                    <svg class="crm-meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                                    <span class="material-symbols-outlined crm-meta-icon" aria-hidden="true">groups</span>
                                     Nhóm hiện tại: <strong><%= selectedUser.getTenNhomKinhDoanh() %></strong>
                                 </span>
                             </div>
@@ -218,7 +218,7 @@
                 <!-- Banner bảo vệ tài khoản quản trị cá nhân (AC 3) -->
                 <% if (isEditingSelf && selectedUser.coVaiTro(VaiTroEnum.ADMIN)) { %>
                     <div class="crm-self-protect-banner" role="alert">
-                        <svg class="crm-self-protect-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        <span class="material-symbols-outlined crm-self-protect-icon" aria-hidden="true">shield</span>
                         <div>
                             <strong>Bảo vệ an toàn hệ thống (AC 3):</strong>
                             Bạn đang chỉnh sửa tài khoản của <strong>chính mình</strong>. Theo quy tắc an ninh, bạn không thể tự thu hồi vai trò <em>Quản trị hệ thống (Admin)</em> để tránh việc hệ thống bị mất quyền quản trị viên duy nhất.
@@ -230,7 +230,7 @@
                 <div class="crm-card">
                     <div class="crm-card-header">
                         <h2 class="crm-card-title">
-                            <svg class="crm-card-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                            <span class="material-symbols-outlined crm-card-title-icon" aria-hidden="true">admin_panel_settings</span>
                             2. Gán vai trò (Có thể chọn nhiều vai trò cùng lúc)
                         </h2>
                         <span class="crm-badge crm-badge-info" id="selected-role-count">Đã chọn: 0 vai trò</span>
@@ -242,7 +242,7 @@
                         </p>
                         <div class="crm-roles-quick-actions">
                             <button type="button" class="crm-btn-chip" id="btn-reset-form" title="Khôi phục trạng thái khi vừa mở trang">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                                <span class="material-symbols-outlined" style="font-size: 15px; vertical-align: middle; margin-right: 4px;" aria-hidden="true">restart_alt</span>
                                 Khôi phục ban đầu
                             </button>
                         </div>
@@ -271,19 +271,19 @@
                                 <div class="crm-checkbox-header">
                                     <div class="crm-role-icon-box <%= iconBoxClass %>">
                                         <% if (isAdmin) { %>
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                            <span class="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span>
                                         <% } else if ("DIRECTOR".equalsIgnoreCase(vt.getMaVaiTro())) { %>
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                            <span class="material-symbols-outlined" aria-hidden="true">military_tech</span>
                                         <% } else if (isTeamLead) { %>
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                            <span class="material-symbols-outlined" aria-hidden="true">group</span>
                                         <% } else if ("MARKETING".equalsIgnoreCase(vt.getMaVaiTro())) { %>
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                            <span class="material-symbols-outlined" aria-hidden="true">campaign</span>
                                         <% } else if ("CUST_SUCCESS".equalsIgnoreCase(vt.getMaVaiTro())) { %>
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                                            <span class="material-symbols-outlined" aria-hidden="true">support_agent</span>
                                         <% } else if ("ACCOUNTANT".equalsIgnoreCase(vt.getMaVaiTro())) { %>
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                                            <span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>
                                         <% } else { %>
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                                            <span class="material-symbols-outlined" aria-hidden="true">trending_up</span>
                                         <% } %>
                                     </div>
                                     <span class="crm-role-title"><%= vt.getTenVaiTro() %></span>
@@ -303,13 +303,13 @@
                                     <span class="crm-role-code-badge"><%= vt.getMaVaiTro() %></span>
                                     <% if (isTeamLead) { %>
                                         <span class="crm-badge-required-team">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 10px; height: 10px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                            <span class="material-symbols-outlined" style="font-size: 12px; vertical-align: -2px;" aria-hidden="true">warning</span>
                                             Cần nhóm KD (AC2)
                                         </span>
                                     <% } %>
                                     <% if (isProtectedAdmin) { %>
                                         <span class="crm-badge-admin-safe">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 10px; height: 10px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                            <span class="material-symbols-outlined" style="font-size: 12px; vertical-align: -2px;" aria-hidden="true">lock</span>
                                             Khóa an toàn (AC3)
                                         </span>
                                     <% } %>
@@ -324,7 +324,7 @@
                 <div class="crm-preview-card" id="preview-scope-card">
                     <div class="crm-preview-header">
                         <div class="crm-preview-title">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; color: var(--crm-primary);"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                            <span class="material-symbols-outlined" style="font-size: 18px; color: var(--crm-primary); vertical-align: -3px;" aria-hidden="true">visibility</span>
                             Xem trước phạm vi dữ liệu & Quyền hạn thực tế:
                         </div>
                         <span class="crm-badge crm-badge-info" style="font-size: 11px;">Mô phỏng thời gian thực</span>
@@ -348,11 +348,11 @@
                 <div class="crm-card crm-team-card" id="card-nhom-kd">
                     <div class="crm-card-header">
                         <h2 class="crm-card-title">
-                            <svg class="crm-card-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                            <span class="material-symbols-outlined crm-card-title-icon" aria-hidden="true">account_tree</span>
                             3. Gắn vào nhóm kinh doanh (Cây tổ chức)
                         </h2>
                         <span class="crm-badge crm-badge-warning" id="team-required-badge" style="display: none;">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 12px; height: 12px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            <span class="material-symbols-outlined" style="font-size: 13px; vertical-align: -2px;" aria-hidden="true">warning</span>
                             Bắt buộc cho Trưởng nhóm (AC2)
                         </span>
                     </div>
@@ -375,17 +375,17 @@
                                 <%  }
                                 } %>
                             </select>
-                            <svg class="crm-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            <span class="material-symbols-outlined crm-select-arrow" aria-hidden="true">expand_more</span>
                         </div>
 
                         <!-- Cảnh báo inline lỗi validation -->
                         <div class="crm-inline-error" id="team-error-message">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: -2px;" aria-hidden="true">error</span>
                             Vui lòng chọn một nhóm kinh doanh cụ thể cho người giữ vai trò Trưởng nhóm (AC2)!
                         </div>
 
                         <p class="crm-input-helper" id="helper-team-lead">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                            <span class="material-symbols-outlined" style="font-size: 14px; flex-shrink: 0; margin-top: 2px;" aria-hidden="true">info</span>
                             <span>Người dùng trực thuộc nhóm kinh doanh để cây tổ chức xác định đúng dữ liệu họ và cấp dưới nhìn thấy.</span>
                         </p>
                     </div>
@@ -394,15 +394,15 @@
                 <!-- Nút thao tác (Touch Target >= 44px) -->
                 <div class="crm-form-actions">
                     <button type="submit" class="crm-btn-primary" id="btn-save-assignment">
-                        <svg class="crm-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span class="material-symbols-outlined crm-btn-icon" aria-hidden="true">save</span>
                         Lưu Phân Quyền & Nhóm Kinh Doanh
                     </button>
                     <a href="?id=<%= selectedUser.getId() %>" class="crm-btn-secondary" id="btn-reload-page">
-                        <svg class="crm-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                        <span class="material-symbols-outlined crm-btn-icon" aria-hidden="true">refresh</span>
                         Tải Lại Dữ Liệu
                     </a>
                     <a href="<%= request.getContextPath() %>/dieu-huong" class="crm-btn-link">
-                        Xem Menu Điều Hướng Phân Quyền &rarr;
+                        Xem Menu Điều Hướng Phân Quyền <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: -3px;" aria-hidden="true">arrow_forward</span>
                     </a>
                 </div>
             </form>

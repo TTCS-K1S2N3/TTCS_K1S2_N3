@@ -63,10 +63,7 @@
             <div class="crm-header-main">
                 <div class="crm-title-area">
                     <div class="crm-icon-badge">
-                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                            <path d="M9 12l2 2 4-4"/>
-                        </svg>
+                        <span class="material-symbols-outlined" style="font-size: 28px;" aria-hidden="true">verified_user</span>
                     </div>
                     <div>
                         <h1 class="crm-page-title">Nhật Ký Thay Đổi Trên Dữ Liệu Nhạy Cảm</h1>
@@ -78,7 +75,7 @@
 
                 <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                     <a href="<%= contextPath %>/nguoi-dung" class="crm-btn-back" id="btn-back-to-users" title="Quay lại Quản lý tài khoản" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #334155; font-size: 13.5px; font-weight: 600; text-decoration: none;">
-                        &larr; Quản lý người dùng
+                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">arrow_back</span> Quản lý người dùng
                     </a>
                 <%
                     vn.nhom10.crm.model.NguoiDung ndHienTai = (session != null) ? (vn.nhom10.crm.model.NguoiDung) session.getAttribute("nguoiDung") : null;
@@ -108,17 +105,17 @@
     <!-- THÔNG BÁO HỆ THỐNG -->
     <% if (thongBaoLoi != null && !thongBaoLoi.trim().isEmpty()) { %>
         <div class="crm-alert crm-alert-danger" id="alert-message-error" role="alert">
-            <div class="alert-icon">⚠️</div>
+            <div class="alert-icon"><span class="material-symbols-outlined" aria-hidden="true">warning</span></div>
             <div class="alert-text"><%= thongBaoLoi %></div>
-            <button type="button" class="alert-close-btn" onclick="this.parentElement.remove()" aria-label="Đóng">&times;</button>
+            <button type="button" class="alert-close-btn" onclick="this.parentElement.remove()" aria-label="Đóng"><span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span></button>
         </div>
     <% } %>
 
     <% if (thongBaoThanhCong != null && !thongBaoThanhCong.trim().isEmpty()) { %>
         <div class="crm-alert crm-alert-success" id="alert-message-success" role="alert">
-            <div class="alert-icon">✓</div>
+            <div class="alert-icon"><span class="material-symbols-outlined" aria-hidden="true">check_circle</span></div>
             <div class="alert-text"><%= thongBaoThanhCong %></div>
-            <button type="button" class="alert-close-btn" onclick="this.parentElement.remove()" aria-label="Đóng">&times;</button>
+            <button type="button" class="alert-close-btn" onclick="this.parentElement.remove()" aria-label="Đóng"><span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span></button>
         </div>
     <% } %>
 
@@ -131,13 +128,7 @@
                 <span class="metric-subtext">Toàn bộ bản ghi lưu trữ</span>
             </div>
             <div class="metric-icon-wrap icon-slate">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10 9 9 9 8 9"/>
-                </svg>
+                <span class="material-symbols-outlined" style="font-size: 24px;" aria-hidden="true">history</span>
             </div>
         </a>
 
@@ -148,11 +139,7 @@
                 <span class="metric-subtext">Báo giá & hợp đồng bán hàng</span>
             </div>
             <div class="metric-icon-wrap icon-amber">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="19" y1="5" x2="5" y2="19"/>
-                    <circle cx="6.5" cy="6.5" r="2.5"/>
-                    <circle cx="17.5" cy="17.5" r="2.5"/>
-                </svg>
+                <span class="material-symbols-outlined" style="font-size: 24px;" aria-hidden="true">percent</span>
             </div>
         </a>
 
@@ -163,11 +150,7 @@
                 <span class="metric-subtext">KPI nhóm, hạn ngạch cuối quý</span>
             </div>
             <div class="metric-icon-wrap icon-purple">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <circle cx="12" cy="12" r="6"/>
-                    <circle cx="12" cy="12" r="2"/>
-                </svg>
+                <span class="material-symbols-outlined" style="font-size: 24px;" aria-hidden="true">track_changes</span>
             </div>
         </a>
 
@@ -178,11 +161,7 @@
                 <span class="metric-subtext">Khách hàng, cơ hội & lead</span>
             </div>
             <div class="metric-icon-wrap icon-emerald">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="8.5" cy="7" r="4"/>
-                    <polyline points="17 11 19 13 23 9"/>
-                </svg>
+                <span class="material-symbols-outlined" style="font-size: 24px;" aria-hidden="true">person_check</span>
             </div>
         </a>
 
@@ -193,10 +172,7 @@
                 <span class="metric-subtext">Phân quyền & chức năng tài khoản</span>
             </div>
             <div class="metric-icon-wrap icon-blue">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                </svg>
+                <span class="material-symbols-outlined" style="font-size: 24px;" aria-hidden="true">admin_panel_settings</span>
             </div>
         </a>
     </section>
@@ -207,7 +183,7 @@
 
             <div class="filter-top-bar">
                 <div class="filter-title-group">
-                    <span class="filter-icon">🔍</span>
+                    <span class="material-symbols-outlined filter-icon" aria-hidden="true">filter_alt</span>
                     <span class="filter-heading">Bộ Lọc Truy Vết Thay Đổi Dữ Liệu</span>
                     <% if (boLoc.coBoLoc()) { %>
                         <span class="filter-applied-badge">Đang kích hoạt bộ lọc</span>
@@ -221,7 +197,7 @@
                     <button type="button" class="quick-btn <%= "today".equals(boLoc.getQuickPeriod()) ? "active" : "" %>" data-period="today">Hôm nay</button>
                     <button type="button" class="quick-btn <%= "week".equals(boLoc.getQuickPeriod()) ? "active" : "" %>" data-period="week">7 ngày</button>
                     <button type="button" class="quick-btn <%= "month".equals(boLoc.getQuickPeriod()) ? "active" : "" %>" data-period="month">Tháng 9</button>
-                    <button type="button" class="quick-btn <%= "quarter".equals(boLoc.getQuickPeriod()) ? "active" : "" %>" data-period="quarter" title="Đối soát Quý 3 (Thời điểm số liệu cuối quý lệch)">🎯 Quý 3 chốt số</button>
+                    <button type="button" class="quick-btn <%= "quarter".equals(boLoc.getQuickPeriod()) ? "active" : "" %>" data-period="quarter" title="Đối soát Quý 3 (Thời điểm số liệu cuối quý lệch)"><span class="material-symbols-outlined icon-xs" style="vertical-align: -2px;" aria-hidden="true">track_changes</span> Quý 3 chốt số</button>
                     <input type="hidden" name="quickPeriod" id="quickPeriod" value="<%= boLoc.getQuickPeriod() != null ? boLoc.getQuickPeriod() : "" %>">
                 </div>
             </div>
@@ -231,7 +207,7 @@
                 <!-- 1. Lọc theo Người dùng thực hiện (AC 3) -->
                 <div class="form-group">
                     <label for="filter-nguoi-dung" class="form-label">
-                        <span class="label-icon">👤</span> Người thực hiện
+                        <span class="material-symbols-outlined label-icon" aria-hidden="true">person</span> Người thực hiện
                     </label>
                     <select name="nguoiDungId" id="filter-nguoi-dung" class="form-select">
                         <option value="">-- Tất cả người dùng --</option>
@@ -253,7 +229,7 @@
                 <!-- 2. Lọc theo Loại đối tượng nhạy cảm (AC 3) -->
                 <div class="form-group">
                     <label for="filter-loai-doi-tuong" class="form-label">
-                        <span class="label-icon">🏷️</span> Loại đối tượng nhạy cảm
+                        <span class="material-symbols-outlined label-icon" aria-hidden="true">label</span> Loại đối tượng nhạy cảm
                     </label>
                     <select name="loaiDoiTuong" id="filter-loai-doi-tuong" class="form-select">
                         <option value="">-- Tất cả loại đối tượng --</option>
@@ -275,7 +251,7 @@
                 <!-- 3. Lọc theo Khoảng thời gian: Từ ngày (AC 3) -->
                 <div class="form-group">
                     <label for="filter-tu-ngay" class="form-label">
-                        <span class="label-icon">📅</span> Từ ngày
+                        <span class="material-symbols-outlined label-icon" aria-hidden="true">calendar_today</span> Từ ngày
                     </label>
                     <input type="date" name="tuNgay" id="filter-tu-ngay" class="form-input"
                            value="<%= boLoc.getTuNgayChuoi() %>" placeholder="YYYY-MM-DD">
@@ -284,7 +260,7 @@
                 <!-- 4. Lọc theo Khoảng thời gian: Đến ngày (AC 3) -->
                 <div class="form-group">
                     <label for="filter-den-ngay" class="form-label">
-                        <span class="label-icon">📅</span> Đến ngày
+                        <span class="material-symbols-outlined label-icon" aria-hidden="true">event</span> Đến ngày
                     </label>
                     <input type="date" name="denNgay" id="filter-den-ngay" class="form-input"
                            value="<%= boLoc.getDenNgayChuoi() %>" placeholder="YYYY-MM-DD">
@@ -293,14 +269,14 @@
                 <!-- 5. Tìm kiếm từ khóa tự do -->
                 <div class="form-group form-group-search">
                     <label for="filter-tu-khoa" class="form-label">
-                        <span class="label-icon">🔤</span> Từ khóa tìm nhanh
+                        <span class="material-symbols-outlined label-icon" aria-hidden="true">search</span> Từ khóa tìm nhanh
                     </label>
                     <div class="search-input-wrap">
                         <input type="text" name="tuKhoa" id="filter-tu-khoa" class="form-input"
-                               placeholder="Tìm theo mã log, tên đối tượng, mã đối tượng, lý do..."
-                               value="<%= boLoc.getTuKhoa() != null ? boLoc.getTuKhoa() : "" %>">
+                                placeholder="Tìm theo mã log, tên đối tượng, mã đối tượng, lý do..."
+                                value="<%= boLoc.getTuKhoa() != null ? boLoc.getTuKhoa() : "" %>">
                         <% if (boLoc.getTuKhoa() != null && !boLoc.getTuKhoa().isEmpty()) { %>
-                            <button type="button" class="search-clear-btn" id="btn-clear-keyword" title="Xóa từ khóa">&times;</button>
+                            <button type="button" class="search-clear-btn" id="btn-clear-keyword" title="Xóa từ khóa" aria-label="Xóa từ khóa"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
                         <% } %>
                     </div>
                 </div>
@@ -314,27 +290,21 @@
             <div class="filter-actions-bar">
                 <div class="filter-actions-left">
                     <button type="submit" class="btn btn-primary" id="btn-submit-filter">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-                        </svg>
+                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">filter_alt</span>
                         Áp Dụng Bộ Lọc
                     </button>
                     <a href="<%= contextPath %>/nhat-ky-thay-doi" class="btn btn-outline" id="btn-reset-filter" title="Khôi phục mặc định">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="1 4 1 10 7 10"/>
-                            <polyline points="23 20 23 14 17 14"/>
-                            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
-                        </svg>
+                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">restart_alt</span>
                         Đặt Lại
                     </a>
                 </div>
 
                 <div class="filter-actions-right">
                     <button type="button" class="btn btn-ghost" id="btn-print-report" onclick="window.print()" title="In trang báo cáo kiểm toán">
-                        🖨️ In Báo Cáo
+                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">print</span> In Báo Cáo
                     </button>
                     <button type="button" class="btn btn-ghost" id="btn-export-excel" title="Xuất dữ liệu đối soát phục vụ kiểm toán cuối quý">
-                        📥 Xuất Dữ Liệu
+                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">download</span> Xuất Dữ Liệu
                     </button>
                 </div>
             </div>
@@ -367,7 +337,7 @@
         <% if (danhSachNhatKy == null || danhSachNhatKy.isEmpty()) { %>
             <!-- TRẠNG THÁI RỖNG (EMPTY STATE) -->
             <div class="crm-empty-state" id="crm-empty-state">
-                <div class="empty-icon-box">📋</div>
+                <div class="empty-icon-box"><span class="material-symbols-outlined" style="font-size: 40px; color: var(--crm-text-muted);" aria-hidden="true">assignment</span></div>
                 <h3 class="empty-title">Không Tìm Thấy Bản Ghi Nhật Ký Nào</h3>
                 <p class="empty-description">
                     Không có thay đổi dữ liệu nhạy cảm nào khớp với các tiêu chí lọc hiện tại của bạn.
@@ -408,13 +378,13 @@
                                 <td class="col-log-id">
                                     <div class="log-code-wrap">
                                         <span class="log-code-badge" title="Mã định danh truy vết bất biến"><%= item.getMaTruyVet() %></span>
-                                        <button type="button" class="btn-copy-code" onclick="saoChepMa('<%= item.getMaTruyVet() %>', this)" title="Sao chép mã">
-                                            📋
+                                        <button type="button" class="btn-copy-code" onclick="saoChepMa('<%= item.getMaTruyVet() %>', this)" title="Sao chép mã" aria-label="Sao chép mã">
+                                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">content_copy</span>
                                         </button>
                                     </div>
                                     <div class="log-time-meta">
-                                        <span class="log-date">📅 <%= item.getNgayDinhDang() %></span>
-                                        <span class="log-time">⏰ <%= item.getGioDinhDang() %></span>
+                                        <span class="log-date"><span class="material-symbols-outlined icon-xs" style="vertical-align: -2px;" aria-hidden="true">calendar_today</span> <%= item.getNgayDinhDang() %></span>
+                                        <span class="log-time"><span class="material-symbols-outlined icon-xs" style="vertical-align: -2px;" aria-hidden="true">schedule</span> <%= item.getGioDinhDang() %></span>
                                     </div>
                                 </td>
 
@@ -442,9 +412,9 @@
                                 <td class="col-target">
                                     <div class="target-type-badge <%= loaiClass %>">
                                         <% if (loai == LoaiDoiTuongNhayCam.CHIET_KHAU) { %> % <% } %>
-                                        <% if (loai == LoaiDoiTuongNhayCam.CHI_TIEU) { %> 🎯 <% } %>
-                                        <% if (loai == LoaiDoiTuongNhayCam.QUYEN_SO_HUU) { %> 👤 <% } %>
-                                        <% if (loai == LoaiDoiTuongNhayCam.VAI_TRO_NGUOI_DUNG) { %> 🛡️ <% } %>
+                                        <% if (loai == LoaiDoiTuongNhayCam.CHI_TIEU) { %> <span class="material-symbols-outlined icon-xs" style="vertical-align: -2px;" aria-hidden="true">track_changes</span> <% } %>
+                                        <% if (loai == LoaiDoiTuongNhayCam.QUYEN_SO_HUU) { %> <span class="material-symbols-outlined icon-xs" style="vertical-align: -2px;" aria-hidden="true">person</span> <% } %>
+                                        <% if (loai == LoaiDoiTuongNhayCam.VAI_TRO_NGUOI_DUNG) { %> <span class="material-symbols-outlined icon-xs" style="vertical-align: -2px;" aria-hidden="true">shield</span> <% } %>
                                         <%= loaiTen %>
                                     </div>
                                     <div class="target-name" title="<%= item.getTenDoiTuong() != null ? item.getTenDoiTuong() : "" %>">
@@ -489,10 +459,7 @@
                                             onclick="moModalChiTiet(<%= item.getId() %>)"
                                             id="btn-detail-<%= item.getId() %>"
                                             title="Xem chi tiết so sánh trước và sau">
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                            <circle cx="12" cy="12" r="3"/>
-                                        </svg>
+                                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">visibility</span>
                                         Chi Tiết
                                     </button>
                                 </td>
@@ -518,9 +485,9 @@
                         <!-- Trang trước -->
                         <% if (phanTrang.isCoTrangTruoc()) { %>
                             <a href="<%= taoUrlTrang(contextPath, boLoc, phanTrang.getTrangHienTai() - 1) %>"
-                               class="page-btn page-nav" id="page-prev" title="Trang trước">&lsaquo; Trước</a>
+                               class="page-btn page-nav" id="page-prev" title="Trang trước"><span class="material-symbols-outlined icon-xs" style="vertical-align: -2px;" aria-hidden="true">arrow_back</span> Trước</a>
                         <% } else { %>
-                            <span class="page-btn page-nav disabled" aria-disabled="true">&lsaquo; Trước</span>
+                            <span class="page-btn page-nav disabled" aria-disabled="true"><span class="material-symbols-outlined icon-xs" style="vertical-align: -2px;" aria-hidden="true">arrow_back</span> Trước</span>
                         <% } %>
 
                         <!-- Các số trang -->
@@ -546,9 +513,9 @@
                         <!-- Trang sau -->
                         <% if (phanTrang.isCoTrangSau()) { %>
                             <a href="<%= taoUrlTrang(contextPath, boLoc, phanTrang.getTrangHienTai() + 1) %>"
-                               class="page-btn page-nav" id="page-next" title="Trang sau">Sau &rsaquo;</a>
+                               class="page-btn page-nav" id="page-next" title="Trang sau">Sau <span class="material-symbols-outlined icon-xs" style="vertical-align: -2px;" aria-hidden="true">arrow_forward</span></a>
                         <% } else { %>
-                            <span class="page-btn page-nav disabled" aria-disabled="true">Sau &rsaquo;</span>
+                            <span class="page-btn page-nav disabled" aria-disabled="true">Sau <span class="material-symbols-outlined icon-xs" style="vertical-align: -2px;" aria-hidden="true">arrow_forward</span></span>
                         <% } %>
                     </nav>
                 </div>
@@ -572,13 +539,13 @@
 
         <div class="crm-modal-header">
             <div class="modal-title-wrap">
-                <span class="modal-badge-icon">🔍</span>
+                <span class="material-symbols-outlined modal-badge-icon" aria-hidden="true">search</span>
                 <div>
                     <h3 class="modal-title" id="modal-log-title">Chi Tiết Thay Đổi Dữ Liệu Nhạy Cảm</h3>
                     <p class="modal-subtitle">Đối soát truy vết chi tiết theo tiêu chuẩn an toàn bảo mật CRM</p>
                 </div>
             </div>
-            <button type="button" class="modal-close-btn" onclick="dongModalChiTiet()" aria-label="Đóng modal">&times;</button>
+            <button type="button" class="modal-close-btn" onclick="dongModalChiTiet()" aria-label="Đóng modal"><span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span></button>
         </div>
 
         <div class="crm-modal-body" id="modal-content-body">
@@ -652,7 +619,7 @@
                         <!-- Giá trị trước -->
                         <div class="diff-panel diff-panel-before">
                             <div class="diff-panel-header">
-                                <span class="diff-status-icon">🔴</span>
+                                <span class="material-symbols-outlined diff-status-icon" style="color: #dc2626; font-size: 18px;" aria-hidden="true">remove_circle</span>
                                 <span class="diff-status-title">GIÁ TRỊ TRƯỚC KHI THAY ĐỔI</span>
                             </div>
                             <div class="diff-panel-body" id="modal-diff-before-value">
@@ -661,16 +628,13 @@
                         </div>
 
                         <div class="diff-arrow-indicator">
-                            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="5" y1="12" x2="19" y2="12"/>
-                                <polyline points="12 5 19 12 12 19"/>
-                            </svg>
+                            <span class="material-symbols-outlined" style="font-size: 32px;" aria-hidden="true">arrow_forward</span>
                         </div>
 
                         <!-- Giá trị sau -->
                         <div class="diff-panel diff-panel-after">
                             <div class="diff-panel-header">
-                                <span class="diff-status-icon">🟢</span>
+                                <span class="material-symbols-outlined diff-status-icon" style="color: #16a34a; font-size: 18px;" aria-hidden="true">add_circle</span>
                                 <span class="diff-status-title">GIÁ TRỊ SAU KHI THAY ĐỔI</span>
                             </div>
                             <div class="diff-panel-body" id="modal-diff-after-value">
@@ -682,13 +646,13 @@
 
                 <!-- Lý do / Giải trình thay đổi -->
                 <div class="modal-reason-box">
-                    <div class="reason-title">📝 LÝ DO / GIẢI TRÌNH ĐƯỢC GHI NHẬN:</div>
+                    <div class="reason-title"><span class="material-symbols-outlined icon-sm" style="vertical-align: -2px;" aria-hidden="true">edit_note</span> LÝ DO / GIẢI TRÌNH ĐƯỢC GHI NHẬN:</div>
                     <div class="reason-content" id="modal-reason-content">-</div>
                 </div>
 
                 <!-- Cam kết bất biến -->
                 <div class="audit-integrity-note">
-                    <span class="integrity-icon">🔒</span>
+                    <span class="material-symbols-outlined integrity-icon" aria-hidden="true">lock</span>
                     <span>Bản ghi kiểm toán được khóa toàn vẹn (Immutable Audit Log). Dữ liệu không thể bị chỉnh sửa hoặc xóa bởi bất kỳ người dùng nào theo quy chuẩn kiểm toán doanh nghiệp.</span>
                 </div>
 
@@ -697,10 +661,10 @@
 
         <div class="crm-modal-footer">
             <button type="button" class="btn btn-outline" id="btn-copy-modal-id" onclick="saoChepMaModal()">
-                📋 Sao Chép Mã Truy Vết
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">content_copy</span> Sao Chép Mã Truy Vết
             </button>
             <button type="button" class="btn btn-primary" onclick="dongModalChiTiet()">
-                Đóng Cửa Sổ
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span> Đóng Cửa Sổ
             </button>
         </div>
 

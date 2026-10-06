@@ -136,12 +136,12 @@ function khoiTaoFormValidationVaTinhToan() {
             if (giaSan > giaNiemYet && giaNiemYet > 0) {
                 hopLe = false;
                 if (errGiaSan) {
-                    errGiaSan.textContent = "⚠️ Giá sàn (" + dinhDangTien(giaSan) + ") không thể lớn hơn Giá niêm yết (" + dinhDangTien(giaNiemYet) + ").";
+                    errGiaSan.textContent = "Giá sàn (" + dinhDangTien(giaSan) + ") không thể lớn hơn Giá niêm yết (" + dinhDangTien(giaNiemYet) + ").";
                     errGiaSan.style.color = "var(--danger)";
                 }
                 inputGiaSan.style.borderColor = "var(--danger)";
                 if (thresholdInfoBox) {
-                    thresholdInfoBox.innerHTML = "<span style='color: var(--danger); font-weight: 600;'>❌ Cấu hình giá không hợp lệ: Giá sàn vi phạm trần giá niêm yết.</span>";
+                    thresholdInfoBox.innerHTML = "<span style='color: var(--danger); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;'><span class='material-symbols-outlined icon-xs' aria-hidden='true'>cancel</span> Cấu hình giá không hợp lệ: Giá sàn vi phạm trần giá niêm yết.</span>";
                 }
             } else {
                 if (errGiaSan) errGiaSan.textContent = "";
@@ -153,7 +153,7 @@ function khoiTaoFormValidationVaTinhToan() {
 
                     thresholdInfoBox.innerHTML =
                         "<div style='background: #fffbeb; border: 1px solid #fde68a; padding: 10px 14px; border-radius: 8px; color: #92400e;'>" +
-                        "⚡ <strong>Ngưỡng duyệt chiết khấu tự động:</strong><br/>" +
+                        "<div style='display: flex; align-items: center; gap: 4px; margin-bottom: 4px;'><span class='material-symbols-outlined icon-xs' aria-hidden='true'>bolt</span><strong>Ngưỡng duyệt chiết khấu tự động:</strong></div>" +
                         "• Nhân viên Sales được giảm giá tối đa: <strong>" + discountPercent + "%</strong> (" + dinhDangTien(discountMax) + ").<br/>" +
                         "• Nếu đơn giá báo giá < <strong>" + dinhDangTien(giaSan) + "</strong>: Hệ thống bắt buộc phải gửi <strong>Giám đốc duyệt chiết khấu</strong>." +
                         "</div>";
@@ -171,7 +171,7 @@ function khoiTaoFormValidationVaTinhToan() {
 
             marginInfoBox.innerHTML =
                 "<div style='background: " + (isProfitPositive ? "#f0fdf4" : "#fef2f2") + "; border: 1px solid " + (isProfitPositive ? "#86efac" : "#fecaca") + "; padding: 8px 12px; border-radius: 8px; color: " + (isProfitPositive ? "#166534" : "#991b1b") + ";'>" +
-                "📊 <strong>Phân tích lợi nhuận Giám đốc:</strong><br/>" +
+                "<div style='display: flex; align-items: center; gap: 4px; margin-bottom: 4px;'><span class='material-symbols-outlined icon-xs' aria-hidden='true'>analytics</span><strong>Phân tích lợi nhuận Giám đốc:</strong></div>" +
                 "• Lợi nhuận gộp niêm yết: <strong>" + dinhDangTien(grossProfit) + "</strong><br/>" +
                 "• Tỷ suất biên lợi nhuận gộp (Gross Margin): <strong>" + grossMarginPercent + "%</strong>" +
                 "</div>";
@@ -270,7 +270,7 @@ function tinhKiemTraGiaSan() {
     }
 
     // Hiển thị trạng thái đang kiểm tra
-    resultBox.innerHTML = "<div style='text-align: center; padding: 16px; color: var(--slate-500);'>⏳ Đang phân tích ngưỡng duyệt chiết khấu...</div>";
+    resultBox.innerHTML = "<div style='text-align: center; padding: 16px; color: var(--slate-500); display: flex; align-items: center; justify-content: center; gap: 6px;'><span class='material-symbols-outlined icon-sm' aria-hidden='true'>hourglass_top</span><span>Đang phân tích ngưỡng duyệt chiết khấu...</span></div>";
 
     const ctx = layContextPath();
     const url = ctx + "/san-pham/kiem-tra-gia-san?id=" + encodeURIComponent(spId) + "&donGia=" + encodeURIComponent(donGia);
@@ -294,7 +294,7 @@ function tinhKiemTraGiaSanClientSide() {
 
     if (!valStr || parseFloat(valStr) <= 0) {
         if (resultBox) {
-            resultBox.innerHTML = "<div style='background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 14px; text-align: center; color: var(--slate-500); font-size: 13px; margin-top: 14px;'>💡 Hãy nhập đơn giá bán dự kiến trong báo giá để hệ thống đối soát tự động với Giá sàn.</div>";
+            resultBox.innerHTML = "<div style='background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 14px; text-align: center; color: var(--slate-500); font-size: 13px; margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 6px;'><span class='material-symbols-outlined icon-xs' style='color: #f59e0b;' aria-hidden='true'>lightbulb</span><span>Hãy nhập đơn giá bán dự kiến trong báo giá để hệ thống đối soát tự động với Giá sàn.</span></div>";
         }
         return;
     }
@@ -324,7 +324,7 @@ function hienThiKetQuaGiaSan(data, donGia) {
     if (!resultBox) return;
 
     if (!data.thanhCong) {
-        resultBox.innerHTML = "<div class='alert alert-danger'>⚠️ " + (data.thongDiep || "Có lỗi khi kiểm tra.") + "</div>";
+        resultBox.innerHTML = "<div class='alert alert-danger' style='display: flex; align-items: center; gap: 6px;'><span class='material-symbols-outlined icon-xs' aria-hidden='true'>error</span><span>" + (data.thongDiep || "Có lỗi khi kiểm tra.") + "</span></div>";
         return;
     }
 
@@ -341,28 +341,28 @@ function hienThiKetQuaGiaSan(data, donGia) {
         html =
             "<div style='background: #fef2f2; border: 1.5px solid #f87171; border-radius: 12px; padding: 18px; margin-top: 14px;'>" +
                 "<div style='display: flex; align-items: center; gap: 8px; color: #b91c1c; font-weight: 800; font-size: 15px; margin-bottom: 6px;'>" +
-                    "⚠️ BẮT BUỘC PHẢI DUYỆT CHIẾT KHẤU" +
+                    "<span class='material-symbols-outlined icon-sm' aria-hidden='true'>warning</span><span>BẮT BUỘC PHẢI DUYỆT CHIẾT KHẤU</span>" +
                 "</div>" +
                 "<p style='color: #7f1d1d; font-size: 13.5px; margin-bottom: 12px;'>" +
                     "Đơn giá đề xuất <strong>" + dinhDangTien(donGia) + "</strong> thấp hơn Giá sàn (" + dinhDangTien(giaSan) + ") là <strong>" + dinhDangTien(chenhLechGiaSan) + "</strong>. " +
                     "Mức chiết khấu đạt <strong>" + discountPercent + "%</strong>, vượt quá quyền hạn của Sales Rep." +
                 "</p>" +
-                "<div style='background: #ffffff; border-radius: 8px; padding: 10px 14px; font-size: 12.5px; color: #991b1b;'>" +
-                    "👔 <strong>Quy trình xử lý:</strong> Báo giá khi gửi sẽ tự động chuyển sang trạng thái <em>CHỜ DUYỆT CHIẾT KHẤU</em> gửi tới Giám đốc kinh doanh." +
+                "<div style='background: #ffffff; border-radius: 8px; padding: 10px 14px; font-size: 12.5px; color: #991b1b; display: flex; align-items: center; gap: 6px;'>" +
+                    "<span class='material-symbols-outlined icon-xs' aria-hidden='true'>admin_panel_settings</span><span><strong>Quy trình xử lý:</strong> Báo giá khi gửi sẽ tự động chuyển sang trạng thái <em>CHỜ DUYỆT CHIẾT KHẤU</em> gửi tới Giám đốc kinh doanh.</span>" +
                 "</div>" +
             "</div>";
     } else {
         html =
             "<div style='background: #ecfdf5; border: 1.5px solid #34d399; border-radius: 12px; padding: 18px; margin-top: 14px;'>" +
                 "<div style='display: flex; align-items: center; gap: 8px; color: #047857; font-weight: 800; font-size: 15px; margin-bottom: 6px;'>" +
-                    "✅ ĐƠN GIÁ HỢP LỆ - KHÔNG CẦN DUYỆT" +
+                    "<span class='material-symbols-outlined icon-sm' aria-hidden='true'>check_circle</span><span>ĐƠN GIÁ HỢP LỆ - KHÔNG CẦN DUYỆT</span>" +
                 "</div>" +
                 "<p style='color: #065f46; font-size: 13.5px; margin-bottom: 12px;'>" +
                     "Đơn giá đề xuất <strong>" + dinhDangTien(donGia) + "</strong> nằm trong khung giá niêm yết (cao hơn hoặc bằng Giá sàn " + dinhDangTien(giaSan) + "). " +
                     "Chiết khấu: <strong>" + discountPercent + "%</strong> (" + dinhDangTien(discountAmount) + ")." +
                 "</p>" +
-                "<div style='background: #ffffff; border-radius: 8px; padding: 10px 14px; font-size: 12.5px; color: #065f46;'>" +
-                    "🚀 <strong>Quyền hạn:</strong> Nhân viên kinh doanh được phép xuất và gửi báo giá chính thức cho khách hàng ngay lập tức." +
+                "<div style='background: #ffffff; border-radius: 8px; padding: 10px 14px; font-size: 12.5px; color: #065f46; display: flex; align-items: center; gap: 6px;'>" +
+                    "<span class='material-symbols-outlined icon-xs' aria-hidden='true'>rocket_launch</span><span><strong>Quy hạn:</strong> Nhân viên kinh doanh được phép xuất và gửi báo giá chính thức cho khách hàng ngay lập tức.</span>" +
                 "</div>" +
             "</div>";
     }
