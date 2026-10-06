@@ -132,12 +132,14 @@
                       method="post"
                       enctype="multipart/form-data">
 
+                    <input type="hidden" name="previewToken" id="form-preview-token" value="${previewToken}" />
+
                     <!-- VÙNG KÉO THẢ TỆP (DROPZONE) -->
                     <div class="dropzone-container" id="dropzone-container">
                         <div class="dropzone-icon">&#128196;</div>
                         <div class="dropzone-text-main">Kéo và thả tệp Excel vào đây, hoặc bấm để duyệt tệp</div>
                         <div class="dropzone-text-sub">Chấp nhận tệp định dạng <strong>.xlsx</strong> hoặc <strong>.xls</strong> (Dung lượng tối đa 10MB)</div>
-                        <input type="file" id="fileExcel" name="fileExcel" accept=".xlsx, .xls" class="dropzone-input-hidden" required />
+                        <input type="file" id="fileExcel" name="fileExcel" accept=".xlsx, .xls" class="dropzone-input-hidden" ${empty baoCao ? 'required' : ''} />
                     </div>
 
                     <!-- THẺ HIỂN THỊ THÔNG TIN TỆP ĐÃ CHỌN -->
@@ -218,6 +220,56 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- THÔNG BÁO TỔNG KẾT KHI NHẬP THÀNH CÔNG (Story S2-01) -->
+                    <c:if test="${cheDo == 'ket-qua'}">
+                        <div class="alert alert-success" id="alert-import-success" role="alert" style="margin-top: 16px; margin-bottom: 20px; background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 16px 20px; border-radius: 8px; font-weight: 600; font-size: 1.05rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                            <div>
+                                &#9989; <c:out value="${not empty thongBaoThanhCong ? thongBaoThanhCong : 'Đã nhập thành công ' += baoCao.soDongThanhCong += '/' += baoCao.tongSoDong += ' tài khoản. ' += baoCao.soDongThatBai += ' dòng lỗi đã được bỏ qua.'}" />
+                            </div>
+                            <a href="${pageContext.request.contextPath}/nguoi-dung/import" class="btn-action btn-action-outline" id="btn-nhap-tep-moi" style="font-size: 0.85rem; text-decoration: none;">
+                                Nhập đợt tệp mới &rarr;
+                            </a>
+                        </div>
+                    </c:if>
+
+                    <!-- THANH HÀNH ĐỘNG PREVIEW TRỰC TIẾP (Story S2-01 Review Fix) -->
+                    <c:if test="${cheDo == 'xem-truoc'}">
+                        <div class="preview-cta-toolbar" style="margin-top: 16px; margin-bottom: 20px; padding: 16px 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 1rem; color: #166534;">
+                                    &#128065; Kết quả xem trước: 
+                                    <c:choose>
+                                        <c:when test="${baoCao.soDongHopLe > 0}">
+                                            Có <strong>${baoCao.soDongHopLe}</strong> dòng hợp lệ sẵn sàng nhập trực tiếp vào hệ thống.
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span style="color: #dc2626;">Tệp không có dòng nào hợp lệ để nhập.</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                                <div style="font-size: 0.85rem; color: #15803d; margin-top: 2px;">
+                                    Bấm "Thực hiện nhập" để lưu tài khoản hợp lệ ngay mà không cần tải lại tệp.
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <a href="${pageContext.request.contextPath}/nguoi-dung/import" class="btn-action btn-action-outline" id="btn-chon-tep-khac" style="text-decoration: none;">
+                                    &#10005; Chọn tệp khác
+                                </a>
+                                <form id="form-thuc-hien-nhap" action="${pageContext.request.contextPath}/nguoi-dung/import" method="post" style="margin: 0; display: inline-block;">
+                                    <input type="hidden" name="action" value="nhap-du-lieu" />
+                                    <input type="hidden" name="previewToken" value="${previewToken}" />
+                                    <button type="button"
+                                            id="btn-thuc-hien-nhap"
+                                            class="btn-action btn-action-import"
+                                            ${baoCao.soDongHopLe > 0 ? '' : 'disabled="disabled"'}
+                                            style="${baoCao.soDongHopLe > 0 ? '' : 'opacity: 0.5; cursor: not-allowed;'}">
+                                        &#9989; Thực hiện nhập
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </c:if>
 
                     <!-- THỐNG KÊ TỔNG KẾT ĐỢT NHẬP -->
                     <div class="stats-cards-grid">
@@ -420,6 +472,22 @@
                             <div style="font-size: 0.85rem;">Vui lòng thử tìm với từ khóa khác hoặc chuyển tab lọc.</div>
                         </div>
                     </div>
+
+                    <!-- NÚT THAO TÁC PHÍA DƯỚI BẢNG XEM TRƯỚC (S2-01 Review Fix) -->
+                    <c:if test="${cheDo == 'xem-truoc'}">
+                        <div class="preview-bottom-actions" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
+                            <a href="${pageContext.request.contextPath}/nguoi-dung/import" class="btn-action btn-action-outline" id="btn-chon-tep-khac-bottom" style="text-decoration: none;">
+                                &#10005; Chọn tệp khác
+                            </a>
+                            <button type="button"
+                                    id="btn-thuc-hien-nhap-bottom"
+                                    class="btn-action btn-action-import"
+                                    ${baoCao.soDongHopLe > 0 ? '' : 'disabled="disabled"'}
+                                    style="${baoCao.soDongHopLe > 0 ? '' : 'opacity: 0.5; cursor: not-allowed;'}">
+                                &#9989; Thực hiện nhập
+                            </button>
+                        </div>
+                    </c:if>
 
                 </section>
             </c:if>

@@ -86,6 +86,16 @@ public class NguoiDungImportServlet extends HttpServlet {
             action = "xem-truoc";
         }
 
+        Long adminId = layIdNguoiDungHienTai(request);
+        String previewToken = request.getParameter("previewToken");
+
+        // Luồng 1: Thực hiện nhập trực tiếp từ dữ liệu Preview bằng previewToken (S2-01 Review Fix)
+        if ("nhap-du-lieu".equalsIgnoreCase(action) && previewToken != null && !previewToken.isBlank()) {
+            xuLyNhapTuPreviewToken(request, response, previewToken.trim(), adminId);
+            return;
+        }
+
+        // Luồng 2: Upload file từ máy tính
         Part filePart = null;
         try {
             filePart = request.getPart("fileExcel");
@@ -94,7 +104,11 @@ public class NguoiDungImportServlet extends HttpServlet {
         }
 
         if (filePart == null || filePart.getSize() == 0) {
-            request.setAttribute("thongBaoLoi", "Vui lòng chọn một tệp Excel từ máy tính của bạn trước khi bấm thao tác.");
+            if ("nhap-du-lieu".equalsIgnoreCase(action)) {
+                request.setAttribute("thongBaoLoi", "Dữ liệu xem trước đã hết hạn hoặc không còn hiệu lực. Vui lòng chọn lại tệp Excel.");
+            } else {
+                request.setAttribute("thongBaoLoi", "Vui lòng chọn một tệp Excel từ máy tính của bạn trước khi bấm thao tác.");
+            }
             request.getRequestDispatcher("/WEB-INF/views/nguoi-dung/import-excel.jsp").forward(request, response);
             return;
         }
@@ -106,25 +120,125 @@ public class NguoiDungImportServlet extends HttpServlet {
             return;
         }
 
-        Long adminId = layIdNguoiDungHienTai(request);
-
+        byte[] fileBytes;
         try (InputStream is = filePart.getInputStream()) {
+            fileBytes = is.readAllBytes();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Lỗi đọc tệp Excel: " + e.getMessage(), e);
+            request.setAttribute("thongBaoLoi", "Không thể đọc tệp Excel. Chi tiết: " + e.getMessage());
+            request.getRequestDispatcher("/WEB-INF/views/nguoi-dung/import-excel.jsp").forward(request, response);
+            return;
+        }
+
+        try {
             if ("nhap-du-lieu".equalsIgnoreCase(action)) {
-                // AC 3: Dòng lỗi bị bỏ qua, dòng hợp lệ vẫn được nhập, có báo cáo tổng kết
-                BaoCaoNhapExcelDTO baoCao = importService.thucHienNhap(is, adminId, fileName);
-                request.setAttribute("baoCao", baoCao);
-                request.setAttribute("cheDo", "ket-qua");
-                request.setAttribute("tenTep", fileName);
+                // AC 3: Nhập dữ liệu trực tiếp khi upload kèm file (tương thích backward)
+                try (InputStream is = new java.io.ByteArrayInputStream(fileBytes)) {
+                    BaoCaoNhapExcelDTO baoCao = importService.thucHienNhap(is, adminId, fileName);
+                    request.setAttribute("baoCao", baoCao);
+                    request.setAttribute("cheDo", "ket-qua");
+                    request.setAttribute("tenTep", fileName);
+                    String thongDiep = String.format("Đã nhập thành công %d/%d tài khoản. %d dòng lỗi đã được bỏ qua.",
+                            baoCao.getSoDongThanhCong(), baoCao.getTongSoDong(), baoCao.getSoDongThatBai());
+                    request.setAttribute("thongBaoThanhCong", thongDiep);
+                }
             } else {
                 // AC 2: Xem trước và báo lỗi theo từng dòng trước khi nhập
-                BaoCaoNhapExcelDTO baoCao = importService.xemTruoc(is, adminId, fileName);
-                request.setAttribute("baoCao", baoCao);
-                request.setAttribute("cheDo", "xem-truoc");
-                request.setAttribute("tenTep", fileName);
+                try (InputStream is = new java.io.ByteArrayInputStream(fileBytes)) {
+                    BaoCaoNhapExcelDTO baoCao = importService.xemTruoc(is, adminId, fileName);
+
+                    // Tạo preview token và lưu vào session
+                    String token = java.util.UUID.randomUUID().toString();
+                    vn.nhom10.crm.dto.ImportPreviewSession previewData = new vn.nhom10.crm.dto.ImportPreviewSession(
+                            token, adminId, fileName, fileBytes, baoCao.getSoDongHopLe()
+                    );
+                    HttpSession session = request.getSession(false);
+                    if (session == null) {
+                        session = request.getSession(true);
+                    }
+                    if (session != null) {
+                        session.setAttribute("IMPORT_PREVIEW_" + token, previewData);
+                    }
+
+                    request.setAttribute("previewToken", token);
+                    request.setAttribute("baoCao", baoCao);
+                    request.setAttribute("cheDo", "xem-truoc");
+                    request.setAttribute("tenTep", fileName);
+                }
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Lỗi phân tích tệp Excel tải lên: " + e.getMessage(), e);
             request.setAttribute("thongBaoLoi", "Không thể đọc tệp Excel. Chi tiết: " + e.getMessage());
+        }
+
+        request.getRequestDispatcher("/WEB-INF/views/nguoi-dung/import-excel.jsp").forward(request, response);
+    }
+
+    /**
+     * Xử lý nhập trực tiếp từ dữ liệu xem trước đã lưu trong phiên làm việc (Story S2-01).
+     */
+    private void xuLyNhapTuPreviewToken(HttpServletRequest request, HttpServletResponse response,
+                                       String previewToken, Long adminId) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            request.setAttribute("thongBaoLoi", "Phiên làm việc đã hết hạn. Vui lòng chọn lại tệp Excel.");
+            request.getRequestDispatcher("/WEB-INF/views/nguoi-dung/import-excel.jsp").forward(request, response);
+            return;
+        }
+
+        String sessionKey = "IMPORT_PREVIEW_" + previewToken;
+        vn.nhom10.crm.dto.ImportPreviewSession preview = (vn.nhom10.crm.dto.ImportPreviewSession) session.getAttribute(sessionKey);
+
+        if (preview == null) {
+            request.setAttribute("thongBaoLoi", "Dữ liệu xem trước đã hết hạn hoặc không tồn tại. Vui lòng chọn lại tệp Excel.");
+            request.getRequestDispatcher("/WEB-INF/views/nguoi-dung/import-excel.jsp").forward(request, response);
+            return;
+        }
+
+        // Kiểm tra đúng người dùng tạo preview mới được nhập
+        if (preview.getUserId() == null || !preview.getUserId().equals(adminId)) {
+            request.setAttribute("thongBaoLoi", "Bạn không có quyền thao tác trên đợt xem trước của tài khoản khác. Vui lòng chọn lại tệp Excel.");
+            request.getRequestDispatcher("/WEB-INF/views/nguoi-dung/import-excel.jsp").forward(request, response);
+            return;
+        }
+
+        // Kiểm tra hết hạn TTL
+        if (preview.isExpired()) {
+            session.removeAttribute(sessionKey);
+            request.setAttribute("thongBaoLoi", "Đợt xem trước đã hết hạn. Vui lòng chọn lại tệp Excel.");
+            request.getRequestDispatcher("/WEB-INF/views/nguoi-dung/import-excel.jsp").forward(request, response);
+            return;
+        }
+
+        // Kiểm tra token đã dùng chưa (chống double submit / refresh)
+        if (!preview.markUsed()) {
+            request.setAttribute("thongBaoLoi", "Đợt xem trước này đã được nhập trước đó. Vui lòng chọn lại tệp Excel nếu muốn nhập đợt mới.");
+            request.getRequestDispatcher("/WEB-INF/views/nguoi-dung/import-excel.jsp").forward(request, response);
+            return;
+        }
+
+        // Dọn dẹp dữ liệu preview trong session ngay khi đã bắt đầu xử lý
+        session.removeAttribute(sessionKey);
+
+        // Kiểm tra nếu preview không có dòng hợp lệ nào -> không cho nhập
+        if (preview.getSoDongHopLe() <= 0) {
+            request.setAttribute("thongBaoLoi", "Không có dòng dữ liệu nào hợp lệ để nhập. Vui lòng kiểm tra lại báo cáo lỗi và chọn tệp khác.");
+            request.getRequestDispatcher("/WEB-INF/views/nguoi-dung/import-excel.jsp").forward(request, response);
+            return;
+        }
+
+        try (InputStream is = new java.io.ByteArrayInputStream(preview.getFileBytes())) {
+            // Re-validate và insert vào DB
+            BaoCaoNhapExcelDTO baoCao = importService.thucHienNhap(is, adminId, preview.getFileName());
+            request.setAttribute("baoCao", baoCao);
+            request.setAttribute("cheDo", "ket-qua");
+            request.setAttribute("tenTep", preview.getFileName());
+            String thongDiep = String.format("Đã nhập thành công %d/%d tài khoản. %d dòng lỗi đã được bỏ qua.",
+                    baoCao.getSoDongThanhCong(), baoCao.getTongSoDong(), baoCao.getSoDongThatBai());
+            request.setAttribute("thongBaoThanhCong", thongDiep);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi nhập dữ liệu từ preview: " + e.getMessage(), e);
+            request.setAttribute("thongBaoLoi", "Đã xảy ra lỗi trong quá trình nhập dữ liệu: " + e.getMessage());
         }
 
         request.getRequestDispatcher("/WEB-INF/views/nguoi-dung/import-excel.jsp").forward(request, response);

@@ -228,4 +228,21 @@ public class NhatKyThayDoiDTO implements Serializable {
         String[] tu = tenNguoiThucHien.trim().split("\\s+");
         return tu[tu.length - 1].substring(0, 1).toUpperCase();
     }
+
+    // Các tiện ích định dạng hiển thị thân thiện Story S2-04
+    public String getTruongThayDoiHienThi() {
+        return vn.nhom10.crm.util.AuditLogFormatter.dinhDangTruong(this.truongThayDoi);
+    }
+
+    public String getGiaTriTruocHienThi() {
+        return vn.nhom10.crm.util.AuditLogFormatter.dinhDangGiaTri(this.truongThayDoi, this.giaTriTruoc);
+    }
+
+    public String getGiaTriSauHienThi() {
+        return vn.nhom10.crm.util.AuditLogFormatter.dinhDangGiaTri(this.truongThayDoi, this.giaTriSau);
+    }
+
+    public String getVaiTroNguoiThucHienHienThi() {
+        return vn.nhom10.crm.util.AuditLogFormatter.dinhDangVaiTro(this.vaiTroNguoiThucHien);
+    }
 }

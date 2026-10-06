@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import vn.nhom10.crm.dao.DotNhapDuLieuDAO;
 import vn.nhom10.crm.dao.NguoiDungDAO;
 import vn.nhom10.crm.dao.NhomKinhDoanhDAO;
@@ -36,10 +38,12 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("Kiểm thử nghiệp vụ NguoiDungImportService (Story S2-01)")
 public class NguoiDungImportServiceTest {
 
@@ -197,5 +201,82 @@ public class NguoiDungImportServiceTest {
 
         assertTrue(baoCao.getThongDiep().contains("1/2 tài khoản nhập thành công"));
         assertTrue(baoCao.getThongDiep().contains("1 dòng lỗi bị bỏ qua"));
+    }
+
+    @Test
+    @DisplayName("AC 1: Tải được tệp mẫu Excel thành công")
+    void testTaoTepMauExcel() throws Exception {
+        byte[] fileBytes = importService.taoTepMauExcel();
+        assertNotNull(fileBytes, "Mảng byte tệp mẫu không được null");
+        assertTrue(fileBytes.length > 0, "Dung lượng tệp mẫu phải lớn hơn 0");
+    }
+
+    @Test
+    @DisplayName("AC 3: Import batch có 3 dòng (1 hợp lệ, 1 email sai định dạng, 1 email trùng) - chỉ dòng hợp lệ được insert, báo cáo đúng số lượng")
+    void testThucHienNhap_Batch3Dong_1HopLe_1SaiDinhDang_1TrungEmail() throws Exception {
+        byte[] excelBytes;
+        try (Workbook wb = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = wb.createSheet("DanhSachNguoiDung");
+
+            Row header = sheet.createRow(0);
+            header.createCell(0).setCellValue("STT");
+            header.createCell(1).setCellValue("Họ và tên");
+            header.createCell(2).setCellValue("Email");
+            header.createCell(3).setCellValue("Số điện thoại");
+            header.createCell(4).setCellValue("Mã vai trò");
+            header.createCell(5).setCellValue("Nhóm");
+            header.createCell(6).setCellValue("Mật khẩu");
+
+            // Dòng 1: Hợp lệ
+            Row r1 = sheet.createRow(1);
+            r1.createCell(0).setCellValue("1");
+            r1.createCell(1).setCellValue("Nguyễn Hợp Lệ");
+            r1.createCell(2).setCellValue("hople@crm.vn");
+            r1.createCell(3).setCellValue("0988776655");
+            r1.createCell(4).setCellValue("SALES_REP");
+            r1.createCell(5).setCellValue("KD_MIEN_BAC");
+            r1.createCell(6).setCellValue("");
+
+            // Dòng 2: Email sai định dạng
+            Row r2 = sheet.createRow(2);
+            r2.createCell(0).setCellValue("2");
+            r2.createCell(1).setCellValue("Trần Sai Định Dạng");
+            r2.createCell(2).setCellValue("email-sai-dinh-dang");
+            r2.createCell(3).setCellValue("0911223344");
+            r2.createCell(4).setCellValue("MARKETING");
+            r2.createCell(5).setCellValue("");
+            r2.createCell(6).setCellValue("");
+
+            // Dòng 3: Email trùng (đã tồn tại trong hệ thống)
+            Row r3 = sheet.createRow(3);
+            r3.createCell(0).setCellValue("3");
+            r3.createCell(1).setCellValue("Lê Email Trùng");
+            r3.createCell(2).setCellValue("trung.email@crm.vn");
+            r3.createCell(3).setCellValue("0933445566");
+            r3.createCell(4).setCellValue("ADMIN");
+            r3.createCell(5).setCellValue("");
+            r3.createCell(6).setCellValue("");
+
+            wb.write(out);
+            excelBytes = out.toByteArray();
+        }
+
+        when(nguoiDungDAO.kiemTraEmailTonTai("hople@crm.vn", null)).thenReturn(false);
+        when(nguoiDungDAO.kiemTraEmailTonTai("trung.email@crm.vn", null)).thenReturn(true);
+        when(nguoiDungDAO.themNguoiDung(any(NguoiDung.class), anyList())).thenReturn(201);
+
+        BaoCaoNhapExcelDTO baoCao = importService.thucHienNhap(new ByteArrayInputStream(excelBytes), 1L, "batch3.xlsx");
+
+        assertNotNull(baoCao);
+        assertEquals(3, baoCao.getTongSoDong(), "Tổng số dòng phải là 3");
+        assertEquals(1, baoCao.getSoDongHopLe(), "Số dòng hợp lệ phải là 1");
+        assertEquals(2, baoCao.getSoDongLoi(), "Số dòng lỗi phải là 2");
+        assertEquals(1, baoCao.getSoDongThanhCong(), "Chỉ 1 dòng hợp lệ được insert thành công");
+        assertEquals(2, baoCao.getSoDongThatBai(), "2 dòng lỗi bị bỏ qua");
+
+        // Xác minh chỉ gọi themNguoiDung đúng 1 lần cho dòng hợp lệ
+        verify(nguoiDungDAO, times(1)).themNguoiDung(any(NguoiDung.class), anyList());
+        verify(dotNhapDuLieuDAO).luuDotNhap(eq(baoCao), eq(1L));
     }
 }
