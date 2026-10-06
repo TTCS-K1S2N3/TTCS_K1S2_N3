@@ -10,7 +10,14 @@ import vn.nhom10.crm.dto.BanGhiNghiepVuDTO;
 import vn.nhom10.crm.dto.NguoiDungDTO;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.PhamViDuLieu;
+import vn.nhom10.crm.dao.KhachHangDAO;
+import vn.nhom10.crm.dao.NguoiDungDAO;
+import vn.nhom10.crm.dao.YeuCauHoTroDAO;
+import vn.nhom10.crm.dto.ThongTinRuiRoDTO;
+import vn.nhom10.crm.model.MucUuTienYeuCauEnum;
+import vn.nhom10.crm.model.TrangThaiYeuCauEnum;
 import vn.nhom10.crm.service.PhanQuyenDuLieuService;
+import vn.nhom10.crm.service.YeuCauHoTroService;
 
 import java.io.IOException;
 import java.util.List;
@@ -79,6 +86,25 @@ public class KhachHangServlet extends HttpServlet {
             request.setAttribute("banGhiChiTiet", banGhi);
             request.setAttribute("banGhi", banGhi);
             request.setAttribute("thongBaoThanhCong", ketQua.getThongBao());
+
+            if ("chi-tiet".equalsIgnoreCase(request.getParameter("action")) || "true".equalsIgnoreCase(request.getParameter("chiTiet"))) {
+                try {
+                    YeuCauHoTroService ychtService = new YeuCauHoTroService();
+                    ThongTinRuiRoDTO ruiRo = ychtService.layThongTinRuiRo(banGhi.getId());
+                    if (ruiRo != null) {
+                        banGhi.setCoRuiRo(ruiRo.isCoRuiRo());
+                        banGhi.setSoYeuCauChuaXuLy(ruiRo.getSoYeuCauChuaXuLy());
+                        request.setAttribute("thongTinRuiRo", ruiRo);
+                    }
+                    request.setAttribute("danhSachYeuCauHoTro", ychtService.layDanhSachTheoKhachHang(banGhi.getId()));
+                    request.setAttribute("danhSachNhanVien", new NguoiDungDAO().layTatCa());
+                    request.setAttribute("mucUuTienList", MucUuTienYeuCauEnum.values());
+                    request.setAttribute("trangThaiList", TrangThaiYeuCauEnum.values());
+                } catch (Exception ignored) {}
+                response.setStatus(HttpServletResponse.SC_OK);
+                request.getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp").forward(request, response);
+                return;
+            }
         }
 
         // 2. Tiếp nhận tham số Data Scope từ người dùng
@@ -103,6 +129,21 @@ public class KhachHangServlet extends HttpServlet {
         List<BanGhiNghiepVuDTO> danhSachKhachHang = phanQuyenService.layDanhSachDuLieu(
                 userDTO, phamViHieuLuc, tuKhoa, "KHACH_HANG"
         );
+
+        // Gắn cờ rủi ro rời bỏ và số yêu cầu chưa xử lý cho từng khách hàng (Story S3-08 AC3)
+        try {
+            KhachHangDAO khDao = new KhachHangDAO();
+            YeuCauHoTroDAO ychtDao = new YeuCauHoTroDAO();
+            for (BanGhiNghiepVuDTO khDto : danhSachKhachHang) {
+                if (khDto.getId() != null) {
+                    boolean coRuiRo = khDao.kiemTraCoRuiRo(khDto.getId());
+                    khDto.setCoRuiRo(coRuiRo);
+                    if (coRuiRo) {
+                        khDto.setSoYeuCauChuaXuLy(ychtDao.demYeuCauChuaXuLy(khDto.getId()));
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
 
         // 4. Xử lý Xuất Excel danh mục khách hàng (.xlsx)
         String xuatExcel = request.getParameter("xuatExcel");

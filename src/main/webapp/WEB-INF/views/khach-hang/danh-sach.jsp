@@ -161,8 +161,15 @@
                                     </td>
                                     <td><c:out value="${kh.tenNguoiPhuTrach}" /></td>
                                     <td><c:out value="${kh.tenNhom}" /></td>
-                                    <td><c:out value="${kh.giaTri}" /></td>
-                                    <td><span class="badge badge-success"><c:out value="${kh.trangThai}" /></span></td>
+                                    <td>
+                                        <span class="badge badge-success"><c:out value="${kh.trangThai}" /></span>
+                                        <c:if test="${kh.coRuiRo}">
+                                            <span class="badge badge-danger" title="Khách hàng có nguy cơ rời bỏ (${kh.soYeuCauChuaXuLy} yêu cầu chưa xử lý)" style="background: #ef4444; color: #fff; margin-left: 4px; font-weight: 700; font-size: 11px; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 2px;">
+                                                <span class="material-symbols-outlined" style="font-size: 13px;" aria-hidden="true">warning</span>
+                                                Rủi ro rời bỏ
+                                            </span>
+                                        </c:if>
+                                    </td>
                                     <td style="text-align: center;">
                                         <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" class="btn-action" title="Xem chi tiết khách hàng" aria-label="Xem chi tiết khách hàng">
                                             <span class="material-symbols-outlined" aria-hidden="true">visibility</span>

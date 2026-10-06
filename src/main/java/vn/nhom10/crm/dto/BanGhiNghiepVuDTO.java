@@ -49,6 +49,8 @@ public class BanGhiNghiepVuDTO implements Serializable {
     private String trangThai;
     private LocalDate ngayTao;
     private String moTaChiTiet;
+    private boolean coRuiRo;
+    private int soYeuCauChuaXuLy;
 
     public BanGhiNghiepVuDTO() {
     }
@@ -165,5 +167,21 @@ public class BanGhiNghiepVuDTO implements Serializable {
 
     public void setMoTaChiTiet(String moTaChiTiet) {
         this.moTaChiTiet = moTaChiTiet;
+    }
+
+    public boolean isCoRuiRo() {
+        return coRuiRo;
+    }
+
+    public void setCoRuiRo(boolean coRuiRo) {
+        this.coRuiRo = coRuiRo;
+    }
+
+    public int getSoYeuCauChuaXuLy() {
+        return soYeuCauChuaXuLy;
+    }
+
+    public void setSoYeuCauChuaXuLy(int soYeuCauChuaXuLy) {
+        this.soYeuCauChuaXuLy = soYeuCauChuaXuLy;
     }
 }
