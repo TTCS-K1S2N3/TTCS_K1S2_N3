@@ -103,7 +103,7 @@
         <div class="page-header">
             <div>
                 <h1 class="page-title">Danh Mục Khách Hàng</h1>
-                <p class="page-subtitle">Quản lý và chăm sóc danh mục khách hàng thuộc quyền phụ trách</p>
+                <p class="page-subtitle">Tìm kiếm, lọc đa điều kiện và dựng nhanh danh sách khách hàng cần gọi trong tuần (Story S3-07)</p>
             </div>
             <div class="page-actions">
                 <button type="button" class="btn btn-outline" id="btnExportExcel" title="Tải danh sách khách hàng dưới dạng file Excel (.xlsx)">
@@ -117,12 +117,181 @@
             </div>
         </div>
 
-        <!-- Bảng danh sách khách hàng lọc theo Data Scope -->
+        <!-- Story S3-07: Khung Tìm Kiếm, Lọc Đa Điều Kiện & Quản Lý Bộ Lọc Đã Lưu -->
+        <div class="filter-card" id="filterCard">
+            <!-- Thanh quản lý Bộ lọc đã lưu (AC3) -->
+            <div class="saved-filters-bar">
+                <div class="saved-filters-group">
+                    <span class="material-symbols-outlined" style="color: var(--primary);" aria-hidden="true">bookmark</span>
+                    <label for="selectBoLocDaLuu" style="font-weight: 600; font-size: 13px; color: var(--slate-700);">Bộ lọc đã lưu:</label>
+                    <select id="selectBoLocDaLuu" class="saved-filter-select" onchange="chuyenBoLoc(this.value)">
+                        <option value="">-- Chọn bộ lọc đã lưu --</option>
+                        <c:forEach var="bl" items="${dsBoLocDaLuu}">
+                            <option value="${bl.id}" ${not empty boLocHienTai and boLocHienTai.boLocId == bl.id ? 'selected' : ''}>
+                                <c:out value="${bl.tenBoLoc}" /> ${bl.macDinh ? ' ★ (Mặc định)' : ''}
+                            </option>
+                        </c:forEach>
+                    </select>
+
+                    <c:if test="${not empty boLocHienTai and not empty boLocHienTai.boLocId}">
+                        <button type="button" class="btn btn-outline" id="btnXoaBoLocHienTai" style="padding: 6px 12px; font-size: 12.5px; color: #dc2626;" title="Xóa bộ lọc đã lưu này">
+                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">delete</span> Xóa bộ lọc
+                        </button>
+                        <c:if test="${not boLocHienTai.macDinh}">
+                            <button type="button" class="btn btn-outline" id="btnDatMacDinhHienTai" style="padding: 6px 12px; font-size: 12.5px;" title="Đặt làm bộ lọc mặc định khi mở danh sách">
+                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">star</span> Đặt làm mặc định
+                            </button>
+                        </c:if>
+                    </c:if>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-outline" id="btnMoModalLuuBoLoc" style="padding: 6px 14px; font-size: 13px;">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">bookmark_add</span>
+                        Lưu bộ lọc hiện tại
+                    </button>
+                </div>
+            </div>
+
+            <!-- Form tìm kiếm & Lọc đa điều kiện (AC1, AC2) -->
+            <form id="formLocKhachHang" method="GET" action="${pageContext.request.contextPath}/khach-hang">
+                <input type="hidden" name="phamVi" value="${param.phamVi != null ? param.phamVi : (not empty phamViHienTai ? phamViHienTai.ma : '')}">
+                <c:if test="${not empty boLocHienTai and not empty boLocHienTai.boLocId}">
+                    <input type="hidden" name="boLocId" value="${boLocHienTai.boLocId}">
+                </c:if>
+
+                <div class="filter-grid">
+                    <!-- AC2: Tìm theo từ khóa tổng hợp -->
+                    <div class="filter-field filter-field-full">
+                        <label class="filter-label" for="tuKhoa">Từ khóa tìm kiếm nhanh (Tên công ty, MST, SĐT người liên hệ)</label>
+                        <input type="text" id="tuKhoa" name="tuKhoa" class="filter-input"
+                               placeholder="Nhập tên khách hàng, mã số thuế hoặc số điện thoại người liên hệ..."
+                               value="<c:out value='${not empty boLocHienTai ? boLocHienTai.tuKhoa : param.tuKhoa}' />" autocomplete="off">
+                    </div>
+
+                    <!-- AC2: Tìm theo Tên công ty -->
+                    <div class="filter-field">
+                        <label class="filter-label" for="tenCongTyFilter">Tên khách hàng / Công ty</label>
+                        <input type="text" id="tenCongTyFilter" name="tenCongTy" class="filter-input"
+                               placeholder="Tìm theo tên..."
+                               value="<c:out value='${not empty boLocHienTai ? boLocHienTai.tenCongTy : param.tenCongTy}' />" autocomplete="off">
+                    </div>
+
+                    <!-- AC2: Tìm theo Mã số thuế -->
+                    <div class="filter-field">
+                        <label class="filter-label" for="maSoThueFilter">Mã số thuế</label>
+                        <input type="text" id="maSoThueFilter" name="maSoThue" class="filter-input"
+                               placeholder="Ví dụ: 0101234567"
+                               value="<c:out value='${not empty boLocHienTai ? boLocHienTai.maSoThue : param.maSoThue}' />" autocomplete="off">
+                    </div>
+
+                    <!-- AC2: Tìm theo SĐT người liên hệ -->
+                    <div class="filter-field">
+                        <label class="filter-label" for="soDienThoaiFilter">SĐT người liên hệ</label>
+                        <input type="text" id="soDienThoaiFilter" name="soDienThoai" class="filter-input"
+                               placeholder="Ví dụ: 0912..."
+                               value="<c:out value='${not empty boLocHienTai ? boLocHienTai.soDienThoai : param.soDienThoai}' />" autocomplete="off">
+                    </div>
+
+                    <!-- AC1: Lọc theo Trạng thái -->
+                    <div class="filter-field">
+                        <label class="filter-label" for="trangThaiFilter">Trạng thái</label>
+                        <select id="trangThaiFilter" name="trangThai" class="filter-select">
+                            <option value="">-- Tất cả trạng thái --</option>
+                            <c:forEach var="tt" items="${dsTrangThai}">
+                                <option value="${tt.ma}" ${not empty boLocHienTai and (boLocHienTai.trangThai == tt.ma or boLocHienTai.trangThai == tt.tenHienThi) ? 'selected' : ''}>
+                                    <c:out value="${tt.tenHienThi}" />
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </div>
+
+                    <!-- AC1: Lọc theo Ngành nghề -->
+                    <div class="filter-field">
+                        <label class="filter-label" for="nganhNgheIdFilter">Ngành nghề</label>
+                        <select id="nganhNgheIdFilter" name="nganhNgheId" class="filter-select">
+                            <option value="">-- Tất cả ngành nghề --</option>
+                            <c:forEach var="nn" items="${dsNganhNghe}">
+                                <option value="${nn.id}" ${not empty boLocHienTai and boLocHienTai.nganhNgheId == nn.id ? 'selected' : ''}>
+                                    <c:out value="${nn.tenMuc}" />
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </div>
+
+                    <!-- AC1: Lọc theo Quy mô -->
+                    <div class="filter-field">
+                        <label class="filter-label" for="quyMoIdFilter">Quy mô doanh nghiệp</label>
+                        <select id="quyMoIdFilter" name="quyMoId" class="filter-select">
+                            <option value="">-- Tất cả quy mô --</option>
+                            <c:forEach var="qm" items="${dsQuyMo}">
+                                <option value="${qm.id}" ${not empty boLocHienTai and boLocHienTai.quyMoId == qm.id ? 'selected' : ''}>
+                                    <c:out value="${qm.tenMuc}" />
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </div>
+
+                    <!-- AC1: Lọc theo Khu vực -->
+                    <div class="filter-field">
+                        <label class="filter-label" for="khuVucIdFilter">Khu vực địa lý</label>
+                        <select id="khuVucIdFilter" name="khuVucId" class="filter-select">
+                            <option value="">-- Tất cả khu vực --</option>
+                            <c:forEach var="kv" items="${dsKhuVuc}">
+                                <option value="${kv.id}" ${not empty boLocHienTai and boLocHienTai.khuVucId == kv.id ? 'selected' : ''}>
+                                    <c:out value="${kv.tenKhuVuc}" />
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </div>
+
+                    <!-- AC1: Lọc theo Người sở hữu (Nếu có quyền) -->
+                    <c:if test="${coQuyenChonOwner}">
+                        <div class="filter-field">
+                            <label class="filter-label" for="nguoiSoHuuIdFilter">Người sở hữu / Phụ trách</label>
+                            <select id="nguoiSoHuuIdFilter" name="nguoiSoHuuId" class="filter-select">
+                                <option value="">-- Tất cả nhân viên --</option>
+                                <c:forEach var="nv" items="${dsNguoiSoHuu}">
+                                    <option value="${nv.id}" ${not empty boLocHienTai and boLocHienTai.nguoiSoHuuId == nv.id ? 'selected' : ''}>
+                                        <c:out value="${nv.hoTen}" /> (${nv.email})
+                                    </option>
+                                </c:forEach>
+                            </select>
+                        </div>
+                    </c:if>
+                </div>
+
+                <div class="filter-actions">
+                    <div style="font-size: 13px; color: var(--slate-500);">
+                        <c:if test="${not empty boLocHienTai and boLocHienTai.coDieuKienLoc()}">
+                            <span class="active-filter-indicator">
+                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">filter_alt</span>
+                                Đang áp dụng bộ lọc tùy chỉnh
+                            </span>
+                        </c:if>
+                    </div>
+                    <div class="filter-actions-right">
+                        <a href="${pageContext.request.contextPath}/khach-hang?reset=1" class="btn btn-outline" style="padding: 8px 16px;">
+                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">refresh</span>
+                            Đặt lại bộ lọc
+                        </a>
+                        <button type="submit" class="btn btn-primary" style="padding: 8px 20px;">
+                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">search</span>
+                            Tìm kiếm & Lọc
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Bảng danh sách khách hàng lọc theo Data Scope & Tiêu chí Story S3-07 -->
         <div class="table-container">
             <div style="padding: 12px 16px; background: #f8fafc; border-bottom: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                 <span style="font-size: 13px; color: var(--slate-600);">
                     Phạm vi dữ liệu: <strong><c:out value="${not empty phamViHienTai ? phamViHienTai.tenHienThi : 'Của tôi'}" /></strong>
                     • Đang hiển thị: <strong><c:out value="${not empty tongSoKhachHang ? tongSoKhachHang : 0}" /></strong> khách hàng
+                    <c:if test="${not empty boLocHienTai and not empty boLocHienTai.tenBoLoc}">
+                        • Bộ lọc: <span style="font-weight: 600; color: var(--primary);"><c:out value="${boLocHienTai.tenBoLoc}" /></span>
+                    </c:if>
                 </span>
                 <div style="display: flex; align-items: center; gap: 16px;">
                     <c:set var="userHienTai" value="${not empty nguoiDung ? nguoiDung : sessionScope.nguoiDung}" />
@@ -140,17 +309,78 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th style="width: 100px;">Mã KH</th>
+                        <th style="width: 90px;">Mã KH</th>
                         <th>Tên Khách Hàng / Công Ty</th>
+                        <th>Mã Số Thuế</th>
+                        <th>Đầu Mối Liên Hệ & SĐT Gọi Nhanh</th>
+                        <th>Ngành Nghề / Quy Mô</th>
+                        <th>Khu Vực</th>
                         <th>Người Phụ Trách</th>
-                        <th>Nhóm Kinh Doanh</th>
-                        <th>Phân Loại</th>
                         <th>Trạng Thái</th>
-                        <th style="width: 120px; text-align: center;">Thao Tác</th>
+                        <th style="width: 80px; text-align: center;">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     <c:choose>
+                        <%-- Ưu tiên hiển thị danh sách KhachHang model đầy đủ thông tin liên hệ và SĐT --%>
+                        <c:when test="${not empty dsKhachHangModel}">
+                            <c:forEach var="kh" items="${dsKhachHangModel}">
+                                <tr>
+                                    <td class="font-mono"><c:out value="${not empty kh.maKhachHang ? kh.maKhachHang : '-'}" /></td>
+                                    <td>
+                                        <div class="customer-name"><c:out value="${kh.tenCongTy}" /></div>
+                                        <c:if test="${not empty kh.website}">
+                                            <div class="customer-sub" style="font-size: 12px; color: var(--slate-400);">
+                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true" style="vertical-align: middle;">language</span>
+                                                <c:out value="${kh.website}" />
+                                            </div>
+                                        </c:if>
+                                    </td>
+                                    <td class="font-mono" style="font-size: 13px;">
+                                        <c:out value="${not empty kh.maSoThue ? kh.maSoThue : '-'}" />
+                                    </td>
+                                    <td>
+                                        <%-- SĐT gọi nhanh phục vụ Sales Rep dựng danh sách cần gọi trong tuần (S3-07) --%>
+                                        <c:choose>
+                                            <c:when test="${not empty kh.soDienThoaiLienHe}">
+                                                <div style="font-weight: 600; color: var(--slate-800); font-size: 13px;">
+                                                    <c:out value="${not empty kh.tenNguoiLienHeChinh ? kh.tenNguoiLienHeChinh : 'Người liên hệ'}" />
+                                                </div>
+                                                <div style="margin-top: 3px;">
+                                                    <a href="tel:${kh.soDienThoaiLienHe}" class="phone-call-badge" title="Bấm để gọi nhanh">
+                                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">call</span>
+                                                        <c:out value="${kh.soDienThoaiLienHe}" />
+                                                    </a>
+                                                </div>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span style="color: var(--slate-400); font-size: 12.5px;">Chưa có SĐT</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td>
+                                        <div style="font-size: 13px;"><c:out value="${not empty kh.tenNganhNghe ? kh.tenNganhNghe : '-'}" /></div>
+                                        <div style="font-size: 12px; color: var(--slate-400);"><c:out value="${not empty kh.tenQuyMo ? kh.tenQuyMo : ''}" /></div>
+                                    </td>
+                                    <td><c:out value="${not empty kh.tenKhuVuc ? kh.tenKhuVuc : '-'}" /></td>
+                                    <td>
+                                        <div style="font-weight: 500;"><c:out value="${kh.tenNguoiSoHuu}" /></div>
+                                        <div style="font-size: 12px; color: var(--slate-400);"><c:out value="${kh.tenNhomKinhDoanh}" /></div>
+                                    </td>
+                                    <td>
+                                        <span class="badge ${kh.trangThai == 'TIEM_NANG' ? 'badge-info' : (kh.trangThai == 'DANG_GIAO_DICH' ? 'badge-warning' : (kh.trangThai == 'KHACH_HANG' ? 'badge-success' : 'badge-danger'))}">
+                                            <c:out value="${kh.trangThaiHienThi}" />
+                                        </span>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" class="btn-action" title="Xem chi tiết khách hàng" aria-label="Xem chi tiết khách hàng">
+                                            <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </c:when>
+                        <%-- Fallback danh sách BanGhiNghiepVuDTO nếu dsKhachHangModel chưa nạp --%>
                         <c:when test="${not empty danhSachKhachHang}">
                             <c:forEach var="kh" items="${danhSachKhachHang}">
                                 <tr>
@@ -159,9 +389,11 @@
                                         <div class="customer-name"><c:out value="${kh.tieuDe}" /></div>
                                         <div class="customer-sub"><c:out value="${kh.moTaChiTiet}" /></div>
                                     </td>
-                                    <td><c:out value="${kh.tenNguoiPhuTrach}" /></td>
-                                    <td><c:out value="${kh.tenNhom}" /></td>
+                                    <td>-</td>
+                                    <td>-</td>
                                     <td><c:out value="${kh.giaTri}" /></td>
+                                    <td>-</td>
+                                    <td><c:out value="${kh.tenNguoiPhuTrach}" /></td>
                                     <td><span class="badge badge-success"><c:out value="${kh.trangThai}" /></span></td>
                                     <td style="text-align: center;">
                                         <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" class="btn-action" title="Xem chi tiết khách hàng" aria-label="Xem chi tiết khách hàng">
@@ -173,8 +405,13 @@
                         </c:when>
                         <c:otherwise>
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 32px; color: var(--slate-500);">
-                                    Không tìm thấy khách hàng nào trong phạm vi dữ liệu tài khoản của bạn.
+                                <td colspan="9" style="text-align: center; padding: 40px; color: var(--slate-500);">
+                                    <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Không tìm thấy khách hàng nào thỏa mãn điều kiện lọc.</div>
+                                    <p style="font-size: 13.5px; margin-bottom: 16px;">Vui lòng thử lại với các tiêu chí tìm kiếm khác hoặc xóa bộ lọc.</p>
+                                    <a href="${pageContext.request.contextPath}/khach-hang?reset=1" class="btn btn-outline" style="display: inline-flex;">
+                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">refresh</span>
+                                        Đặt lại toàn bộ bộ lọc
+                                    </a>
                                 </td>
                             </tr>
                         </c:otherwise>
@@ -182,6 +419,57 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Modal Lưu Bộ Lọc Hay Dùng (Story S3-07, AC3) -->
+        <div class="modal-backdrop" id="modalLuuBoLoc" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalLuuBoLocTieuDe">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="modal-title" id="modalLuuBoLocTieuDe">Lưu Bộ Lọc Hay Dùng</h2>
+                        <p class="modal-subtitle">Đặt tên cho bộ lọc hiện tại để dựng nhanh danh sách gọi trong tuần</p>
+                    </div>
+                    <button type="button" class="modal-close-btn" id="btnDongModalLuuBoLoc" aria-label="Đóng" title="Đóng">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
+                </div>
+                <form id="formLuuBoLoc" method="POST" action="${pageContext.request.contextPath}/khach-hang">
+                    <input type="hidden" name="action" value="luu-bo-loc">
+                    <!-- Truyền các tiêu chí lọc đang được thiết lập -->
+                    <input type="hidden" name="tuKhoa" value="<c:out value='${not empty boLocHienTai ? boLocHienTai.tuKhoa : param.tuKhoa}' />">
+                    <input type="hidden" name="tenCongTy" value="<c:out value='${not empty boLocHienTai ? boLocHienTai.tenCongTy : param.tenCongTy}' />">
+                    <input type="hidden" name="maSoThue" value="<c:out value='${not empty boLocHienTai ? boLocHienTai.maSoThue : param.maSoThue}' />">
+                    <input type="hidden" name="soDienThoai" value="<c:out value='${not empty boLocHienTai ? boLocHienTai.soDienThoai : param.soDienThoai}' />">
+                    <input type="hidden" name="trangThai" value="<c:out value='${not empty boLocHienTai ? boLocHienTai.trangThai : param.trangThai}' />">
+                    <input type="hidden" name="nganhNgheId" value="<c:out value='${not empty boLocHienTai ? boLocHienTai.nganhNgheId : param.nganhNgheId}' />">
+                    <input type="hidden" name="quyMoId" value="<c:out value='${not empty boLocHienTai ? boLocHienTai.quyMoId : param.quyMoId}' />">
+                    <input type="hidden" name="khuVucId" value="<c:out value='${not empty boLocHienTai ? boLocHienTai.khuVucId : param.khuVucId}' />">
+                    <input type="hidden" name="nguoiSoHuuId" value="<c:out value='${not empty boLocHienTai ? boLocHienTai.nguoiSoHuuId : param.nguoiSoHuuId}' />">
+
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label" for="tenBoLocInput">Tên bộ lọc <span class="required">*</span></label>
+                            <input type="text" id="tenBoLocInput" name="tenBoLoc" class="form-input"
+                                   placeholder="Ví dụ: Khách CNTT cần gọi thứ 3, Khách VIP Hà Nội..."
+                                   maxlength="150" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13.5px; color: var(--slate-700);">
+                                <input type="checkbox" id="macDinhCheckbox" name="macDinh" value="1">
+                                <span>Đặt làm bộ lọc mặc định khi mở Danh mục khách hàng</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" id="btnHuyLuuBoLoc">Hủy bỏ</button>
+                        <button type="submit" class="btn btn-primary" id="btnXacNhanLuuBoLoc">
+                            <span class="material-symbols-outlined" aria-hidden="true">save</span>
+                            <span>Lưu Bộ Lọc</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
 
         <!-- Modal Thêm Khách Hàng Mới (Story S1-05) -->
         <div class="modal-backdrop" id="modalThemKhachHang" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalThemKhachHangTieuDe">
