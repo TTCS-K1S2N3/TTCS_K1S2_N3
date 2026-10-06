@@ -1,3 +1,4 @@
+@import url('../material-symbols.css');
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
@@ -736,5 +737,628 @@ body {
         height: 44px;
         padding: 0 14px;
         font-size: 13px;
+    }
+}
+
+/* ==========================================================================
+   Story S3-09: Quản lý khách hàng cần chăm sóc định kỳ (Customer Success)
+   Chuẩn 3 nhóm màu: Primary (#2563eb), Neutral (Slate), Semantic (Green/Amber/Red)
+   ========================================================================== */
+
+/* 1. Tabs Navigation System */
+.crm-tabs-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 2px solid var(--slate-200);
+    margin-bottom: 24px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+}
+
+.crm-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--slate-600);
+    cursor: pointer;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    position: relative;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    min-height: 44px;
+}
+
+.crm-tab-btn:hover {
+    color: var(--primary);
+    background-color: var(--primary-light);
+}
+
+.crm-tab-btn.active {
+    color: var(--primary);
+    background-color: #ffffff;
+    border-bottom-color: var(--primary);
+    font-weight: 700;
+}
+
+.crm-tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    font-size: 11.5px;
+    font-weight: 700;
+    border-radius: 12px;
+    background-color: var(--slate-200);
+    color: var(--slate-700);
+    line-height: 1.2;
+}
+
+.crm-tab-btn.active .crm-tab-badge {
+    background-color: var(--primary);
+    color: #ffffff;
+}
+
+.crm-tab-badge.badge-amber {
+    background-color: #fef3c7;
+    color: #b45309;
+}
+
+.crm-tab-pane {
+    display: none;
+    animation: crmFadeIn 0.25s ease;
+}
+
+.crm-tab-pane.active {
+    display: block;
+}
+
+@keyframes crmFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 2. Customer Care Stats Grid */
+.cs-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.cs-stat-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cs-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.cs-stat-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.cs-stat-icon-primary {
+    background-color: var(--primary-light);
+    color: var(--primary);
+}
+
+.cs-stat-icon-amber {
+    background-color: #fffbeb;
+    color: #d97706;
+}
+
+.cs-stat-icon-red {
+    background-color: #fef2f2;
+    color: #dc2626;
+}
+
+.cs-stat-icon-green {
+    background-color: #ecfdf5;
+    color: #059669;
+}
+
+.cs-stat-content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.cs-stat-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--slate-900);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    font-feature-settings: "tnum";
+}
+
+.cs-stat-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--slate-500);
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 3. Configuration & Filter Panel (AC1) */
+.cs-config-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+.cs-config-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--slate-100);
+}
+
+.cs-config-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--slate-900);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cs-config-desc {
+    font-size: 13px;
+    color: var(--slate-500);
+    margin-top: 2px;
+}
+
+.cs-config-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    justify-content: space-between;
+}
+
+.cs-config-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.cs-input-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cs-input-group label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--slate-700);
+    white-space: nowrap;
+}
+
+.cs-number-input {
+    width: 80px;
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid var(--slate-300);
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--slate-900);
+    text-align: center;
+    background-color: #ffffff;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.cs-number-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.cs-chip-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.cs-chip-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--slate-300);
+    background-color: var(--slate-50);
+    color: var(--slate-700);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cs-chip-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background-color: var(--primary-light);
+}
+
+.cs-chip-btn.active {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.cs-config-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.cs-search-input {
+    height: 38px;
+    padding: 0 14px 0 36px;
+    border: 1px solid var(--slate-300);
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--slate-900);
+    width: 240px;
+    background-color: #ffffff;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.cs-search-input:focus {
+    border-color: var(--primary);
+    width: 280px;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.cs-search-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.cs-search-icon {
+    position: absolute;
+    left: 10px;
+    color: var(--slate-400);
+    pointer-events: none;
+    font-size: 18px;
+}
+
+/* 4. Table Customizations for Periodic Care (AC2, AC3) */
+.col-contract-highlight {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--primary);
+    font-feature-settings: "tnum";
+}
+
+.contract-code-tag {
+    font-size: 11.5px;
+    font-family: monospace;
+    color: var(--slate-500);
+    display: block;
+    margin-top: 2px;
+}
+
+.overdue-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.overdue-badge.badge-amber {
+    background-color: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.overdue-badge.badge-red {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.overdue-badge.badge-green {
+    background-color: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.overdue-date-text {
+    font-size: 11.5px;
+    color: var(--slate-400);
+    display: block;
+    margin-top: 3px;
+}
+
+.th-sort-active {
+    background-color: #eff6ff !important;
+    color: var(--primary) !important;
+}
+
+.th-sort-active .th-sort-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* 5. In-Place Contact Marking Button (AC3) */
+.btn-contact-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 12px;
+    height: 34px;
+    min-height: 34px;
+    background-color: var(--primary);
+    color: #ffffff;
+    border: 1px solid var(--primary);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    text-decoration: none;
+    outline: none;
+}
+
+.btn-contact-mark:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+.btn-contact-mark.is-contacted {
+    background-color: #ecfdf5;
+    color: #065f46;
+    border-color: #a7f3d0;
+    cursor: default;
+}
+
+.btn-contact-mark.is-contacted:hover {
+    box-shadow: none;
+}
+
+.actions-cell-flex {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+}
+
+/* 6. Channel Selection in Contact Modal */
+.channel-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.channel-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--slate-300);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: #ffffff;
+}
+
+.channel-radio-label:hover {
+    border-color: var(--primary);
+    background-color: var(--primary-light);
+}
+
+.channel-radio-label input[type="radio"]:checked + .channel-info {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.channel-radio-label:has(input[type="radio"]:checked) {
+    border-color: var(--primary);
+    background-color: var(--primary-light);
+    box-shadow: 0 0 0 1px var(--primary);
+}
+
+.channel-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--slate-700);
+}
+
+/* 7. Toast Notification */
+.crm-toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.crm-toast {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #ffffff;
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    pointer-events: auto;
+    min-width: 300px;
+    max-width: 420px;
+    animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.crm-toast-success {
+    border-left: 4px solid var(--success);
+}
+
+.crm-toast-success .crm-toast-icon {
+    color: var(--success);
+}
+
+.crm-toast-body {
+    flex: 1;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--slate-800);
+}
+
+.crm-toast-close {
+    background: transparent;
+    border: none;
+    color: var(--slate-400);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.crm-toast-close:hover {
+    color: var(--slate-600);
+    background-color: var(--slate-100);
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* 8. Mobile 360px & Tablet Responsive Breakpoints */
+@media (max-width: 1024px) {
+    .cs-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .cs-config-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .cs-config-left, .cs-config-right {
+        width: 100%;
+    }
+    .cs-search-input {
+        width: 100% !important;
+    }
+    .channel-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 576px) {
+    .cs-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    .cs-chip-group {
+        width: 100%;
+    }
+    .crm-tabs-nav {
+        gap: 4px;
+    }
+    .crm-tab-btn {
+        padding: 10px 14px;
+        font-size: 13px;
+        flex: 1;
+        justify-content: center;
+    }
+    .crm-toast-container {
+        top: 12px;
+        right: 12px;
+        left: 12px;
+    }
+    .crm-toast {
+        min-width: auto;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 360px) {
+    .crm-tab-btn {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+    .cs-stat-value {
+        font-size: 19px;
+    }
+    .btn-contact-mark {
+        padding: 0 8px;
+        font-size: 11.5px;
+        height: 40px;
+        min-height: 40px;
     }
 }

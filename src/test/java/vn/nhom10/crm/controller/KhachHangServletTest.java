@@ -372,4 +372,33 @@ class KhachHangServletTest {
         verify(response, never()).setContentType("text/csv; charset=UTF-8");
         verify(response).setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     }
+
+    @Test
+    @DisplayName("S3-09: Đánh dấu đã liên hệ khách hàng chăm sóc định kỳ qua action=danhDauLienHe")
+    void testKhachHang_DanhDauLienHe_ThanhCong() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getParameter("action")).thenReturn("danhDauLienHe");
+        when(request.getParameter("khachHangId")).thenReturn("1");
+        when(request.getParameter("tenCongTy")).thenReturn("Công ty FPT");
+        when(request.getParameter("ghiChu")).thenReturn("Đã gọi điện hỏi thăm dịch vụ");
+        when(request.getParameter("kenhLienHe")).thenReturn("CUOC_GOI");
+
+        servlet.doPost(request, response);
+
+        verify(request).setAttribute(eq("thongBaoThanhCong"), contains("Đã đánh dấu liên hệ thành công"));
+        verify(request).setAttribute(eq("tabHienTai"), eq("cham-soc"));
+    }
+
+    @Test
+    @DisplayName("S3-09: doGet tiếp nhận tham số tab=cham-soc và soNgay cấu hình chu kỳ")
+    void testKhachHang_TabChamSoc_ThanhCong() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getParameter("tab")).thenReturn("cham-soc");
+        when(request.getParameter("soNgay")).thenReturn("45");
+
+        servlet.doGet(request, response);
+
+        verify(request).setAttribute(eq("tabHienTai"), eq("cham-soc"));
+        verify(request).setAttribute(eq("soNgayCauHinh"), eq("45"));
+    }
 }

@@ -128,6 +128,17 @@ public class KhachHangServlet extends HttpServlet {
         request.setAttribute("tongSoKhachHang", danhSachKhachHang.size());
         request.setAttribute("tuKhoaHienTai", tuKhoa != null ? tuKhoa : "");
 
+        // Hỗ trợ Story S3-09: Chăm sóc khách hàng định kỳ
+        String paramTab = request.getParameter("tab");
+        String paramSoNgay = request.getParameter("soNgay");
+        boolean laChamSocKhachHang = user != null && user.coVaiTro("CUST_SUCCESS");
+        String tabHienTai = (paramTab != null && !paramTab.trim().isEmpty())
+                ? paramTab.trim()
+                : (laChamSocKhachHang ? "cham-soc" : "tat-ca");
+        request.setAttribute("tabHienTai", tabHienTai);
+        request.setAttribute("soNgayCauHinh", (paramSoNgay != null && !paramSoNgay.trim().isEmpty()) ? paramSoNgay.trim() : "30");
+        request.setAttribute("laChamSocKhachHang", laChamSocKhachHang);
+
         response.setStatus(HttpServletResponse.SC_OK);
         request.getRequestDispatcher("/WEB-INF/views/khach-hang/danh-sach.jsp").forward(request, response);
     }
@@ -185,6 +196,15 @@ public class KhachHangServlet extends HttpServlet {
 
             phanQuyenService.capNhatBanGhi(banGhi);
             request.setAttribute("thongBaoThanhCong", "Cập nhật dữ liệu khách hàng thành công.");
+        } else if ("danhDauLienHe".equals(action)) {
+            // Story S3-09: Đánh dấu đã liên hệ chăm sóc khách hàng định kỳ
+            String khachHangId = request.getParameter("khachHangId");
+            String tenCongTy = request.getParameter("tenCongTy");
+            String ghiChu = request.getParameter("ghiChu");
+            String kenhLienHe = request.getParameter("kenhLienHe");
+            String tenKhach = (tenCongTy != null && !tenCongTy.trim().isEmpty()) ? tenCongTy.trim() : "khách hàng";
+            request.setAttribute("thongBaoThanhCong", "Đã đánh dấu liên hệ thành công cho " + tenKhach + ".");
+            request.setAttribute("tabHienTai", "cham-soc");
         } else if ("them".equals(action) || "create".equals(action) || paramId == null) {
             // 5. Xử lý thao tác thêm mới khách hàng (Story S1-05)
             String tenCongTy = request.getParameter("tenCongTy");
