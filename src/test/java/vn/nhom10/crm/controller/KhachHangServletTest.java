@@ -7,11 +7,15 @@ import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import vn.nhom10.crm.dao.KhachHangDAO;
 import vn.nhom10.crm.dto.BanGhiNghiepVuDTO;
+import vn.nhom10.crm.model.KhachHang;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.PhamViDuLieu;
 import vn.nhom10.crm.model.VaiTro;
 import vn.nhom10.crm.model.VaiTroEnum;
+import vn.nhom10.crm.service.DanhMucBanHangService;
+import vn.nhom10.crm.service.KhachHangService;
 import vn.nhom10.crm.service.PhanQuyenDuLieuService;
 
 import jakarta.servlet.ServletOutputStream;
@@ -22,6 +26,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@DisplayName("Kiểm thử KhachHangServlet - Chặn bypass Data Scope trên route thật /khach-hang (S1-05)")
+@DisplayName("Kiểm thử KhachHangServlet - Quản lý hồ sơ khách hàng doanh nghiệp & Data Scope (Story S3-01 & S1-05)")
 class KhachHangServletTest {
 
     private KhachHangServlet servlet;
@@ -38,12 +43,20 @@ class KhachHangServletTest {
     private HttpSession session;
     private RequestDispatcher dispatcher;
 
+    private PhanQuyenDuLieuService phanQuyenService;
+    private KhachHangService khachHangService;
+    private KhachHangDAO khachHangDAO;
+
     private NguoiDung userA;
     private NguoiDung userLeadBac;
 
     @BeforeEach
     void setUp() {
-        servlet = new KhachHangServlet(new PhanQuyenDuLieuService(null));
+        phanQuyenService = new PhanQuyenDuLieuService(null);
+        khachHangDAO = mock(KhachHangDAO.class);
+        khachHangService = spy(new KhachHangService(khachHangDAO));
+        servlet = new KhachHangServlet(phanQuyenService, khachHangService);
+
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
         session = mock(HttpSession.class);
@@ -208,7 +221,6 @@ class KhachHangServletTest {
         when(request.getParameter("action")).thenReturn("them");
         when(request.getParameter("tenCongTy")).thenReturn("Công ty Cổ phần MISA");
         when(request.getParameter("maKhachHang")).thenReturn("KH-MISA-99");
-        // Kẻ tấn công cố tình truyền người sở hữu là user khác (ID 999 hoặc 102 của Sales B)
         when(request.getParameter("nguoiSoHuuId")).thenReturn("999");
         when(request.getParameter("nguoi_so_huu_id")).thenReturn("102");
         when(request.getParameter("nguoiPhuTrachId")).thenReturn("999");
@@ -255,12 +267,69 @@ class KhachHangServletTest {
         when(session.getAttribute("nguoiDung")).thenReturn(userA);
         when(request.getParameter("action")).thenReturn("them");
         when(request.getParameter("tenCongTy")).thenReturn("Khách Hàng Trùng Mã");
-        when(request.getParameter("maKhachHang")).thenReturn("KH-001"); // Mã KH-001 đã tồn tại trong hệ thống
+        when(request.getParameter("maKhachHang")).thenReturn("KH-001");
 
         servlet.doPost(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
         verify(request).setAttribute(eq("thongBaoLoi"), contains("đã tồn tại"));
+    }
+
+    @Test
+    @DisplayName("S3-01 AC1: Thêm khách hàng với đầy đủ tên công ty, mã số thuế, ngành nghề, quy mô, website, địa chỉ")
+    void testThemKhachHang_S3_01_DayDuCacTruongAC1() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getParameter("action")).thenReturn("them");
+        when(request.getParameter("tenCongTy")).thenReturn("Công ty Cổ phần Công nghệ Alpha");
+        when(request.getParameter("maSoThue")).thenReturn("0108877665");
+        when(request.getParameter("nganhNgheId")).thenReturn("1");
+        when(request.getParameter("quyMoId")).thenReturn("2");
+        when(request.getParameter("website")).thenReturn("https://alpha.com.vn");
+        when(request.getParameter("diaChi")).thenReturn("123 Phố Duy Tân, Cầu Giấy, Hà Nội");
+        when(request.getParameter("trangThai")).thenReturn("Đang giao dịch");
+
+        KhachHang khTraVe = new KhachHang();
+        khTraVe.setId(88L);
+        khTraVe.setTenCongTy("Công ty Cổ phần Công nghệ Alpha");
+        khTraVe.setMaSoThue("0108877665");
+        khTraVe.setNguoiSoHuuId(101L);
+        doReturn(khTraVe).when(khachHangService).taoKhachHang(any(NguoiDung.class), any(KhachHang.class));
+
+        servlet.doPost(request, response);
+
+        verify(request).setAttribute(eq("thongBaoThanhCong"), contains("Công ty Cổ phần Công nghệ Alpha"));
+        verify(request).setAttribute(eq("khachHangMoi"), any(KhachHang.class));
+    }
+
+    @Test
+    @DisplayName("S3-01 AC2: Trùng mã số thuế bị từ chối với HTTP 400 Bad Request")
+    void testThemKhachHang_S3_01_TrungMaSoThue_TraVe400() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getParameter("action")).thenReturn("them");
+        when(request.getParameter("tenCongTy")).thenReturn("Công ty Trùng MST");
+        when(request.getParameter("maSoThue")).thenReturn("0101234567");
+
+        doThrow(new IllegalArgumentException("Mã số thuế '0101234567' đã tồn tại trong hệ thống (thuộc khách hàng 'Công ty ABC')."))
+                .when(khachHangService).taoKhachHang(any(NguoiDung.class), any(KhachHang.class));
+
+        servlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        verify(request).setAttribute(eq("thongBaoLoi"), contains("Mã số thuế '0101234567' đã tồn tại trong hệ thống"));
+    }
+
+    @Test
+    @DisplayName("S3-01 AC3: Trạng thái không hợp lệ bị từ chối với HTTP 400 Bad Request")
+    void testThemKhachHang_S3_01_TrangThaiKhongHopLe_TraVe400() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getParameter("action")).thenReturn("them");
+        when(request.getParameter("tenCongTy")).thenReturn("Công ty Sai Trạng Thái");
+        when(request.getParameter("trangThai")).thenReturn("TrangThaiBatHopLe");
+
+        servlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        verify(request).setAttribute(eq("thongBaoLoi"), contains("Trạng thái khách hàng không hợp lệ"));
     }
 
     @Test
