@@ -34,7 +34,7 @@
 
         <div class="role-switcher-card" style="display: flex; align-items: center; gap: 10px;">
             <a href="${pageContext.request.contextPath}/danh-muc" class="btn btn-outline" id="btnQuayLaiDanhMuc" title="Quay lại Danh mục cấu hình">
-                &larr; Danh mục cấu hình
+                <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span> Danh mục cấu hình
             </a>
             <span class="role-label">Vai trò:</span>
             <c:choose>
@@ -56,14 +56,18 @@
     <c:if test="${not empty thongBaoThanhCong}">
         <div class="alert alert-success" role="alert">
             <span><strong>Thành công:</strong> <c:out value="${thongBaoThanhCong}"/></span>
-            <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
+            <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng" title="Đóng">
+                <span class="material-symbols-outlined" aria-hidden="true">close</span>
+            </button>
         </div>
     </c:if>
 
     <c:if test="${not empty thongBaoLoi}">
         <div class="alert alert-danger" role="alert">
             <span><strong>Cảnh báo:</strong> <c:out value="${thongBaoLoi}"/></span>
-            <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
+            <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng" title="Đóng">
+                <span class="material-symbols-outlined" aria-hidden="true">close</span>
+            </button>
         </div>
     </c:if>
 
@@ -72,7 +76,7 @@
         <!-- 1. Tổng số giai đoạn -->
         <div class="kpi-card">
             <div class="kpi-icon-box icon-blue">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect></svg>
+                <span class="material-symbols-outlined icon-md" aria-hidden="true">view_timeline</span>
             </div>
             <div class="kpi-info">
                 <div class="kpi-label">Số bước quy trình</div>
@@ -94,7 +98,7 @@
         <!-- 3. Tổng cơ hội mở -->
         <div class="kpi-card">
             <div class="kpi-icon-box icon-blue">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span class="material-symbols-outlined icon-md" aria-hidden="true">schedule</span>
             </div>
             <div class="kpi-info">
                 <div class="kpi-label">Cơ hội đang chạy (AC 4)</div>
@@ -106,7 +110,7 @@
         <!-- 4. Tổng giá trị cơ hội mở -->
         <div class="kpi-card">
             <div class="kpi-icon-box icon-blue">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                <span class="material-symbols-outlined icon-md" aria-hidden="true">trending_up</span>
             </div>
             <div class="kpi-info">
                 <div class="kpi-label">Tổng giá trị phễu mở</div>
@@ -120,7 +124,7 @@
         <!-- 5. Doanh số dự báo có trọng số (Weighted Forecast - AC 2) -->
         <div class="kpi-card">
             <div class="kpi-icon-box icon-emerald">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                <span class="material-symbols-outlined icon-md" aria-hidden="true">payments</span>
             </div>
             <div class="kpi-info">
                 <div class="kpi-label">Doanh số dự báo trọng số (AC 2)</div>
@@ -138,7 +142,7 @@
             <div class="card-heading">
                 <div>
                     <h2 id="heading-flow">Chuỗi quy trình Pipeline bán hàng chuẩn hoá (AC 1)</h2>
-                    <p class="card-subtext">Quy trình tuyến tính nối tiếp: Tiếp cận &rarr; Xác định nhu cầu &rarr; Đề xuất giải pháp &rarr; Báo giá &rarr; Đàm phán &rarr; Chốt</p>
+                    <p class="card-subtext">Quy trình tuyến tính nối tiếp: Tiếp cận <span class="material-symbols-outlined icon-xs" aria-hidden="true" style="vertical-align: -3px;">arrow_forward</span> Xác định nhu cầu <span class="material-symbols-outlined icon-xs" aria-hidden="true" style="vertical-align: -3px;">arrow_forward</span> Đề xuất giải pháp <span class="material-symbols-outlined icon-xs" aria-hidden="true" style="vertical-align: -3px;">arrow_forward</span> Báo giá <span class="material-symbols-outlined icon-xs" aria-hidden="true" style="vertical-align: -3px;">arrow_forward</span> Đàm phán <span class="material-symbols-outlined icon-xs" aria-hidden="true" style="vertical-align: -3px;">arrow_forward</span> Chốt</p>
                 </div>
             </div>
 
@@ -146,7 +150,7 @@
                 <a href="${pageContext.request.contextPath}/pipeline/giai-doan/tao"
                    class="btn btn-primary"
                    id="btnThemGiaiDoan">
-                    + Thêm giai đoạn mới
+                    <span class="material-symbols-outlined" aria-hidden="true">add</span> Thêm giai đoạn mới
                 </a>
             </c:if>
         </div>
@@ -154,7 +158,9 @@
         <c:choose>
             <c:when test="${empty danhSachGiaiDoan}">
                 <div class="empty-state">
-                    <div class="empty-state-icon">📭</div>
+                    <div class="empty-state-icon">
+                        <span class="material-symbols-outlined" style="font-size: 48px;" aria-hidden="true">inbox</span>
+                    </div>
                     <h3>Chưa có giai đoạn pipeline nào</h3>
                     <p>Hệ thống cần ít nhất một giai đoạn để nhân viên kinh doanh có thể ghi nhận cơ hội bán hàng.</p>
                     <c:if test="${coQuyenCauHinh}">
@@ -187,7 +193,7 @@
                                 <!-- Thẻ số lượng cơ hội đang chạy (AC 4) -->
                                 <c:if test="${gd.soCoHoiHienTai > 0}">
                                     <div class="stepper-deals-tag" title="Đang có ${gd.soCoHoiHienTai} cơ hội hoạt động ở bước này">
-                                        📌 ${gd.soCoHoiHienTai} cơ hội mở
+                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">push_pin</span> ${gd.soCoHoiHienTai} cơ hội mở
                                     </div>
                                 </c:if>
 
@@ -195,7 +201,7 @@
                                 <c:choose>
                                     <c:when test="${not empty gd.dieuKienBatBuoc}">
                                         <div class="stepper-rule-tag" title="Điều kiện bắt buộc: <c:out value="${gd.dieuKienBatBuoc}"/>">
-                                            🔒 <c:out value="${gd.dieuKienBatBuoc}"/>
+                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">lock</span> <c:out value="${gd.dieuKienBatBuoc}"/>
                                         </div>
                                     </c:when>
                                     <c:otherwise>
@@ -216,7 +222,7 @@
     <section class="crm-card" aria-labelledby="heading-forecast">
         <div class="card-header-bar">
             <div class="card-heading">
-                <span style="font-size: 20px;">📈</span>
+                <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary-600);">trending_up</span>
                 <div>
                     <h2 id="heading-forecast">Dự báo doanh số theo xác suất thắng giai đoạn (AC 2)</h2>
                     <p class="card-subtext">
@@ -285,7 +291,10 @@
             <!-- Bộ mô phỏng tính nhanh dự báo doanh số thời gian thực (Live Forecast Simulator) -->
             <div class="simulator-card">
                 <div class="simulator-header">
-                    <span>⚡ Máy tính dự báo cơ hội mẫu (Real-time Simulator)</span>
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--warning-500);">bolt</span>
+                        Máy tính dự báo cơ hội mẫu (Real-time Simulator)
+                    </span>
                 </div>
                 <p style="font-size: 12.5px; color: var(--gray-600); margin-bottom: 14px;">
                     Thử nghiệm công thức dự báo ngay lập tức để kiểm chứng tính toán theo từng kịch bản xác suất:
@@ -301,7 +310,7 @@
                         <button type="button" class="btn-preset" onclick="datPresetGiaTri(100000000)">100 triệu</button>
                         <button type="button" class="btn-preset" onclick="datPresetGiaTri(300000000)">300 triệu</button>
                         <button type="button" class="btn-preset" onclick="datPresetGiaTri(500000000)">500 triệu</button>
-                        <button type="button" class="btn-preset" onclick="datPresetGiaTri(1000000000)">1 tỷ</button>
+                        <button type="button" class="btn-preset" onclick="datPresetGiaTri(1000000000)">10 tỷ</button>
                     </div>
                 </div>
 
@@ -342,7 +351,7 @@
     <section class="crm-card" aria-labelledby="heading-stages-table">
         <div class="card-header-bar">
             <div class="card-heading">
-                <span style="font-size: 20px;">🛠️</span>
+                <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary-600);">tune</span>
                 <div>
                     <h2 id="heading-stages-table">Danh sách chi tiết cấu hình giai đoạn & Điều kiện rời (AC 3, AC 4)</h2>
                     <p class="card-subtext">Quản lý thứ tự chuỗi quy trình, tiêu chuẩn bắt buộc rời giai đoạn và bảo toàn cơ hội đang chạy</p>
@@ -351,7 +360,7 @@
 
             <!-- Ô tìm kiếm / lọc nhanh giai đoạn -->
             <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="text" id="timKiemGiaiDoan" placeholder="🔍 Lọc theo tên hoặc mã..."
+                <input type="text" id="timKiemGiaiDoan" placeholder="Lọc theo tên hoặc mã..."
                        style="padding: 7px 14px; border: 1.5px solid var(--gray-300); border-radius: var(--radius-md); font-size: 13px; width: 220px; outline: none;">
             </div>
         </div>
@@ -383,14 +392,18 @@
                                             <form method="post" action="${pageContext.request.contextPath}/pipeline/giai-doan/doi-thu-tu" style="margin: 0;">
                                                 <input type="hidden" name="id1" value="${gd.id}">
                                                 <input type="hidden" name="id2" value="${danhSachGiaiDoan[loop.index - 1].id}">
-                                                <button type="submit" class="btn-order" title="Chuyển lên trước bước <c:out value="${danhSachGiaiDoan[loop.index - 1].tenGiaiDoan}"/>">▲</button>
+                                                <button type="submit" class="btn-order" title="Chuyển lên trước bước <c:out value="${danhSachGiaiDoan[loop.index - 1].tenGiaiDoan}"/>" aria-label="Chuyển lên trước">
+                                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_upward</span>
+                                                </button>
                                             </form>
                                         </c:if>
                                         <c:if test="${not loop.last}">
                                             <form method="post" action="${pageContext.request.contextPath}/pipeline/giai-doan/doi-thu-tu" style="margin: 0;">
                                                 <input type="hidden" name="id1" value="${gd.id}">
                                                 <input type="hidden" name="id2" value="${danhSachGiaiDoan[loop.index + 1].id}">
-                                                <button type="submit" class="btn-order" title="Chuyển xuống sau bước <c:out value="${danhSachGiaiDoan[loop.index + 1].tenGiaiDoan}"/>">▼</button>
+                                                <button type="submit" class="btn-order" title="Chuyển xuống sau bước <c:out value="${danhSachGiaiDoan[loop.index + 1].tenGiaiDoan}"/>" aria-label="Chuyển xuống sau">
+                                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_downward</span>
+                                                </button>
                                             </form>
                                         </c:if>
                                     </div>
@@ -411,13 +424,19 @@
                             <div style="font-size: 12px; color: var(--gray-500); margin-top: 2px;">
                                 <c:choose>
                                     <c:when test="${gd.thanhCong}">
-                                         <span style="color: var(--success-700); font-weight: 600;">🎯 Chốt thành công</span>
+                                         <span style="color: var(--success-700); font-weight: 600;">
+                                             <span class="material-symbols-outlined icon-xs" aria-hidden="true" style="color: var(--success-700);">flag</span> Chốt thành công
+                                         </span>
                                     </c:when>
                                     <c:when test="${gd.thatBai}">
-                                         <span style="color: var(--danger-600); font-weight: 600;">❌ Đóng thất bại</span>
+                                         <span style="color: var(--danger-600); font-weight: 600;">
+                                             <span class="material-symbols-outlined icon-xs" aria-hidden="true" style="color: var(--danger-600);">cancel</span> Đóng thất bại
+                                         </span>
                                     </c:when>
                                     <c:otherwise>
-                                         <span>🔄 Đang tiến hành bán hàng</span>
+                                         <span>
+                                             <span class="material-symbols-outlined icon-xs" aria-hidden="true">sync</span> Đang tiến hành bán hàng
+                                         </span>
                                     </c:otherwise>
                                 </c:choose>
                                 &bull; Đình trệ: &gt;${gd.soNgayCanhBaoDinhTre} ngày
@@ -434,7 +453,7 @@
                             <c:choose>
                                 <c:when test="${not empty gd.dieuKienBatBuoc}">
                                     <div style="font-size: 13.5px; font-weight: 600; color: #0f172a;">
-                                        🔒 <c:out value="${gd.dieuKienBatBuoc}"/>
+                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">lock</span> <c:out value="${gd.dieuKienBatBuoc}"/>
                                     </div>
                                 </c:when>
                                 <c:otherwise>
@@ -448,22 +467,22 @@
                             <div class="rule-pill-list">
                                 <c:if test="${gd.soCuocGapToiThieu > 0}">
                                     <span class="rule-pill rule-pill-meeting" title="Bắt buộc có ít nhất ${gd.soCuocGapToiThieu} cuộc gặp">
-                                        🤝 &ge; ${gd.soCuocGapToiThieu} cuộc gặp
+                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">handshake</span> &ge; ${gd.soCuocGapToiThieu} cuộc gặp
                                     </span>
                                 </c:if>
                                 <c:if test="${gd.soCuocGoiToiThieu > 0}">
                                     <span class="rule-pill rule-pill-call" title="Bắt buộc có ít nhất ${gd.soCuocGoiToiThieu} cuộc gọi">
-                                        📞 &ge; ${gd.soCuocGoiToiThieu} cuộc gọi
+                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">call</span> &ge; ${gd.soCuocGoiToiThieu} cuộc gọi
                                     </span>
                                 </c:if>
                                 <c:if test="${gd.yeuCauBaoGia}">
                                     <span class="rule-pill rule-pill-quote" title="Bắt buộc phải tạo báo giá niêm yết">
-                                        📄 Cần gửi báo giá
+                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">description</span> Cần gửi báo giá
                                     </span>
                                 </c:if>
                                 <c:if test="${gd.yeuCauKhaoSatNhuCau}">
                                     <span class="rule-pill rule-pill-survey" title="Bắt buộc xác nhận khảo sát nhu cầu">
-                                        📋 Khảo sát nhu cầu
+                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">assignment</span> Khảo sát nhu cầu
                                     </span>
                                 </c:if>
                                 <c:if test="${gd.soCuocGapToiThieu == 0 && gd.soCuocGoiToiThieu == 0 && !gd.yeuCauBaoGia && !gd.yeuCauKhaoSatNhuCau}">
@@ -477,7 +496,7 @@
                             <c:choose>
                                 <c:when test="${gd.soCoHoiHienTai > 0}">
                                     <span class="badge badge-open-deals" title="Có ${gd.soCoHoiHienTai} cơ hội đang chạy. Hệ thống bảo vệ dữ liệu, không làm gián đoạn hay mất mát.">
-                                        📌 ${gd.soCoHoiHienTai} cơ hội
+                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">push_pin</span> ${gd.soCoHoiHienTai} cơ hội
                                     </span>
                                 </c:when>
                                 <c:otherwise>
@@ -513,15 +532,15 @@
                                     data-dieu-kien-bat-buoc="<c:out value='${gd.dieuKienBatBuoc}'/>"
                                     onclick="moModalDieuKienTuBtn(this)"
                                     title="Thử nghiệm kiểm tra cơ hội có đủ điều kiện rời giai đoạn hay không">
-                            Thử điều kiện
-                        </button>
+                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">tune</span> Thử điều kiện
+                            </button>
 
                         <c:if test="${coQuyenCauHinh}">
                             <!-- Nút Sửa -->
                             <a href="${pageContext.request.contextPath}/pipeline/giai-doan/sua?id=${gd.id}"
                                class="btn btn-outline btn-sm"
                                title="Chỉnh sửa xác suất, tên, hoặc tiêu chuẩn điều kiện">
-                                Sửa
+                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">edit</span> Sửa
                             </a>
 
                             <!-- Nút Chuyển trạng thái (Đang áp dụng <-> Ngừng áp dụng) -->
@@ -533,14 +552,14 @@
                                         <button type="submit" class="btn btn-outline btn-sm" style="color: var(--warning-600);"
                                                 onclick="return confirm('Chuyển giai đoạn này sang trạng thái Ngừng áp dụng? Các cơ hội đang chạy vẫn được bảo toàn nguyên vẹn.')"
                                                 title="Tạm ngừng nhận cơ hội mới vào giai đoạn này">
-                                            Ngừng
+                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">pause_circle</span> Ngừng
                                         </button>
                                     </c:when>
                                     <c:otherwise>
                                         <input type="hidden" name="trangThai" value="DANG_AP_DUNG">
                                         <button type="submit" class="btn btn-outline btn-sm" style="color: var(--success-600);"
                                                 title="Kích hoạt lại giai đoạn này trong chuỗi pipeline">
-                                            Dùng lại
+                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">play_circle</span> Dùng lại
                                         </button>
                                     </c:otherwise>
                                 </c:choose>
@@ -555,7 +574,7 @@
                                             data-so-co-hoi="${gd.soCoHoiHienTai}"
                                             onclick="xacNhanXoaTuBtn(null, this)"
                                             title="Đang có ${gd.soCoHoiHienTai} cơ hội đang chạy. Hệ thống bảo vệ dữ liệu, không cho phép xoá cứng. Nhấn để xem chi tiết.">
-                                        Không thể xoá
+                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">block</span> Không thể xoá
                                     </button>
                                 </c:when>
                                 <c:otherwise>
@@ -567,7 +586,7 @@
                                                 data-so-co-hoi="0"
                                                 onclick="xacNhanXoaTuBtn(this.form, this)"
                                                 title="Xoá vĩnh viễn giai đoạn khỏi hệ thống">
-                                            Xoá
+                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">delete</span> Xoá
                                         </button>
                                     </form>
                                 </c:otherwise>

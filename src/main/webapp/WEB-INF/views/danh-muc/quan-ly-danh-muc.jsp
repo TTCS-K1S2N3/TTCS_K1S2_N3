@@ -35,8 +35,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Stylesheet module Danh mục dùng chung (Story S2-07) -->
     <link rel="stylesheet" href="<%= contextPath %>/assets/css/danh-muc/sales-category.css">
 </head>
@@ -48,12 +46,12 @@
     <header class="category-header">
         <div class="header-left-col">
             <a href="<%= contextPath %>/dieu-huong" class="back-nav-link" title="Quay lại Trang chủ">
-                <i class="bi bi-arrow-left"></i>
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">arrow_back</span>
                 <span>Trang tổng quan</span>
             </a>
             <div class="header-title-group">
                 <h1 class="page-title">
-                    <span class="title-icon-badge"><i class="bi bi-tags-fill"></i></span>
+                    <span class="title-icon-badge"><span class="material-symbols-outlined" aria-hidden="true">category</span></span>
                     <span>Danh Mục Bán Hàng Dùng Chung</span>
                 </h1>
                 <p class="page-subtitle">
@@ -101,21 +99,25 @@
     <!-- CÁC THÔNG BÁO HỆ THỐNG (FLASH ALERTS) -->
     <% if (thongBaoThanhCong != null && !thongBaoThanhCong.trim().isEmpty()) { %>
         <div class="alert-box alert-success" role="alert">
-            <i class="bi bi-check-circle-fill alert-icon"></i>
+            <span class="material-symbols-outlined alert-icon" aria-hidden="true">check_circle</span>
             <div class="alert-text">
                 <strong>Thành công:</strong> <%= thongBaoThanhCong %>
             </div>
-            <button type="button" class="alert-dismiss" onclick="this.parentElement.remove();" aria-label="Đóng">&times;</button>
+            <button type="button" class="alert-dismiss" onclick="this.parentElement.remove();" aria-label="Đóng" title="Đóng">
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span>
+            </button>
         </div>
     <% } %>
 
     <% if (thongBaoLoi != null && !thongBaoLoi.trim().isEmpty()) { %>
         <div class="alert-box alert-danger" role="alert">
-            <i class="bi bi-exclamation-triangle-fill alert-icon"></i>
+            <span class="material-symbols-outlined alert-icon" aria-hidden="true">warning</span>
             <div class="alert-text">
                 <strong>Không thể thực hiện:</strong> <%= thongBaoLoi %>
             </div>
-            <button type="button" class="alert-dismiss" onclick="this.parentElement.remove();" aria-label="Đóng">&times;</button>
+            <button type="button" class="alert-dismiss" onclick="this.parentElement.remove();" aria-label="Đóng" title="Đóng">
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span>
+            </button>
         </div>
     <% } %>
 
@@ -128,7 +130,7 @@
                 <span class="metric-hint">Định danh chuẩn cho toàn hệ thống</span>
             </div>
             <div class="metric-icon-box icon-blue">
-                <i class="bi bi-collection-fill"></i>
+                <span class="material-symbols-outlined" aria-hidden="true">folder</span>
             </div>
         </div>
 
@@ -139,7 +141,7 @@
                 <span class="metric-hint">Khả dụng khi sales tạo khách / lead</span>
             </div>
             <div class="metric-icon-box icon-green">
-                <i class="bi bi-check-circle-fill"></i>
+                <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
             </div>
         </div>
 
@@ -150,7 +152,7 @@
                 <span class="metric-hint">Bảo toàn dữ liệu báo cáo gộp (AC2)</span>
             </div>
             <div class="metric-icon-box icon-purple">
-                <i class="bi bi-link-45deg"></i>
+                <span class="material-symbols-outlined" aria-hidden="true">link</span>
             </div>
         </div>
 
@@ -161,7 +163,7 @@
                 <span class="metric-hint">4 nhóm • Khóa tham chiếu • Sắp xếp thứ tự</span>
             </div>
             <div class="metric-icon-box icon-indigo">
-                <i class="bi bi-shield-fill-check"></i>
+                <span class="material-symbols-outlined" aria-hidden="true">verified_user</span>
             </div>
         </div>
     </section>
@@ -174,7 +176,19 @@
             <a href="<%= contextPath %>/danh-muc-ban-hang?loai=<%= loai.getMa() %>"
                class="category-tab-btn <%= isActive ? "active" : "" %>"
                aria-current="<%= isActive ? "page" : "false" %>">
-                <span class="tab-emoji"><%= loai.getIcon() %></span>
+                <span class="tab-emoji">
+                    <% if ("NGANH_NGHE".equals(loai.getMa())) { %>
+                        <span class="material-symbols-outlined" aria-hidden="true">apartment</span>
+                    <% } else if ("QUY_MO".equals(loai.getMa())) { %>
+                        <span class="material-symbols-outlined" aria-hidden="true">groups</span>
+                    <% } else if ("NGUON_LEAD".equals(loai.getMa())) { %>
+                        <span class="material-symbols-outlined" aria-hidden="true">track_changes</span>
+                    <% } else if ("LOAI_HOAT_DONG".equals(loai.getMa())) { %>
+                        <span class="material-symbols-outlined" aria-hidden="true">call</span>
+                    <% } else { %>
+                        <span class="material-symbols-outlined" aria-hidden="true">category</span>
+                    <% } %>
+                </span>
                 <div class="tab-info">
                     <span class="tab-title"><%= loai.getTenHienThi() %></span>
                     <span class="tab-code"><%= loai.getMa() %></span>
@@ -195,7 +209,7 @@
                 <form action="<%= contextPath %>/danh-muc-ban-hang" method="get" class="search-form" id="searchCategoryForm">
                     <input type="hidden" name="loai" value="<%= loaiHienTai.getMa() %>">
                     <div class="search-input-wrap">
-                        <i class="bi bi-search search-icon"></i>
+                        <span class="material-symbols-outlined search-icon" aria-hidden="true">search</span>
                         <input type="text"
                                id="categorySearchInput"
                                name="tuKhoa"
@@ -204,7 +218,7 @@
                                placeholder="Tìm nhanh theo mã hoặc tên trong nhóm <%= loaiHienTai.getTenHienThi() %>..."
                                aria-label="Tìm kiếm mục danh mục">
                         <button type="button" class="btn-clear-search" id="btnClearSearch" title="Xóa từ khóa" style="display: none;">
-                            <i class="bi bi-x-circle-fill"></i>
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">cancel</span>
                         </button>
                     </div>
                 </form>
@@ -220,7 +234,7 @@
 
             <div class="toolbar-right">
                 <button type="button" id="btnOpenAddModal" class="btn btn-primary" title="Thêm mục mới vào danh mục">
-                    <i class="bi bi-plus-lg"></i>
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">add</span>
                     <span>Thêm mục <%= loaiHienTai.getTenHienThi() %></span>
                 </button>
             </div>
@@ -229,11 +243,11 @@
         <!-- Meta bar: Tóm tắt trạng thái nhóm danh mục -->
         <div class="table-meta-bar">
             <div class="meta-left">
-                <i class="bi bi-info-circle-fill meta-info-icon"></i>
+                <span class="material-symbols-outlined meta-info-icon" aria-hidden="true">info</span>
                 <span>Đang quản trị: <strong class="text-primary"><%= loaiHienTai.getTenHienThi() %></strong> — Hiển thị: <strong id="visibleItemsCount"><%= danhSachMuc != null ? danhSachMuc.size() : 0 %></strong> mục</span>
             </div>
             <div class="meta-right">
-                <span class="meta-tip"><i class="bi bi-arrow-down-up"></i> Bấm <strong>▲</strong> <strong>▼</strong> hoặc kéo thả hàng để sắp xếp thứ tự hiển thị (AC3)</span>
+                <span class="meta-tip"><span class="material-symbols-outlined icon-xs" aria-hidden="true">swap_vert</span> Bấm mũi tên hoặc kéo thả hàng để sắp xếp thứ tự hiển thị (AC3)</span>
             </div>
         </div>
 
@@ -257,11 +271,11 @@
                         <tr class="empty-row" id="emptyStateRow">
                             <td colspan="8">
                                 <div class="empty-state-box">
-                                    <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+                                    <div class="empty-icon"><span class="material-symbols-outlined icon-2xl" aria-hidden="true">inbox</span></div>
                                     <h3 class="empty-title">Chưa có mục danh mục nào trong nhóm này</h3>
                                     <p class="empty-desc">Khai báo các giá trị chuẩn để toàn bộ khối kinh doanh gọi tên giống nhau khi báo cáo gộp.</p>
                                     <button type="button" class="btn btn-primary" onclick="document.getElementById('btnOpenAddModal').click();">
-                                        <i class="bi bi-plus-lg"></i> Thêm mục đầu tiên
+                                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">add</span> Thêm mục đầu tiên
                                     </button>
                                 </div>
                             </td>
@@ -285,7 +299,7 @@
                             <!-- CỘT 1: THỨ TỰ HIỂN THỊ & NÚT SẮP XẾP (AC3) -->
                             <td>
                                 <div class="order-cell">
-                                    <span class="order-drag-handle" title="Kéo để sắp xếp vị trí"><i class="bi bi-grip-vertical"></i></span>
+                                    <span class="order-drag-handle" title="Kéo để sắp xếp vị trí"><span class="material-symbols-outlined icon-sm" aria-hidden="true">drag_indicator</span></span>
                                     <span class="order-badge" title="Thứ tự hiển thị: <%= item.getThuTuHienThi() %>"><%= item.getThuTuHienThi() %></span>
                                     <div class="order-btn-group">
                                         <form action="<%= contextPath %>/danh-muc-ban-hang" method="post" style="display:inline;">
@@ -294,7 +308,7 @@
                                             <input type="hidden" name="id" value="<%= item.getId() %>">
                                             <input type="hidden" name="huong" value="len">
                                             <button type="submit" class="btn-order-move btn-move-up" title="Di chuyển lên trên (AC3)" <%= isFirst ? "disabled" : "" %>>
-                                                ▲
+                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">keyboard_arrow_up</span>
                                             </button>
                                         </form>
                                         <form action="<%= contextPath %>/danh-muc-ban-hang" method="post" style="display:inline;">
@@ -303,7 +317,7 @@
                                             <input type="hidden" name="id" value="<%= item.getId() %>">
                                             <input type="hidden" name="huong" value="xuong">
                                             <button type="submit" class="btn-order-move btn-move-down" title="Di chuyển xuống dưới (AC3)" <%= isLast ? "disabled" : "" %>>
-                                                ▼
+                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">keyboard_arrow_down</span>
                                             </button>
                                         </form>
                                     </div>
@@ -343,11 +357,11 @@
                                     <button type="submit" class="status-toggle-btn" title="Bấm để chuyển đổi trạng thái Áp dụng / Tạm ngưng">
                                         <% if (item.isKichHoat()) { %>
                                             <span class="status-pill status-active">
-                                                <i class="bi bi-check-circle-fill"></i> Áp dụng
+                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">check_circle</span> Áp dụng
                                             </span>
                                         <% } else { %>
                                             <span class="status-pill status-inactive">
-                                                <i class="bi bi-pause-circle-fill"></i> Tạm ngưng
+                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">pause_circle</span> Tạm ngưng
                                             </span>
                                         <% } %>
                                     </button>
@@ -359,13 +373,13 @@
                                 <% if (hasUsage) { %>
                                     <div class="usage-box usage-positive"
                                          title="Đang có <%= item.getSoBanGhiDangSuDung() %> bản ghi nghiệp vụ tham chiếu. Theo AC2: Không thể xóa để bảo toàn tính toàn vẹn dữ liệu báo cáo gộp.">
-                                        <i class="bi bi-link-45deg usage-icon"></i>
+                                        <span class="material-symbols-outlined usage-icon icon-xs" aria-hidden="true">link</span>
                                         <span class="usage-count"><%= item.getSoBanGhiDangSuDung() %> bản ghi</span>
-                                        <span class="usage-lock-icon" title="Không thể xóa"><i class="bi bi-lock-fill"></i></span>
+                                        <span class="usage-lock-icon" title="Không thể xóa"><span class="material-symbols-outlined icon-xs" aria-hidden="true">lock</span></span>
                                     </div>
                                 <% } else { %>
                                     <div class="usage-box usage-zero" title="Chưa có dữ liệu nào liên kết. Có thể xóa an toàn nếu cần.">
-                                        <i class="bi bi-dash-circle"></i>
+                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">remove_circle_outline</span>
                                         <span class="usage-count">0 (Chưa dùng)</span>
                                     </div>
                                 <% } %>
@@ -388,8 +402,9 @@
                                             data-mota="<%= item.getMoTa() != null ? item.getMoTa() : "" %>"
                                             data-kichhoat="<%= item.isKichHoat() %>"
                                             data-usage="<%= item.getSoBanGhiDangSuDung() %>"
-                                            title="Chỉnh sửa thông tin mục này">
-                                        <i class="bi bi-pencil-square"></i>
+                                            title="Chỉnh sửa thông tin mục này"
+                                            aria-label="Chỉnh sửa thông tin mục này">
+                                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">edit</span>
                                     </button>
 
                                     <!-- Nút Xóa (AC2: Giá trị đang được tham chiếu thì KHÔNG xóa được) -->
@@ -399,8 +414,9 @@
                                                 data-id="<%= item.getId() %>"
                                                 data-ten="<%= item.getTenMuc() %>"
                                                 data-usage="<%= item.getSoBanGhiDangSuDung() %>"
-                                                title="⛔ KHÔNG THỂ XÓA (AC2): Mục đang có <%= item.getSoBanGhiDangSuDung() %> bản ghi tham chiếu.">
-                                            <i class="bi bi-lock-fill"></i>
+                                                title="⛔ KHÔNG THỂ XÓA (AC2): Mục đang có <%= item.getSoBanGhiDangSuDung() %> bản ghi tham chiếu."
+                                                aria-label="Không thể xóa do đang có bản ghi tham chiếu">
+                                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">lock</span>
                                         </button>
                                     <% } else { %>
                                         <button type="button"
@@ -409,8 +425,9 @@
                                                 data-ten="<%= item.getTenMuc() %>"
                                                 data-ma="<%= item.getMaMuc() %>"
                                                 data-usage="0"
-                                                title="Xóa mục danh mục này">
-                                            <i class="bi bi-trash3-fill"></i>
+                                                title="Xóa mục danh mục này"
+                                                aria-label="Xóa mục danh mục này">
+                                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">delete</span>
                                         </button>
                                     <% } %>
                                 </div>
@@ -436,13 +453,15 @@
 
             <div class="modal-header">
                 <div class="modal-title-wrap">
-                    <span class="modal-icon-badge icon-add"><i class="bi bi-plus-circle-fill"></i></span>
+                    <span class="modal-icon-badge icon-add"><span class="material-symbols-outlined" aria-hidden="true">add_circle</span></span>
                     <div>
                         <h3 class="modal-title" id="addModalTitle">Thêm mục mới vào: <%= loaiHienTai.getTenHienThi() %></h3>
                         <span class="modal-subtitle">Định danh chuẩn cho toàn khối kinh doanh (Story S2-07)</span>
                     </div>
                 </div>
-                <button type="button" id="btnCloseAddModal" class="modal-close-btn" aria-label="Đóng cửa sổ">&times;</button>
+                <button type="button" id="btnCloseAddModal" class="modal-close-btn" aria-label="Đóng cửa sổ" title="Đóng cửa sổ">
+                    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                </button>
             </div>
 
             <div class="modal-body">
@@ -503,7 +522,7 @@
             <div class="modal-footer">
                 <button type="button" id="btnCancelAddModal" class="btn btn-light">Hủy bỏ</button>
                 <button type="submit" class="btn btn-primary" id="btnSubmitAdd">
-                    <i class="bi bi-check2-circle"></i> Lưu mục danh mục
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">check_circle</span> Lưu mục danh mục
                 </button>
             </div>
         </form>
@@ -522,19 +541,21 @@
 
             <div class="modal-header">
                 <div class="modal-title-wrap">
-                    <span class="modal-icon-badge icon-edit"><i class="bi bi-pencil-fill"></i></span>
+                    <span class="modal-icon-badge icon-edit"><span class="material-symbols-outlined" aria-hidden="true">edit</span></span>
                     <div>
                         <h3 class="modal-title" id="editModalTitle">Chỉnh sửa mục danh mục</h3>
                         <span class="modal-subtitle">Cập nhật tên hiển thị và trạng thái áp dụng</span>
                     </div>
                 </div>
-                <button type="button" id="btnCloseEditModal" class="modal-close-btn" aria-label="Đóng cửa sổ">&times;</button>
+                <button type="button" id="btnCloseEditModal" class="modal-close-btn" aria-label="Đóng cửa sổ" title="Đóng cửa sổ">
+                    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                </button>
             </div>
 
             <div class="modal-body">
                 <!-- Cảnh báo nếu mục đang được tham chiếu -->
                 <div id="editUsageAlert" class="alert-box alert-warning-soft" style="display: none;">
-                    <i class="bi bi-info-circle-fill"></i>
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">info</span>
                     <span>Mục này hiện đang có <strong id="editUsageCount">0</strong> bản ghi nghiệp vụ tham chiếu. Để bảo toàn tính toàn vẹn báo cáo gộp, mã định danh được khóa cố định.</span>
                 </div>
 
@@ -585,7 +606,7 @@
             <div class="modal-footer">
                 <button type="button" id="btnCancelEditModal" class="btn btn-light">Hủy bỏ</button>
                 <button type="submit" class="btn btn-primary" id="btnSubmitEdit">
-                    <i class="bi bi-save2-fill"></i> Cập nhật thay đổi
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">save</span> Cập nhật thay đổi
                 </button>
             </div>
         </form>
@@ -605,13 +626,15 @@
 
             <div class="modal-header modal-header-danger">
                 <div class="modal-title-wrap">
-                    <span class="modal-icon-badge icon-delete"><i class="bi bi-trash3-fill"></i></span>
+                    <span class="modal-icon-badge icon-delete"><span class="material-symbols-outlined" aria-hidden="true">delete</span></span>
                     <div>
                         <h3 class="modal-title text-danger" id="deleteModalTitle">Xác nhận xóa mục danh mục</h3>
                         <span class="modal-subtitle">Thao tác này sẽ xóa vĩnh viễn mục khỏi danh mục</span>
                     </div>
                 </div>
-                <button type="button" id="btnCloseDeleteModal" class="modal-close-btn" aria-label="Đóng cửa sổ">&times;</button>
+                <button type="button" id="btnCloseDeleteModal" class="modal-close-btn" aria-label="Đóng cửa sổ" title="Đóng cửa sổ">
+                    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                </button>
             </div>
 
             <div class="modal-body">
@@ -621,7 +644,7 @@
 
                 <div class="ac2-rule-card">
                     <div class="ac2-rule-header">
-                        <i class="bi bi-shield-exclamation"></i>
+                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">shield</span>
                         <strong>Quy tắc toàn vẹn nghiệp vụ (AC2):</strong>
                     </div>
                     <p>Hệ thống chỉ cho phép xóa mục danh mục khi <strong>chưa có bất kỳ bản ghi nào tham chiếu</strong>. Nếu mục đã được sử dụng, vui lòng chuyển trạng thái sang <em>"Tạm ngưng"</em>.</p>
@@ -631,7 +654,7 @@
             <div class="modal-footer">
                 <button type="button" id="btnCancelDeleteModal" class="btn btn-light">Hủy bỏ</button>
                 <button type="submit" class="btn btn-danger" id="btnConfirmDelete">
-                    <i class="bi bi-trash3-fill"></i> Xác nhận xóa
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">delete</span> Xác nhận xóa
                 </button>
             </div>
         </form>
@@ -645,20 +668,22 @@
     <div class="modal-dialog modal-dialog-sm">
         <div class="modal-header modal-header-warning">
             <div class="modal-title-wrap">
-                <span class="modal-icon-badge icon-warning"><i class="bi bi-lock-fill"></i></span>
+                <span class="modal-icon-badge icon-warning"><span class="material-symbols-outlined" aria-hidden="true">lock</span></span>
                 <div>
                     <h3 class="modal-title text-warning">Không thể xóa mục danh mục</h3>
                     <span class="modal-subtitle">Ràng buộc toàn vẹn dữ liệu (Acceptance Criteria 2)</span>
                 </div>
             </div>
-            <button type="button" id="btnCloseBlockedModal" class="modal-close-btn">&times;</button>
+            <button type="button" id="btnCloseBlockedModal" class="modal-close-btn" aria-label="Đóng cửa sổ" title="Đóng cửa sổ">
+                <span class="material-symbols-outlined" aria-hidden="true">close</span>
+            </button>
         </div>
         <div class="modal-body">
             <p class="blocked-msg-text">
                 Mục <strong id="blockedItemName" class="text-highlight"></strong> hiện đang được tham chiếu bởi <strong id="blockedItemUsageCount" class="text-danger"></strong> bản ghi dữ liệu nghiệp vụ (khách hàng, lead, hoặc hoạt động).
             </p>
             <div class="ac2-recommend-box">
-                <div class="recommend-title"><i class="bi bi-lightbulb-fill"></i> Giải pháp khuyến nghị:</div>
+                <div class="recommend-title"><span class="material-symbols-outlined icon-sm" aria-hidden="true">lightbulb</span> Giải pháp khuyến nghị:</div>
                 <p>Để không làm sai lệch các báo cáo gộp và dữ liệu lịch sử, bạn nên chuyển mục này sang trạng thái <strong>"Tạm ngưng"</strong>. Khi đó, nhân viên sẽ không thể chọn mục này cho các bản ghi mới, trong khi các bản ghi cũ vẫn giữ nguyên tính đúng đắn.</p>
             </div>
         </div>

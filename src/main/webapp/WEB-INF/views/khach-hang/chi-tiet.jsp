@@ -151,7 +151,7 @@
         <!-- Thông báo thành công / trạng thái -->
         <c:if test="${not empty thongBaoThanhCong}">
             <div class="alert alert-success" style="margin-bottom: 20px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
                 <span><c:out value="${thongBaoThanhCong}" /></span>
             </div>
         </c:if>
@@ -161,10 +161,7 @@
             <div class="detail-header">
                 <div class="detail-title-group">
                     <h1>
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
+                        <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary);">person</span>
                         <span><c:out value="${banGhi.tieuDe}" /></span>
                     </h1>
                     <p>Mã bản ghi: <span class="font-mono"><c:out value="${banGhi.maBanGhi}" /></span> • Bản ghi nằm trong phạm vi dữ liệu được phép truy cập</p>
@@ -174,10 +171,7 @@
                         <c:out value="${not empty banGhi.trangThai ? banGhi.trangThai : 'Hoạt động'}" />
                     </span>
                     <a href="${pageContext.request.contextPath}/khach-hang" class="btn btn-outline" id="btnBackKhachHang">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <line x1="19" y1="12" x2="5" y2="12"></line>
-                            <polyline points="12 19 5 12 12 5"></polyline>
-                        </svg>
+                        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
                         <span>Quay lại danh sách khách hàng</span>
                     </a>
                 </div>
@@ -246,7 +240,7 @@
                     Chế độ: <strong>Xem thông tin (Read-Only)</strong> • Quyền sở hữu dữ liệu được kiểm soát tự động theo Data Scope.
                 </span>
                 <a href="${pageContext.request.contextPath}/khach-hang" class="btn btn-outline">
-                    &larr; Quay lại danh sách khách hàng
+                    <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span> Quay lại danh sách khách hàng
                 </a>
             </div>
         </div>

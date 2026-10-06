@@ -32,7 +32,7 @@
             <a href="${pageContext.request.contextPath}/pipeline/giai-doan"
                class="btn btn-outline"
                id="btnQuayLai">
-                &larr; Quay lại danh sách
+                <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span> Quay lại danh sách
             </a>
         </div>
     </header>
@@ -41,7 +41,9 @@
     <c:if test="${not empty thongBaoLoi}">
         <div class="alert alert-danger" role="alert">
             <span><strong>Lỗi:</strong> <c:out value="${thongBaoLoi}"/></span>
-            <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
+            <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng" title="Đóng">
+                <span class="material-symbols-outlined" aria-hidden="true">close</span>
+            </button>
         </div>
     </c:if>
 
@@ -60,7 +62,7 @@
                            class="${not empty danhSachLoi['maGiaiDoan'] ? 'is-invalid' : ''}"
                            required autofocus>
                     <c:if test="${not empty danhSachLoi['maGiaiDoan']}">
-                        <span class="field-error">⚠️ <c:out value="${danhSachLoi['maGiaiDoan']}"/></span>
+                        <span class="field-error"><span class="material-symbols-outlined icon-xs" aria-hidden="true">warning</span> <c:out value="${danhSachLoi['maGiaiDoan']}"/></span>
                     </c:if>
                     <span class="form-hint">Mã viết in hoa không dấu, gồm chữ, số, gạch ngang (-) hoặc gạch dưới (_).</span>
                 </div>
@@ -75,7 +77,7 @@
                            class="${not empty danhSachLoi['tenGiaiDoan'] ? 'is-invalid' : ''}"
                            required>
                     <c:if test="${not empty danhSachLoi['tenGiaiDoan']}">
-                        <span class="field-error">⚠️ <c:out value="${danhSachLoi['tenGiaiDoan']}"/></span>
+                        <span class="field-error"><span class="material-symbols-outlined icon-xs" aria-hidden="true">warning</span> <c:out value="${danhSachLoi['tenGiaiDoan']}"/></span>
                     </c:if>
                     <span class="form-hint">Tên hiển thị trên quy trình pipeline và thẻ cơ hội bán hàng.</span>
                 </div>
@@ -89,7 +91,7 @@
                            class="${not empty danhSachLoi['thuTu'] ? 'is-invalid' : ''}"
                            required>
                     <c:if test="${not empty danhSachLoi['thuTu']}">
-                        <span class="field-error">⚠️ <c:out value="${danhSachLoi['thuTu']}"/></span>
+                        <span class="field-error"><span class="material-symbols-outlined icon-xs" aria-hidden="true">warning</span> <c:out value="${danhSachLoi['thuTu']}"/></span>
                     </c:if>
                     <span class="form-hint">Vị trí bước trong chuỗi phễu (1, 2, 3...).</span>
                 </div>
@@ -110,7 +112,10 @@
                 <!-- AC 2: Xác suất thắng mặc định với Thanh trượt đồng bộ -->
                 <div class="form-group form-full" style="background: var(--primary-50); border: 1px solid var(--primary-200); padding: 18px; border-radius: var(--radius-md);">
                     <label for="xacSuatThang" style="font-weight: 700; color: var(--primary-800); display: flex; align-items: center; justify-content: space-between;">
-                        <span>📊 Xác suất thắng mặc định dùng để tính dự báo (AC 2) <span class="required">*</span></span>
+                        <span style="display: flex; align-items: center; gap: 6px;">
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">analytics</span>
+                            Xác suất thắng mặc định dùng để tính dự báo (AC 2) <span class="required">*</span>
+                        </span>
                         <span id="probLivePreview" style="font-size: 13px; font-weight: 600; color: var(--gray-700);"></span>
                     </label>
 
@@ -124,10 +129,10 @@
                         </div>
                     </div>
                     <c:if test="${not empty danhSachLoi['xacSuatThang']}">
-                        <span class="field-error">⚠️ <c:out value="${danhSachLoi['xacSuatThang']}"/></span>
+                        <span class="field-error"><span class="material-symbols-outlined icon-xs" aria-hidden="true">warning</span> <c:out value="${danhSachLoi['xacSuatThang']}"/></span>
                     </c:if>
-                    <span class="form-hint" style="color: var(--primary-700); margin-top: 6px;">
-                        💡 Công thức dự báo tự động: <strong>Doanh số dự báo = Giá trị cơ hội &times; (Xác suất thắng / 100)</strong>
+                    <span class="form-hint" style="color: var(--primary-700); margin-top: 6px; display: flex; align-items: center; gap: 4px;">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">lightbulb</span> Công thức dự báo tự động: <strong>Doanh số dự báo = Giá trị cơ hội &times; (Xác suất thắng / 100)</strong>
                     </span>
                 </div>
 
@@ -135,7 +140,7 @@
                 <div class="form-group form-full">
                     <div class="condition-builder-card">
                         <div class="condition-builder-header">
-                            <span style="font-size: 20px;">🔒</span>
+                            <span class="material-symbols-outlined icon-lg" aria-hidden="true" style="color: #1e3a8a;">lock</span>
                             <div>
                                 <h3 style="font-size: 15px; font-weight: 700; color: #1e3a8a;">
                                     Tiêu chuẩn điều kiện bắt buộc để rời giai đoạn (AC 3)
@@ -157,14 +162,18 @@
                         <!-- Ràng buộc định lượng -->
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                             <div class="form-group">
-                                <label for="soCuocGapToiThieu">🤝 Số cuộc gặp trực tiếp tối thiểu:</label>
+                                <label for="soCuocGapToiThieu">
+                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">handshake</span> Số cuộc gặp trực tiếp tối thiểu:
+                                </label>
                                 <input type="number" id="soCuocGapToiThieu" name="soCuocGapToiThieu"
                                        value="${giaiDoan.soCuocGapToiThieu}" min="0">
                                 <span class="form-hint">Ví dụ: nhập &ge; 1 để bắt buộc phải có ít nhất 1 cuộc gặp.</span>
                             </div>
 
                             <div class="form-group">
-                                <label for="soCuocGoiToiThieu">📞 Số cuộc gọi kết nối tối thiểu:</label>
+                                <label for="soCuocGoiToiThieu">
+                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">call</span> Số cuộc gọi kết nối tối thiểu:
+                                </label>
                                 <input type="number" id="soCuocGoiToiThieu" name="soCuocGoiToiThieu"
                                        value="${giaiDoan.soCuocGoiToiThieu}" min="0">
                                 <span class="form-hint">Số lần liên lạc thành công tối thiểu để được chuyển bước.</span>
@@ -175,12 +184,12 @@
                         <div style="display: flex; gap: 28px; flex-wrap: wrap;">
                             <label class="checkbox-group">
                                 <input type="checkbox" name="yeuCauBaoGia" ${giaiDoan.yeuCauBaoGia ? 'checked' : ''}>
-                                <span>📄 Bắt buộc có Báo giá niêm yết được gửi cho khách hàng</span>
+                                <span><span class="material-symbols-outlined icon-xs" aria-hidden="true">description</span> Bắt buộc có Báo giá niêm yết được gửi cho khách hàng</span>
                             </label>
 
                             <label class="checkbox-group">
                                 <input type="checkbox" name="yeuCauKhaoSatNhuCau" ${giaiDoan.yeuCauKhaoSatNhuCau ? 'checked' : ''}>
-                                <span>📋 Bắt buộc hoàn thành bảng khảo sát nhu cầu</span>
+                                <span><span class="material-symbols-outlined icon-xs" aria-hidden="true">assignment</span> Bắt buộc hoàn thành bảng khảo sát nhu cầu</span>
                             </label>
                         </div>
                     </div>
@@ -215,7 +224,7 @@
                     Hủy bỏ
                 </a>
                 <button type="submit" class="btn btn-primary" id="btnSubmitForm">
-                    Lưu giai đoạn pipeline
+                    <span class="material-symbols-outlined" aria-hidden="true">save</span> Lưu giai đoạn pipeline
                 </button>
             </div>
         </form>

@@ -280,7 +280,7 @@ function saoChepMa(text, buttonElement) {
         hienThiToast(`Đã sao chép: ${text}`);
         if (buttonElement) {
             const oldText = buttonElement.innerHTML;
-            buttonElement.innerHTML = '✓';
+            buttonElement.innerHTML = '<span class="material-symbols-outlined icon-sm" aria-hidden="true">check</span>';
             setTimeout(() => {
                 buttonElement.innerHTML = oldText;
             }, 1500);

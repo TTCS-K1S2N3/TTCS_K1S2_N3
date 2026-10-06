@@ -41,10 +41,7 @@
                 <!-- Header / Logo -->
                 <div class="auth-header">
                     <div class="auth-icon-circle" aria-hidden="true">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                        </svg>
+                        <span class="material-symbols-outlined icon-2xl">lock_reset</span>
                     </div>
                     <h1 class="auth-title" id="page-title">Quên Mật Khẩu</h1>
                     <p class="auth-subtitle">
@@ -54,10 +51,7 @@
 
                 <!-- Security Feature Notice -->
                 <div class="security-notice-pill" aria-label="Thông tin hiệu lực">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
+                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">schedule</span>
                     <span>Liên kết có hiệu lực <strong>30 phút</strong> &bull; Dùng <strong>1 lần duy nhất</strong></span>
                 </div>
 
@@ -65,10 +59,7 @@
                 <% if (request.getAttribute("thongBaoThanhCong") != null) { %>
                     <div class="email-sent-card" id="email-sent-success-box" role="status">
                         <div class="email-sent-header">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                            </svg>
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">check_circle</span>
                             <span>Yêu cầu đã được tiếp nhận!</span>
                         </div>
                         <p class="email-sent-desc">
@@ -92,11 +83,7 @@
                 <% if (request.getAttribute("thongBaoLoi") != null) { %>
                     <div class="alert-message alert-danger" id="alert-error" role="alert">
                         <span class="alert-icon-col" aria-hidden="true">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="8" x2="12" y2="12"></line>
-                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                            </svg>
+                            <span class="material-symbols-outlined icon-sm">error</span>
                         </span>
                         <div class="alert-body">
                             <strong>Đã có lỗi xảy ra</strong>
@@ -113,10 +100,7 @@
                         </label>
                         <div class="input-wrapper">
                             <span class="input-icon-left" aria-hidden="true">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                                    <polyline points="22,6 12,13 2,6"></polyline>
-                                </svg>
+                                <span class="material-symbols-outlined icon-sm">mail</span>
                             </span>
                             <input 
                                 type="email" 
@@ -139,10 +123,7 @@
                     <button type="submit" class="btn-primary" id="btn-gui-yeu-cau">
                         <span class="btn-spinner d-none" id="btn-spinner" aria-hidden="true"></span>
                         <span id="btn-icon" aria-hidden="true">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="22" y1="2" x2="11" y2="13"></line>
-                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                            </svg>
+                            <span class="material-symbols-outlined icon-sm">send</span>
                         </span>
                         <span id="btn-text">Gửi Liên Kết Đặt Lại Mật Khẩu</span>
                     </button>
@@ -151,7 +132,7 @@
                 <!-- Footer Links -->
                 <div class="auth-card-footer">
                     <a href="${pageContext.request.contextPath}/dang-nhap" id="link-quay-lai-dang-nhap">
-                        &larr; Quay lại trang đăng nhập
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span> Quay lại trang đăng nhập
                     </a>
                 </div>
 

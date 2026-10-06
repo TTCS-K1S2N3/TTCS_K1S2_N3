@@ -29,28 +29,19 @@ document.addEventListener('DOMContentLoaded', function () {
             if (tabId === 'thang') {
                 btnAddNew.style.display = 'inline-flex';
                 btnAddNew.innerHTML = `
-                    <svg class="crm-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">add</span>
                     Thêm lý do thắng
                 `;
             } else if (tabId === 'thua') {
                 btnAddNew.style.display = 'inline-flex';
                 btnAddNew.innerHTML = `
-                    <svg class="crm-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">add</span>
                     Thêm lý do thua
                 `;
             } else if (tabId === 'doi-thu') {
                 btnAddNew.style.display = 'inline-flex';
                 btnAddNew.innerHTML = `
-                    <svg class="crm-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">add</span>
                     Thêm đối thủ cạnh tranh
                 `;
             } else {
@@ -451,10 +442,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     simResultBox.classList.add('crm-sim-result-success');
                     simResultBox.innerHTML = `
                         <div style="display:flex; align-items:flex-start; gap:10px;">
-                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:#059669; flex-shrink:0;">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                            </svg>
+                            <span class="material-symbols-outlined icon-lg" aria-hidden="true" style="color:#059669; flex-shrink:0;">check_circle</span>
                             <div>
                                 <strong style="font-size:15px; display:block; margin-bottom:4px;">Quy tắc Sprint 5 (S5-05) ĐẠT HỢP LỆ!</strong>
                                 <p style="font-size:13px; line-height:1.5;">${data.thongBao}</p>
@@ -471,11 +459,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     simResultBox.innerHTML = `
                         <div style="display:flex; align-items:flex-start; gap:10px;">
-                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:#dc2626; flex-shrink:0;">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="8" x2="12" y2="12"></line>
-                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                            </svg>
+                            <span class="material-symbols-outlined icon-lg" aria-hidden="true" style="color:#dc2626; flex-shrink:0;">error</span>
                             <div>
                                 <strong style="font-size:15px; display:block; margin-bottom:4px;">Chưa đủ điều kiện đóng cơ hội theo Sprint 5!</strong>
                                 <p style="font-size:13px; line-height:1.5;">${data.thongBao}</p>

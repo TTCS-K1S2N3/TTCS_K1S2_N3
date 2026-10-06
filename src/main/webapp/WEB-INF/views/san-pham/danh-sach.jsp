@@ -31,10 +31,16 @@
         </div>
         <c:choose>
             <c:when test="${coQuyenQuanLy}">
-                <a href="${pageContext.request.contextPath}/danh-muc" class="btn btn-outline btn-sm" id="btnQuayLai">&larr; Quay lại Danh mục</a>
+                <a href="${pageContext.request.contextPath}/danh-muc" class="btn btn-outline btn-sm" id="btnQuayLai" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span>
+                    <span>Quay lại Danh mục</span>
+                </a>
             </c:when>
             <c:otherwise>
-                <a href="${pageContext.request.contextPath}/khach-hang" class="btn btn-outline btn-sm" id="btnQuayLai">&larr; Quay lại Khách hàng</a>
+                <a href="${pageContext.request.contextPath}/khach-hang" class="btn btn-outline btn-sm" id="btnQuayLai" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span>
+                    <span>Quay lại Khách hàng</span>
+                </a>
             </c:otherwise>
         </c:choose>
     </nav>
@@ -69,8 +75,9 @@
 
             <c:if test="${coQuyenQuanLy}">
                 <a href="${pageContext.request.contextPath}/san-pham/tao"
-                   class="btn btn-primary" id="btnThemSanPhamMoi">
-                    Khai báo sản phẩm mới
+                   class="btn btn-primary" id="btnThemSanPhamMoi" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">add</span>
+                    <span>Khai báo sản phẩm mới</span>
                 </a>
             </c:if>
         </div>
@@ -80,24 +87,33 @@
     <c:if test="${not empty thongBaoThanhCong}">
         <div class="alert alert-success" role="alert">
             <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="material-symbols-outlined icon-sm" style="color: var(--success);" aria-hidden="true">check_circle</span>
                 <span><strong>Thành công:</strong> ${thongBaoThanhCong}</span>
             </div>
-            <span class="alert-close" onclick="this.parentElement.style.display='none';">&times;</span>
+            <span class="alert-close" onclick="this.parentElement.style.display='none';" title="Đóng" aria-label="Đóng">
+                <span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span>
+            </span>
         </div>
     </c:if>
 
     <c:if test="${not empty thongBaoLoi}">
         <div class="alert alert-danger" role="alert">
             <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="material-symbols-outlined icon-sm" style="color: var(--danger);" aria-hidden="true">error</span>
                 <span><strong>Thông báo:</strong> ${thongBaoLoi}</span>
             </div>
-            <span class="alert-close" onclick="this.parentElement.style.display='none';">&times;</span>
+            <span class="alert-close" onclick="this.parentElement.style.display='none';" title="Đóng" aria-label="Đóng">
+                <span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span>
+            </span>
         </div>
     </c:if>
 
     <!-- Thống kê tổng quan nhanh -->
     <section class="stats-grid">
         <div class="stat-card">
+            <div class="stat-icon primary">
+                <span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>
+            </div>
             <div class="stat-content">
                 <span class="stat-value">${phanTrang.tongSoBanGhi}</span>
                 <span class="stat-label">Tổng mặt hàng trong danh mục</span>
@@ -105,6 +121,9 @@
         </div>
 
         <div class="stat-card">
+            <div class="stat-icon purple">
+                <span class="material-symbols-outlined" aria-hidden="true">category</span>
+            </div>
             <div class="stat-content">
                 <span class="stat-value">Dịch vụ & Sản phẩm</span>
                 <span class="stat-label">Thuê bao định kỳ / Một lần</span>
@@ -112,6 +131,9 @@
         </div>
 
         <div class="stat-card">
+            <div class="stat-icon warning">
+                <span class="material-symbols-outlined" aria-hidden="true">price_check</span>
+            </div>
             <div class="stat-content">
                 <span class="stat-value">Giá sàn niêm yết</span>
                 <span class="stat-label">Ngưỡng kiểm soát chiết khấu</span>
@@ -119,6 +141,9 @@
         </div>
 
         <div class="stat-card">
+            <div class="stat-icon success">
+                <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+            </div>
             <div class="stat-content">
                 <span class="stat-value">${coQuyenGiaVon ? 'Được bảo mật' : 'Ẩn hoàn toàn'}</span>
                 <span class="stat-label">Giá vốn & Tỷ suất lợi nhuận</span>
@@ -154,12 +179,14 @@
                 </c:forEach>
             </select>
 
-            <button type="submit" class="btn btn-outline" id="btnLocSanPham">
-                Lọc dữ liệu
+            <button type="submit" class="btn btn-outline" id="btnLocSanPham" style="display: inline-flex; align-items: center; gap: 4px;">
+                <span class="material-symbols-outlined icon-xs" aria-hidden="true">filter_alt</span>
+                <span>Lọc dữ liệu</span>
             </button>
             <a href="${pageContext.request.contextPath}/san-pham"
-               class="btn btn-outline" style="color: var(--slate-500);">
-                Đặt lại
+               class="btn btn-outline" style="color: var(--slate-500); display: inline-flex; align-items: center; gap: 4px;">
+                <span class="material-symbols-outlined icon-xs" aria-hidden="true">restart_alt</span>
+                <span>Đặt lại</span>
             </a>
         </form>
 
@@ -213,7 +240,7 @@
                                 <td>
                                     <c:choose>
                                         <c:when test="${sp.dichVuThueBao}">
-                                            <span class="badge badge-subscription">
+                                             <span class="badge badge-subscription">
                                                 ${sp.tenLoai}
                                             </span>
                                         </c:when>
@@ -259,13 +286,15 @@
                                 <td style="text-align: center;">
                                     <c:choose>
                                         <c:when test="${sp.dangKinhDoanh}">
-                                            <span class="badge badge-active">
-                                                ● Đang kinh doanh
+                                            <span class="badge badge-active" style="display: inline-flex; align-items: center; gap: 4px;">
+                                                <span class="material-symbols-outlined icon-xs" style="font-size: 12px;" aria-hidden="true">check_circle</span>
+                                                <span>Đang kinh doanh</span>
                                             </span>
                                         </c:when>
                                         <c:otherwise>
-                                            <span class="badge badge-inactive">
-                                                ○ Ngừng kinh doanh
+                                            <span class="badge badge-inactive" style="display: inline-flex; align-items: center; gap: 4px;">
+                                                <span class="material-symbols-outlined icon-xs" style="font-size: 12px;" aria-hidden="true">pause_circle</span>
+                                                <span>Ngừng kinh doanh</span>
                                             </span>
                                         </c:otherwise>
                                     </c:choose>
@@ -296,15 +325,19 @@
                                                 data-gia-niem-yet="${sp.giaNiemYet}"
                                                 data-gia-san="${sp.giaSan}"
                                                 onclick="moModalThuGiaSan(this)"
-                                                title="Kiểm tra xem đơn giá báo giá có cần Giám đốc duyệt chiết khấu không">
-                                            Thử giá sàn
+                                                title="Kiểm tra xem đơn giá báo giá có cần Giám đốc duyệt chiết khấu không"
+                                                style="display: inline-flex; align-items: center; gap: 4px;">
+                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">calculate</span>
+                                            <span>Thử giá sàn</span>
                                         </button>
 
                                         <c:if test="${coQuyenQuanLy}">
                                             <!-- Sửa thông tin & bảng giá -->
                                             <a href="${pageContext.request.contextPath}/san-pham/sua?id=${sp.id}"
-                                               class="btn btn-outline btn-sm" title="Sửa thông tin sản phẩm và bảng giá">
-                                                Sửa
+                                               class="btn btn-outline btn-sm" title="Sửa thông tin sản phẩm và bảng giá"
+                                               style="display: inline-flex; align-items: center; gap: 4px;">
+                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">edit</span>
+                                                <span>Sửa</span>
                                             </a>
 
                                             <!-- Ngừng kinh doanh / Bán lại -->
@@ -313,17 +346,19 @@
                                                 <c:choose>
                                                     <c:when test="${sp.dangKinhDoanh}">
                                                         <input type="hidden" name="trangThaiMoi" value="NGUNG_KINH_DOANH">
-                                                        <button type="submit" class="btn btn-outline btn-sm" style="color: #b45309;"
+                                                        <button type="submit" class="btn btn-outline btn-sm" style="color: #b45309; display: inline-flex; align-items: center; gap: 4px;"
                                                                 onclick="return confirm('Bạn có chắc chắn muốn chuyển sản phẩm này sang trạng thái Ngừng kinh doanh?')"
                                                                 title="Ngừng đưa vào các báo giá mới">
-                                                            Ngừng KD
+                                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">pause_circle</span>
+                                                            <span>Ngừng KD</span>
                                                         </button>
                                                     </c:when>
                                                     <c:otherwise>
                                                         <input type="hidden" name="trangThaiMoi" value="DANG_KINH_DOANH">
-                                                        <button type="submit" class="btn btn-outline btn-sm" style="color: #15803d;"
+                                                        <button type="submit" class="btn btn-outline btn-sm" style="color: #15803d; display: inline-flex; align-items: center; gap: 4px;"
                                                                 title="Kích hoạt bán lại trong báo giá">
-                                                            Mở bán lại
+                                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">play_circle</span>
+                                                            <span>Mở bán lại</span>
                                                         </button>
                                                     </c:otherwise>
                                                 </c:choose>
@@ -336,8 +371,10 @@
                                                     <button type="button" class="btn btn-outline btn-sm btn-disabled"
                                                             data-ten="<c:out value='${sp.tenSanPham}'/>"
                                                             onclick="moModalKhongTheXoa(this)"
-                                                            title="Sản phẩm đã xuất hiện trong báo giá thì không xoá được, chỉ ngừng kinh doanh (AC4)">
-                                                        Không thể xoá
+                                                            title="Sản phẩm đã xuất hiện trong báo giá thì không xoá được, chỉ ngừng kinh doanh (AC4)"
+                                                            style="display: inline-flex; align-items: center; gap: 4px;">
+                                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">lock</span>
+                                                        <span>Không thể xoá</span>
                                                     </button>
                                                 </c:when>
                                                 <c:otherwise>
@@ -346,8 +383,10 @@
                                                         <input type="hidden" name="id" value="${sp.id}">
                                                         <button type="submit" class="btn btn-danger btn-sm"
                                                                 onclick="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn xoá hoàn toàn sản phẩm này khỏi hệ thống? Thao tác này không thể hoàn tác.')"
-                                                                title="Xoá vĩnh viễn khỏi danh mục">
-                                                            Xoá
+                                                                title="Xoá vĩnh viễn khỏi danh mục"
+                                                                style="display: inline-flex; align-items: center; gap: 4px;">
+                                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">delete</span>
+                                                            <span>Xoá</span>
                                                         </button>
                                                     </form>
                                                 </c:otherwise>
@@ -373,8 +412,9 @@
                 <div class="pagination-links">
                     <c:if test="${phanTrang.coTrangTruoc}">
                         <a href="${pageContext.request.contextPath}/san-pham?page=${phanTrang.trangHienTai - 1}&tuKhoa=${tuKhoa}&loai=${loaiChon}&trangThai=${trangThaiChon}"
-                           class="page-btn">
-                            &laquo; Trang trước
+                           class="page-btn" style="display: inline-flex; align-items: center; gap: 2px;">
+                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">chevron_left</span>
+                            <span>Trang trước</span>
                         </a>
                     </c:if>
 
@@ -387,8 +427,9 @@
 
                     <c:if test="${phanTrang.coTrangSau}">
                         <a href="${pageContext.request.contextPath}/san-pham?page=${phanTrang.trangHienTai + 1}&tuKhoa=${tuKhoa}&loai=${loaiChon}&trangThai=${trangThaiChon}"
-                           class="page-btn">
-                            Trang sau &raquo;
+                           class="page-btn" style="display: inline-flex; align-items: center; gap: 2px;">
+                            <span>Trang sau</span>
+                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">chevron_right</span>
                         </a>
                     </c:if>
                 </div>
@@ -403,7 +444,58 @@
     <div class="modal-card">
         <div class="modal-header">
             <h3>Kiểm tra Ngưỡng Giá sàn Báo giá</h3>
-            <button type="button" class="modal-close-btn" onclick="dongModalGiaSan()">&times;</button>
+            <button type="button" class="modal-close-btn" onclick="dongModalGiaSan()" title="Đóng" aria-label="Đóng">
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span>
+            </button>
+        </div>
+
+        <p style="font-size: 13.5px; color: var(--slate-600); margin-bottom: 16px; line-height: 1.5;">
+            Quy định nghiệp vụ (AC2): Giá sàn là ngưỡng để xác định báo giá có cần duyệt chiết khấu hay không. Bất kỳ báo giá nào có đơn giá dưới Giá sàn bắt buộc phải gửi Giám đốc kinh doanh duyệt.
+        </p>
+
+        <div class="modal-meta-box">
+            <div style="font-size: 14.5px; font-weight: 700; color: var(--dark);" id="modalTenSp">
+                Tên sản phẩm
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px;">
+                <span>Giá niêm yết: <strong id="modalGiaNiemYet" style="color: var(--primary);">0 ₫</strong></span>
+                <span>Giá sàn (Ngưỡng duyệt): <strong id="modalGiaSan" style="color: #b45309;">0 ₫</strong></span>
+            </div>
+        </div>
+
+        <input type="hidden" id="modalSanPhamId">
+
+        <div class="form-group" style="margin-bottom: 12px;">
+            <label for="modalDonGiaInput">Nhập thử đơn giá đề xuất trong Báo giá (VNĐ):</label>
+            <input type="number" id="modalDonGiaInput" min="0" step="1000"
+                   style="padding: 12px 14px; font-size: 16px; font-weight: 800; color: var(--dark);"
+                   oninput="tinhKiemTraGiaSanClientSide()">
+            <span class="form-hint">Nhập số tiền để xem báo giá có kích hoạt quy trình phê duyệt hay không.</span>
+        </div>
+
+        <div id="modalKetQuaBox"></div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+            <button type="button" class="btn btn-outline" onclick="dongModalGiaSan()">Đóng</button>
+            <button type="button" class="btn btn-primary" onclick="tinhKiemTraGiaSan()" style="display: inline-flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined icon-xs" aria-hidden="true">sync</span>
+                <span>Kiểm tra với máy chủ</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- AC4: MODAL GIẢI THÍCH SẢN PHẨM KHÔNG THỂ XOÁ -->
+<div id="modalKhongTheXoa" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 style="color: var(--danger); display: flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">lock</span>
+                <span>Không thể xoá sản phẩm</span>
+            </h3>
+            <button type="button" class="modal-close-btn" onclick="dongModalKhongTheXoa()" title="Đóng" aria-label="Đóng">
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span>
+            </button>
         </div>
 
         <p style="font-size: 13.5px; color: var(--slate-600); margin-bottom: 16px; line-height: 1.5;">
@@ -444,7 +536,7 @@
     <div class="modal-card">
         <div class="modal-header">
             <h3 style="color: var(--danger);">Không thể xoá sản phẩm</h3>
-            <button type="button" class="modal-close-btn" onclick="dongModalKhongTheXoa()">&times;</button>
+            <button type="button" class="modal-close-btn" onclick="dongModalKhongTheXoa()" title="Đóng" aria-label="Đóng"><span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span></button>
         </div>
 
         <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 16px; margin-bottom: 18px; color: #991b1b; font-size: 14px; line-height: 1.5;">

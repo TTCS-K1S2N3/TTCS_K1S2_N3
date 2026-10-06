@@ -95,27 +95,27 @@
             <!-- Menu điều hướng chính dùng chung của hệ thống -->
             <nav class="main-nav" aria-label="Điều hướng chính">
                 <a href="<%= urlTrangChu %>" class="nav-link">
-                    <span class="nav-icon">📊</span>
+                    <span class="material-symbols-outlined nav-icon icon-sm" aria-hidden="true">dashboard</span>
                     <span>Bàn làm việc</span>
                 </a>
                 <a href="<%= cleanContextPath %>/khach-hang" class="nav-link">
-                    <span class="nav-icon">👥</span>
+                    <span class="material-symbols-outlined nav-icon icon-sm" aria-hidden="true">groups</span>
                     <span>Khách hàng</span>
                 </a>
                 <a href="<%= cleanContextPath %>/co-hoi" class="nav-link">
-                    <span class="nav-icon">💼</span>
+                    <span class="material-symbols-outlined nav-icon icon-sm" aria-hidden="true">handshake</span>
                     <span>Cơ hội</span>
                 </a>
                 <a href="<%= cleanContextPath %>/bao-gia" class="nav-link">
-                    <span class="nav-icon">📄</span>
+                    <span class="material-symbols-outlined nav-icon icon-sm" aria-hidden="true">request_quote</span>
                     <span>Báo giá</span>
                 </a>
                 <a href="<%= cleanContextPath %>/hop-dong" class="nav-link">
-                    <span class="nav-icon">📑</span>
+                    <span class="material-symbols-outlined nav-icon icon-sm" aria-hidden="true">description</span>
                     <span>Hợp đồng</span>
                 </a>
                 <a href="<%= cleanContextPath %>/bao-cao" class="nav-link">
-                    <span class="nav-icon">📈</span>
+                    <span class="material-symbols-outlined nav-icon icon-sm" aria-hidden="true">analytics</span>
                     <span>Báo cáo</span>
                 </a>
             </nav>
@@ -133,18 +133,18 @@
                         </div>
                     </div>
                     <a href="<%= cleanContextPath %>/dang-xuat" class="btn-header-logout" id="btn-header-logout" title="Đăng xuất khỏi hệ thống">
-                        Đăng xuất
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">logout</span> Đăng xuất
                     </a>
                 <% } else { %>
                     <a href="<%= cleanContextPath %>/dang-nhap" class="btn-header-login" id="btn-header-login">
-                        <span>🔑</span>
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">login</span>
                         <span>Đăng nhập</span>
                     </a>
                 <% } %>
 
                 <!-- Nút bật menu trên thiết bị di động -->
                 <button type="button" class="mobile-nav-toggle" id="btn-mobile-menu-toggle" aria-label="Mở danh mục điều hướng">
-                    ☰
+                    <span class="material-symbols-outlined" aria-hidden="true">menu</span>
                 </button>
             </div>
         </div>
@@ -153,16 +153,16 @@
     <!-- Drawer menu cho thiết bị di động -->
     <div class="mobile-menu-drawer" id="mobile-menu-drawer">
         <ul class="mobile-menu-list">
-            <li><a href="<%= urlTrangChu %>"><span>📊</span> Bàn làm việc</a></li>
-            <li><a href="<%= cleanContextPath %>/khach-hang"><span>👥</span> Quản lý Khách hàng</a></li>
-            <li><a href="<%= cleanContextPath %>/co-hoi"><span>💼</span> Quản lý Cơ hội bán hàng</a></li>
-            <li><a href="<%= cleanContextPath %>/bao-gia"><span>📄</span> Danh sách Báo giá</a></li>
-            <li><a href="<%= cleanContextPath %>/hop-dong"><span>📑</span> Quản lý Hợp đồng</a></li>
-            <li><a href="<%= cleanContextPath %>/bao-cao"><span>📈</span> Báo cáo kinh doanh</a></li>
+            <li><a href="<%= urlTrangChu %>"><span class="material-symbols-outlined icon-xs" aria-hidden="true">dashboard</span> Bàn làm việc</a></li>
+            <li><a href="<%= cleanContextPath %>/khach-hang"><span class="material-symbols-outlined icon-xs" aria-hidden="true">groups</span> Quản lý Khách hàng</a></li>
+            <li><a href="<%= cleanContextPath %>/co-hoi"><span class="material-symbols-outlined icon-xs" aria-hidden="true">handshake</span> Quản lý Cơ hội bán hàng</a></li>
+            <li><a href="<%= cleanContextPath %>/bao-gia"><span class="material-symbols-outlined icon-xs" aria-hidden="true">request_quote</span> Danh sách Báo giá</a></li>
+            <li><a href="<%= cleanContextPath %>/hop-dong"><span class="material-symbols-outlined icon-xs" aria-hidden="true">description</span> Quản lý Hợp đồng</a></li>
+            <li><a href="<%= cleanContextPath %>/bao-cao"><span class="material-symbols-outlined icon-xs" aria-hidden="true">analytics</span> Báo cáo kinh doanh</a></li>
             <% if (!daDangNhap) { %>
-                <li><a href="<%= cleanContextPath %>/dang-nhap"><span>🔑</span> Đăng nhập vào hệ thống</a></li>
+                <li><a href="<%= cleanContextPath %>/dang-nhap"><span class="material-symbols-outlined icon-xs" aria-hidden="true">login</span> Đăng nhập vào hệ thống</a></li>
             <% } else { %>
-                <li><a href="<%= cleanContextPath %>/dang-xuat"><span>🚪</span> Đăng xuất tài khoản</a></li>
+                <li><a href="<%= cleanContextPath %>/dang-xuat"><span class="material-symbols-outlined icon-xs" aria-hidden="true">logout</span> Đăng xuất tài khoản</a></li>
             <% } %>
         </ul>
     </div>
@@ -192,7 +192,9 @@
 
             <!-- Biểu tượng minh họa -->
             <div class="error-visual-icon" id="error-visual-icon">
-                <%= thongTinLoi.getBieuTuong() != null ? thongTinLoi.getBieuTuong() : "⚠️" %>
+                <span class="material-symbols-outlined" style="font-size: 72px;" aria-hidden="true">
+                    <% if (thongTinLoi.getMaLoi() == 404) { %>search_off<% } else if (thongTinLoi.getMaLoi() == 403) { %>gpp_bad<% } else if (thongTinLoi.getMaLoi() == 401) { %>lock<% } else { %>error<% } %>
+                </span>
             </div>
 
             <!-- Tiêu đề lỗi rõ ràng -->
@@ -208,7 +210,7 @@
             <!-- Hướng dẫn cụ thể theo từng loại lỗi -->
             <% if (thongTinLoi.getChiTiet() != null && !thongTinLoi.getChiTiet().trim().isEmpty()) { %>
                 <div class="error-guidance-box" id="error-guidance-box">
-                    <span class="guidance-icon">ℹ️</span>
+                    <span class="material-symbols-outlined icon-xs guidance-icon" aria-hidden="true">info</span>
                     <span class="guidance-text"><%= thongTinLoi.getChiTiet() %></span>
                 </div>
             <% } %>
@@ -218,7 +220,7 @@
                  ================================================================ -->
             <div class="action-recommendation-panel" id="action-recommendation-panel">
                 <div class="recommendation-header">
-                    <span class="recommendation-header-icon">💡</span>
+                    <span class="material-symbols-outlined icon-xs recommendation-header-icon" aria-hidden="true">lightbulb</span>
                     <span class="recommendation-header-title">Hành động gợi ý để tiếp tục công việc:</span>
                 </div>
 
@@ -227,17 +229,17 @@
                     <% if (thongTinLoi.getUrlHanhDongChinh() != null) { %>
                         <% if (thongTinLoi.getUrlHanhDongChinh().startsWith("javascript:history.back")) { %>
                             <a href="#" class="btn-action-primary btn-smart-back" id="btn-hanh-dong-chinh" data-fallback-url="<%= urlTrangChu %>">
-                                <span>↩️</span>
+                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span>
                                 <span><%= thongTinLoi.getTenHanhDongChinh() %></span>
                             </a>
                         <% } else if (thongTinLoi.getUrlHanhDongChinh().startsWith("javascript:window.location.reload")) { %>
                             <button type="button" class="btn-action-primary" id="btn-hanh-dong-chinh" onclick="window.location.reload()">
-                                <span>🔄</span>
+                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">refresh</span>
                                 <span><%= thongTinLoi.getTenHanhDongChinh() %></span>
                             </button>
                         <% } else { %>
                             <a href="<%= thongTinLoi.getUrlHanhDongChinh() %>" class="btn-action-primary" id="btn-hanh-dong-chinh">
-                                <span>⚡</span>
+                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">bolt</span>
                                 <span><%= thongTinLoi.getTenHanhDongChinh() %></span>
                             </a>
                         <% } %>
@@ -247,7 +249,7 @@
                     <% if (thongTinLoi.getUrlHanhDongPhu() != null) { %>
                         <% if (thongTinLoi.getUrlHanhDongPhu().startsWith("javascript:history.back")) { %>
                             <a href="#" class="btn-action-secondary btn-smart-back" id="btn-hanh-dong-phu" data-fallback-url="<%= urlTrangChu %>">
-                                <span>↩️</span>
+                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span>
                                 <span><%= thongTinLoi.getTenHanhDongPhu() %></span>
                             </a>
                         <% } else { %>
@@ -260,7 +262,7 @@
                     <!-- Nút tiện ích sao chép mã sự cố (Dành riêng cho lỗi 500) -->
                     <% if (thongTinLoi.getMaThamChieu() != null && !thongTinLoi.getMaThamChieu().trim().isEmpty()) { %>
                         <button type="button" class="btn-action-copy" id="btn-copy-error-code" data-error-code="<%= thongTinLoi.getMaThamChieu() %>" title="Sao chép mã sự cố gửi đội ngũ kỹ thuật IT">
-                            <span>📋</span>
+                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">content_copy</span>
                             <span>Sao chép mã lỗi (<%= thongTinLoi.getMaThamChieu() %>)</span>
                         </button>
                     <% } %>
@@ -272,19 +274,19 @@
                 <div class="quick-nav-title">Chuyển nhanh đến phân hệ làm việc khác:</div>
                 <div class="quick-nav-grid">
                     <a href="<%= urlTrangChu %>" class="quick-nav-tile">
-                        <span class="quick-nav-tile-icon">📊</span>
+                        <span class="quick-nav-tile-icon"><span class="material-symbols-outlined icon-md" aria-hidden="true">dashboard</span></span>
                         <span class="quick-nav-tile-name">Bàn làm việc</span>
                     </a>
                     <a href="<%= cleanContextPath %>/khach-hang" class="quick-nav-tile">
-                        <span class="quick-nav-tile-icon">👥</span>
+                        <span class="quick-nav-tile-icon"><span class="material-symbols-outlined icon-md" aria-hidden="true">groups</span></span>
                         <span class="quick-nav-tile-name">Khách hàng</span>
                     </a>
                     <a href="<%= cleanContextPath %>/co-hoi" class="quick-nav-tile">
-                        <span class="quick-nav-tile-icon">💼</span>
+                        <span class="quick-nav-tile-icon"><span class="material-symbols-outlined icon-md" aria-hidden="true">handshake</span></span>
                         <span class="quick-nav-tile-name">Cơ hội bán hàng</span>
                     </a>
                     <a href="<%= cleanContextPath %>/bao-gia" class="quick-nav-tile">
-                        <span class="quick-nav-tile-icon">📄</span>
+                        <span class="quick-nav-tile-icon"><span class="material-symbols-outlined icon-md" aria-hidden="true">request_quote</span></span>
                         <span class="quick-nav-tile-name">Báo giá</span>
                     </a>
                 </div>
@@ -293,8 +295,8 @@
             <!-- Khối thông tin kỹ thuật mở rộng dành cho quản trị viên / hỗ trợ IT -->
             <div class="technical-details-wrapper">
                 <button type="button" class="technical-toggle-btn" id="btn-toggle-tech-details" aria-expanded="false">
-                    <span>⚙️ Chi tiết kỹ thuật tra cứu</span>
-                    <span class="toggle-arrow">▼</span>
+                    <span style="display:inline-flex; align-items:center; gap:6px;"><span class="material-symbols-outlined icon-xs" aria-hidden="true">settings</span> Chi tiết kỹ thuật tra cứu</span>
+                    <span class="toggle-arrow material-symbols-outlined icon-xs" aria-hidden="true">expand_more</span>
                 </button>
                 <div class="technical-panel-content" id="tech-details-panel">
                     <div class="tech-row">
@@ -334,8 +336,8 @@
                 © 2026 CRM Bán Hàng - Hệ thống quản lý quan hệ khách hàng và quy trình bán hàng chuyên nghiệp.
             </div>
             <div class="footer-contact-info">
-                <span>📞 Hotline: <strong>1900 6868</strong></span>
-                <span>✉️ Email: <a href="mailto:support@crm.vn" class="footer-contact-link">support@crm.vn</a></span>
+                <span><span class="material-symbols-outlined icon-xs" aria-hidden="true">call</span> Hotline: <strong>1900 6868</strong></span>
+                <span><span class="material-symbols-outlined icon-xs" aria-hidden="true">mail</span> Email: <a href="mailto:support@crm.vn" class="footer-contact-link">support@crm.vn</a></span>
             </div>
         </div>
     </footer>

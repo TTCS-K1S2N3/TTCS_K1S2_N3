@@ -32,8 +32,9 @@
             </p>
         </div>
         <div class="page-header-actions">
-            <a href="${pageContext.request.contextPath}/truong-tuy-chinh" class="btn btn-secondary">
-                <span>&larr;</span> Quay lại danh sách
+            <a href="${pageContext.request.contextPath}/truong-tuy-chinh" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 4px;">
+                <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span>
+                <span>Quay lại danh sách</span>
             </a>
         </div>
     </header>
@@ -41,13 +42,18 @@
     <!-- ===== THÔNG BÁO LỖI ===== -->
     <c:if test="${not empty formError['_global'] or not empty formError['global']}">
         <div class="alert alert-error" role="alert">
-            <div><strong>Lỗi:</strong> <c:out value="${not empty formError['_global'] ? formError['_global'] : formError['global']}"/></div>
-            <span class="alert-close" onclick="this.parentElement.style.display='none';">&times;</span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">error</span>
+                <span><strong>Lỗi:</strong> <c:out value="${not empty formError['_global'] ? formError['_global'] : formError['global']}"/></span>
+            </div>
+            <span class="alert-close" onclick="this.parentElement.style.display='none';" title="Đóng" aria-label="Đóng">
+                <span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span>
+            </span>
         </div>
     </c:if>
 
-    <div class="alert alert-info" style="margin-bottom:20px;">
-        <span style="font-size: 1.1rem;">ℹ️</span>
+    <div class="alert alert-info" style="margin-bottom:20px; display: flex; align-items: flex-start; gap: 8px;">
+        <span class="material-symbols-outlined icon-sm" style="color: #0284c7; margin-top: 2px;" aria-hidden="true">info</span>
         <div>
             <strong>Lưu ý bảo toàn dữ liệu:</strong> Tên kỹ thuật và Kiểu dữ liệu được cố định để không làm sai lệch các bản ghi đã lưu trữ trong cơ sở dữ liệu. Bạn có thể thay đổi nhãn hiển thị, quy định bắt buộc, hiển thị bộ lọc/Excel và các giá trị lựa chọn.
         </div>
@@ -61,18 +67,18 @@
                 Đối tượng:
                 <strong>
                     <c:choose>
-                        <c:when test="${truong.doiTuong == 'KHACH_HANG'}">🏢 Khách hàng</c:when>
-                        <c:when test="${truong.doiTuong == 'CO_HOI'}">🎯 Cơ hội</c:when>
+                        <c:when test="${truong.doiTuong == 'KHACH_HANG'}">Khách hàng</c:when>
+                        <c:when test="${truong.doiTuong == 'CO_HOI'}">Cơ hội</c:when>
                         <c:otherwise><c:out value="${truong.doiTuong}"/></c:otherwise>
                     </c:choose>
                 </strong>
                 &nbsp;·&nbsp; Kiểu dữ liệu:
                 <strong>
                     <c:choose>
-                        <c:when test="${truong.kieuDuLieu == 'VAN_BAN'}">📖 Văn bản (Text)</c:when>
-                        <c:when test="${truong.kieuDuLieu == 'SO'}">🔢 Số (Number)</c:when>
-                        <c:when test="${truong.kieuDuLieu == 'NGAY'}">📅 Ngày (Date)</c:when>
-                        <c:when test="${truong.kieuDuLieu == 'DANH_SACH_CHON'}">▼ Danh sách chọn</c:when>
+                        <c:when test="${truong.kieuDuLieu == 'VAN_BAN'}">Văn bản (Text)</c:when>
+                        <c:when test="${truong.kieuDuLieu == 'SO'}">Số (Number)</c:when>
+                        <c:when test="${truong.kieuDuLieu == 'NGAY'}">Ngày (Date)</c:when>
+                        <c:when test="${truong.kieuDuLieu == 'DANH_SACH_CHON'}">Danh sách chọn</c:when>
                         <c:otherwise><c:out value="${truong.kieuDuLieu}"/></c:otherwise>
                     </c:choose>
                 </strong>
@@ -133,8 +139,9 @@
                 <c:if test="${truong.kieuDuLieu == 'DANH_SACH_CHON'}">
                     <div id="options-panel" class="options-panel visible">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <span style="font-size:0.88rem;font-weight:700;color:#6b21a8;">
-                                ▼ Cập nhật danh sách các lựa chọn
+                            <span style="font-size:0.88rem;font-weight:700;color:#6b21a8; display: flex; align-items: center; gap: 4px;">
+                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">list</span>
+                                <span>Cập nhật danh sách các lựa chọn</span>
                             </span>
                             <span style="font-size:0.78rem; color:#7e22ce;">Tối thiểu 1 lựa chọn</span>
                         </div>
@@ -147,13 +154,16 @@
                                            value="<c:out value='${opt}'/>"
                                            maxlength="200"
                                            placeholder="Nhập giá trị lựa chọn...">
-                                    <button type="button" class="btn-remove-option" title="Xóa lựa chọn này">&times;</button>
+                                    <button type="button" class="btn-remove-option" title="Xóa lựa chọn này" aria-label="Xóa lựa chọn này">
+                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">delete</span>
+                                    </button>
                                 </div>
                             </c:forEach>
                         </div>
                         <div style="margin-top: 10px;">
-                            <button type="button" id="btn-them-lua-chon" class="btn btn-secondary btn-sm">
-                                ➕ Thêm lựa chọn khác
+                            <button type="button" id="btn-them-lua-chon" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 4px;">
+                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">add</span>
+                                <span>Thêm lựa chọn khác</span>
                             </button>
                         </div>
                         <span class="form-error-msg <c:if test='${not empty formError["danhSachLuaChon"]}'>visible</c:if>"
@@ -175,7 +185,10 @@
                                value="true"
                                <c:if test="${truong.batBuoc}">checked</c:if>>
                         <div>
-                            <div class="toggle-label">★ Đặt làm trường bắt buộc nhập (AC2)</div>
+                            <div class="toggle-label" style="display: flex; align-items: center; gap: 4px;">
+                                <span class="material-symbols-outlined icon-xs" style="color: #d97706;" aria-hidden="true">star</span>
+                                <span>Đặt làm trường bắt buộc nhập (AC2)</span>
+                            </div>
                             <div class="toggle-desc">Yêu cầu người dùng bắt buộc phải nhập giá trị cho trường này khi lưu dữ liệu.</div>
                         </div>
                     </label>
@@ -190,7 +203,10 @@
                                value="true"
                                <c:if test="${truong.hienThiBoDac}">checked</c:if>>
                         <div>
-                            <div class="toggle-label">🔍 Xuất hiện trong thanh bộ lọc danh sách (AC3)</div>
+                            <div class="toggle-label" style="display: flex; align-items: center; gap: 4px;">
+                                <span class="material-symbols-outlined icon-xs" style="color: #2563eb;" aria-hidden="true">search</span>
+                                <span>Xuất hiện trong thanh bộ lọc danh sách (AC3)</span>
+                            </div>
                             <div class="toggle-desc">Cho phép tìm kiếm nhanh theo trường này trên danh sách Khách hàng / Cơ hội.</div>
                         </div>
                     </label>
@@ -205,7 +221,10 @@
                                value="true"
                                <c:if test="${truong.hienThiExcel}">checked</c:if>>
                         <div>
-                            <div class="toggle-label">📊 Tự động xuất ra file Excel (AC3)</div>
+                            <div class="toggle-label" style="display: flex; align-items: center; gap: 4px;">
+                                <span class="material-symbols-outlined icon-xs" style="color: #059669;" aria-hidden="true">table_view</span>
+                                <span>Tự động xuất ra file Excel (AC3)</span>
+                            </div>
                             <div class="toggle-desc">Trường sẽ có cột tương ứng trong file xuất Excel khi người dùng bấm Xuất Excel.</div>
                         </div>
                     </label>
@@ -220,7 +239,10 @@
                                value="true"
                                <c:if test="${truong.dangHoatDong}">checked</c:if>>
                         <div>
-                            <div class="toggle-label">● Kích hoạt hoạt động</div>
+                            <div class="toggle-label" style="display: flex; align-items: center; gap: 4px;">
+                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">toggle_on</span>
+                                <span>Kích hoạt hoạt động</span>
+                            </div>
                             <div class="toggle-desc">Khi tắt, trường sẽ tạm thời ẩn khỏi biểu mẫu và bộ lọc nhưng không làm mất dữ liệu lịch sử.</div>
                         </div>
                     </label>
@@ -241,7 +263,8 @@
                 <!-- 3. LIVE FIELD PREVIEW WIDGET -->
                 <div class="live-preview-box">
                     <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                        Trực quan hoá thời gian thực (Live Field Preview)
+                        <span class="material-symbols-outlined icon-sm" style="color: #4f46e5;" aria-hidden="true">visibility</span>
+                        <span>Trực quan hoá thời gian thực (Live Field Preview)</span>
                     </div>
                     <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 14px;">
                         Hình ảnh thực tế mà nhân viên sẽ nhìn thấy khi nhập liệu trên form:
@@ -281,11 +304,13 @@
             </div><%-- end form-card-body --%>
 
             <div class="form-card-footer">
-                <a href="${pageContext.request.contextPath}/truong-tuy-chinh" class="btn btn-secondary">
-                    Hủy bỏ
+                <a href="${pageContext.request.contextPath}/truong-tuy-chinh" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span>
+                    <span>Hủy bỏ</span>
                 </a>
-                <button type="submit" id="btn-luu-sua" class="btn btn-primary">
-                    Lưu các thay đổi
+                <button type="submit" id="btn-luu-sua" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">save</span>
+                    <span>Lưu các thay đổi</span>
                 </button>
             </div>
 

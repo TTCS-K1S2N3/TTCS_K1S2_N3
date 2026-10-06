@@ -22,13 +22,13 @@
         <!-- Thông báo kết quả thao tác -->
         <c:if test="${not empty thongBaoThanhCong}">
             <div class="alert alert-success" id="alertSuccess">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
                 <span><c:out value="${thongBaoThanhCong}" /></span>
             </div>
         </c:if>
         <c:if test="${not empty thongBaoLoi}">
             <div class="alert alert-danger" id="alertError">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span class="material-symbols-outlined" aria-hidden="true">error</span>
                 <span><c:out value="${thongBaoLoi}" /></span>
             </div>
         </c:if>
@@ -37,13 +37,7 @@
         <div class="card" style="margin-bottom: 24px;">
             <div class="card-title">
                 <div class="card-title-left">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
-                    </svg>
+                    <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary);">edit_note</span>
                     <span>Ghi chú cuộc gặp khách hàng (Duy trì phiên & Tự động lưu)</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
@@ -54,9 +48,7 @@
                         <span class="session-countdown" id="session-countdown-timer" title="Thời gian phiên còn lại">30:00</span>
                     </div>
                     <span class="badge-info">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">check_circle</span>
                         Auto Keep-Alive Active
                     </span>
                 </div>
@@ -70,7 +62,7 @@
             <!-- Banner cảnh báo phát hiện bản nháp chưa lưu -->
             <div class="draft-alert-banner" id="draft-alert-banner">
                 <div>
-                    <strong>💡 Phát hiện bản nháp trước đó:</strong>
+                    <strong><span class="material-symbols-outlined icon-sm" aria-hidden="true" style="vertical-align: text-bottom;">lightbulb</span> Phát hiện bản nháp trước đó:</strong>
                     <span>Bạn có một ghi chú chưa xóa được lưu lúc <span id="draft-saved-time-text">gần đây</span>.</span>
                 </div>
                 <div class="draft-alert-actions">
@@ -87,9 +79,7 @@
             <div class="note-footer">
                 <div class="note-stats-group">
                     <span class="sync-status active" id="session-sync-status">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                        </svg>
+                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">save</span>
                         Phiên làm việc sẵn sàng
                     </span>
                     <span class="note-stat-item" id="note-last-saved" style="color: var(--slate-400);"></span>
@@ -98,16 +88,11 @@
                 </div>
                 <div class="note-actions-group">
                     <button type="button" class="btn-secondary" id="btn-manual-save" title="Lưu nháp ngay vào bộ nhớ trình duyệt">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                        </svg>
+                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">save</span>
                         Lưu nháp
                     </button>
                     <button type="button" class="btn-secondary" id="btn-manual-sync" title="Gửi tín hiệu gia hạn phiên ngay">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="23 4 23 10 17 10"></polyline>
-                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                        </svg>
+                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">sync</span>
                         Gia hạn phiên
                     </button>
                 </div>
@@ -122,18 +107,11 @@
             </div>
             <div class="page-actions">
                 <button type="button" class="btn btn-outline" id="btnExportExcel" title="Tải danh sách khách hàng dưới dạng file Excel (.xlsx)">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
+                    <span class="material-symbols-outlined" aria-hidden="true">table_view</span>
                     <span>Xuất Excel</span>
                 </button>
                 <button type="button" class="btn btn-primary" id="btnThemKhachHang">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
+                    <span class="material-symbols-outlined" aria-hidden="true">add</span>
                     <span>Thêm Khách Hàng</span>
                 </button>
             </div>
@@ -150,12 +128,12 @@
                     <c:set var="userHienTai" value="${not empty nguoiDung ? nguoiDung : sessionScope.nguoiDung}" />
                     <c:set var="laQuanTriDanhMuc" value="${coQuyenDanhMuc or (not empty userHienTai and (userHienTai.coVaiTro('ADMIN') or userHienTai.coVaiTro('DIRECTOR')))}" />
                     <c:if test="${!laQuanTriDanhMuc}">
-                        <a href="${pageContext.request.contextPath}/san-pham" style="font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 600;" id="linkSanPhamBangGia">
-                            Sản phẩm & Bảng giá &rarr;
+                        <a href="${pageContext.request.contextPath}/san-pham" style="font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;" id="linkSanPhamBangGia">
+                            Sản phẩm & Bảng giá <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_forward</span>
                         </a>
                     </c:if>
-                    <a href="${pageContext.request.contextPath}/phan-quyen-du-lieu" style="font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 600;">
-                        Quản lý 4 nghiệp vụ Data Scope &rarr;
+                    <a href="${pageContext.request.contextPath}/phan-quyen-du-lieu" style="font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                        Quản lý 4 nghiệp vụ Data Scope <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_forward</span>
                     </a>
                 </div>
             </div>
@@ -186,8 +164,8 @@
                                     <td><c:out value="${kh.giaTri}" /></td>
                                     <td><span class="badge badge-success"><c:out value="${kh.trangThai}" /></span></td>
                                     <td style="text-align: center;">
-                                        <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" class="btn-action" title="Xem chi tiết khách hàng">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                        <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" class="btn-action" title="Xem chi tiết khách hàng" aria-label="Xem chi tiết khách hàng">
+                                            <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
                                         </a>
                                     </td>
                                 </tr>
@@ -213,7 +191,9 @@
                         <h2 class="modal-title" id="modalThemKhachHangTieuDe">Thêm Khách Hàng Mới</h2>
                         <p class="modal-subtitle">Tạo mới khách hàng thuộc phạm vi sở hữu của tài khoản hiện tại (S1-05)</p>
                     </div>
-                    <button type="button" class="modal-close-btn" id="btnDongModalThemKhachHang" aria-label="Đóng">&times;</button>
+                    <button type="button" class="modal-close-btn" id="btnDongModalThemKhachHang" aria-label="Đóng" title="Đóng">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
                 </div>
                 <form id="formThemKhachHang" method="POST" action="${pageContext.request.contextPath}/khach-hang">
                     <input type="hidden" name="action" value="them">
@@ -244,7 +224,7 @@
                         <div class="form-group">
                             <label class="form-label">Người sở hữu (Data Scope Server Enforcement)</label>
                             <div class="form-readonly-badge">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">person</span>
                                 <span>Chủ sở hữu: <strong><c:out value="${not empty currentUser ? currentUser.hoTen : sessionScope.nguoiDung.hoTen}" /></strong> &bull; <c:out value="${not empty currentUser ? currentUser.tenNhom : sessionScope.nguoiDung.tenNhomKinhDoanh}" /></span>
                             </div>
                         </div>
@@ -256,7 +236,7 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline" id="btnHuyThemKhachHang">Hủy bỏ</button>
                         <button type="submit" class="btn btn-primary" id="btnXacNhanThemKhachHang">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">save</span>
                             Lưu Khách Hàng
                         </button>
                     </div>

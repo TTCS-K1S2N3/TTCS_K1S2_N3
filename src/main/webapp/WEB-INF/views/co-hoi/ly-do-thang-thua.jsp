@@ -30,7 +30,9 @@
                     <span class="separator">/</span>
                     <span class="current">Lý do Thắng Thua & Đối thủ</span>
                 </div>
-                <a href="${pageContext.request.contextPath}/danh-muc" class="crm-btn crm-btn-outline" style="padding: 4px 12px; font-size: 13px; text-decoration: none;">&larr; Quay lại Danh mục</a>
+                <a href="${pageContext.request.contextPath}/danh-muc" class="crm-btn crm-btn-outline" style="padding: 4px 12px; font-size: 13px; text-decoration: none;">
+                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span> Quay lại Danh mục
+                </a>
             </nav>
 
             <!-- Page Header Banner -->
@@ -39,19 +41,11 @@
                     <div class="crm-header-badges">
                         <span class="crm-badge-module">Epic EP-02 / Story S2-10</span>
                         <span class="crm-badge-role-target">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="8.5" cy="7.5" r="4"></circle>
-                                <polyline points="17 11 19 13 23 9"></polyline>
-                            </svg>
+                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">shield</span>
                             <c:out value="${not empty thongTinDieuHuong.vaiTroHienThi ? thongTinDieuHuong.vaiTroHienThi : (not empty userHienTai.chuoiVaiTroHienThi ? userHienTai.chuoiVaiTroHienThi : 'Giám đốc kinh doanh')}" />
                         </span>
                         <span class="crm-badge-sprint-rule">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="8" x2="12" y2="12"></line>
-                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                            </svg>
+                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">info</span>
                             Dữ liệu bắt buộc đóng cơ hội (Sprint 5)
                         </span>
                     </div>
@@ -67,29 +61,18 @@
                             <input type="hidden" name="action" value="nap-du-lieu-mau">
                             <input type="hidden" name="tab" value="${currentTab}">
                             <button type="submit" class="crm-btn crm-btn-outline" id="btn-seed-sample" title="Tự động nạp danh mục lý do và đối thủ mẫu chuẩn">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="7 10 12 15 17 10"></polyline>
-                                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                                </svg>
+                                <span class="material-symbols-outlined" aria-hidden="true">sync</span>
                                 Nạp dữ liệu mẫu
                             </button>
                         </form>
                         <button type="button" class="crm-btn crm-btn-primary" id="btn-add-new-record">
-                            <svg class="crm-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">add</span>
                             Thêm mới
                         </button>
                     </c:if>
                     <c:if test="${!coQuyenQuanLy}">
                         <span class="crm-badge crm-badge-info" title="Chế độ xem cho nhân viên kinh doanh">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="16" x2="12" y2="12"></line>
-                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                            </svg>
+                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">visibility</span>
                             Chế độ xem tra cứu
                         </span>
                     </c:if>
@@ -100,26 +83,23 @@
             <c:if test="${param.msg == 'success'}">
                 <div class="crm-alert-toast crm-alert-success" role="alert">
                     <div class="crm-alert-content">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                        </svg>
+                        <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
                         <span><c:out value="${param.info != null ? param.info : 'Thao tác đã được thực hiện thành công.'}" /></span>
                     </div>
-                    <button type="button" class="crm-alert-close" onclick="this.parentElement.remove();" aria-label="Đóng">&times;</button>
+                    <button type="button" class="crm-alert-close" onclick="this.parentElement.remove();" aria-label="Đóng" title="Đóng">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
                 </div>
             </c:if>
             <c:if test="${param.msg == 'error'}">
                 <div class="crm-alert-toast crm-alert-error" role="alert">
                     <div class="crm-alert-content">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="12" y1="8" x2="12" y2="12"></line>
-                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                        </svg>
+                        <span class="material-symbols-outlined" aria-hidden="true">error</span>
                         <span><c:out value="${param.info != null ? param.info : 'Đã xảy ra lỗi trong quá trình thực hiện.'}" /></span>
                     </div>
-                    <button type="button" class="crm-alert-close" onclick="this.parentElement.remove();" aria-label="Đóng">&times;</button>
+                    <button type="button" class="crm-alert-close" onclick="this.parentElement.remove();" aria-label="Đóng" title="Đóng">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
                 </div>
             </c:if>
 
@@ -128,10 +108,7 @@
                 <!-- Card 1: Lý do thắng -->
                 <div class="crm-kpi-card" id="kpi-win-reasons">
                     <div class="crm-kpi-icon-wrap crm-kpi-icon-win">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <circle cx="12" cy="8" r="7"></circle>
-                            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
-                        </svg>
+                        <span class="material-symbols-outlined icon-lg" aria-hidden="true">emoji_events</span>
                     </div>
                     <div class="crm-kpi-content">
                         <div class="crm-kpi-label">Lý do Thắng (Won)</div>
@@ -145,10 +122,7 @@
                 <!-- Card 2: Lý do thua -->
                 <div class="crm-kpi-card" id="kpi-loss-reasons">
                     <div class="crm-kpi-icon-wrap crm-kpi-icon-loss">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
-                            <polyline points="17 18 23 18 23 12"></polyline>
-                        </svg>
+                        <span class="material-symbols-outlined icon-lg" aria-hidden="true">trending_down</span>
                     </div>
                     <div class="crm-kpi-content">
                         <div class="crm-kpi-label">Lý do Thua (Lost)</div>
@@ -162,11 +136,7 @@
                 <!-- Card 3: Đối thủ cạnh tranh -->
                 <div class="crm-kpi-card" id="kpi-competitors">
                     <div class="crm-kpi-icon-wrap crm-kpi-icon-competitor">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                            <polyline points="2 17 12 22 22 17"></polyline>
-                            <polyline points="2 12 12 17 22 12"></polyline>
-                        </svg>
+                        <span class="material-symbols-outlined icon-lg" aria-hidden="true">groups</span>
                     </div>
                     <div class="crm-kpi-content">
                         <div class="crm-kpi-label">Đối thủ Cạnh tranh</div>
@@ -180,10 +150,7 @@
                 <!-- Card 4: Cơ hội tham chiếu -->
                 <div class="crm-kpi-card" id="kpi-references">
                     <div class="crm-kpi-icon-wrap crm-kpi-icon-ref">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                        </svg>
+                        <span class="material-symbols-outlined icon-lg" aria-hidden="true">receipt_long</span>
                     </div>
                     <div class="crm-kpi-content">
                         <div class="crm-kpi-label">Thương vụ Tham chiếu</div>
@@ -201,10 +168,7 @@
                     <!-- Tab 1: Lý do thắng (AC1) -->
                     <li class="crm-nav-tab-item">
                         <button type="button" class="crm-nav-tab-btn ${currentTab == 'thang' ? 'active' : ''}" data-tab="thang" role="tab" id="tab-btn-thang">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="8" r="7"></circle>
-                                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
-                            </svg>
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">emoji_events</span>
                             Lý do Thắng
                             <span class="crm-nav-tab-badge">${tongLyDoThang}</span>
                         </button>
@@ -213,10 +177,7 @@
                     <!-- Tab 2: Lý do thua (AC1) -->
                     <li class="crm-nav-tab-item">
                         <button type="button" class="crm-nav-tab-btn ${currentTab == 'thua' ? 'active' : ''}" data-tab="thua" role="tab" id="tab-btn-thua">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
-                                <polyline points="17 18 23 18 23 12"></polyline>
-                            </svg>
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">trending_down</span>
                             Lý do Thua
                             <span class="crm-nav-tab-badge">${tongLyDoThua}</span>
                         </button>
@@ -225,11 +186,7 @@
                     <!-- Tab 3: Đối thủ cạnh tranh (AC2) -->
                     <li class="crm-nav-tab-item">
                         <button type="button" class="crm-nav-tab-btn ${currentTab == 'doi-thu' ? 'active' : ''}" data-tab="doi-thu" role="tab" id="tab-btn-doi-thu">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                                <polyline points="2 17 12 22 22 17"></polyline>
-                                <polyline points="2 12 12 17 22 12"></polyline>
-                            </svg>
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">groups</span>
                             Đối thủ Cạnh tranh
                             <span class="crm-nav-tab-badge">${tongDoiThu}</span>
                         </button>
@@ -238,10 +195,7 @@
                     <!-- Tab 4: Kiểm tra quy tắc đóng cơ hội Sprint 5 (AC3) -->
                     <li class="crm-nav-tab-item">
                         <button type="button" class="crm-nav-tab-btn ${currentTab == 'sprint5' ? 'active' : ''}" data-tab="sprint5" role="tab" id="tab-btn-sprint5">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                            </svg>
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">verified</span>
                             Quy tắc Đóng Cơ hội (Sprint 5)
                             <span class="crm-nav-tab-badge" style="background:#dbeafe; color:#1e40af;">S5-05</span>
                         </button>
@@ -253,10 +207,7 @@
             <div class="crm-catalog-toolbar">
                 <div class="crm-toolbar-left">
                     <div class="crm-search-box">
-                        <svg class="crm-search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
+                        <span class="material-symbols-outlined crm-search-icon" aria-hidden="true">search</span>
                         <input type="text" class="crm-search-input" id="catalog-search-input" placeholder="Tìm theo mã hoặc tên..." value="<c:out value="${tuKhoa}" />">
                     </div>
                     <select class="crm-filter-select" id="catalog-status-filter">
@@ -319,20 +270,14 @@
                                         <c:if test="${coQuyenQuanLy}">
                                             <td style="text-align: right;">
                                                 <div class="crm-action-buttons" style="justify-content: flex-end;">
-                                                    <button type="button" class="crm-btn-icon btn-edit-ly-do" title="Chỉnh sửa lý do thắng"
+                                                    <button type="button" class="crm-btn-icon btn-edit-ly-do" title="Chỉnh sửa lý do thắng" aria-label="Chỉnh sửa lý do thắng"
                                                             data-id="${item.id}" data-ma="${item.maLyDo}" data-ten="${item.tenLyDo}"
                                                             data-loai="${item.loai}" data-thutu="${item.thuTuHienThi}" data-hoatdong="${item.hoatDong}">
-                                                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
-                                                            <path d="M12 20h9"></path>
-                                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                                        </svg>
+                                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">edit</span>
                                                     </button>
-                                                    <button type="button" class="crm-btn-icon crm-btn-delete btn-delete-record" title="Xóa lý do thắng"
+                                                    <button type="button" class="crm-btn-icon crm-btn-delete btn-delete-record" title="Xóa lý do thắng" aria-label="Xóa lý do thắng"
                                                             data-action="xoa-ly-do" data-id="${item.id}" data-name="${item.tenLyDo}" data-ref="${item.soCoHoiThamChieu}">
-                                                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
-                                                            <polyline points="3 6 5 6 21 6"></polyline>
-                                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                                        </svg>
+                                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">delete</span>
                                                     </button>
                                                 </div>
                                             </td>
@@ -343,10 +288,7 @@
                                     <tr>
                                         <td colspan="${coQuyenQuanLy ? 6 : 5}">
                                             <div class="crm-empty-state">
-                                                <svg class="crm-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                                    <circle cx="12" cy="8" r="7"></circle>
-                                                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
-                                                </svg>
+                                                <span class="material-symbols-outlined crm-empty-icon" style="font-size: 48px;" aria-hidden="true">emoji_events</span>
                                                 <div class="crm-empty-title">Chưa có lý do thắng nào được khai báo</div>
                                                 <p class="crm-empty-desc">Nhấn nút "Thêm lý do thắng" để tạo mới các lý do chốt thành công cơ hội.</p>
                                             </div>
@@ -407,20 +349,14 @@
                                         <c:if test="${coQuyenQuanLy}">
                                             <td style="text-align: right;">
                                                 <div class="crm-action-buttons" style="justify-content: flex-end;">
-                                                    <button type="button" class="crm-btn-icon btn-edit-ly-do" title="Chỉnh sửa lý do thua"
+                                                    <button type="button" class="crm-btn-icon btn-edit-ly-do" title="Chỉnh sửa lý do thua" aria-label="Chỉnh sửa lý do thua"
                                                             data-id="${item.id}" data-ma="${item.maLyDo}" data-ten="${item.tenLyDo}"
                                                             data-loai="${item.loai}" data-thutu="${item.thuTuHienThi}" data-hoatdong="${item.hoatDong}">
-                                                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
-                                                            <path d="M12 20h9"></path>
-                                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                                        </svg>
+                                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">edit</span>
                                                     </button>
-                                                    <button type="button" class="crm-btn-icon crm-btn-delete btn-delete-record" title="Xóa lý do thua"
+                                                    <button type="button" class="crm-btn-icon crm-btn-delete btn-delete-record" title="Xóa lý do thua" aria-label="Xóa lý do thua"
                                                             data-action="xoa-ly-do" data-id="${item.id}" data-name="${item.tenLyDo}" data-ref="${item.soCoHoiThamChieu}">
-                                                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
-                                                            <polyline points="3 6 5 6 21 6"></polyline>
-                                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                                        </svg>
+                                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">delete</span>
                                                     </button>
                                                 </div>
                                             </td>
@@ -431,10 +367,7 @@
                                     <tr>
                                         <td colspan="${coQuyenQuanLy ? 6 : 5}">
                                             <div class="crm-empty-state">
-                                                <svg class="crm-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                                    <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
-                                                    <polyline points="17 18 23 18 23 12"></polyline>
-                                                </svg>
+                                                <span class="material-symbols-outlined crm-empty-icon" style="font-size: 48px;" aria-hidden="true">trending_down</span>
                                                 <div class="crm-empty-title">Chưa có lý do thua nào được khai báo</div>
                                                 <p class="crm-empty-desc">Nhấn nút "Thêm lý do thua" để tạo các nguyên nhân thương vụ thất bại phục vụ rút kinh nghiệm.</p>
                                             </div>
@@ -478,11 +411,7 @@
                                             <c:if test="${not empty item.website}">
                                                 <a href="${item.website.startsWith('http') ? item.website : 'https://'.concat(item.website)}"
                                                    target="_blank" rel="noopener noreferrer" class="crm-website-link">
-                                                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
-                                                        <circle cx="12" cy="12" r="10"></circle>
-                                                        <line x1="2" y1="12" x2="22" y2="12"></line>
-                                                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                                                    </svg>
+                                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">language</span>
                                                     <c:out value="${item.website}" />
                                                 </a>
                                             </c:if>
@@ -514,20 +443,14 @@
                                         <c:if test="${coQuyenQuanLy}">
                                             <td style="text-align: right;">
                                                 <div class="crm-action-buttons" style="justify-content: flex-end;">
-                                                    <button type="button" class="crm-btn-icon btn-edit-doi-thu" title="Chỉnh sửa đối thủ"
+                                                    <button type="button" class="crm-btn-icon btn-edit-doi-thu" title="Chỉnh sửa đối thủ" aria-label="Chỉnh sửa đối thủ"
                                                             data-id="${item.id}" data-ma="${item.maDoiThu}" data-ten="${item.tenDoiThu}"
                                                             data-website="${item.website}" data-ghichu="${item.ghiChu}" data-hoatdong="${item.hoatDong}">
-                                                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
-                                                            <path d="M12 20h9"></path>
-                                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                                        </svg>
+                                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">edit</span>
                                                     </button>
-                                                    <button type="button" class="crm-btn-icon crm-btn-delete btn-delete-record" title="Xóa đối thủ"
+                                                    <button type="button" class="crm-btn-icon crm-btn-delete btn-delete-record" title="Xóa đối thủ" aria-label="Xóa đối thủ"
                                                             data-action="xoa-doi-thu" data-id="${item.id}" data-name="${item.tenDoiThu}" data-ref="${item.soCoHoiThamChieu}">
-                                                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
-                                                            <polyline points="3 6 5 6 21 6"></polyline>
-                                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                                        </svg>
+                                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">delete</span>
                                                     </button>
                                                 </div>
                                             </td>
@@ -538,11 +461,7 @@
                                     <tr>
                                         <td colspan="${coQuyenQuanLy ? 7 : 6}">
                                             <div class="crm-empty-state">
-                                                <svg class="crm-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                                                    <polyline points="2 17 12 22 22 17"></polyline>
-                                                    <polyline points="2 12 12 17 22 12"></polyline>
-                                                </svg>
+                                                <span class="material-symbols-outlined crm-empty-icon" style="font-size: 48px;" aria-hidden="true">groups</span>
                                                 <div class="crm-empty-title">Chưa có đối thủ cạnh tranh nào</div>
                                                 <p class="crm-empty-desc">Nhấn nút "Thêm đối thủ cạnh tranh" để lập danh bạ theo dõi năng lực thị trường.</p>
                                             </div>
@@ -560,13 +479,7 @@
                 <div class="crm-sprint5-section">
                     <div class="crm-sprint5-header">
                         <h2 class="crm-sprint5-title">
-                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--primary);">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                                <line x1="16" y1="13" x2="8" y2="13"></line>
-                                <line x1="16" y1="17" x2="8" y2="17"></line>
-                                <polyline points="10 9 9 9 8 9"></polyline>
-                            </svg>
+                            <span class="material-symbols-outlined icon-md" aria-hidden="true" style="color: var(--primary);">description</span>
                             Quy Định Bắt Buộc Khi Đóng Cơ Hội (Sprint 5 - S5-05)
                         </h2>
                         <p class="crm-sprint5-subtitle">
@@ -579,29 +492,20 @@
                         <!-- Quy tắc đóng Thắng -->
                         <div class="crm-rule-card crm-rule-card-win">
                             <h3 class="crm-rule-card-title">
-                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
-                                    <circle cx="12" cy="8" r="7"></circle>
-                                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
-                                </svg>
+                                <span class="material-symbols-outlined icon-md" aria-hidden="true" style="color:#059669;">emoji_events</span>
                                 Khi Đóng THẮNG (Won)
                             </h3>
                             <ul class="crm-rule-list">
                                 <li>
-                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="color:#10b981;">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
+                                    <span class="material-symbols-outlined icon-sm" aria-hidden="true" style="color:#10b981;">check</span>
                                     <span><strong>Bắt buộc chọn Lý do thắng</strong> từ danh mục lý do đang hoạt động.</span>
                                 </li>
                                 <li>
-                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="color:#10b981;">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
+                                    <span class="material-symbols-outlined icon-sm" aria-hidden="true" style="color:#10b981;">check</span>
                                     <span><strong>Bắt buộc nhập Giá trị chốt thực tế</strong> (lớn hơn 0) để tính vào chỉ tiêu doanh số của nhân viên sở hữu.</span>
                                 </li>
                                 <li>
-                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="color:#10b981;">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
+                                    <span class="material-symbols-outlined icon-sm" aria-hidden="true" style="color:#10b981;">check</span>
                                     <span><strong>Bắt buộc nhập Ngày ký hợp đồng</strong> thực tế.</span>
                                 </li>
                             </ul>
@@ -610,29 +514,20 @@
                         <!-- Quy tắc đóng Thua -->
                         <div class="crm-rule-card crm-rule-card-loss">
                             <h3 class="crm-rule-card-title">
-                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
-                                    <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
-                                    <polyline points="17 18 23 18 23 12"></polyline>
-                                </svg>
+                                <span class="material-symbols-outlined icon-md" aria-hidden="true" style="color:#ef4444;">trending_down</span>
                                 Khi Đóng THUA (Lost)
                             </h3>
                             <ul class="crm-rule-list">
                                 <li>
-                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="color:#ef4444;">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
+                                    <span class="material-symbols-outlined icon-sm" aria-hidden="true" style="color:#ef4444;">check</span>
                                     <span><strong>Bắt buộc chọn Lý do thua</strong> từ danh mục đang hoạt động để phân tích lỗ hổng bán hàng.</span>
                                 </li>
                                 <li>
-                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="color:#ef4444;">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
+                                    <span class="material-symbols-outlined icon-sm" aria-hidden="true" style="color:#ef4444;">check</span>
                                     <span><strong>Chọn Đối thủ cạnh tranh thắng thầu</strong> (nếu thất bại do cạnh tranh) để ghi nhận dữ liệu phân tích đối thủ.</span>
                                 </li>
                                 <li>
-                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="color:#ef4444;">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
+                                    <span class="material-symbols-outlined icon-sm" aria-hidden="true" style="color:#ef4444;">check</span>
                                     <span>Cơ hội đã đóng chuyển sang chế độ <strong>chỉ đọc</strong>, chỉ Trưởng nhóm trở lên mới mở lại được kèm lý do.</span>
                                 </li>
                             </ul>
@@ -642,11 +537,7 @@
                     <!-- Hộp công cụ Mô phỏng & Kiểm chứng Trực tiếp -->
                     <div class="crm-simulator-box">
                         <div class="crm-simulator-title">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                                <line x1="8" y1="21" x2="16" y2="21"></line>
-                                <line x1="12" y1="17" x2="12" y2="21"></line>
-                            </svg>
+                            <span class="material-symbols-outlined icon-md" aria-hidden="true">fact_check</span>
                             Trình Kiểm Thử Ràng Buộc Dữ Liệu Sprint 5 (Live Validation Simulator)
                         </div>
 
@@ -657,11 +548,15 @@
                                 <div style="display:flex; gap:16px; margin-top:6px;">
                                     <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
                                         <input type="radio" name="sim-trang-thai" id="sim-radio-thang" value="THANG" checked>
-                                        <span style="font-weight:600; color:#065f46;">🏆 Đóng THẮNG</span>
+                                        <span style="font-weight:600; color:#065f46; display:inline-flex; align-items:center; gap:4px;">
+                                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">emoji_events</span> Đóng THẮNG
+                                        </span>
                                     </label>
                                     <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
                                         <input type="radio" name="sim-trang-thai" id="sim-radio-thua" value="THUA">
-                                        <span style="font-weight:600; color:#991b1b;">📉 Đóng THUA</span>
+                                        <span style="font-weight:600; color:#991b1b; display:inline-flex; align-items:center; gap:4px;">
+                                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">trending_down</span> Đóng THUA
+                                        </span>
                                     </label>
                                 </div>
                             </div>
@@ -714,19 +609,11 @@
 
                         <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
                             <button type="button" class="crm-btn crm-btn-primary" id="btn-simulate-validate">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="9 11 12 14 22 4"></polyline>
-                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                                </svg>
+                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">check_circle</span>
                                 Kiểm tra tính hợp lệ đóng cơ hội
                             </button>
                             <button type="button" class="crm-btn crm-btn-outline" id="btn-simulate-autofill" title="Tự động điền dữ liệu mẫu để kiểm thử nhanh quy tắc Sprint 5">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                    <line x1="12" y1="18" x2="12" y2="12"></line>
-                                    <line x1="9" y1="15" x2="15" y2="15"></line>
-                                </svg>
+                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">bolt</span>
                                 Nạp dữ liệu kiểm thử nhanh
                             </button>
                         </div>
@@ -747,7 +634,9 @@
         <div class="crm-modal-card">
             <div class="crm-modal-header">
                 <h3 class="crm-modal-title" id="modal-ly-do-title">Khai báo lý do thắng thua</h3>
-                <button type="button" class="crm-modal-close-btn" aria-label="Đóng">&times;</button>
+                <button type="button" class="crm-modal-close-btn" aria-label="Đóng" title="Đóng">
+                    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                </button>
             </div>
             <form id="form-ly-do" method="POST" action="${pageContext.request.contextPath}/danh-muc/ly-do-thang-thua">
                 <input type="hidden" name="action" id="ly-do-action" value="them-ly-do">
@@ -757,8 +646,8 @@
                     <div class="crm-form-group">
                         <label class="crm-form-label" for="ly-do-loai">Loại lý do <span class="required">*</span></label>
                         <select class="crm-form-control" name="loai" id="ly-do-loai" required>
-                            <option value="THANG">🏆 Lý do Thắng (Won Reason)</option>
-                            <option value="THUA">📉 Lý do Thua (Lost Reason)</option>
+                            <option value="THANG">Lý do Thắng (Won Reason)</option>
+                            <option value="THUA">Lý do Thua (Lost Reason)</option>
                         </select>
                     </div>
 
@@ -801,7 +690,9 @@
         <div class="crm-modal-card">
             <div class="crm-modal-header">
                 <h3 class="crm-modal-title" id="modal-doi-thu-title">Khai báo đối thủ cạnh tranh</h3>
-                <button type="button" class="crm-modal-close-btn" aria-label="Đóng">&times;</button>
+                <button type="button" class="crm-modal-close-btn" aria-label="Đóng" title="Đóng">
+                    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                </button>
             </div>
             <form id="form-doi-thu" method="POST" action="${pageContext.request.contextPath}/danh-muc/ly-do-thang-thua">
                 <input type="hidden" name="action" id="doi-thu-action" value="them-doi-thu">
@@ -853,7 +744,9 @@
         <div class="crm-modal-card" style="max-width:440px;">
             <div class="crm-modal-header">
                 <h3 class="crm-modal-title" style="color:#ef4444;">Xác nhận xóa bản ghi</h3>
-                <button type="button" class="crm-modal-close-btn" aria-label="Đóng">&times;</button>
+                <button type="button" class="crm-modal-close-btn" aria-label="Đóng" title="Đóng">
+                    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                </button>
             </div>
             <form id="form-xoa" method="POST" action="${pageContext.request.contextPath}/danh-muc/ly-do-thang-thua">
                 <input type="hidden" name="action" id="xoa-action" value="">

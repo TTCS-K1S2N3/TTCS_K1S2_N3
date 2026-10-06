@@ -186,10 +186,10 @@
         const icon = ruleEl.querySelector('.rule-icon');
         if (isMet) {
             ruleEl.classList.add('met');
-            if (icon) icon.innerHTML = '&#10003;'; // Checkmark
+            if (icon) icon.innerHTML = '<span class="material-symbols-outlined icon-xs" aria-hidden="true">check</span>'; // Checkmark
         } else {
             ruleEl.classList.remove('met');
-            if (icon) icon.innerHTML = '&#10005;'; // Cross
+            if (icon) icon.innerHTML = '<span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span>'; // Cross
         }
     }
 
@@ -312,12 +312,12 @@
         }
 
         if (pass === confirm) {
-            matchStatus.innerHTML = '&#10003; Mật khẩu xác nhận trùng khớp';
+            matchStatus.innerHTML = '<span class="material-symbols-outlined icon-xs" aria-hidden="true">check_circle</span> Mật khẩu xác nhận trùng khớp';
             matchStatus.className = 'match-status match';
             clearFieldError(inputXacNhan, errXacNhan);
             return true;
         } else {
-            matchStatus.innerHTML = '&#10005; Mật khẩu xác nhận chưa trùng khớp';
+            matchStatus.innerHTML = '<span class="material-symbols-outlined icon-xs" aria-hidden="true">cancel</span> Mật khẩu xác nhận chưa trùng khớp';
             matchStatus.className = 'match-status mismatch';
             return false;
         }
@@ -384,9 +384,9 @@
         if (feedbackMessage) feedbackMessage.textContent = message;
         if (feedbackIcon) {
             if (type === 'success') {
-                feedbackIcon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+                feedbackIcon.innerHTML = '<span class="material-symbols-outlined icon-sm" aria-hidden="true">check_circle</span>';
             } else {
-                feedbackIcon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+                feedbackIcon.innerHTML = '<span class="material-symbols-outlined icon-sm" aria-hidden="true">error</span>';
             }
         }
         alertFeedback.classList.remove('d-none');

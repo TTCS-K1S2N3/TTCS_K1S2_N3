@@ -2,6 +2,7 @@
    CSS: Danh mục Lý do Thắng Thua và Đối thủ Cạnh tranh (Story S2-10)
    Tuân thủ quy chuẩn thiết kế: Plus Jakarta Sans, HSL/Modern Tokens, Responsive 360px
    ========================================================================== */
+@import url('../material-symbols.css');
 
 /* Main Page Container */
 .crm-catalog-page {

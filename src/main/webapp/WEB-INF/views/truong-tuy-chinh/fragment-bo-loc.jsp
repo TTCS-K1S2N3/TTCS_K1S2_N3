@@ -11,7 +11,10 @@
 
 <c:if test="${not empty dsTruongBoDacTuyChinh}">
     <div class="ttc-filter-section">
-        <div class="ttc-filter-section-title">&#9881; Bộ lọc tuỳ chỉnh</div>
+        <div class="ttc-filter-section-title" style="display: flex; align-items: center; gap: 4px;">
+            <span class="material-symbols-outlined icon-xs" aria-hidden="true">tune</span>
+            <span>Bộ lọc tuỳ chỉnh</span>
+        </div>
         <div class="ttc-filter-row">
             <c:forEach var="t" items="${dsTruongBoDacTuyChinh}">
                 <c:set var="giaTriLoc"

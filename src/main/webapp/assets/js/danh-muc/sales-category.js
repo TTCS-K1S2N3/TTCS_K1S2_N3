@@ -444,14 +444,14 @@ function showToast(type, message) {
     const toast = document.createElement("div");
     toast.className = "crm-toast " + (type || "success");
 
-    let iconClass = "bi-check-circle-fill";
-    if (type === "error") iconClass = "bi-exclamation-octagon-fill";
-    if (type === "warning") iconClass = "bi-exclamation-triangle-fill";
+    let iconName = "check_circle";
+    if (type === "error") iconName = "error";
+    if (type === "warning") iconName = "warning";
 
     toast.innerHTML =
-        '<i class="bi ' + iconClass + ' crm-toast-icon"></i>' +
+        '<span class="material-symbols-outlined crm-toast-icon" aria-hidden="true">' + iconName + '</span>' +
         '<div class="crm-toast-body">' + escapeHtml(message) + '</div>' +
-        '<button type="button" class="crm-toast-close" aria-label="Đóng">&times;</button>';
+        '<button type="button" class="crm-toast-close" aria-label="Đóng" title="Đóng"><span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span></button>';
 
     container.appendChild(toast);
 

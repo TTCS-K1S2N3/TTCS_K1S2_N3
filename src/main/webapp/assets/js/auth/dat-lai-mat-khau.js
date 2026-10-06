@@ -105,10 +105,10 @@
         const icon = ruleEl.querySelector('.rule-icon');
         if (isMet) {
             ruleEl.classList.add('met');
-            if (icon) icon.innerHTML = '&#10003;';
+            if (icon) icon.innerHTML = '<span class="material-symbols-outlined icon-xs" aria-hidden="true">check</span>';
         } else {
             ruleEl.classList.remove('met');
-            if (icon) icon.innerHTML = '&#10005;';
+            if (icon) icon.innerHTML = '<span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span>';
         }
     }
 
@@ -206,12 +206,12 @@
         }
 
         if (pass === confirm) {
-            matchStatus.innerHTML = '&#10003; Mật khẩu xác nhận trùng khớp';
+            matchStatus.innerHTML = '<span class="material-symbols-outlined icon-xs" aria-hidden="true">check_circle</span> Mật khẩu xác nhận trùng khớp';
             matchStatus.className = 'match-status match';
             clearError(inputXacNhan, errXacNhan);
             return true;
         } else {
-            matchStatus.innerHTML = '&#10005; Mật khẩu xác nhận chưa trùng khớp';
+            matchStatus.innerHTML = '<span class="material-symbols-outlined icon-xs" aria-hidden="true">cancel</span> Mật khẩu xác nhận chưa trùng khớp';
             matchStatus.className = 'match-status mismatch';
             return false;
         }
