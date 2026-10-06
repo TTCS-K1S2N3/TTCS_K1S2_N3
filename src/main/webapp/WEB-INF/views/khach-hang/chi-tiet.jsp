@@ -9,245 +9,8 @@
     <title><c:out value="${not empty banGhi.tieuDe ? banGhi.tieuDe : 'Chi Tiết Khách Hàng'}" /> - CRM Bán Hàng</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/khach-hang/khach-hang.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/khach-hang/chi-tiet.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
-    <style>
-        .breadcrumb-nav {
-            margin-bottom: 20px;
-        }
-        .breadcrumb-list {
-            display: flex;
-            align-items: center;
-            list-style: none;
-            gap: 8px;
-            font-size: 13.5px;
-            color: var(--slate-500);
-            flex-wrap: wrap;
-        }
-        .breadcrumb-item a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .breadcrumb-item a:hover {
-            text-decoration: underline;
-        }
-        .breadcrumb-separator {
-            color: var(--slate-400);
-        }
-        .breadcrumb-item.active {
-            color: var(--slate-700);
-            font-weight: 600;
-        }
-
-        /* Detail Card */
-        .detail-card {
-            background: #ffffff;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-sm);
-            overflow: hidden;
-            margin-bottom: 24px;
-        }
-        .detail-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-            background-color: #ffffff;
-        }
-        .detail-title-group h1 {
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--slate-900);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .detail-title-group p {
-            font-size: 13px;
-            color: var(--slate-500);
-            margin-top: 4px;
-        }
-        .detail-body {
-            padding: 24px;
-        }
-        .detail-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-            margin-bottom: 24px;
-        }
-        .detail-item {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .detail-label {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--slate-500);
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-        .detail-value {
-            font-size: 15px;
-            color: var(--slate-900);
-            font-weight: 500;
-            word-break: break-word;
-        }
-        .detail-value.font-mono {
-            font-family: monospace;
-            font-size: 14.5px;
-            color: var(--slate-700);
-        }
-        .detail-desc-box {
-            background-color: var(--slate-50);
-            border: 1px solid var(--slate-200);
-            border-radius: var(--radius-md);
-            padding: 16px;
-            color: var(--slate-700);
-            font-size: 14px;
-            line-height: 1.6;
-            white-space: pre-wrap;
-            min-height: 70px;
-        }
-
-        /* Group Company & Hierarchy Section (Story S3-05) */
-        .group-summary-banner {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        .kpi-card {
-            background: #ffffff;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-color);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            box-shadow: var(--shadow-sm);
-            position: relative;
-            overflow: hidden;
-        }
-        .kpi-card.highlight {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            color: #ffffff;
-            border-color: #334155;
-        }
-        .kpi-card.highlight .kpi-label {
-            color: #94a3b8;
-        }
-        .kpi-card.highlight .kpi-value {
-            color: #38bdf8;
-            font-size: 26px;
-            font-weight: 800;
-        }
-        .kpi-card.highlight .kpi-desc {
-            color: #cbd5e1;
-        }
-        .kpi-label {
-            font-size: 12.5px;
-            font-weight: 600;
-            color: var(--slate-500);
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-        }
-        .kpi-value {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--slate-900);
-            line-height: 1.2;
-        }
-        .kpi-desc {
-            font-size: 12.5px;
-            color: var(--slate-500);
-        }
-
-        .parent-info-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: #eff6ff;
-            color: #1d4ed8;
-            padding: 6px 14px;
-            border-radius: 9999px;
-            font-size: 13.5px;
-            font-weight: 600;
-            border: 1px solid #bfdbfe;
-        }
-        .parent-info-badge a {
-            color: #1d4ed8;
-            text-decoration: underline;
-        }
-
-        /* Modal styling */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(2px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-        .modal-box {
-            background: #ffffff;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 520px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            overflow: hidden;
-            animation: modalFadeIn 0.2s ease-out;
-        }
-        @keyframes modalFadeIn {
-            from { opacity: 0; transform: translateY(-10px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .modal-box-header {
-            padding: 18px 24px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .modal-box-header h3 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #0f172a;
-            margin: 0;
-        }
-        .modal-box-body {
-            padding: 24px;
-        }
-        .modal-box-footer {
-            padding: 16px 24px;
-            background: #f8fafc;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-        }
-        .btn-close-modal {
-            background: transparent;
-            border: none;
-            font-size: 22px;
-            color: #64748b;
-            cursor: pointer;
-            line-height: 1;
-        }
-        .btn-close-modal:hover {
-            color: #0f172a;
-        }
-    </style>
 </head>
 <body class="crm-body">
     <!-- Thanh điều hướng và Sidebar chuẩn hệ thống S1-06 -->
@@ -257,7 +20,7 @@
         <!-- Breadcrumb -->
         <nav class="breadcrumb-nav" aria-label="Breadcrumb">
             <ol class="breadcrumb-list">
-                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/dieu-huong">Trang chủ</a></li>
                 <span class="breadcrumb-separator">/</span>
                 <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/khach-hang">Khách hàng</a></li>
                 <span class="breadcrumb-separator">/</span>
@@ -354,7 +117,7 @@
 
                     <button type="button" class="btn btn-primary" onclick="moModalGanCongTyCon()" id="btnGanCongTyCon" style="font-size: 13px;">
                         <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 16px;">add_circle</span>
-                        <span>+ Gắn Công Ty Con</span>
+                        <span>Gán Công Ty Con</span>
                     </button>
 
                     <a href="${pageContext.request.contextPath}/khach-hang" class="btn btn-outline" id="btnBackKhachHang">
@@ -494,7 +257,7 @@
                                     </td>
                                     <td style="text-align: center;">
                                         <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                            <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${con.id}" class="btn-action" title="Xem chi tiết công ty con">
+                                            <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${con.id}" class="btn-action" title="Xem chi tiết công ty con" aria-label="Xem chi tiết công ty con">
                                                 <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 16px;">visibility</span>
                                             </a>
                                             <!-- Nút gỡ bỏ khỏi công ty mẹ -->
@@ -502,7 +265,7 @@
                                                 <input type="hidden" name="action" value="go-cong-ty-con">
                                                 <input type="hidden" name="congTyConId" value="${con.id}">
                                                 <input type="hidden" name="congTyMeId" value="${banGhi.id}">
-                                                <button type="submit" class="btn-action" title="Gỡ bỏ khỏi công ty mẹ" style="color: #ef4444; border-color: #fecaca; background: #fff5f5;">
+                                                <button type="submit" class="btn-action" title="Gỡ bỏ khỏi công ty mẹ" aria-label="Gỡ bỏ khỏi công ty mẹ" style="color: #ef4444; border-color: #fecaca; background: #fff5f5;">
                                                     <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 16px;">link_off</span>
                                                 </button>
                                             </form>
@@ -516,7 +279,7 @@
                                 <td colspan="8" style="text-align: center; padding: 36px 20px; color: var(--slate-500);">
                                     <div style="font-size: 14px; font-weight: 500;">Công ty này hiện chưa có công ty con nào trực thuộc.</div>
                                     <div style="font-size: 13px; color: var(--slate-400); margin-top: 4px;">
-                                        Bấm nút <strong>"+ Gắn Công Ty Con"</strong> phía trên để khai báo quan hệ tập đoàn mẹ - con.
+                                        Bấm nút <strong>"Gắn Công Ty Con"</strong> phía trên để khai báo quan hệ tập đoàn mẹ - con.
                                     </div>
                                 </td>
                             </tr>
@@ -527,65 +290,79 @@
         </div>
 
         <!-- BẢNG DANH SÁCH TẤT CẢ HỢP ĐỒNG CỦA TOÀN BỘ NHÓM CÔNG TY (STORY S3-05 AC2) -->
-        <c:if test="${not empty thongKeNhomCongTy.danhSachHopDongNhom}">
-            <div class="table-container" style="margin-bottom: 30px;">
-                <div style="padding: 16px 20px; background: #f8fafc; border-bottom: 1px solid var(--slate-200);">
-                    <h3 style="font-size: 16px; font-weight: 700; color: var(--slate-900); margin: 0; display: flex; align-items: center; gap: 8px;">
-                        <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary); font-size: 20px;">description</span>
-                        <span>Danh Sách Hợp Đồng Của Toàn Nhóm Công Ty (Tập Đoàn)</span>
-                    </h3>
-                    <p style="font-size: 13px; color: var(--slate-500); margin: 4px 0 0 0;">
-                        Tổng hợp hợp đồng từ công ty mẹ và toàn bộ các công ty con trực thuộc.
-                    </p>
-                </div>
-                <table class="data-table" id="bangHopDongNhom">
-                    <thead>
-                        <tr>
-                            <th style="width: 140px;">Số Hợp Đồng</th>
-                            <th>Pháp Nhân Ký Kết</th>
-                            <th>Vai Trò Nhóm</th>
-                            <th style="text-align: right;">Giá Trị Hợp Đồng</th>
-                            <th>Ngày Ký</th>
-                            <th>Trạng Thái</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <c:forEach var="hd" items="${thongKeNhomCongTy.danhSachHopDongNhom}">
-                            <tr>
-                                <td class="font-mono" style="font-weight: 600;"><c:out value="${hd.soHopDong}" /></td>
-                                <td>
-                                    <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${hd.khachHangId}" style="color: var(--primary); text-decoration: none; font-weight: 600;">
-                                        <c:out value="${hd.tenKhachHang}" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <c:choose>
-                                        <c:when test="${hd.khachHangId == banGhi.id}">
-                                            <span class="badge" style="background: #e0f2fe; color: #0369a1;">Công ty mẹ</span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="badge" style="background: #f1f5f9; color: #475569;">Công ty con</span>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </td>
-                                <td style="text-align: right; font-weight: 700; color: #16a34a;">
-                                    <c:out value="${thongKeNhomCongTy.dinhDangTienTe(hd.giaTriHopDong)}" />
-                                </td>
-                                <td><c:out value="${hd.ngayKyDinhDang}" /></td>
-                                <td><span class="badge badge-success"><c:out value="${hd.trangThai}" /></span></td>
-                            </tr>
-                        </c:forEach>
-                    </tbody>
-                </table>
+        <div class="table-container" style="margin-bottom: 30px;" id="khuVucHopDongNhom">
+            <div style="padding: 16px 20px; background: #f8fafc; border-bottom: 1px solid var(--slate-200);">
+                <h3 style="font-size: 16px; font-weight: 700; color: var(--slate-900); margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary); font-size: 20px;">description</span>
+                    <span>Danh Sách Hợp Đồng Của Toàn Nhóm Công Ty (Tập Đoàn)</span>
+                </h3>
+                <p style="font-size: 13px; color: var(--slate-500); margin: 4px 0 0 0;">
+                    Tổng hợp hợp đồng từ công ty mẹ và toàn bộ các công ty con trực thuộc.
+                </p>
             </div>
-        </c:if>
+            <table class="data-table" id="bangHopDongNhom">
+                <thead>
+                    <tr>
+                        <th style="width: 140px;">Số Hợp Đồng</th>
+                        <th>Pháp Nhân Ký Kết</th>
+                        <th>Vai Trò Nhóm</th>
+                        <th style="text-align: right;">Giá Trị Hợp Đồng</th>
+                        <th>Ngày Ký</th>
+                        <th>Trạng Thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <c:choose>
+                        <c:when test="${not empty thongKeNhomCongTy.danhSachHopDongNhom}">
+                            <c:forEach var="hd" items="${thongKeNhomCongTy.danhSachHopDongNhom}">
+                                <tr>
+                                    <td class="font-mono" style="font-weight: 600;"><c:out value="${hd.soHopDong}" /></td>
+                                    <td>
+                                        <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${hd.khachHangId}" style="color: var(--primary); text-decoration: none; font-weight: 600;">
+                                            <c:out value="${hd.tenKhachHang}" />
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${hd.khachHangId == banGhi.id}">
+                                                <span class="badge" style="background: #e0f2fe; color: #0369a1;">Công ty mẹ</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="badge" style="background: #f1f5f9; color: #475569;">Công ty con</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td style="text-align: right; font-weight: 700; color: #16a34a;">
+                                        <c:out value="${thongKeNhomCongTy.dinhDangTienTe(hd.giaTriHopDong)}" />
+                                    </td>
+                                    <td><c:out value="${hd.ngayKyDinhDang}" /></td>
+                                    <td><span class="badge badge-success"><c:out value="${hd.trangThai}" /></span></td>
+                                </tr>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 36px 20px; color: var(--slate-500);">
+                                    <div style="font-size: 14px; font-weight: 500;">Chưa có hợp đồng nào được ghi nhận cho nhóm công ty này.</div>
+                                    <div style="font-size: 13px; color: var(--slate-400); margin-top: 4px;">
+                                        Hợp đồng của công ty mẹ và các công ty con khi phát sinh sẽ được tự động tổng hợp tại đây.
+                                    </div>
+                                </td>
+                            </tr>
+                        </c:otherwise>
+                    </c:choose>
+                </tbody>
+            </table>
+        </div>
 
         <!-- MODAL 1: GẮN KHÁCH HÀNG LÀM CÔNG TY CON (STORY S3-05 AC1) -->
         <div class="modal-overlay" id="modalGanCongTyCon" style="display: none;">
             <div class="modal-box">
                 <div class="modal-box-header">
                     <h3>Gắn Công Ty Con Vào Nhóm</h3>
-                    <button type="button" class="btn-close-modal" onclick="dongModalGanCongTyCon()">&times;</button>
+                    <button type="button" class="btn-close-modal" onclick="dongModalGanCongTyCon()" aria-label="Đóng cửa sổ" title="Đóng cửa sổ">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
                 </div>
                 <form method="POST" action="${pageContext.request.contextPath}/khach-hang" id="formGanCongTyCon">
                     <input type="hidden" name="action" value="gan-cong-ty-con">
@@ -621,7 +398,9 @@
             <div class="modal-box">
                 <div class="modal-box-header">
                     <h3>Khai Báo Quan Hệ Công Ty Mẹ</h3>
-                    <button type="button" class="btn-close-modal" onclick="dongModalChonCongTyMe()">&times;</button>
+                    <button type="button" class="btn-close-modal" onclick="dongModalChonCongTyMe()" aria-label="Đóng cửa sổ" title="Đóng cửa sổ">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
                 </div>
                 <form method="POST" action="${pageContext.request.contextPath}/khach-hang" id="formCapNhatCongTyMe">
                     <input type="hidden" name="action" value="cap-nhat-cong-ty-me">
@@ -654,27 +433,6 @@
 
     </main>
 
-    <script>
-        function moModalGanCongTyCon() {
-            document.getElementById('modalGanCongTyCon').style.display = 'flex';
-        }
-        function dongModalGanCongTyCon() {
-            document.getElementById('modalGanCongTyCon').style.display = 'none';
-        }
-        function moModalChonCongTyMe() {
-            document.getElementById('modalChonCongTyMe').style.display = 'flex';
-        }
-        function dongModalChonCongTyMe() {
-            document.getElementById('modalChonCongTyMe').style.display = 'none';
-        }
-
-        // Đóng modal khi bấm ra ngoài hộp thoại
-        window.addEventListener('click', function(event) {
-            var modal1 = document.getElementById('modalGanCongTyCon');
-            var modal2 = document.getElementById('modalChonCongTyMe');
-            if (event.target === modal1) dongModalGanCongTyCon();
-            if (event.target === modal2) dongModalChonCongTyMe();
-        });
-    </script>
+    <script src="${pageContext.request.contextPath}/assets/js/khach-hang/chi-tiet.js"></script>
 </body>
 </html>
