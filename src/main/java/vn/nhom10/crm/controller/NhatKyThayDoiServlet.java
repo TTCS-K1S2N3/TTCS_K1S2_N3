@@ -242,6 +242,12 @@ public class NhatKyThayDoiServlet extends HttpServlet {
             String giaTriTruocAnToan = vn.nhom10.crm.model.NhatKyThayDoi.cheGiaTriNhayCam(item.getTruongThayDoi(), item.getGiaTriTruoc());
             String giaTriSauAnToan = vn.nhom10.crm.model.NhatKyThayDoi.cheGiaTriNhayCam(item.getTruongThayDoi(), item.getGiaTriSau());
 
+            // Định dạng hiển thị thân thiện trên UI (Story S2-04)
+            String truongHienThi = item.getTruongThayDoiHienThi();
+            String giaTriTruocHienThi = item.getGiaTriTruocHienThi();
+            String giaTriSauHienThi = item.getGiaTriSauHienThi();
+            String vaiTroActorHienThi = item.getVaiTroNguoiThucHienHienThi();
+
             StringBuilder json = new StringBuilder();
             json.append("{");
             json.append("\"id\":").append(item.getId()).append(",");
@@ -249,16 +255,19 @@ public class NhatKyThayDoiServlet extends HttpServlet {
             json.append("\"nguoiThucHienId\":").append(item.getNguoiThucHienId()).append(",");
             json.append("\"tenNguoiThucHien\":").append(escapeJson(item.getTenNguoiThucHien())).append(",");
             json.append("\"emailNguoiThucHien\":").append(escapeJson(item.getEmailNguoiThucHien())).append(",");
-            json.append("\"vaiTroNguoiThucHien\":").append(escapeJson(item.getVaiTroNguoiThucHien())).append(",");
+            json.append("\"vaiTroNguoiThucHien\":").append(escapeJson(vaiTroActorHienThi)).append(",");
             json.append("\"thoiDiem\":").append(escapeJson(item.getThoiDiemDinhDang())).append(",");
             json.append("\"loaiDoiTuongMa\":").append(escapeJson(item.getLoaiDoiTuong() != null ? item.getLoaiDoiTuong().getMa() : "")).append(",");
             json.append("\"loaiDoiTuongTen\":").append(escapeJson(item.getLoaiDoiTuong() != null ? item.getLoaiDoiTuong().getTenHienThi() : "")).append(",");
             json.append("\"loaiDoiTuongClass\":").append(escapeJson(item.getLoaiDoiTuong() != null ? item.getLoaiDoiTuong().getClassMauSac() : "")).append(",");
             json.append("\"maDoiTuong\":").append(escapeJson(item.getMaDoiTuong())).append(",");
             json.append("\"tenDoiTuong\":").append(escapeJson(item.getTenDoiTuong())).append(",");
-            json.append("\"truongThayDoi\":").append(escapeJson(item.getTruongThayDoi())).append(",");
-            json.append("\"giaTriTruoc\":").append(escapeJson(giaTriTruocAnToan)).append(",");
-            json.append("\"giaTriSau\":").append(escapeJson(giaTriSauAnToan)).append(",");
+            json.append("\"truongThayDoi\":").append(escapeJson(truongHienThi)).append(",");
+            json.append("\"giaTriTruoc\":").append(escapeJson(giaTriTruocHienThi)).append(",");
+            json.append("\"giaTriSau\":").append(escapeJson(giaTriSauHienThi)).append(",");
+            json.append("\"truongThayDoiRaw\":").append(escapeJson(item.getTruongThayDoi())).append(",");
+            json.append("\"giaTriTruocRaw\":").append(escapeJson(giaTriTruocAnToan)).append(",");
+            json.append("\"giaTriSauRaw\":").append(escapeJson(giaTriSauAnToan)).append(",");
             json.append("\"hanhDong\":").append(escapeJson(item.getHanhDong() != null ? item.getHanhDong().getTenHienThi() : "")).append(",");
             json.append("\"lyDoThayDoi\":").append(escapeJson(item.getLyDoThayDoi())).append(",");
             json.append("\"diaChiIp\":").append(escapeJson(item.getDiaChiIp())).append(",");

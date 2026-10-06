@@ -428,7 +428,7 @@
                                             <span class="actor-name"><%= item.getTenNguoiThucHien() %></span>
                                             <span class="actor-email"><%= item.getEmailNguoiThucHien() %></span>
                                             <%
-                                                String vtNguoiThucHien = item.getVaiTroNguoiThucHien();
+                                                String vtNguoiThucHien = item.getVaiTroNguoiThucHienHienThi();
                                                 if (vtNguoiThucHien == null || vtNguoiThucHien.isBlank() || "null".equalsIgnoreCase(vtNguoiThucHien.trim())) {
                                                     vtNguoiThucHien = "Không xác định";
                                                 }
@@ -462,7 +462,7 @@
                                 <!-- Cột 4: Trường thay đổi & Hành động -->
                                 <td class="col-field">
                                     <div class="field-name-highlight">
-                                        <%= item.getTruongThayDoi() %>
+                                        <%= item.getTruongThayDoiHienThi() %>
                                     </div>
                                     <span class="action-tag <%= hdClass %>"><%= hdTen %></span>
                                 </td>
@@ -471,7 +471,7 @@
                                 <td class="col-before">
                                     <div class="diff-value-card diff-before">
                                         <div class="diff-badge-sub">Giá trị cũ</div>
-                                        <div class="diff-text"><del><%= item.getGiaTriTruoc() %></del></div>
+                                        <div class="diff-text"><del><%= item.getGiaTriTruocHienThi() %></del></div>
                                     </div>
                                 </td>
 
@@ -479,7 +479,7 @@
                                 <td class="col-after">
                                     <div class="diff-value-card diff-after">
                                         <div class="diff-badge-sub">Giá trị mới</div>
-                                        <div class="diff-text"><strong><%= item.getGiaTriSau() %></strong></div>
+                                        <div class="diff-text"><strong><%= item.getGiaTriSauHienThi() %></strong></div>
                                     </div>
                                 </td>
 

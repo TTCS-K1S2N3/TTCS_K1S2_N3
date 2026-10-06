@@ -13,7 +13,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import vn.nhom10.crm.dto.BaoCaoNhapExcelDTO;
+import vn.nhom10.crm.dto.ImportPreviewSession;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.VaiTro;
 import vn.nhom10.crm.service.NguoiDungImportService;
@@ -33,6 +36,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("Kiểm thử Controller NguoiDungImportServlet (Story S2-01)")
 public class NguoiDungImportServletTest {
 
@@ -165,5 +169,107 @@ public class NguoiDungImportServletTest {
 
         verify(response).sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập chức năng này.");
         verify(dispatcher, never()).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("Review Fix: Nhập trực tiếp sau Xem trước bằng previewToken thành công mà không cần chọn lại tệp")
+    void testDoPost_NhapTuPreviewToken_ThanhCong() throws Exception {
+        String token = "valid-token-123";
+        byte[] fileBytes = new byte[]{1, 2, 3, 4};
+        ImportPreviewSession previewSession = new ImportPreviewSession(token, adminUser.getId(), "preview_users.xlsx", fileBytes, 5);
+
+        when(request.getSession(false)).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
+        when(session.getAttribute("nguoiDung")).thenReturn(adminUser);
+        when(session.getAttribute("IMPORT_PREVIEW_" + token)).thenReturn(previewSession);
+
+        when(request.getParameter("action")).thenReturn("nhap-du-lieu");
+        when(request.getParameter("previewToken")).thenReturn(token);
+        when(request.getPart("fileExcel")).thenReturn(null); // Không có file đính kèm
+
+        BaoCaoNhapExcelDTO mockBaoCao = new BaoCaoNhapExcelDTO("preview_users.xlsx");
+        mockBaoCao.setSoDongThanhCong(5);
+        when(importService.thucHienNhap(any(InputStream.class), eq(adminUser.getId()), eq("preview_users.xlsx"))).thenReturn(mockBaoCao);
+        when(request.getRequestDispatcher("/WEB-INF/views/nguoi-dung/import-excel.jsp")).thenReturn(dispatcher);
+
+        servlet.doPost(request, response);
+
+        verify(importService).thucHienNhap(any(InputStream.class), eq(adminUser.getId()), eq("preview_users.xlsx"));
+        verify(request).setAttribute(eq("baoCao"), eq(mockBaoCao));
+        verify(request).setAttribute(eq("cheDo"), eq("ket-qua"));
+        verify(session).removeAttribute("IMPORT_PREVIEW_" + token);
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("Review Fix: Nhập bằng previewToken đã hết hạn hoặc không tồn tại hiển thị lỗi tiếng Việt thân thiện, không bị lỗi 500")
+    void testDoPost_NhapTuPreviewToken_HetHan() throws Exception {
+        String token = "expired-token-999";
+        when(request.getSession(false)).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
+        when(session.getAttribute("nguoiDung")).thenReturn(adminUser);
+        when(session.getAttribute("IMPORT_PREVIEW_" + token)).thenReturn(null); // Đã hết hạn hoặc không tồn tại
+
+        when(request.getParameter("action")).thenReturn("nhap-du-lieu");
+        when(request.getParameter("previewToken")).thenReturn(token);
+        when(request.getPart("fileExcel")).thenReturn(null);
+        when(request.getRequestDispatcher("/WEB-INF/views/nguoi-dung/import-excel.jsp")).thenReturn(dispatcher);
+
+        servlet.doPost(request, response);
+
+        verify(importService, never()).thucHienNhap(any(), anyLong(), anyString());
+        verify(request).setAttribute(eq("thongBaoLoi"), eq("Dữ liệu xem trước đã hết hạn hoặc không tồn tại. Vui lòng chọn lại tệp Excel."));
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("Review Fix: Nhập bằng previewToken của người dùng khác bị từ chối")
+    void testDoPost_NhapTuPreviewToken_KhacNguoiDung() throws Exception {
+        String token = "other-user-token";
+        byte[] fileBytes = new byte[]{1, 2, 3};
+        // Token thuộc về user 99L, nhưng user đăng nhập hiện tại là adminUser (ID 1L)
+        ImportPreviewSession previewSession = new ImportPreviewSession(token, 99L, "test.xlsx", fileBytes, 2);
+
+        when(request.getSession(false)).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
+        when(session.getAttribute("nguoiDung")).thenReturn(adminUser);
+        when(session.getAttribute("IMPORT_PREVIEW_" + token)).thenReturn(previewSession);
+
+        when(request.getParameter("action")).thenReturn("nhap-du-lieu");
+        when(request.getParameter("previewToken")).thenReturn(token);
+        when(request.getPart("fileExcel")).thenReturn(null);
+        when(request.getRequestDispatcher("/WEB-INF/views/nguoi-dung/import-excel.jsp")).thenReturn(dispatcher);
+
+        servlet.doPost(request, response);
+
+        verify(importService, never()).thucHienNhap(any(), anyLong(), anyString());
+        verify(request).setAttribute(eq("thongBaoLoi"), eq("Bạn không có quyền thao tác trên đợt xem trước của tài khoản khác. Vui lòng chọn lại tệp Excel."));
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("Review Fix: Chống double submit / replay - previewToken chỉ được sử dụng đúng 1 lần")
+    void testDoPost_NhapTuPreviewToken_DaSuDung_ChongDoubleSubmit() throws Exception {
+        String token = "replayed-token";
+        byte[] fileBytes = new byte[]{1, 2, 3};
+        ImportPreviewSession previewSession = new ImportPreviewSession(token, adminUser.getId(), "test.xlsx", fileBytes, 2);
+        // Đánh dấu đã sử dụng
+        previewSession.markUsed();
+
+        when(request.getSession(false)).thenReturn(session);
+        when(request.getSession(true)).thenReturn(session);
+        when(session.getAttribute("nguoiDung")).thenReturn(adminUser);
+        when(session.getAttribute("IMPORT_PREVIEW_" + token)).thenReturn(previewSession);
+
+        when(request.getParameter("action")).thenReturn("nhap-du-lieu");
+        when(request.getParameter("previewToken")).thenReturn(token);
+        when(request.getPart("fileExcel")).thenReturn(null);
+        when(request.getRequestDispatcher("/WEB-INF/views/nguoi-dung/import-excel.jsp")).thenReturn(dispatcher);
+
+        servlet.doPost(request, response);
+
+        verify(importService, never()).thucHienNhap(any(), anyLong(), anyString());
+        verify(request).setAttribute(eq("thongBaoLoi"), eq("Đợt xem trước này đã được nhập trước đó. Vui lòng chọn lại tệp Excel nếu muốn nhập đợt mới."));
+        verify(dispatcher).forward(request, response);
     }
 }

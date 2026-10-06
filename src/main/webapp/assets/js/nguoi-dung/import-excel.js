@@ -236,40 +236,36 @@
         },
 
         /**
-         * 4. Modal xác nhận thông minh khi bấm "Tiến hành nhập dữ liệu"
+         * 4. Modal xác nhận thông minh khi bấm "Thực hiện nhập" / "Tiến hành nhập dữ liệu" (Story S2-01)
          */
         initConfirmModal() {
-            const form = document.getElementById('form-import-excel');
-            const btnNhap = document.getElementById('btn-nhap-du-lieu');
+            const formImport = document.getElementById('form-import-excel');
+            const formThucHien = document.getElementById('form-thuc-hien-nhap');
+            const btnNhapCard2 = document.getElementById('btn-nhap-du-lieu');
+            const btnThucHienTop = document.getElementById('btn-thuc-hien-nhap');
+            const btnThucHienBottom = document.getElementById('btn-thuc-hien-nhap-bottom');
             const modal = document.getElementById('modal-xac-nhan-nhap');
             const btnModalConfirm = document.getElementById('modal-btn-confirm');
             const btnModalCancel = document.getElementById('modal-btn-cancel');
 
-            if (!btnNhap || !form || !modal) return;
+            if (!modal) return;
 
-            // Xóa confirm mặc định trên onclick attribute nếu có
-            btnNhap.removeAttribute('onclick');
+            let targetFormToSubmit = formThucHien || formImport;
 
-            btnNhap.addEventListener('click', (e) => {
-                const fileInput = document.getElementById('fileExcel');
-                if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-                    alert('Vui lòng chọn một tệp Excel (.xlsx hoặc .xls) trước khi bấm nhập.');
-                    return;
-                }
+            const moModalXacNhan = (formTarget) => {
+                targetFormToSubmit = formTarget;
 
-                // Lấy thông tin thống kê nếu đã qua bước xem trước
+                // Lấy thông tin thống kê số dòng hợp lệ / lỗi
                 const statsValid = document.getElementById('stat-num-valid');
                 const statsError = document.getElementById('stat-num-error');
 
                 const countValid = statsValid ? parseInt(statsValid.textContent.trim(), 10) : null;
-                const countError = statsError ? parseInt(statsError.textContent.trim(), 10) : null;
+                const countError = statsError ? parseInt(statsError.textContent.trim(), 10) : 0;
 
                 if (countValid !== null && countValid === 0) {
                     alert('Tệp Excel hiện tại không có dòng nào hợp lệ để nhập. Vui lòng kiểm tra lại báo cáo lỗi và cập nhật tệp trước khi nhập.');
                     return;
                 }
-
-                e.preventDefault();
 
                 // Cập nhật số liệu hiển thị trong modal
                 const modalValidEl = document.getElementById('modal-count-valid');
@@ -279,7 +275,36 @@
                 if (modalErrorEl && countError !== null) modalErrorEl.textContent = countError;
 
                 modal.style.display = 'flex';
+            };
+
+            // Sự kiện khi bấm "Thực hiện nhập" ngay trên Preview (Review Fix S2-01)
+            [btnThucHienTop, btnThucHienBottom].forEach(btn => {
+                if (btn) {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        if (btn.disabled) return;
+                        moModalXacNhan(formThucHien || formImport);
+                    });
+                }
             });
+
+            // Sự kiện khi bấm "Tiến hành nhập dữ liệu" ở Card 2
+            if (btnNhapCard2) {
+                btnNhapCard2.removeAttribute('onclick');
+                btnNhapCard2.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (formThucHien) {
+                        moModalXacNhan(formThucHien);
+                        return;
+                    }
+                    const fileInput = document.getElementById('fileExcel');
+                    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                        alert('Vui lòng chọn một tệp Excel (.xlsx hoặc .xls) trước khi bấm nhập.');
+                        return;
+                    }
+                    moModalXacNhan(formImport);
+                });
+            }
 
             if (btnModalCancel) {
                 btnModalCancel.addEventListener('click', () => {
@@ -296,16 +321,28 @@
             if (btnModalConfirm) {
                 btnModalConfirm.addEventListener('click', () => {
                     modal.style.display = 'none';
-                    // Tạo một input hidden action=nhap-du-lieu nếu chưa có
-                    let actionInput = form.querySelector('input[name="action"][type="hidden"]');
-                    if (!actionInput) {
-                        actionInput = document.createElement('input');
-                        actionInput.type = 'hidden';
-                        actionInput.name = 'action';
-                        form.appendChild(actionInput);
+
+                    // Chống double click và hiển thị loading
+                    btnModalConfirm.disabled = true;
+                    [btnThucHienTop, btnThucHienBottom, btnNhapCard2].forEach(b => {
+                        if (b) {
+                            b.disabled = true;
+                            b.innerHTML = '&#9203; Đang nhập dữ liệu...';
+                        }
+                    });
+
+                    if (targetFormToSubmit) {
+                        // Đảm bảo action là nhap-du-lieu
+                        let actionInput = targetFormToSubmit.querySelector('input[name="action"]');
+                        if (!actionInput) {
+                            actionInput = document.createElement('input');
+                            actionInput.type = 'hidden';
+                            actionInput.name = 'action';
+                            targetFormToSubmit.appendChild(actionInput);
+                        }
+                        actionInput.value = 'nhap-du-lieu';
+                        targetFormToSubmit.submit();
                     }
-                    actionInput.value = 'nhap-du-lieu';
-                    form.submit();
                 });
             }
         },
@@ -314,22 +351,40 @@
          * 5. Hiển thị loading và ngăn chặn submit lặp lại
          */
         initFormSubmitState() {
-            const form = document.getElementById('form-import-excel');
-            if (!form) return;
+            const formImport = document.getElementById('form-import-excel');
+            const formThucHien = document.getElementById('form-thuc-hien-nhap');
 
-            form.addEventListener('submit', function () {
-                const btnXemTruoc = document.getElementById('btn-xem-truoc');
-                const btnNhap = document.getElementById('btn-nhap-du-lieu');
+            if (formImport) {
+                formImport.addEventListener('submit', function () {
+                    const btnXemTruoc = document.getElementById('btn-xem-truoc');
+                    const btnNhap = document.getElementById('btn-nhap-du-lieu');
 
-                if (btnXemTruoc) {
-                    btnXemTruoc.disabled = true;
-                    btnXemTruoc.innerHTML = '&#9203; Đang phân tích tệp...';
-                }
-                if (btnNhap) {
-                    btnNhap.disabled = true;
-                    btnNhap.innerHTML = '&#9203; Đang nhập dữ liệu...';
-                }
-            });
+                    if (btnXemTruoc) {
+                        btnXemTruoc.disabled = true;
+                        btnXemTruoc.innerHTML = '&#9203; Đang phân tích tệp...';
+                    }
+                    if (btnNhap) {
+                        btnNhap.disabled = true;
+                        btnNhap.innerHTML = '&#9203; Đang nhập dữ liệu...';
+                    }
+                });
+            }
+
+            if (formThucHien) {
+                formThucHien.addEventListener('submit', function () {
+                    const btns = [
+                        document.getElementById('btn-thuc-hien-nhap'),
+                        document.getElementById('btn-thuc-hien-nhap-bottom'),
+                        document.getElementById('modal-btn-confirm')
+                    ];
+                    btns.forEach(b => {
+                        if (b) {
+                            b.disabled = true;
+                            b.innerHTML = '&#9203; Đang nhập dữ liệu...';
+                        }
+                    });
+                });
+            }
         },
 
         /**
