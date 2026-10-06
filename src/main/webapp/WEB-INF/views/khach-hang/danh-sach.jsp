@@ -219,7 +219,7 @@
                         <span class="material-symbols-outlined" aria-hidden="true">alarm</span>
                     </div>
                     <div class="cs-stat-content">
-                        <div class="cs-stat-value" id="statCanChamSoc">0</div>
+                        <div class="cs-stat-value" id="statCanChamSoc">${not empty thongKeChamSoc ? thongKeChamSoc.tongSoCanChamSoc : 0}</div>
                         <div class="cs-stat-label">Cần chăm sóc định kỳ</div>
                     </div>
                 </div>
@@ -229,7 +229,7 @@
                         <span class="material-symbols-outlined" aria-hidden="true">warning</span>
                     </div>
                     <div class="cs-stat-content">
-                        <div class="cs-stat-value" id="statQuaHanNghiemTrong">0</div>
+                        <div class="cs-stat-value" id="statQuaHanNghiemTrong">${not empty thongKeChamSoc ? thongKeChamSoc.soQuaHanNghiemTrong : 0}</div>
                         <div class="cs-stat-label">Quá hạn cao (&gt; 60 ngày)</div>
                     </div>
                 </div>
@@ -239,7 +239,7 @@
                         <span class="material-symbols-outlined" aria-hidden="true">payments</span>
                     </div>
                     <div class="cs-stat-content">
-                        <div class="cs-stat-value" id="statTongGiaTriHopDong">0 đ</div>
+                        <div class="cs-stat-value" id="statTongGiaTriHopDong">${not empty thongKeChamSoc ? thongKeChamSoc.tongGiaTriHopDongDinhDang : '0 đ'}</div>
                         <div class="cs-stat-label">Giá trị HĐ cần bảo vệ</div>
                     </div>
                 </div>
@@ -249,7 +249,7 @@
                         <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
                     </div>
                     <div class="cs-stat-content">
-                        <div class="cs-stat-value" id="statDaLienHeHomNay">0</div>
+                        <div class="cs-stat-value" id="statDaLienHeHomNay">${not empty thongKeChamSoc ? thongKeChamSoc.soDaLienHeHomNay : 0}</div>
                         <div class="cs-stat-label">Đã liên hệ hôm nay</div>
                     </div>
                 </div>
@@ -339,40 +339,46 @@
                     </thead>
                     <tbody id="tbodyChamSocDinhKy">
                         <!-- Danh sách khách hàng trích xuất từ dữ liệu thực tế của servlet -->
+                        <c:set var="dsHienThiChamSoc" value="${not empty danhSachChamSoc ? danhSachChamSoc : danhSachKhachHang}" />
                         <c:choose>
-                            <c:when test="${not empty danhSachKhachHang}">
-                                <c:forEach var="kh" items="${danhSachKhachHang}" varStatus="status">
+                            <c:when test="${not empty dsHienThiChamSoc}">
+                                <c:forEach var="kh" items="${dsHienThiChamSoc}" varStatus="status">
                                     <tr class="row-khach-hang"
                                         data-kh-id="${kh.id}"
-                                        data-ma-kh="<c:out value='${kh.maBanGhi}' />"
-                                        data-ten-kh="<c:out value='${kh.tieuDe}' />"
+                                        data-ma-kh="<c:out value='${not empty kh.maKhachHang ? kh.maKhachHang : kh.maBanGhi}' />"
+                                        data-ten-kh="<c:out value='${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}' />"
                                         data-nguoi-phu-trach="<c:out value='${kh.tenNguoiPhuTrach}' />"
                                         data-ten-nhom="<c:out value='${kh.tenNhom}' />"
                                         data-ngay-tao="<c:out value='${kh.ngayTao}' />"
+                                        data-gia-tri-hd="${not empty kh.tongGiaTriHopDong ? kh.tongGiaTriHopDong : ''}"
+                                        data-ma-hd="<c:out value='${not empty kh.soHopDong ? kh.soHopDong : \"\"}' />"
+                                        data-so-ngay-chua-tt="${kh.soNgayChuaTuongTac}"
+                                        data-da-lien-he="${kh.daLienHeHomNay ? 'true' : 'false'}"
                                         data-gia-tri-raw="<c:out value='${kh.giaTri}' />"
                                         data-trang-thai="<c:out value='${kh.trangThai}' />"
                                         data-mo-ta="<c:out value='${kh.moTaChiTiet}' />">
                                         <td style="text-align: center;" class="cell-stt">${status.index + 1}</td>
-                                        <td class="font-mono"><c:out value="${kh.maBanGhi}" /></td>
+                                        <td class="font-mono"><c:out value="${not empty kh.maKhachHang ? kh.maKhachHang : kh.maBanGhi}" /></td>
                                         <td>
                                             <div class="customer-name">
                                                 <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" style="color: inherit; text-decoration: none;">
-                                                    <c:out value="${kh.tieuDe}" />
+                                                    <c:out value="${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}" />
                                                 </a>
                                             </div>
                                             <div class="customer-sub"><c:out value="${kh.moTaChiTiet}" /></div>
                                         </td>
                                         <td>
-                                            <div class="col-contract-highlight cell-gia-tri-hd">--- đ</div>
-                                            <span class="contract-code-tag cell-ma-hd">HĐ-CHUA-KY</span>
+                                            <div class="col-contract-highlight cell-gia-tri-hd">${not empty kh.tongGiaTriHopDongDinhDang ? kh.tongGiaTriHopDongDinhDang : '--- đ'}</div>
+                                            <span class="contract-code-tag cell-ma-hd"><c:out value="${not empty kh.soHopDong ? kh.soHopDong : 'HĐ-CHUA-KY'}" /></span>
                                         </td>
                                         <td>
                                             <div class="cell-overdue-wrap">
-                                                <span class="overdue-badge badge-amber cell-overdue-badge">
-                                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">schedule</span>
-                                                    <span class="text-so-ngay-chua-tt">-- ngày</span>
+                                                <c:set var="isOverdue60" value="${kh.soNgayChuaTuongTac gt 60}" />
+                                                <span class="overdue-badge ${kh.daLienHeHomNay ? 'badge-green' : (isOverdue60 ? 'badge-red' : 'badge-amber')} cell-overdue-badge">
+                                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">${kh.daLienHeHomNay ? 'check_circle' : 'schedule'}</span>
+                                                    <span class="text-so-ngay-chua-tt">${kh.daLienHeHomNay ? 'Đã liên hệ hôm nay' : (kh.soNgayChuaTuongTac gt 0 ? kh.soNgayChuaTuongTac.toString().concat(' ngày chưa liên hệ') : '-- ngày')}</span>
                                                 </span>
-                                                <span class="overdue-date-text cell-ngay-tt-cuoi">Chưa xác định</span>
+                                                <span class="overdue-date-text cell-ngay-tt-cuoi">${not empty kh.lanTuongTacCuoiDinhDang ? kh.lanTuongTacCuoiDinhDang : 'Chưa có tương tác'}</span>
                                             </div>
                                         </td>
                                         <td>
@@ -380,19 +386,22 @@
                                             <div style="font-size: 12px; color: var(--slate-500);"><c:out value="${kh.tenNhom}" /></div>
                                         </td>
                                         <td style="text-align: center;">
-                                            <span class="badge cell-badge-trang-thai badge-warning">Cần liên hệ</span>
+                                            <span class="badge cell-badge-trang-thai ${kh.daLienHeHomNay ? 'badge-success' : (kh.soNgayChuaTuongTac gt 60 ? 'badge-danger' : 'badge-warning')}">
+                                                ${kh.daLienHeHomNay ? 'Đã chăm sóc' : (kh.soNgayChuaTuongTac gt 60 ? 'Quá hạn cao' : 'Cần liên hệ')}
+                                            </span>
                                         </td>
                                         <td style="text-align: center;">
                                             <div class="actions-cell-flex">
                                                 <c:set var="coQuyenChamSoc" value="${empty userHienTai or userHienTai.coVaiTro('ADMIN') or userHienTai.coVaiTro('DIRECTOR') or userHienTai.coVaiTro('TEAM_LEAD') or userHienTai.coVaiTro('SALES_REP') or userHienTai.coVaiTro('CUST_SUCCESS')}" />
                                                 <c:choose>
                                                     <c:when test="${coQuyenChamSoc}">
-                                                        <button type="button" class="btn-contact-mark btn-action-mark"
+                                                        <button type="button" class="btn-contact-mark btn-action-mark ${kh.daLienHeHomNay ? 'is-contacted' : ''}"
                                                                 data-kh-id="${kh.id}"
-                                                                data-ten-kh="<c:out value='${kh.tieuDe}' />"
+                                                                data-ten-kh="<c:out value='${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}' />"
+                                                                ${kh.daLienHeHomNay ? 'disabled' : ''}
                                                                 title="Đánh dấu đã liên hệ khách hàng này ngay trên danh sách"
-                                                                aria-label="Đánh dấu đã liên hệ với ${kh.tieuDe}">
-                                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">phone_in_talk</span>
+                                                                aria-label="Đánh dấu đã liên hệ với ${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}">
+                                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">${kh.daLienHeHomNay ? 'check' : 'phone_in_talk'}</span>
                                                             <span>Đã liên hệ</span>
                                                         </button>
                                                     </c:when>
@@ -403,7 +412,7 @@
                                                         </button>
                                                     </c:otherwise>
                                                 </c:choose>
-                                                <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" class="btn-action" title="Xem chi tiết hồ sơ khách hàng" aria-label="Xem chi tiết ${kh.tieuDe}">
+                                                <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" class="btn-action" title="Xem chi tiết hồ sơ khách hàng" aria-label="Xem chi tiết ${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}">
                                                     <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
                                                 </a>
                                             </div>

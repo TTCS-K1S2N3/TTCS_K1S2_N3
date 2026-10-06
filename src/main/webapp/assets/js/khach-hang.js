@@ -222,10 +222,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
         rows.forEach(function (row) {
             const khId = row.getAttribute('data-kh-id');
-            const giaTriHd = trichXuatGiaTriHopDong(row);
-            const maHd = sinhMaHopDong(row);
-            const soNgay = tinhSoNgayChuaTuongTac(row);
-            const daLienHe = !!mapDaLienHe[khId];
+            const giaTriHdAttr = row.getAttribute('data-gia-tri-hd');
+            const giaTriHd = (giaTriHdAttr && !isNaN(parseInt(giaTriHdAttr, 10)) && parseInt(giaTriHdAttr, 10) > 0)
+                ? parseInt(giaTriHdAttr, 10)
+                : trichXuatGiaTriHopDong(row);
+
+            const maHdAttr = row.getAttribute('data-ma-hd');
+            const maHd = (maHdAttr && maHdAttr.trim() !== '' && maHdAttr !== 'HĐ-CHUA-KY')
+                ? maHdAttr
+                : sinhMaHopDong(row);
+
+            const daLienHeBackend = row.getAttribute('data-da-lien-he') === 'true';
+            const daLienHe = daLienHeBackend || !!mapDaLienHe[khId];
+
+            const soNgayAttr = row.getAttribute('data-so-ngay-chua-tt');
+            const soNgay = (soNgayAttr && !isNaN(parseInt(soNgayAttr, 10)) && parseInt(soNgayAttr, 10) >= 0)
+                ? (daLienHe ? 0 : parseInt(soNgayAttr, 10))
+                : tinhSoNgayChuaTuongTac(row);
 
             row.setAttribute('data-gia-tri-hd', giaTriHd.toString());
             row.setAttribute('data-ma-hd', maHd);
