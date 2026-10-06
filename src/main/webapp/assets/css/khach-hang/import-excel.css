@@ -214,6 +214,24 @@
     background: var(--primary-light, #eff6ff);
 }
 
+.dropzone-container:focus-visible {
+    outline: none;
+    border-color: var(--primary, #2563eb);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.dropzone-container.dropzone-error {
+    border-color: var(--danger, #ef4444);
+    background: var(--danger-light, #fef2f2);
+    animation: shake 0.35s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+}
+
 .dropzone-icon {
     width: 48px;
     height: 48px;
@@ -274,6 +292,27 @@
     font-size: 12px;
     color: var(--slate-500, #64748b);
     flex-shrink: 0;
+}
+
+.btn-clear-file {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--slate-400, #94a3b8);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 4px;
+    margin-left: auto;
+    transition: color 0.15s ease, background-color 0.15s ease;
+    min-height: 28px;
+    min-width: 28px;
+}
+
+.btn-clear-file:hover {
+    color: var(--danger, #ef4444);
+    background-color: var(--danger-light, #fef2f2);
 }
 
 /* Stats Summary Cards */
@@ -482,13 +521,46 @@
 
 /* Action dropdown in row */
 .row-action-select {
-    padding: 5px 8px;
+    padding: 6px 10px;
     font-size: 12.5px;
     border: 1px solid var(--slate-300, #cbd5e1);
     border-radius: 6px;
     background: #ffffff;
     color: var(--slate-800, #1e293b);
-    min-height: 36px;
+    min-height: 38px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.row-action-select:focus-visible {
+    outline: none;
+    border-color: var(--primary, #2563eb);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.row-action-select.action-update {
+    border-color: var(--primary, #2563eb);
+    background-color: var(--primary-light, #eff6ff);
+    color: var(--primary, #2563eb);
+    font-weight: 600;
+}
+
+.row-action-select.action-skip {
+    border-color: var(--slate-300, #cbd5e1);
+    background-color: #ffffff;
+    color: var(--slate-600, #475569);
+    font-weight: 500;
+}
+
+/* Spinner cho nút khi submit */
+.icon-spin {
+    animation: iconSpin 0.8s linear infinite;
+    display: inline-block;
+}
+
+@keyframes iconSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .row-error-list {

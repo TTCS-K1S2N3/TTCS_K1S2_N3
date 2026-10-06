@@ -33,7 +33,8 @@
                     <span style="color: var(--slate-700, #334155); font-weight: 600;">Nhập danh sách Excel</span>
                 </div>
                 <a href="${pageContext.request.contextPath}/khach-hang" class="btn-outline" id="btn-back-danh-sach" style="min-height: 38px; padding: 6px 14px; font-size: 13px;">
-                    &larr; Quay lại danh sách khách hàng
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">arrow_back</span>
+                    <span>Quay lại danh sách khách hàng</span>
                 </a>
             </nav>
 
@@ -160,6 +161,9 @@
                             <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 20px; color: var(--primary); flex-shrink: 0;">table_chart</span>
                             <span class="selected-file-name" id="selectedFileName"><c:out value="${not empty tenTep ? tenTep : 'Chưa có tệp nào được chọn'}" /></span>
                             <span class="selected-file-size" id="selectedFileSize"></span>
+                            <button type="button" class="btn-clear-file" id="btnClearFile" aria-label="Hủy chọn tệp này" title="Hủy chọn tệp này">
+                                <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px;">close</span>
+                            </button>
                         </div>
                     </div>
 
@@ -311,7 +315,7 @@
                                                 <c:choose>
                                                     <c:when test="${dong.biTrung}">
                                                         <!-- AC 2: Chọn bỏ qua hoặc cập nhật cho từng dòng trùng -->
-                                                        <select name="xuLyDong_${dong.soDong}" class="row-action-select" aria-label="Lựa chọn xử lý trùng dòng ${dong.soDong}">
+                                                        <select name="xuLyDong_${dong.soDong}" class="row-action-select" data-so-dong="${dong.soDong}" aria-label="Lựa chọn xử lý trùng dòng ${dong.soDong}">
                                                             <option value="BO_QUA" selected>Bỏ qua</option>
                                                             <option value="CAP_NHAT">Cập nhật</option>
                                                         </select>
@@ -326,6 +330,12 @@
                                             </td>
                                         </tr>
                                     </c:forEach>
+                                    <tr id="previewEmptyFilterRow" style="display: none;">
+                                        <td colspan="9" style="text-align: center; padding: 32px 16px; color: var(--slate-500);">
+                                            <span class="material-symbols-outlined icon-lg" aria-hidden="true" style="color: var(--slate-400); margin-bottom: 6px; display: block;">filter_alt_off</span>
+                                            Không có dòng nào phù hợp với bộ lọc này.
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -333,7 +343,8 @@
                         <!-- Cần truyền lại file qua input file ẩn nếu người dùng submit form nhập -->
                         <div class="import-action-bar">
                             <a href="${pageContext.request.contextPath}/khach-hang/import" class="btn-outline">
-                                Hủy & Chọn lại tệp
+                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">replay</span>
+                                <span>Hủy & Chọn lại tệp</span>
                             </a>
                             <button type="submit" class="btn-primary" id="btnConfirmImport" ${baoCao.soDongHopLe == 0 ? 'disabled' : ''}>
                                 <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px;">check_circle</span>
@@ -434,10 +445,12 @@
 
                     <div class="import-action-bar">
                         <a href="${pageContext.request.contextPath}/khach-hang/import" class="btn-outline">
-                            Tiếp tục nhập tệp khác
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">upload_file</span>
+                            <span>Tiếp tục nhập tệp khác</span>
                         </a>
                         <a href="${pageContext.request.contextPath}/khach-hang" class="btn-primary">
-                            Đến danh sách khách hàng &rarr;
+                            <span>Đến danh sách khách hàng</span>
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">arrow_forward</span>
                         </a>
                     </div>
                 </section>
