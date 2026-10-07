@@ -8,29 +8,50 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import vn.nhom10.crm.dto.BanGhiNghiepVuDTO;
 import vn.nhom10.crm.dto.NguoiDungDTO;
+import vn.nhom10.crm.dto.ThongKeNhomCongTyDTO;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.PhamViDuLieu;
+import vn.nhom10.crm.service.CongTyMeConService;
 import vn.nhom10.crm.service.PhanQuyenDuLieuService;
+import vn.nhom10.crm.util.LoiKhongTimThayException;
+import vn.nhom10.crm.util.LoiPhanQuyenException;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Controller phục vụ trang danh mục khách hàng (trang nghiệp vụ chính của khối kinh doanh).
- * Tích hợp kiểm tra phân quyền phạm vi dữ liệu (Data Scope) ở server-side (Story S1-05).
- * URL: /khach-hang
+ * Controller phục vụ trang danh mục khách hàng, trang chi tiết khách hàng và quản lý quan hệ công ty mẹ - con.
+ * Tích hợp:
+ * - Data Scope server-side (S1-05)
+ * - Khai báo quan hệ công ty mẹ và công ty con (S3-05 AC1)
+ * - Hiển thị tổng giá trị hợp đồng của cả nhóm công ty (S3-05 AC2)
+ *
+ * URL Patterns: /khach-hang, /khach-hang/chi-tiet, /khach-hang/cong-ty-con
  */
-@WebServlet(name = "KhachHangServlet", urlPatterns = {"/khach-hang"})
+@WebServlet(name = "KhachHangServlet", urlPatterns = {"/khach-hang", "/khach-hang/chi-tiet", "/khach-hang/cong-ty-con"})
 public class KhachHangServlet extends HttpServlet {
 
+    private static final Logger LOGGER = Logger.getLogger(KhachHangServlet.class.getName());
+
     private final PhanQuyenDuLieuService phanQuyenService;
+    private final CongTyMeConService congTyMeConService;
 
     public KhachHangServlet() {
         this.phanQuyenService = new PhanQuyenDuLieuService();
+        this.congTyMeConService = new CongTyMeConService();
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService) {
         this.phanQuyenService = phanQuyenService;
+        this.congTyMeConService = new CongTyMeConService();
+    }
+
+    public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, CongTyMeConService congTyMeConService) {
+        this.phanQuyenService = phanQuyenService;
+        this.congTyMeConService = congTyMeConService;
     }
 
     @Override
@@ -48,9 +69,24 @@ public class KhachHangServlet extends HttpServlet {
         NguoiDung user = (NguoiDung) session.getAttribute("nguoiDung");
         NguoiDungDTO userDTO = NguoiDungDTO.tuNguoiDung(user);
 
-        String paramId = request.getParameter("id");
+        // Nhận flash message từ session nếu có
+        String flashThanhCong = (String) session.getAttribute("flashThanhCong");
+        if (flashThanhCong != null) {
+            request.setAttribute("thongBaoThanhCong", flashThanhCong);
+            session.removeAttribute("flashThanhCong");
+        }
+        String flashLoi = (String) session.getAttribute("flashLoi");
+        if (flashLoi != null) {
+            request.setAttribute("thongBaoLoi", flashLoi);
+            session.removeAttribute("flashLoi");
+        }
 
-        // 1. Kiểm tra quyền khi xem chi tiết khách hàng trực tiếp bằng ID (AC3, AC4)
+        String paramId = request.getParameter("id");
+        String servletPath = request.getServletPath();
+        String viewParam = request.getParameter("view");
+        String actionParam = request.getParameter("action");
+
+        // 1. Kiểm tra quyền khi xem chi tiết khách hàng trực tiếp bằng ID (S1-05 & S3-05)
         if (paramId != null && !paramId.trim().isEmpty()) {
             Long id = null;
             try {
@@ -78,7 +114,27 @@ public class KhachHangServlet extends HttpServlet {
 
             request.setAttribute("banGhiChiTiet", banGhi);
             request.setAttribute("banGhi", banGhi);
-            request.setAttribute("thongBaoThanhCong", ketQua.getThongBao());
+            if (request.getAttribute("thongBaoThanhCong") == null) {
+                request.setAttribute("thongBaoThanhCong", ketQua.getThongBao());
+            }
+
+            // Story S3-05: Nạp dữ liệu thống kê nhóm công ty & danh sách công ty con
+            try {
+                ThongKeNhomCongTyDTO thongKeNhom = congTyMeConService.layThongKeNhomCongTy(id);
+                request.setAttribute("thongKeNhomCongTy", thongKeNhom);
+                request.setAttribute("dsKhaDungLamCon", congTyMeConService.layDanhSachKhachHangKhaDungLamCongTyCon(id));
+                request.setAttribute("dsKhaDungLamMe", congTyMeConService.layDanhSachKhachHangKhaDungLamCongTyMe(id));
+            } catch (SQLException e) {
+                LOGGER.log(Level.WARNING, "Không thể tải số liệu nhóm công ty cho ID " + id + ": " + e.getMessage());
+            }
+
+            // Nếu người dùng yêu cầu trang chi tiết (/khach-hang/chi-tiet hoặc view=chi-tiet)
+            if ("/khach-hang/chi-tiet".equals(servletPath) || "chi-tiet".equalsIgnoreCase(viewParam) || "chi-tiet".equalsIgnoreCase(actionParam)) {
+                request.setAttribute("currentUser", userDTO);
+                response.setStatus(HttpServletResponse.SC_OK);
+                request.getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp").forward(request, response);
+                return;
+            }
         }
 
         // 2. Tiếp nhận tham số Data Scope từ người dùng
@@ -150,7 +206,25 @@ public class KhachHangServlet extends HttpServlet {
         String paramId = request.getParameter("id");
         String action = request.getParameter("action");
 
-        // 4. Xử lý thao tác sửa khách hàng qua POST /khach-hang (chặn sửa ngoài phạm vi)
+        // STORY S3-05 AC1: Gắn một khách hàng làm công ty con của khách hàng khác
+        if ("gan-cong-ty-con".equals(action)) {
+            xuLyGanCongTyCon(request, response, userDTO);
+            return;
+        }
+
+        // STORY S3-05 AC1: Gỡ bỏ quan hệ công ty con
+        if ("go-cong-ty-con".equals(action)) {
+            xuLyGoCongTyCon(request, response, userDTO);
+            return;
+        }
+
+        // STORY S3-05: Cập nhật công ty mẹ cho một khách hàng
+        if ("cap-nhat-cong-ty-me".equals(action)) {
+            xuLyCapNhatCongTyMe(request, response, userDTO);
+            return;
+        }
+
+        // Xử lý thao tác sửa khách hàng qua POST /khach-hang (chặn sửa ngoài phạm vi)
         if (paramId != null || "sua".equals(action)) {
             Long id = null;
             try {
@@ -186,7 +260,7 @@ public class KhachHangServlet extends HttpServlet {
             phanQuyenService.capNhatBanGhi(banGhi);
             request.setAttribute("thongBaoThanhCong", "Cập nhật dữ liệu khách hàng thành công.");
         } else if ("them".equals(action) || "create".equals(action) || paramId == null) {
-            // 5. Xử lý thao tác thêm mới khách hàng (Story S1-05)
+            // Xử lý thao tác thêm mới khách hàng (Story S1-05)
             String tenCongTy = request.getParameter("tenCongTy");
             if (tenCongTy == null || tenCongTy.trim().isEmpty()) {
                 tenCongTy = request.getParameter("tieuDe");
@@ -221,9 +295,7 @@ public class KhachHangServlet extends HttpServlet {
                 return;
             }
 
-            // BẢO MẬT & DATA SCOPE (S1-05):
-            // Tuyệt đối không cho phép client giả mạo người sở hữu (no owner spoofing).
-            // Người sở hữu luôn tự động quyết định bởi server từ session người dùng (nguoiDung).
+            // BẢO MẬT & DATA SCOPE (S1-05)
             try {
                 BanGhiNghiepVuDTO khachHangMoi = phanQuyenService.themKhachHang(
                         userDTO,
@@ -245,5 +317,144 @@ public class KhachHangServlet extends HttpServlet {
         }
 
         doGet(request, response);
+    }
+
+    /**
+     * Xử lý gắn khách hàng làm công ty con của khách hàng khác (Story S3-05 AC1).
+     */
+    private void xuLyGanCongTyCon(HttpServletRequest request, HttpServletResponse response, NguoiDungDTO userDTO)
+            throws ServletException, IOException {
+        String congTyMeIdStr = request.getParameter("congTyMeId");
+        String congTyConIdStr = request.getParameter("congTyConId");
+
+        Long congTyMeId = parseLong(congTyMeIdStr);
+        Long congTyConId = parseLong(congTyConIdStr);
+
+        try {
+            congTyMeConService.ganCongTyCon(congTyConId, congTyMeId, userDTO);
+            request.getSession().setAttribute("flashThanhCong", "Gắn khách hàng làm công ty con thành công.");
+            response.sendRedirect(request.getContextPath() + "/khach-hang/chi-tiet?id=" + congTyMeId);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            request.setAttribute("thongBaoLoi", e.getMessage());
+            chuyenHuongChiTiet(request, response, congTyMeId, userDTO);
+        } catch (LoiKhongTimThayException e) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+        } catch (LoiPhanQuyenException e) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            request.setAttribute("thongBaoLoi", e.getMessage());
+            request.setAttribute("currentUser", userDTO);
+            request.getRequestDispatcher("/WEB-INF/views/phan-quyen/ngoai-pham-vi.jsp").forward(request, response);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi gán công ty con: " + e.getMessage(), e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            request.setAttribute("thongBaoLoi", "Lỗi hệ thống khi gán công ty con: " + e.getMessage());
+            chuyenHuongChiTiet(request, response, congTyMeId, userDTO);
+        }
+    }
+
+    /**
+     * Xử lý gỡ bỏ quan hệ công ty con.
+     */
+    private void xuLyGoCongTyCon(HttpServletRequest request, HttpServletResponse response, NguoiDungDTO userDTO)
+            throws ServletException, IOException {
+        String congTyConIdStr = request.getParameter("congTyConId");
+        String congTyMeIdStr = request.getParameter("congTyMeId");
+
+        Long congTyConId = parseLong(congTyConIdStr);
+        Long congTyMeId = parseLong(congTyMeIdStr);
+
+        try {
+            congTyMeConService.goCongTyCon(congTyConId, userDTO);
+            request.getSession().setAttribute("flashThanhCong", "Đã gỡ bỏ quan hệ công ty con thành công.");
+            Long idDieuHuong = congTyMeId != null ? congTyMeId : congTyConId;
+            response.sendRedirect(request.getContextPath() + "/khach-hang/chi-tiet?id=" + idDieuHuong);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            request.setAttribute("thongBaoLoi", e.getMessage());
+            chuyenHuongChiTiet(request, response, congTyMeId, userDTO);
+        } catch (LoiKhongTimThayException e) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+        } catch (LoiPhanQuyenException e) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            request.setAttribute("thongBaoLoi", e.getMessage());
+            request.setAttribute("currentUser", userDTO);
+            request.getRequestDispatcher("/WEB-INF/views/phan-quyen/ngoai-pham-vi.jsp").forward(request, response);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi gỡ bỏ công ty con: " + e.getMessage(), e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            request.setAttribute("thongBaoLoi", "Lỗi hệ thống khi gỡ bỏ công ty con: " + e.getMessage());
+            chuyenHuongChiTiet(request, response, congTyMeId, userDTO);
+        }
+    }
+
+    /**
+     * Xử lý cập nhật công ty mẹ từ trang của khách hàng con.
+     */
+    private void xuLyCapNhatCongTyMe(HttpServletRequest request, HttpServletResponse response, NguoiDungDTO userDTO)
+            throws ServletException, IOException {
+        String khachHangIdStr = request.getParameter("khachHangId");
+        String congTyMeIdStr = request.getParameter("congTyMeId");
+
+        Long khachHangId = parseLong(khachHangIdStr);
+        Long congTyMeId = parseLong(congTyMeIdStr);
+
+        try {
+            if (congTyMeId == null || congTyMeId <= 0) {
+                congTyMeConService.goCongTyCon(khachHangId, userDTO);
+                request.getSession().setAttribute("flashThanhCong", "Đã hủy liên kết công ty mẹ thành công.");
+            } else {
+                congTyMeConService.ganCongTyCon(khachHangId, congTyMeId, userDTO);
+                request.getSession().setAttribute("flashThanhCong", "Cập nhật công ty mẹ thành công.");
+            }
+            response.sendRedirect(request.getContextPath() + "/khach-hang/chi-tiet?id=" + khachHangId);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            request.setAttribute("thongBaoLoi", e.getMessage());
+            chuyenHuongChiTiet(request, response, khachHangId, userDTO);
+        } catch (LoiKhongTimThayException e) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+        } catch (LoiPhanQuyenException e) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            request.setAttribute("thongBaoLoi", e.getMessage());
+            request.setAttribute("currentUser", userDTO);
+            request.getRequestDispatcher("/WEB-INF/views/phan-quyen/ngoai-pham-vi.jsp").forward(request, response);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi cập nhật công ty mẹ: " + e.getMessage(), e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            request.setAttribute("thongBaoLoi", "Lỗi hệ thống: " + e.getMessage());
+            chuyenHuongChiTiet(request, response, khachHangId, userDTO);
+        }
+    }
+
+    private void chuyenHuongChiTiet(HttpServletRequest request, HttpServletResponse response, Long id, NguoiDungDTO userDTO)
+            throws ServletException, IOException {
+        if (id != null) {
+            BanGhiNghiepVuDTO banGhi = phanQuyenService.timBanGhiTheoId(id, "KHACH_HANG");
+            request.setAttribute("banGhi", banGhi);
+            request.setAttribute("banGhiChiTiet", banGhi);
+            try {
+                ThongKeNhomCongTyDTO thongKeNhom = congTyMeConService.layThongKeNhomCongTy(id);
+                request.setAttribute("thongKeNhomCongTy", thongKeNhom);
+                request.setAttribute("dsKhaDungLamCon", congTyMeConService.layDanhSachKhachHangKhaDungLamCongTyCon(id));
+                request.setAttribute("dsKhaDungLamMe", congTyMeConService.layDanhSachKhachHangKhaDungLamCongTyMe(id));
+            } catch (SQLException ignored) {}
+        }
+        request.setAttribute("currentUser", userDTO);
+        request.getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp").forward(request, response);
+    }
+
+    private Long parseLong(String val) {
+        if (val == null || val.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return Long.parseLong(val.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }

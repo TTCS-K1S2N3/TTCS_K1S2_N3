@@ -28,13 +28,21 @@ public class PhanQuyenDuLieuServlet extends HttpServlet {
 
     public static final String SESSION_USER_KEY = "nguoiDung";
     private final PhanQuyenDuLieuService phanQuyenService;
+    private final vn.nhom10.crm.service.CongTyMeConService congTyMeConService;
 
     public PhanQuyenDuLieuServlet() {
         this.phanQuyenService = new PhanQuyenDuLieuService();
+        this.congTyMeConService = new vn.nhom10.crm.service.CongTyMeConService();
     }
 
     public PhanQuyenDuLieuServlet(PhanQuyenDuLieuService phanQuyenService) {
         this.phanQuyenService = phanQuyenService;
+        this.congTyMeConService = new vn.nhom10.crm.service.CongTyMeConService();
+    }
+
+    public PhanQuyenDuLieuServlet(PhanQuyenDuLieuService phanQuyenService, vn.nhom10.crm.service.CongTyMeConService congTyMeConService) {
+        this.phanQuyenService = phanQuyenService;
+        this.congTyMeConService = congTyMeConService;
     }
 
     @Override
@@ -197,6 +205,19 @@ public class PhanQuyenDuLieuServlet extends HttpServlet {
             request.setAttribute("thongBaoThanhCong", ketQua.getThongBao());
             request.setAttribute("banGhi", banGhi);
             request.setAttribute("banGhiChiTiet", banGhi);
+
+            if (banGhi.getLoaiNghiepVu() == BanGhiNghiepVuDTO.LoaiNghiepVu.KHACH_HANG) {
+                try {
+                    vn.nhom10.crm.dto.ThongKeNhomCongTyDTO thongKe = congTyMeConService.layThongKeNhomCongTy(id);
+                    request.setAttribute("thongKeNhomCongTy", thongKe);
+                    request.setAttribute("dsKhaDungLamCon", congTyMeConService.layDanhSachKhachHangKhaDungLamCongTyCon(id));
+                    request.setAttribute("dsKhaDungLamMe", congTyMeConService.layDanhSachKhachHangKhaDungLamCongTyMe(id));
+                } catch (Exception e) {
+                    java.util.logging.Logger.getLogger(PhanQuyenDuLieuServlet.class.getName())
+                            .log(java.util.logging.Level.WARNING, "Không thể tải số liệu nhóm công ty: " + e.getMessage());
+                }
+            }
+
             request.getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp").forward(request, response);
         }
     }
