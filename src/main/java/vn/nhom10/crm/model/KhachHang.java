@@ -64,6 +64,15 @@ public class KhachHang {
         this.nhomKinhDoanhId = nhomKinhDoanhId;
     }
 
+    public KhachHang(Long id, String maKhachHang, String tenCongTy, String maSoThue, Long nguoiSoHuuId, Long nhomKinhDoanhId) {
+        this.id = id;
+        this.maKhachHang = maKhachHang;
+        this.tenCongTy = tenCongTy;
+        this.maSoThue = maSoThue;
+        this.nguoiSoHuuId = nguoiSoHuuId;
+        this.nhomKinhDoanhId = nhomKinhDoanhId;
+    }
+
     public Long getId() {
         return id;
     }
