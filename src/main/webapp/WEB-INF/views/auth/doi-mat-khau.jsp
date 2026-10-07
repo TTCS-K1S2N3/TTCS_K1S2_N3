@@ -1,11 +1,11 @@
-﻿<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Äá»•i Máº­t Kháº©u | CRM BÃ¡n HÃ ng</title>
-    <meta name="description" content="Äá»•i máº­t kháº©u ngÆ°á»i dÃ¹ng vÃ  thu há»“i cÃ¡c phiÃªn Ä‘Äƒng nháº­p khÃ¡c Ä‘á»ƒ báº£o vá»‡ an toÃ n danh má»¥c khÃ¡ch hÃ ng trong há»‡ thá»‘ng CRM.">
+    <title>Đổi Mật Khẩu | CRM Bán Hàng</title>
+    <meta name="description" content="Đổi mật khẩu người dùng và thu hồi các phiên đăng nhập khác để bảo vệ an toàn danh mục khách hàng trong hệ thống CRM.">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,19 +30,19 @@
                             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                         </svg>
                     </span>
-                    <span class="brand-text">CRM BÃ¡n HÃ ng</span>
+                    <span class="brand-text">CRM Bán Hàng</span>
                 </a>
-                <span class="brand-badge">Báº£o máº­t</span>
+                <span class="brand-badge">Bảo mật</span>
             </div>
 
             <!-- Breadcrumb -->
-            <nav class="crm-breadcrumb" aria-label="ÄÆ°á»ng dáº«n Ä‘iá»u hÆ°á»›ng">
+            <nav class="crm-breadcrumb" aria-label="Đường dẫn điều hướng">
                 <ol class="breadcrumb-list">
-                    <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/" id="crumb-trang-chu">Trang chá»§</a></li>
+                    <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/" id="crumb-trang-chu">Trang chủ</a></li>
                     <li class="breadcrumb-separator" aria-hidden="true">/</li>
-                    <li class="breadcrumb-item"><span class="breadcrumb-muted">TÃ i khoáº£n</span></li>
+                    <li class="breadcrumb-item"><span class="breadcrumb-muted">Tài khoản</span></li>
                     <li class="breadcrumb-separator" aria-hidden="true">/</li>
-                    <li class="breadcrumb-item active" aria-current="page">Äá»•i máº­t kháº©u</li>
+                    <li class="breadcrumb-item active" aria-current="page">Đổi mật khẩu</li>
                 </ol>
             </nav>
 
@@ -52,7 +52,7 @@
                     <span>${not empty sessionScope.nguoiDung.hoTen ? sessionScope.nguoiDung.hoTen.substring(0,1).toUpperCase() : 'U'}</span>
                 </div>
                 <div class="user-details">
-                    <span class="user-name" id="header-user-name">${not empty sessionScope.nguoiDung.hoTen ? sessionScope.nguoiDung.hoTen : 'NgÆ°á»i dÃ¹ng há»‡ thá»‘ng'}</span>
+                    <span class="user-name" id="header-user-name">${not empty sessionScope.nguoiDung.hoTen ? sessionScope.nguoiDung.hoTen : 'Người dùng hệ thống'}</span>
                     <span class="user-role-tag">${not empty sessionScope.nguoiDung.email ? sessionScope.nguoiDung.email : 'user@crm.vn'}</span>
                 </div>
             </div>
@@ -69,23 +69,23 @@
                     <span class="material-symbols-outlined icon-2xl">lock</span>
                 </div>
                 <div class="intro-text">
-                    <h1 class="page-title" id="page-title">Äá»•i Máº­t Kháº©u Äang ÄÄƒng Nháº­p</h1>
+                    <h1 class="page-title" id="page-title">Đổi Mật Khẩu Đang Đăng Nhập</h1>
                     <p class="page-subtitle">
-                        Chá»§ Ä‘á»™ng báº£o vá»‡ danh má»¥c khÃ¡ch hÃ ng, thÃ´ng tin liÃªn há»‡ vÃ  cÆ¡ há»™i bÃ¡n hÃ ng báº±ng viá»‡c cáº­p nháº­t máº­t kháº©u Ä‘á»‹nh ká»³ vÃ  thu há»“i cÃ¡c phiÃªn Ä‘Äƒng nháº­p khÃ¡c.
+                        Chủ động bảo vệ danh mục khách hàng, thông tin liên hệ và cơ hội bán hàng bằng việc cập nhật mật khẩu định kỳ và thu hồi các phiên đăng nhập khác.
                     </p>
                 </div>
             </section>
 
-            <!-- Server Notifications (náº¿u cÃ³ tá»« Controller) -->
+            <!-- Server Notifications (nếu có từ Controller) -->
             <div id="alert-server-error" class="alert alert-error ${empty thongBaoLoi ? 'd-none' : ''}" role="alert">
                 <div class="alert-icon" aria-hidden="true">
                     <span class="material-symbols-outlined icon-sm">error</span>
                 </div>
                 <div class="alert-content">
-                    <strong class="alert-heading">Äá»•i máº­t kháº©u khÃ´ng thÃ nh cÃ´ng</strong>
+                    <strong class="alert-heading">Đổi mật khẩu không thành công</strong>
                     <p id="server-error-text" class="alert-message">${thongBaoLoi}</p>
                 </div>
-                <button type="button" class="btn-alert-close" aria-label="ÄÃ³ng thÃ´ng bÃ¡o lá»—i" onclick="this.closest('.alert').classList.add('d-none');"><span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span></button>
+                <button type="button" class="btn-alert-close" aria-label="Đóng thông báo lỗi" onclick="this.closest('.alert').classList.add('d-none');"><span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span></button>
             </div>
 
             <div id="alert-server-success" class="alert alert-success ${empty thongBaoThanhCong ? 'd-none' : ''}" role="alert">
@@ -93,20 +93,20 @@
                     <span class="material-symbols-outlined icon-sm">check_circle</span>
                 </div>
                 <div class="alert-content">
-                    <strong class="alert-heading">Äá»•i máº­t kháº©u thÃ nh cÃ´ng!</strong>
+                    <strong class="alert-heading">Đổi mật khẩu thành công!</strong>
                     <p id="server-success-text" class="alert-message">${thongBaoThanhCong}</p>
                 </div>
-                <button type="button" class="btn-alert-close" aria-label="ÄÃ³ng thÃ´ng bÃ¡o thÃ nh cÃ´ng" onclick="this.closest('.alert').classList.add('d-none');"><span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span></button>
+                <button type="button" class="btn-alert-close" aria-label="Đóng thông báo thành công" onclick="this.closest('.alert').classList.add('d-none');"><span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span></button>
             </div>
 
             <!-- Client-side Dynamic Feedback Alert -->
             <div id="alert-client-feedback" class="alert d-none" role="alert" aria-live="assertive">
                 <div class="alert-icon" id="feedback-icon" aria-hidden="true"></div>
                 <div class="alert-content">
-                    <strong class="alert-heading" id="feedback-heading">ThÃ´ng bÃ¡o</strong>
+                    <strong class="alert-heading" id="feedback-heading">Thông báo</strong>
                     <p class="alert-message" id="feedback-message"></p>
                 </div>
-                <button type="button" class="btn-alert-close" aria-label="ÄÃ³ng thÃ´ng bÃ¡o" id="btn-close-feedback"><span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span></button>
+                <button type="button" class="btn-alert-close" aria-label="Đóng thông báo" id="btn-close-feedback"><span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span></button>
             </div>
 
             <!-- Main Layout Grid: Form Column & Security Guidelines Column -->
@@ -116,18 +116,18 @@
                 <div class="card-form-wrapper">
                     <div class="crm-card">
                         <div class="card-header">
-                            <h2 class="card-title">Cáº­p nháº­t thÃ´ng tin máº­t kháº©u</h2>
-                            <p class="card-desc">Vui lÃ²ng Ä‘iá»n Ä‘áº§y Ä‘á»§ cÃ¡c thÃ´ng tin bÃªn dÆ°á»›i. CÃ¡c trÆ°á»ng cÃ³ dáº¥u (<span class="required-star">*</span>) lÃ  báº¯t buá»™c.</p>
+                            <h2 class="card-title">Cập nhật thông tin mật khẩu</h2>
+                            <p class="card-desc">Vui lòng điền đầy đủ các thông tin bên dưới. Các trường có dấu (<span class="required-star">*</span>) là bắt buộc.</p>
                         </div>
 
                         <form id="form-doi-mat-khau" action="${pageContext.request.contextPath}/doi-mat-khau" method="POST" class="auth-form" novalidate autocomplete="off">
-                            <!-- CSRF Token (náº¿u server há»— trá»£) -->
+                            <!-- CSRF Token (nếu server hỗ trợ) -->
                             <input type="hidden" id="csrf-token" name="csrfToken" value="${csrfToken != null ? csrfToken : ''}" />
 
-                            <!-- ===== TRÆ¯á»œNG 1: Máº¬T KHáº¨U HIá»†N Táº I (AC 1) ===== -->
+                            <!-- ===== TRƯỜNG 1: MẬT KHẨU HIỆN TẠI (AC 1) ===== -->
                             <div class="form-group" id="group-mat-khau-hien-tai">
                                 <label for="mat-khau-hien-tai" class="form-label">
-                                    Máº­t kháº©u hiá»‡n táº¡i <span class="required-star">*</span>
+                                    Mật khẩu hiện tại <span class="required-star">*</span>
                                 </label>
                                 <div class="input-wrapper">
                                     <span class="input-icon-left" aria-hidden="true">
@@ -138,7 +138,7 @@
                                         id="mat-khau-hien-tai"
                                         name="matKhauHienTai"
                                         class="form-control"
-                                        placeholder="Nháº­p máº­t kháº©u báº¡n Ä‘ang dÃ¹ng"
+                                        placeholder="Nhập mật khẩu bạn đang dùng"
                                         autocomplete="current-password"
                                         required
                                         aria-required="true"
@@ -148,7 +148,7 @@
                                         type="button"
                                         id="btn-toggle-mat-khau-hien-tai"
                                         class="btn-toggle-pwd"
-                                        aria-label="Hiá»‡n máº­t kháº©u hiá»‡n táº¡i"
+                                        aria-label="Hiện mật khẩu hiện tại"
                                         data-target="mat-khau-hien-tai"
                                         tabindex="0"
                                     >
@@ -156,16 +156,16 @@
                                         <span class="material-symbols-outlined eye-closed d-none icon-sm" aria-hidden="true">visibility_off</span>
                                     </button>
                                 </div>
-                                <span id="hint-mat-khau-hien-tai" class="field-hint">Báº¯t buá»™c pháº£i nháº­p máº­t kháº©u hiá»‡n táº¡i Ä‘á»ƒ xÃ¡c thá»±c báº¡n lÃ  chá»§ tÃ i khoáº£n.</span>
+                                <span id="hint-mat-khau-hien-tai" class="field-hint">Bắt buộc phải nhập mật khẩu hiện tại để xác thực bạn là chủ tài khoản.</span>
                                 <div id="err-mat-khau-hien-tai" class="field-error" aria-live="polite"></div>
                             </div>
 
                             <hr class="form-divider" />
 
-                            <!-- ===== TRÆ¯á»œNG 2: Máº¬T KHáº¨U Má»šI (AC 2) ===== -->
+                            <!-- ===== TRƯỜNG 2: MẬT KHẨU MỚI (AC 2) ===== -->
                             <div class="form-group" id="group-mat-khau-moi">
                                 <label for="mat-khau-moi" class="form-label">
-                                    Máº­t kháº©u má»›i <span class="required-star">*</span>
+                                    Mật khẩu mới <span class="required-star">*</span>
                                 </label>
                                 <div class="input-wrapper">
                                     <span class="input-icon-left" aria-hidden="true">
@@ -176,7 +176,7 @@
                                         id="mat-khau-moi"
                                         name="matKhauMoi"
                                         class="form-control"
-                                        placeholder="Tá»‘i thiá»ƒu 8 kÃ½ tá»±, gá»“m cáº£ chá»¯ vÃ  sá»‘"
+                                        placeholder="Tối thiểu 8 ký tự, gồm cả chữ và số"
                                         autocomplete="new-password"
                                         required
                                         minlength="8"
@@ -187,7 +187,7 @@
                                         type="button"
                                         id="btn-toggle-mat-khau-moi"
                                         class="btn-toggle-pwd"
-                                        aria-label="Hiá»‡n máº­t kháº©u má»›i"
+                                        aria-label="Hiện mật khẩu mới"
                                         data-target="mat-khau-moi"
                                         tabindex="0"
                                     >
@@ -197,11 +197,11 @@
                                 </div>
                                 <div id="err-mat-khau-moi" class="field-error" aria-live="polite"></div>
 
-                                <!-- Thanh Ä‘o Ä‘á»™ máº¡nh máº­t kháº©u (Password Strength Meter) -->
+                                <!-- Thanh đo độ mạnh mật khẩu (Password Strength Meter) -->
                                 <div class="strength-meter-container" id="strength-container" aria-live="polite">
                                     <div class="strength-header">
-                                        <span class="strength-title">Äá»™ máº¡nh máº­t kháº©u:</span>
-                                        <span class="strength-level" id="strength-text">ChÆ°a nháº­p</span>
+                                        <span class="strength-title">Độ mạnh mật khẩu:</span>
+                                        <span class="strength-level" id="strength-text">Chưa nhập</span>
                                     </div>
                                     <div class="strength-bars" aria-hidden="true">
                                         <span class="bar" id="bar-1"></span>
@@ -211,34 +211,34 @@
                                     </div>
                                 </div>
 
-                                <!-- TiÃªu chuáº©n máº­t kháº©u (Checklist) -->
+                                <!-- Tiêu chuẩn mật khẩu (Checklist) -->
                                 <div class="password-checklist-card" id="checklist-mat-khau-moi">
-                                    <span class="checklist-heading">Quy Ä‘á»‹nh máº­t kháº©u má»›i:</span>
+                                    <span class="checklist-heading">Quy định mật khẩu mới:</span>
                                     <ul class="checklist-items">
                                         <li class="checklist-item" id="rule-min-length" data-rule="length">
                                             <span class="rule-icon" aria-hidden="true"><span class="material-symbols-outlined icon-xs">close</span></span>
-                                            <span class="rule-label">Tá»‘i thiá»ƒu <strong>8 kÃ½ tá»±</strong></span>
+                                            <span class="rule-label">Tối thiểu <strong>8 ký tự</strong></span>
                                         </li>
                                         <li class="checklist-item" id="rule-has-letter" data-rule="letter">
                                             <span class="rule-icon" aria-hidden="true"><span class="material-symbols-outlined icon-xs">close</span></span>
-                                            <span class="rule-label">Chá»©a Ã­t nháº¥t <strong>1 chá»¯ cÃ¡i</strong> (a-z hoáº·c A-Z)</span>
+                                            <span class="rule-label">Chứa ít nhất <strong>1 chữ cái</strong> (a-z hoặc A-Z)</span>
                                         </li>
                                         <li class="checklist-item" id="rule-has-number" data-rule="number">
                                             <span class="rule-icon" aria-hidden="true"><span class="material-symbols-outlined icon-xs">close</span></span>
-                                            <span class="rule-label">Chá»©a Ã­t nháº¥t <strong>1 chá»¯ sá»‘</strong> (0-9)</span>
+                                            <span class="rule-label">Chứa ít nhất <strong>1 chữ số</strong> (0-9)</span>
                                         </li>
                                         <li class="checklist-item" id="rule-diff-current" data-rule="different">
                                             <span class="rule-icon" aria-hidden="true"><span class="material-symbols-outlined icon-xs">close</span></span>
-                                            <span class="rule-label">KhÃ´ng trÃ¹ng vá»›i <strong>máº­t kháº©u hiá»‡n táº¡i</strong></span>
+                                            <span class="rule-label">Không trùng với <strong>mật khẩu hiện tại</strong></span>
                                         </li>
                                     </ul>
                                 </div>
                             </div>
 
-                            <!-- ===== TRÆ¯á»œNG 3: XÃC NHáº¬N Máº¬T KHáº¨U Má»šI ===== -->
+                            <!-- ===== TRƯỜNG 3: XÁC NHẬN MẬT KHẨU MỚI ===== -->
                             <div class="form-group" id="group-xac-nhan-mat-khau">
                                 <label for="xac-nhan-mat-khau" class="form-label">
-                                    XÃ¡c nháº­n máº­t kháº©u má»›i <span class="required-star">*</span>
+                                    Xác nhận mật khẩu mới <span class="required-star">*</span>
                                 </label>
                                 <div class="input-wrapper">
                                     <span class="input-icon-left" aria-hidden="true">
@@ -249,7 +249,7 @@
                                         id="xac-nhan-mat-khau"
                                         name="xacNhanMatKhau"
                                         class="form-control"
-                                        placeholder="Nháº­p láº¡i máº­t kháº©u má»›i vá»«a Ä‘áº·t"
+                                        placeholder="Nhập lại mật khẩu mới vừa đặt"
                                         autocomplete="new-password"
                                         required
                                         aria-required="true"
@@ -259,7 +259,7 @@
                                         type="button"
                                         id="btn-toggle-xac-nhan-mat-khau"
                                         class="btn-toggle-pwd"
-                                        aria-label="Hiá»‡n xÃ¡c nháº­n máº­t kháº©u má»›i"
+                                        aria-label="Hiện xác nhận mật khẩu mới"
                                         data-target="xac-nhan-mat-khau"
                                         tabindex="0"
                                     >
@@ -273,7 +273,7 @@
 
                             <hr class="form-divider" />
 
-                            <!-- ===== TRÆ¯á»œNG 4: THU Há»’I CÃC PHIÃŠN ÄÄ‚NG NHáº¬P KHÃC (AC 3) ===== -->
+                            <!-- ===== TRƯỜNG 4: THU HỒI CÁC PHIÊN ĐĂNG NHẬP KHÁC (AC 3) ===== -->
                             <div class="session-revocation-card" id="card-thu-hoi-phien">
                                 <div class="switch-box">
                                     <label class="custom-switch" for="thu-hoi-phien-khac">
@@ -291,12 +291,12 @@
                                     <div class="switch-content">
                                         <div class="switch-title-row">
                                             <label for="thu-hoi-phien-khac" class="switch-title">
-                                                Thu há»“i cÃ¡c phiÃªn Ä‘Äƒng nháº­p khÃ¡c
+                                                Thu hồi các phiên đăng nhập khác
                                             </label>
-                                            <span class="badge-recommended">Khuyáº¿n nghá»‹ báº£o máº­t</span>
+                                            <span class="badge-recommended">Khuyến nghị bảo mật</span>
                                         </div>
                                         <p id="desc-thu-hoi-phien" class="switch-desc">
-                                            Tá»± Ä‘á»™ng Ä‘Äƒng xuáº¥t tÃ i khoáº£n khá»i táº¥t cáº£ cÃ¡c trÃ¬nh duyá»‡t, mÃ¡y tÃ­nh, Ä‘iá»‡n thoáº¡i khÃ¡c ngay sau khi Ä‘á»•i máº­t kháº©u thÃ nh cÃ´ng. Chá»‰ duy trÃ¬ phiÃªn lÃ m viá»‡c hiá»‡n táº¡i trÃªn thiáº¿t bá»‹ nÃ y.
+                                            Tự động đăng xuất tài khoản khỏi tất cả các trình duyệt, máy tính, điện thoại khác ngay sau khi đổi mật khẩu thành công. Chỉ duy trì phiên làm việc hiện tại trên thiết bị này.
                                         </p>
                                     </div>
                                 </div>
@@ -307,7 +307,7 @@
                                         <span class="material-symbols-outlined icon-xs">info</span>
                                     </span>
                                     <span class="notice-text">
-                                        Náº¿u báº¡n nghi ngá» máº­t kháº©u Ä‘Ã£ bá»‹ lá»™ hoáº·c vá»«a Ä‘Äƒng nháº­p tá»« mÃ¡y tÃ­nh cÃ´ng cá»™ng, tÃ­nh nÄƒng nÃ y Ä‘áº£m báº£o khÃ´ng ai khÃ¡c cÃ³ thá»ƒ tiáº¿p tá»¥c truy cáº­p dá»¯ liá»‡u khÃ¡ch hÃ ng cá»§a báº¡n.
+                                        Nếu bạn nghi ngờ mật khẩu đã bị lộ hoặc vừa đăng nhập từ máy tính công cộng, tính năng này đảm bảo không ai khác có thể tiếp tục truy cập dữ liệu khách hàng của bạn.
                                     </span>
                                 </div>
                             </div>
@@ -323,7 +323,7 @@
                                     <span class="btn-icon" id="btn-icon" aria-hidden="true">
                                         <span class="material-symbols-outlined icon-sm">save</span>
                                     </span>
-                                    <span class="btn-text" id="btn-text">Äá»•i Máº­t Kháº©u vÃ  Cáº­p Nháº­t Báº£o Máº­t</span>
+                                    <span class="btn-text" id="btn-text">Đổi Mật Khẩu và Cập Nhật Bảo Mật</span>
                                 </button>
 
                                 <a
@@ -331,7 +331,7 @@
                                     id="btn-huy-doi-mat-khau"
                                     class="btn btn-secondary"
                                 >
-                                    Há»§y bá»
+                                    Hủy bỏ
                                 </a>
                             </div>
 
@@ -340,7 +340,7 @@
                 </div>
 
                 <!-- Right Column: Security Sidebar & Guidelines -->
-                <aside class="sidebar-wrapper" aria-label="ThÃ´ng tin báº£o máº­t bá»• sung">
+                <aside class="sidebar-wrapper" aria-label="Thông tin bảo mật bổ sung">
 
                     <!-- Security Tips Card -->
                     <div class="sidebar-card card-tips">
@@ -348,21 +348,21 @@
                             <span class="sidebar-icon-wrapper" aria-hidden="true">
                                 <span class="material-symbols-outlined icon-sm">shield</span>
                             </span>
-                            <h3 class="sidebar-title">Báº£o Vá»‡ Danh Má»¥c KhÃ¡ch HÃ ng</h3>
+                            <h3 class="sidebar-title">Bảo Vệ Danh Mục Khách Hàng</h3>
                         </div>
                         <div class="sidebar-card-body">
                             <p class="tips-intro">
-                                Danh má»¥c khÃ¡ch hÃ ng, sá»‘ Ä‘iá»‡n thoáº¡i, bÃ¡o giÃ¡ vÃ  doanh sá»‘ lÃ  tÃ i sáº£n quan trá»ng. Viá»‡c giá»¯ máº­t kháº©u an toÃ n giÃºp báº¡n:
+                                Danh mục khách hàng, số điện thoại, báo giá và doanh số là tài sản quan trọng. Việc giữ mật khẩu an toàn giúp bạn:
                             </p>
                             <ul class="tips-list">
                                 <li>
-                                    <strong>TrÃ¡nh rÃ² rá»‰ dá»¯ liá»‡u khÃ¡ch hÃ ng</strong> sang Ä‘á»‘i thá»§ hoáº·c cÃ¡ nhÃ¢n khÃ´ng cÃ³ tháº©m quyá»n.
+                                    <strong>Tránh rò rỉ dữ liệu khách hàng</strong> sang đối thủ hoặc cá nhân không có thẩm quyền.
                                 </li>
                                 <li>
-                                    <strong>NgÄƒn cháº·n giáº£ máº¡o thao tÃ¡c</strong> nhÆ° chuyá»ƒn Ä‘á»•i ngÆ°á»i phá»¥ trÃ¡ch hoáº·c sá»­a Ä‘á»•i bÃ¡o giÃ¡ sai lá»‡ch.
+                                    <strong>Ngăn chặn giả mạo thao tác</strong> như chuyển đổi người phụ trách hoặc sửa đổi báo giá sai lệch.
                                 </li>
                                 <li>
-                                    <strong>Äáº£m báº£o tÃ­nh chá»‹u trÃ¡ch nhiá»‡m</strong> cho tá»«ng hoáº¡t Ä‘á»™ng bÃ¡n hÃ ng ghi nháº­n trÃªn há»‡ thá»‘ng.
+                                    <strong>Đảm bảo tính chịu trách nhiệm</strong> cho từng hoạt động bán hàng ghi nhận trên hệ thống.
                                 </li>
                             </ul>
                         </div>
@@ -374,21 +374,21 @@
                             <span class="sidebar-icon-wrapper icon-session" aria-hidden="true">
                                 <span class="material-symbols-outlined icon-sm">devices</span>
                             </span>
-                            <h3 class="sidebar-title">PhiÃªn ÄÄƒng Nháº­p Cá»§a Báº¡n</h3>
+                            <h3 class="sidebar-title">Phiên Đăng Nhập Của Bạn</h3>
                         </div>
                         <div class="sidebar-card-body">
                             <div class="session-item current">
                                 <div class="session-dot active" aria-hidden="true"></div>
                                 <div class="session-info">
-                                    <span class="session-device">Thiáº¿t bá»‹ hiá»‡n táº¡i</span>
-                                    <span class="session-status">Äang hoáº¡t Ä‘á»™ng &bull; ÄÆ°á»£c giá»¯ láº¡i</span>
+                                    <span class="session-device">Thiết bị hiện tại</span>
+                                    <span class="session-status">Đang hoạt động &bull; Được giữ lại</span>
                                 </div>
                             </div>
                             <div class="session-item other">
                                 <div class="session-dot revoked" aria-hidden="true"></div>
                                 <div class="session-info">
-                                    <span class="session-device">CÃ¡c phiÃªn / thiáº¿t bá»‹ khÃ¡c</span>
-                                    <span class="session-status text-warning">Sáº½ thu há»“i khi Ä‘á»•i máº­t kháº©u</span>
+                                    <span class="session-device">Các phiên / thiết bị khác</span>
+                                    <span class="session-status text-warning">Sẽ thu hồi khi đổi mật khẩu</span>
                                 </div>
                             </div>
                         </div>
@@ -400,13 +400,13 @@
                             <span class="sidebar-icon-wrapper icon-idea" aria-hidden="true">
                                 <span class="material-symbols-outlined icon-sm">lightbulb</span>
                             </span>
-                            <h3 class="sidebar-title">Gá»£i Ã Máº­t Kháº©u Máº¡nh</h3>
+                            <h3 class="sidebar-title">Gợi Ý Mật Khẩu Mạnh</h3>
                         </div>
                         <div class="sidebar-card-body">
                             <ul class="best-practice-list">
-                                <li>NÃªn káº¿t há»£p cáº£ chá»¯ hoa, chá»¯ thÆ°á»ng, sá»‘ vÃ  kÃ½ tá»± Ä‘áº·c biá»‡t (!@#$%^&*).</li>
-                                <li>KhÃ´ng sá»­ dá»¥ng thÃ´ng tin dá»… Ä‘oÃ¡n nhÆ° ngÃ y sinh, sá»‘ Ä‘iá»‡n thoáº¡i hoáº·c biá»ƒn sá»‘ xe.</li>
-                                <li>KhÃ´ng dÃ¹ng láº¡i máº­t kháº©u cá»§a email cÃ¡ nhÃ¢n hoáº·c tÃ i khoáº£n máº¡ng xÃ£ há»™i.</li>
+                                <li>Nên kết hợp cả chữ hoa, chữ thường, số và ký tự đặc biệt (!@#$%^&*).</li>
+                                <li>Không sử dụng thông tin dễ đoán như ngày sinh, số điện thoại hoặc biển số xe.</li>
+                                <li>Không dùng lại mật khẩu của email cá nhân hoặc tài khoản mạng xã hội.</li>
                             </ul>
                         </div>
                     </div>
@@ -421,7 +421,7 @@
     <!-- ===== FOOTER ===== -->
     <footer class="crm-footer" role="contentinfo">
         <div class="footer-inner">
-            <p>&copy; 2026 CRM BÃ¡n HÃ ng - NhÃ³m 10. ToÃ n bá»™ thÃ´ng tin Ä‘Æ°á»£c báº£o máº­t theo quy Ä‘á»‹nh.</p>
+            <p>&copy; 2026 CRM Bán Hàng - Nhóm 10. Toàn bộ thông tin được bảo mật theo quy định.</p>
         </div>
     </footer>
 
