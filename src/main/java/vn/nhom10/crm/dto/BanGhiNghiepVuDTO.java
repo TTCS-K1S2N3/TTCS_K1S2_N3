@@ -49,6 +49,8 @@ public class BanGhiNghiepVuDTO implements Serializable {
     private String trangThai;
     private LocalDate ngayTao;
     private String moTaChiTiet;
+    private String maSoThue;
+    private String website;
 
     public BanGhiNghiepVuDTO() {
     }
@@ -69,6 +71,16 @@ public class BanGhiNghiepVuDTO implements Serializable {
         this.trangThai = trangThai;
         this.ngayTao = ngayTao;
         this.moTaChiTiet = moTaChiTiet;
+    }
+
+    public BanGhiNghiepVuDTO(Long id, String maBanGhi, String tieuDe, LoaiNghiepVu loaiNghiepVu,
+                            Long nguoiPhuTrachId, String tenNguoiPhuTrach,
+                            Long nhomKinhDoanhId, String tenNhom,
+                            String giaTri, String trangThai, LocalDate ngayTao, String moTaChiTiet,
+                            String maSoThue, String website) {
+        this(id, maBanGhi, tieuDe, loaiNghiepVu, nguoiPhuTrachId, tenNguoiPhuTrach, nhomKinhDoanhId, tenNhom, giaTri, trangThai, ngayTao, moTaChiTiet);
+        this.maSoThue = maSoThue;
+        this.website = website;
     }
 
     public Long getId() {
@@ -165,5 +177,21 @@ public class BanGhiNghiepVuDTO implements Serializable {
 
     public void setMoTaChiTiet(String moTaChiTiet) {
         this.moTaChiTiet = moTaChiTiet;
+    }
+
+    public String getMaSoThue() {
+        return maSoThue;
+    }
+
+    public void setMaSoThue(String maSoThue) {
+        this.maSoThue = maSoThue;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
     }
 }

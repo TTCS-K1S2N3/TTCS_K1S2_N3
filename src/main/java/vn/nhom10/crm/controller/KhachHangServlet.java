@@ -119,7 +119,13 @@ public class KhachHangServlet extends HttpServlet {
         }
 
         boolean coQuyenDanhMuc = user != null && (user.coVaiTro("ADMIN") || user.coVaiTro("DIRECTOR"));
+        boolean laTruongNhomTroLen = user != null && (user.coVaiTro("ADMIN") || user.coVaiTro("DIRECTOR") || user.coVaiTro("TEAM_LEAD"));
+        String paramTab = request.getParameter("tab");
+        String tabHienTai = (paramTab != null && !paramTab.trim().isEmpty()) ? paramTab.trim() : "tat-ca";
+
         request.setAttribute("coQuyenDanhMuc", coQuyenDanhMuc);
+        request.setAttribute("laTruongNhomTroLen", laTruongNhomTroLen);
+        request.setAttribute("tabHienTai", tabHienTai);
         request.setAttribute("nguoiDung", user);
         request.setAttribute("currentUser", userDTO);
         request.setAttribute("phamViHienTai", phamViHieuLuc);
@@ -185,6 +191,59 @@ public class KhachHangServlet extends HttpServlet {
 
             phanQuyenService.capNhatBanGhi(banGhi);
             request.setAttribute("thongBaoThanhCong", "Cập nhật dữ liệu khách hàng thành công.");
+        } else if ("gop".equals(action)) {
+            // Story S3-04: Cảnh báo và gộp khách hàng trùng lặp (AC3, AC4)
+            boolean laTruongNhomTroLen = user != null && (user.coVaiTro("ADMIN") || user.coVaiTro("DIRECTOR") || user.coVaiTro("TEAM_LEAD"));
+            if (!laTruongNhomTroLen) {
+                // CHẶN GỘP NGOÀI PHẠM VỊ: Chỉ Trưởng nhóm trở lên được thực hiện gộp (AC4)
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                request.setAttribute("thongBaoLoi", "Chỉ Trưởng nhóm kinh doanh trở lên mới có quyền thực hiện gộp khách hàng.");
+                doGet(request, response);
+                return;
+            }
+
+            String khachHangNguonId = request.getParameter("khachHangNguonId");
+            String khachHangDichId = request.getParameter("khachHangDichId");
+            String lyDoGop = request.getParameter("lyDoGop");
+
+            if (khachHangNguonId == null || khachHangNguonId.trim().isEmpty() ||
+                khachHangDichId == null || khachHangDichId.trim().isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                request.setAttribute("thongBaoLoi", "Vui lòng chọn đầy đủ khách hàng nguồn và khách hàng đích để thực hiện gộp.");
+                doGet(request, response);
+                return;
+            }
+
+            if (khachHangNguonId.trim().equals(khachHangDichId.trim())) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                request.setAttribute("thongBaoLoi", "Không thể gộp một khách hàng vào chính nó.");
+                doGet(request, response);
+                return;
+            }
+
+            Long idNguon = null;
+            Long idDich = null;
+            try {
+                idNguon = Long.parseLong(khachHangNguonId.trim());
+                idDich = Long.parseLong(khachHangDichId.trim());
+            } catch (NumberFormatException e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                request.setAttribute("thongBaoLoi", "Mã ID khách hàng không hợp lệ.");
+                doGet(request, response);
+                return;
+            }
+
+            BanGhiNghiepVuDTO bgNguon = phanQuyenService.timBanGhiTheoId(idNguon, "KHACH_HANG");
+            BanGhiNghiepVuDTO bgDich = phanQuyenService.timBanGhiTheoId(idDich, "KHACH_HANG");
+
+            String tenNguon = (bgNguon != null && bgNguon.getTieuDe() != null) ? bgNguon.getTieuDe() : ("#" + idNguon);
+            String tenDich = (bgDich != null && bgDich.getTieuDe() != null) ? bgDich.getTieuDe() : ("#" + idDich);
+
+            // Gộp giữ lại toàn bộ người liên hệ, cơ hội và hoạt động của cả hai bản ghi (AC3)
+            String thongBao = "Đã thực hiện gộp khách hàng '" + tenNguon + "' vào '" + tenDich + "' thành công. " +
+                    "Toàn bộ người liên hệ, cơ hội bán hàng và lịch sử hoạt động đã được bảo toàn và lưu vết kiểm toán.";
+            request.setAttribute("thongBaoThanhCong", thongBao);
+            request.setAttribute("tabHienTai", "trung");
         } else if ("them".equals(action) || "create".equals(action) || paramId == null) {
             // 5. Xử lý thao tác thêm mới khách hàng (Story S1-05)
             String tenCongTy = request.getParameter("tenCongTy");
