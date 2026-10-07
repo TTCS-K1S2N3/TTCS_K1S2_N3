@@ -372,4 +372,46 @@ class KhachHangServletTest {
         verify(response, never()).setContentType("text/csv; charset=UTF-8");
         verify(response).setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     }
+
+    @Test
+    @DisplayName("S3-03 AC1 & AC2: User A truy cập /khach-hang/chi-tiet?id=1 hiển thị view chi-tiet.jsp (Trang 360)")
+    void testKhachHang_NhanVienA_Xem360_KhachCuaMinh_ChuyenHuongChiTietJsp() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getServletPath()).thenReturn("/khach-hang/chi-tiet");
+        when(request.getParameter("id")).thenReturn("1"); // FPT thuộc về A
+
+        servlet.doGet(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_OK);
+        verify(request).setAttribute(eq("banGhiChiTiet"), any(BanGhiNghiepVuDTO.class));
+        verify(request).getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp");
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("S3-03 Data Scope: User A cố tình truy cập /khach-hang/chi-tiet?id=5 (khách của B) bị chặn 403")
+    void testKhachHang_NhanVienA_Xem360_KhachCuaB_TraVe403() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getServletPath()).thenReturn("/khach-hang/chi-tiet");
+        when(request.getParameter("id")).thenReturn("5"); // Viettel thuộc về B
+
+        servlet.doGet(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+        verify(request).setAttribute(eq("thongBaoLoi"), contains("Từ chối truy cập"));
+        verify(request).getRequestDispatcher("/WEB-INF/views/phan-quyen/ngoai-pham-vi.jsp");
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("S3-03: Truy cập /khach-hang/chi-tiet không truyền id sẽ redirect về /khach-hang")
+    void testKhachHang_Xem360_KhongTruyenId_RedirectDanhSach() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getServletPath()).thenReturn("/khach-hang/chi-tiet");
+        when(request.getParameter("id")).thenReturn(null);
+
+        servlet.doGet(request, response);
+
+        verify(response).sendRedirect("/crm/khach-hang");
+    }
 }

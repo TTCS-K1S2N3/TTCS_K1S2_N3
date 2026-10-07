@@ -20,7 +20,7 @@ import java.util.List;
  * Tích hợp kiểm tra phân quyền phạm vi dữ liệu (Data Scope) ở server-side (Story S1-05).
  * URL: /khach-hang
  */
-@WebServlet(name = "KhachHangServlet", urlPatterns = {"/khach-hang"})
+@WebServlet(name = "KhachHangServlet", urlPatterns = {"/khach-hang", "/khach-hang/chi-tiet", "/khach-hang/360"})
 public class KhachHangServlet extends HttpServlet {
 
     private final PhanQuyenDuLieuService phanQuyenService;
@@ -49,6 +49,8 @@ public class KhachHangServlet extends HttpServlet {
         NguoiDungDTO userDTO = NguoiDungDTO.tuNguoiDung(user);
 
         String paramId = request.getParameter("id");
+        String servletPath = request.getServletPath();
+        String action = request.getParameter("action");
 
         // 1. Kiểm tra quyền khi xem chi tiết khách hàng trực tiếp bằng ID (AC3, AC4)
         if (paramId != null && !paramId.trim().isEmpty()) {
@@ -79,6 +81,24 @@ public class KhachHangServlet extends HttpServlet {
             request.setAttribute("banGhiChiTiet", banGhi);
             request.setAttribute("banGhi", banGhi);
             request.setAttribute("thongBaoThanhCong", ketQua.getThongBao());
+        }
+
+        // 1.1. Điều hướng canonical sang trang 360 khách hàng (Story S3-03)
+        boolean xemChiTiet360 = "/khach-hang/chi-tiet".equals(servletPath)
+                || "/khach-hang/360".equals(servletPath)
+                || "chi-tiet".equalsIgnoreCase(action)
+                || "360".equalsIgnoreCase(action);
+
+        if (xemChiTiet360) {
+            if (paramId == null || paramId.trim().isEmpty()) {
+                response.sendRedirect(request.getContextPath() + "/khach-hang");
+                return;
+            }
+            request.setAttribute("currentUser", userDTO);
+            request.setAttribute("nguoiDung", user);
+            response.setStatus(HttpServletResponse.SC_OK);
+            request.getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp").forward(request, response);
+            return;
         }
 
         // 2. Tiếp nhận tham số Data Scope từ người dùng

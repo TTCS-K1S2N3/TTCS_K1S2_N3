@@ -164,7 +164,7 @@
                                     <td><c:out value="${kh.giaTri}" /></td>
                                     <td><span class="badge badge-success"><c:out value="${kh.trangThai}" /></span></td>
                                     <td style="text-align: center;">
-                                        <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" class="btn-action" title="Xem chi tiết khách hàng" aria-label="Xem chi tiết khách hàng">
+                                        <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${kh.id}" class="btn-action" title="Xem hồ sơ 360° khách hàng" aria-label="Xem hồ sơ 360° khách hàng">
                                             <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
                                         </a>
                                     </td>
