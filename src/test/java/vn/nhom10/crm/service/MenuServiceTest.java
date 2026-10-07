@@ -234,5 +234,19 @@ class MenuServiceTest {
 
         assertNotNull(leadMenu);
         assertFalse(leadMenu.isActive(), "Menu Lead không được active khi đang ở /khach-hang/chi-tiet");
+
+        // Story S3-08: Menu Khách hàng active khi ở trang Yêu cầu hỗ trợ và Trang 360
+        List<MucMenuDTO> dsMenuYcht = menuService.layDanhSachMenuChoNguoiDung(sales, "/yeu-cau-ho-tro");
+        MucMenuDTO khYcht = dsMenuYcht.stream().filter(m -> "KHACH_HANG".equals(m.getMaModule())).findFirst().orElse(null);
+        assertNotNull(khYcht);
+        assertTrue(khYcht.isActive(), "Menu Khách hàng phải active khi truy cập /yeu-cau-ho-tro");
+
+        List<MucMenuDTO> dsMenu360 = menuService.layDanhSachMenuChoNguoiDung(sales, "/chi-tiet-ban-ghi?id=1");
+        MucMenuDTO kh360 = dsMenu360.stream().filter(m -> "KHACH_HANG".equals(m.getMaModule())).findFirst().orElse(null);
+        assertNotNull(kh360);
+        assertTrue(kh360.isActive(), "Menu Khách hàng phải active khi truy cập /chi-tiet-ban-ghi");
+
+        assertTrue(menuService.kiemTraQuyenTruyCapUrl(sales, "/yeu-cau-ho-tro"));
+        assertTrue(menuService.kiemTraQuyenTruyCapUrl(sales, "/chi-tiet-ban-ghi?id=1"));
     }
 }

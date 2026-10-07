@@ -6,13 +6,20 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import vn.nhom10.crm.dao.KhachHangDAO;
+import vn.nhom10.crm.dao.NguoiDungDAO;
+import vn.nhom10.crm.dao.YeuCauHoTroDAO;
 import vn.nhom10.crm.dto.BanGhiNghiepVuDTO;
 import vn.nhom10.crm.dto.NguoiDungDTO;
 import vn.nhom10.crm.dto.ThongKeNhomCongTyDTO;
+import vn.nhom10.crm.dto.ThongTinRuiRoDTO;
+import vn.nhom10.crm.model.MucUuTienYeuCauEnum;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.PhamViDuLieu;
+import vn.nhom10.crm.model.TrangThaiYeuCauEnum;
 import vn.nhom10.crm.service.CongTyMeConService;
 import vn.nhom10.crm.service.PhanQuyenDuLieuService;
+import vn.nhom10.crm.service.YeuCauHoTroService;
 import vn.nhom10.crm.util.LoiKhongTimThayException;
 import vn.nhom10.crm.util.LoiPhanQuyenException;
 
@@ -28,6 +35,7 @@ import java.util.logging.Logger;
  * - Data Scope server-side (S1-05)
  * - Khai báo quan hệ công ty mẹ và công ty con (S3-05 AC1)
  * - Hiển thị tổng giá trị hợp đồng của cả nhóm công ty (S3-05 AC2)
+ * - Ghi nhận yêu cầu hỗ trợ sau bán và theo dõi cờ rủi ro rời bỏ khách hàng (S3-08)
  *
  * URL Patterns: /khach-hang, /khach-hang/chi-tiet, /khach-hang/cong-ty-con
  */
@@ -118,18 +126,11 @@ public class KhachHangServlet extends HttpServlet {
                 request.setAttribute("thongBaoThanhCong", ketQua.getThongBao());
             }
 
-            // Story S3-05: Nạp dữ liệu thống kê nhóm công ty & danh sách công ty con
-            try {
-                ThongKeNhomCongTyDTO thongKeNhom = congTyMeConService.layThongKeNhomCongTy(id);
-                request.setAttribute("thongKeNhomCongTy", thongKeNhom);
-                request.setAttribute("dsKhaDungLamCon", congTyMeConService.layDanhSachKhachHangKhaDungLamCongTyCon(id));
-                request.setAttribute("dsKhaDungLamMe", congTyMeConService.layDanhSachKhachHangKhaDungLamCongTyMe(id));
-            } catch (SQLException e) {
-                LOGGER.log(Level.WARNING, "Không thể tải số liệu nhóm công ty cho ID " + id + ": " + e.getMessage());
-            }
+            napDuLieuChiTietKhachHang(request, id, banGhi);
 
-            // Nếu người dùng yêu cầu trang chi tiết (/khach-hang/chi-tiet hoặc view=chi-tiet)
-            if ("/khach-hang/chi-tiet".equals(servletPath) || "chi-tiet".equalsIgnoreCase(viewParam) || "chi-tiet".equalsIgnoreCase(actionParam)) {
+            // Nếu người dùng yêu cầu trang chi tiết (/khach-hang/chi-tiet hoặc view=chi-tiet hoặc action=chi-tiet hoặc chiTiet=true)
+            if ("/khach-hang/chi-tiet".equals(servletPath) || "chi-tiet".equalsIgnoreCase(viewParam)
+                    || "chi-tiet".equalsIgnoreCase(actionParam) || "true".equalsIgnoreCase(request.getParameter("chiTiet"))) {
                 request.setAttribute("currentUser", userDTO);
                 response.setStatus(HttpServletResponse.SC_OK);
                 request.getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp").forward(request, response);
@@ -159,6 +160,21 @@ public class KhachHangServlet extends HttpServlet {
         List<BanGhiNghiepVuDTO> danhSachKhachHang = phanQuyenService.layDanhSachDuLieu(
                 userDTO, phamViHieuLuc, tuKhoa, "KHACH_HANG"
         );
+
+        // Gắn cờ rủi ro rời bỏ và số yêu cầu chưa xử lý cho từng khách hàng (Story S3-08 AC3)
+        try {
+            KhachHangDAO khDao = new KhachHangDAO();
+            YeuCauHoTroDAO ychtDao = new YeuCauHoTroDAO();
+            for (BanGhiNghiepVuDTO khDto : danhSachKhachHang) {
+                if (khDto.getId() != null) {
+                    boolean coRuiRo = khDao.kiemTraCoRuiRo(khDto.getId());
+                    khDto.setCoRuiRo(coRuiRo);
+                    if (coRuiRo) {
+                        khDto.setSoYeuCauChuaXuLy(ychtDao.demYeuCauChuaXuLy(khDto.getId()));
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
 
         // 4. Xử lý Xuất Excel danh mục khách hàng (.xlsx)
         String xuatExcel = request.getParameter("xuatExcel");
@@ -320,6 +336,42 @@ public class KhachHangServlet extends HttpServlet {
     }
 
     /**
+     * Nạp dữ liệu chi tiết khách hàng gồm: thống kê công ty mẹ-con (S3-05) và thông tin cờ rủi ro / ticket hỗ trợ (S3-08).
+     */
+    private void napDuLieuChiTietKhachHang(HttpServletRequest request, Long id, BanGhiNghiepVuDTO banGhi) {
+        if (id == null) return;
+
+        // Story S3-05: Nạp dữ liệu thống kê nhóm công ty & danh sách công ty con
+        try {
+            ThongKeNhomCongTyDTO thongKeNhom = congTyMeConService.layThongKeNhomCongTy(id);
+            request.setAttribute("thongKeNhomCongTy", thongKeNhom);
+            request.setAttribute("dsKhaDungLamCon", congTyMeConService.layDanhSachKhachHangKhaDungLamCongTyCon(id));
+            request.setAttribute("dsKhaDungLamMe", congTyMeConService.layDanhSachKhachHangKhaDungLamCongTyMe(id));
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, "Không thể tải số liệu nhóm công ty cho ID " + id + ": " + e.getMessage());
+        }
+
+        // Story S3-08: Nạp thông tin rủi ro & danh sách yêu cầu hỗ trợ
+        try {
+            YeuCauHoTroService ychtService = new YeuCauHoTroService();
+            ThongTinRuiRoDTO ruiRo = ychtService.layThongTinRuiRo(id);
+            if (ruiRo != null) {
+                if (banGhi != null) {
+                    banGhi.setCoRuiRo(ruiRo.isCoRuiRo());
+                    banGhi.setSoYeuCauChuaXuLy(ruiRo.getSoYeuCauChuaXuLy());
+                }
+                request.setAttribute("thongTinRuiRo", ruiRo);
+            }
+            request.setAttribute("danhSachYeuCauHoTro", ychtService.layDanhSachTheoKhachHang(id));
+            request.setAttribute("danhSachNhanVien", new NguoiDungDAO().layTatCa());
+            request.setAttribute("mucUuTienList", MucUuTienYeuCauEnum.values());
+            request.setAttribute("trangThaiList", TrangThaiYeuCauEnum.values());
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Không thể tải dữ liệu hỗ trợ & rủi ro cho ID " + id + ": " + e.getMessage());
+        }
+    }
+
+    /**
      * Xử lý gắn khách hàng làm công ty con của khách hàng khác (Story S3-05 AC1).
      */
     private void xuLyGanCongTyCon(HttpServletRequest request, HttpServletResponse response, NguoiDungDTO userDTO)
@@ -436,12 +488,7 @@ public class KhachHangServlet extends HttpServlet {
             BanGhiNghiepVuDTO banGhi = phanQuyenService.timBanGhiTheoId(id, "KHACH_HANG");
             request.setAttribute("banGhi", banGhi);
             request.setAttribute("banGhiChiTiet", banGhi);
-            try {
-                ThongKeNhomCongTyDTO thongKeNhom = congTyMeConService.layThongKeNhomCongTy(id);
-                request.setAttribute("thongKeNhomCongTy", thongKeNhom);
-                request.setAttribute("dsKhaDungLamCon", congTyMeConService.layDanhSachKhachHangKhaDungLamCongTyCon(id));
-                request.setAttribute("dsKhaDungLamMe", congTyMeConService.layDanhSachKhachHangKhaDungLamCongTyMe(id));
-            } catch (SQLException ignored) {}
+            napDuLieuChiTietKhachHang(request, id, banGhi);
         }
         request.setAttribute("currentUser", userDTO);
         request.getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp").forward(request, response);

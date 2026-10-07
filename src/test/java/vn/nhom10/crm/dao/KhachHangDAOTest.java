@@ -23,11 +23,16 @@ import static org.junit.jupiter.api.Assertions.*;
  * - Gỡ bỏ công ty mẹ
  * - Phát hiện vòng lặp chu kỳ mẹ con
  * - Lấy danh sách công ty con
+ * Kiểm tra các tính năng của Story S3-08:
+ * - Thêm khách hàng
+ * - Cập nhật và kiểm tra cờ rủi ro rời bỏ
+ * - Lấy danh sách khách hàng rủi ro
  */
 public class KhachHangDAOTest {
 
     private static Connection h2Connection;
     private KhachHangDAO khachHangDAO;
+    private KhachHangDAO dao;
 
     @BeforeAll
     public static void setUpDatabase() throws Exception {
@@ -37,12 +42,12 @@ public class KhachHangDAOTest {
         try (Statement stmt = h2Connection.createStatement()) {
             stmt.execute("CREATE TABLE IF NOT EXISTS nguoi_dung (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
-                    "ho_ten VARCHAR(100) NOT NULL, " +
-                    "email VARCHAR(100) NOT NULL UNIQUE)");
+                    "ho_ten VARCHAR(255) NOT NULL, " +
+                    "email VARCHAR(255) NOT NULL UNIQUE)");
 
             stmt.execute("CREATE TABLE IF NOT EXISTS nhom_kinh_doanh (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
-                    "ten_nhom VARCHAR(100) NOT NULL)");
+                    "ten_nhom VARCHAR(255) NOT NULL)");
 
             stmt.execute("CREATE TABLE IF NOT EXISTS khach_hang (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
@@ -61,7 +66,7 @@ public class KhachHangDAOTest {
                     "doanh_thu_uoc_tinh DECIMAL(18,2) DEFAULT 0.00, " +
                     "cong_ty_me_id BIGINT NULL, " +
                     "trang_thai VARCHAR(50) DEFAULT 'TIEM_NANG', " +
-                    "co_rui_ro BOOLEAN DEFAULT FALSE, " +
+                    "co_rui_ro TINYINT(1) DEFAULT 0, " +
                     "rui_ro_cap_nhat_luc TIMESTAMP NULL, " +
                     "lan_tuong_tac_cuoi TIMESTAMP NULL, " +
                     "gop_vao_khach_hang_id BIGINT NULL, " +
@@ -70,7 +75,7 @@ public class KhachHangDAOTest {
                     "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
                     "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
 
-            stmt.execute("INSERT INTO nguoi_dung (id, ho_ten, email) VALUES (1, 'Nguyễn Văn A', 'a@crm.vn')");
+            stmt.execute("INSERT INTO nguoi_dung (id, ho_ten, email) VALUES (1, 'Nguyễn Văn Sales', 'sales@crm.vn')");
             stmt.execute("INSERT INTO nhom_kinh_doanh (id, ten_nhom) VALUES (1, 'Nhóm Miền Bắc')");
         }
 
@@ -94,6 +99,7 @@ public class KhachHangDAOTest {
     @BeforeEach
     public void resetData() throws Exception {
         khachHangDAO = new KhachHangDAO();
+        dao = khachHangDAO;
         try (Statement stmt = h2Connection.createStatement()) {
             stmt.execute("DELETE FROM khach_hang");
         }
@@ -225,5 +231,38 @@ public class KhachHangDAOTest {
         // Gán C làm mẹ của A -> A -> B -> C -> A (vòng lặp!)
         boolean vongLap = khachHangDAO.kiemTraVongLapCongTyMeCon(idA, idC);
         assertTrue(vongLap, "Phải phát hiện vòng lặp nhiều cấp");
+    }
+
+    @Test
+    @DisplayName("S3-08: Thêm mới khách hàng và cập nhật cờ rủi ro rời bỏ")
+    public void testThemVaCapNhatCoRuiRo() {
+        KhachHang kh = new KhachHang("Tập đoàn Công nghệ Demo", 1L);
+        kh.setMaKhachHang("KH-DEMO-01");
+        kh.setDoanhThuUocTinh(new BigDecimal("500000000.00"));
+        kh.setNhomKinhDoanhId(1L);
+
+        Long id = dao.themKhachHang(kh);
+        assertNotNull(id);
+        assertTrue(id > 0);
+
+        KhachHang timDuoc = dao.timTheoId(id);
+        assertNotNull(timDuoc);
+        assertEquals("Tập đoàn Công nghệ Demo", timDuoc.getTenCongTy());
+        assertEquals("Nguyễn Văn Sales", timDuoc.getTenNguoiSoHuu());
+        assertFalse(timDuoc.isCoRuiRo());
+
+        // Gắn cờ rủi ro rời bỏ
+        boolean updated = dao.capNhatCoRuiRo(id, true);
+        assertTrue(updated);
+        assertTrue(dao.kiemTraCoRuiRo(id));
+
+        List<KhachHang> dsRuiRo = dao.layDanhSachKhachHangRuiRo(1L);
+        assertEquals(1, dsRuiRo.size());
+        assertEquals(id, dsRuiRo.get(0).getId());
+
+        // Gỡ cờ rủi ro
+        boolean unflagged = dao.capNhatCoRuiRo(id, false);
+        assertTrue(unflagged);
+        assertFalse(dao.kiemTraCoRuiRo(id));
     }
 }

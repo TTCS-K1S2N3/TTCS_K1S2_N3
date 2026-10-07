@@ -1,16 +1,22 @@
 package vn.nhom10.crm.model;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
  * Model đại diện cho thực thể Khách hàng doanh nghiệp trong bảng 'khach_hang'.
  * Hỗ trợ quan hệ công ty mẹ - công ty con thông qua trường 'cong_ty_me_id' (Story S3-05).
+ * Hỗ trợ import khách hàng Excel (Story S3-06).
+ * Hỗ trợ cờ rủi ro rời bỏ 'co_rui_ro' và thông tin hỗ trợ sau bán (Story S3-08).
  */
-public class KhachHang {
+public class KhachHang implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private Long id;
     private String maKhachHang;
@@ -44,11 +50,19 @@ public class KhachHang {
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
-    // Thuộc tính bổ trợ thống kê
+    // Thuộc tính bổ trợ thống kê hợp đồng (Story S3-05)
     private BigDecimal tongGiaTriHopDong = BigDecimal.ZERO;
     private int soLuongHopDong = 0;
 
+    // Thuộc tính bổ trợ số yêu cầu hỗ trợ chưa xử lý (Story S3-08)
+    private int soYeuCauChuaXuLy = 0;
+
     public KhachHang() {
+    }
+
+    public KhachHang(String tenCongTy, Long nguoiSoHuuId) {
+        this.tenCongTy = tenCongTy;
+        this.nguoiSoHuuId = nguoiSoHuuId;
     }
 
     public KhachHang(Long id, String tenCongTy, Long nguoiSoHuuId) {
@@ -265,12 +279,20 @@ public class KhachHang {
         this.coRuiRo = coRuiRo;
     }
 
-    public Timestamp getRuiRoCapNhatLuc() {
+    public LocalDateTime getRuiRoCapNhatLuc() {
+        return ruiRoCapNhatLuc != null ? ruiRoCapNhatLuc.toLocalDateTime() : null;
+    }
+
+    public Timestamp getRuiRoCapNhatLucTimestamp() {
         return ruiRoCapNhatLuc;
     }
 
     public void setRuiRoCapNhatLuc(Timestamp ruiRoCapNhatLuc) {
         this.ruiRoCapNhatLuc = ruiRoCapNhatLuc;
+    }
+
+    public void setRuiRoCapNhatLuc(LocalDateTime ruiRoCapNhatLuc) {
+        this.ruiRoCapNhatLuc = ruiRoCapNhatLuc != null ? Timestamp.valueOf(ruiRoCapNhatLuc) : null;
     }
 
     public Timestamp getLanTuongTacCuoi() {
@@ -279,6 +301,10 @@ public class KhachHang {
 
     public void setLanTuongTacCuoi(Timestamp lanTuongTacCuoi) {
         this.lanTuongTacCuoi = lanTuongTacCuoi;
+    }
+
+    public void setLanTuongTacCuoi(LocalDateTime lanTuongTacCuoi) {
+        this.lanTuongTacCuoi = lanTuongTacCuoi != null ? Timestamp.valueOf(lanTuongTacCuoi) : null;
     }
 
     public Long getGopVaoKhachHangId() {
@@ -313,12 +339,20 @@ public class KhachHang {
         this.createdAt = createdAt;
     }
 
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt != null ? Timestamp.valueOf(createdAt) : null;
+    }
+
     public Timestamp getUpdatedAt() {
         return updatedAt;
     }
 
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt != null ? Timestamp.valueOf(updatedAt) : null;
     }
 
     public BigDecimal getTongGiaTriHopDong() {
@@ -335,6 +369,14 @@ public class KhachHang {
 
     public void setSoLuongHopDong(int soLuongHopDong) {
         this.soLuongHopDong = soLuongHopDong;
+    }
+
+    public int getSoYeuCauChuaXuLy() {
+        return soYeuCauChuaXuLy;
+    }
+
+    public void setSoYeuCauChuaXuLy(int soYeuCauChuaXuLy) {
+        this.soYeuCauChuaXuLy = soYeuCauChuaXuLy;
     }
 
     public String getNgayTaoDinhDang() {
@@ -369,6 +411,7 @@ public class KhachHang {
                 ", congTyMeId=" + congTyMeId +
                 ", nguoiSoHuuId=" + nguoiSoHuuId +
                 ", trangThai='" + trangThai + '\'' +
+                ", coRuiRo=" + coRuiRo +
                 '}';
     }
 }

@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.logging.Logger;
 /**
  * DAO xử lý truy vấn và cập nhật bảng 'khach_hang'.
  * Đảm nhiệm quản lý quan hệ công ty mẹ và công ty con (Story S3-05).
+ * Đảm nhiệm quản lý cờ rủi ro rời bỏ và danh sách khách hàng rủi ro (Story S3-08).
  */
 public class KhachHangDAO {
 
@@ -29,8 +31,8 @@ public class KhachHangDAO {
     /**
      * Tìm khách hàng theo ID kèm tên công ty mẹ và tên người sở hữu.
      */
-    public KhachHang timTheoId(Long id) throws SQLException {
-        if (id == null) {
+    public KhachHang timTheoId(Long id) {
+        if (id == null || id <= 0) {
             return null;
         }
 
@@ -52,7 +54,10 @@ public class KhachHangDAO {
                     return mapResultSetToKhachHang(rs);
                 }
             }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi tìm khách hàng theo id [" + id + "]: " + e.getMessage(), e);
         }
+
         return null;
     }
 
@@ -236,7 +241,7 @@ public class KhachHangDAO {
     /**
      * Lấy tất cả khách hàng trong hệ thống sắp xếp theo tên công ty.
      */
-    public List<KhachHang> layTatCa() throws SQLException {
+    public List<KhachHang> layTatCa() {
         List<KhachHang> ds = new ArrayList<>();
         String sql = "SELECT kh.*, " +
                 "me.ten_cong_ty AS ten_cong_ty_me, me.ma_khach_hang AS ma_cong_ty_me, " +
@@ -254,25 +259,108 @@ public class KhachHangDAO {
             while (rs.next()) {
                 ds.add(mapResultSetToKhachHang(rs));
             }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi lấy tất cả khách hàng: " + e.getMessage(), e);
         }
         return ds;
     }
 
     /**
-     * Thêm mới một khách hàng vào cơ sở dữ liệu.
+     * Cập nhật cờ rủi ro rời bỏ của khách hàng (Story S3-08).
+     *
+     * @param khachHangId ID khách hàng
+     * @param coRuiRo     true nếu gắn cờ rủi ro, false nếu gỡ cờ
+     * @return true nếu cập nhật thành công
+     */
+    public boolean capNhatCoRuiRo(Long khachHangId, boolean coRuiRo) {
+        if (khachHangId == null || khachHangId <= 0) {
+            return false;
+        }
+
+        String sql = "UPDATE khach_hang SET co_rui_ro = ?, rui_ro_cap_nhat_luc = CURRENT_TIMESTAMP WHERE id = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, coRuiRo ? 1 : 0);
+            ps.setLong(2, khachHangId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi cập nhật cờ rủi ro cho khách hàng [" + khachHangId + "]: " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Kiểm tra nhanh khách hàng có đang bị gắn cờ rủi ro hay không (Story S3-08).
+     */
+    public boolean kiemTraCoRuiRo(Long khachHangId) {
+        if (khachHangId == null || khachHangId <= 0) {
+            return false;
+        }
+
+        String sql = "SELECT co_rui_ro FROM khach_hang WHERE id = ? LIMIT 1";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, khachHangId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("co_rui_ro") == 1;
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi kiểm tra cờ rủi ro khách hàng [" + khachHangId + "]: " + e.getMessage(), e);
+        }
+
+        return false;
+    }
+
+    /**
+     * Lấy danh sách khách hàng có rủi ro rời bỏ (co_rui_ro = 1) (Story S3-08).
+     *
+     * @param nguoiSoHuuId ID nhân viên kinh doanh (nếu null thì lấy tất cả)
+     */
+    public List<KhachHang> layDanhSachKhachHangRuiRo(Long nguoiSoHuuId) {
+        List<KhachHang> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT kh.*, ")
+                .append("me.ten_cong_ty AS ten_cong_ty_me, me.ma_khach_hang AS ma_cong_ty_me, ")
+                .append("nd.ho_ten AS ten_nguoi_so_huu, nkd.ten_nhom AS ten_nhom_kinh_doanh ")
+                .append("FROM khach_hang kh ")
+                .append("LEFT JOIN khach_hang me ON kh.cong_ty_me_id = me.id ")
+                .append("LEFT JOIN nguoi_dung nd ON kh.nguoi_so_huu_id = nd.id ")
+                .append("LEFT JOIN nhom_kinh_doanh nkd ON kh.nhom_kinh_doanh_id = nkd.id ")
+                .append("WHERE kh.co_rui_ro = 1 ");
+
+        if (nguoiSoHuuId != null && nguoiSoHuuId > 0) {
+            sql.append("AND kh.nguoi_so_huu_id = ? ");
+        }
+
+        sql.append("ORDER BY kh.rui_ro_cap_nhat_luc DESC, kh.id DESC");
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            if (nguoiSoHuuId != null && nguoiSoHuuId > 0) {
+                ps.setLong(1, nguoiSoHuuId);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSetToKhachHang(rs));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi lấy danh sách khách hàng rủi ro: " + e.getMessage(), e);
+        }
+
+        return list;
+    }
+
+    /**
+     * Thêm mới một khách hàng vào cơ sở dữ liệu (Story S3-05).
      */
     public Long themMoi(KhachHang khachHang) throws SQLException {
         if (khachHang == null) {
             return null;
         }
 
-        String sql = "INSERT INTO khach_hang (ma_khach_hang, ten_cong_ty, ten_chuan_hoa, ma_so_thue, " +
-                "nganh_nghe_id, quy_mo_id, website, website_chuan_hoa, dia_chi, khu_vuc_id, " +
-                "nguoi_so_huu_id, nhom_kinh_doanh_id, doanh_thu_uoc_tinh, cong_ty_me_id, trang_thai, " +
-                "co_rui_ro, moTaChiTiet, ngay_tao) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        // Kiểm tra xem cột mo_ta_chi_tiet hay moTaChiTiet
         String sqlChuan = "INSERT INTO khach_hang (ma_khach_hang, ten_cong_ty, ten_chuan_hoa, ma_so_thue, " +
                 "nganh_nghe_id, quy_mo_id, website, website_chuan_hoa, dia_chi, khu_vuc_id, " +
                 "nguoi_so_huu_id, nhom_kinh_doanh_id, doanh_thu_uoc_tinh, cong_ty_me_id, trang_thai, " +
@@ -311,7 +399,7 @@ public class KhachHangDAO {
             else ps.setNull(14, Types.BIGINT);
 
             ps.setString(15, khachHang.getTrangThai() != null ? khachHang.getTrangThai() : "Tiềm năng");
-            ps.setBoolean(16, khachHang.isCoRuiRo());
+            ps.setInt(16, khachHang.isCoRuiRo() ? 1 : 0);
             ps.setString(17, khachHang.getMoTaChiTiet());
             ps.setDate(18, Date.valueOf(khachHang.getNgayTao() != null ? khachHang.getNgayTao() : LocalDate.now()));
 
@@ -329,7 +417,19 @@ public class KhachHangDAO {
         return null;
     }
 
-    private KhachHang mapResultSetToKhachHang(ResultSet rs) throws SQLException {
+    /**
+     * Thêm khách hàng (hỗ trợ gọi từ Story S3-08).
+     */
+    public Long themKhachHang(KhachHang kh) {
+        try {
+            return themMoi(kh);
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi thêm khách hàng: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    public KhachHang mapResultSetToKhachHang(ResultSet rs) throws SQLException {
         KhachHang kh = new KhachHang();
         kh.setId(rs.getLong("id"));
         kh.setMaKhachHang(rs.getString("ma_khach_hang"));
@@ -350,7 +450,8 @@ public class KhachHangDAO {
         long kvId = rs.getLong("khu_vuc_id");
         kh.setKhuVucId(rs.wasNull() ? null : kvId);
 
-        kh.setNguoiSoHuuId(rs.getLong("nguoi_so_huu_id"));
+        long nshId = rs.getLong("nguoi_so_huu_id");
+        kh.setNguoiSoHuuId(rs.wasNull() ? null : nshId);
 
         long nkdId = rs.getLong("nhom_kinh_doanh_id");
         kh.setNhomKinhDoanhId(rs.wasNull() ? null : nkdId);
@@ -361,9 +462,23 @@ public class KhachHangDAO {
         kh.setCongTyMeId(rs.wasNull() ? null : meId);
 
         kh.setTrangThai(rs.getString("trang_thai"));
-        kh.setCoRuiRo(rs.getBoolean("co_rui_ro"));
-        kh.setRuiRoCapNhatLuc(rs.getTimestamp("rui_ro_cap_nhat_luc"));
-        kh.setLanTuongTacCuoi(rs.getTimestamp("lan_tuong_tac_cuoi"));
+
+        try {
+            kh.setCoRuiRo(rs.getInt("co_rui_ro") == 1);
+        } catch (SQLException ignored) {
+            try {
+                kh.setCoRuiRo(rs.getBoolean("co_rui_ro"));
+            } catch (SQLException ignored2) {}
+        }
+
+        try {
+            Timestamp ruiRoLuc = rs.getTimestamp("rui_ro_cap_nhat_luc");
+            kh.setRuiRoCapNhatLuc(ruiRoLuc);
+        } catch (SQLException ignored) {}
+
+        try {
+            kh.setLanTuongTacCuoi(rs.getTimestamp("lan_tuong_tac_cuoi"));
+        } catch (SQLException ignored) {}
 
         long gopId = rs.getLong("gop_vao_khach_hang_id");
         kh.setGopVaoKhachHangId(rs.wasNull() ? null : gopId);
@@ -373,8 +488,12 @@ public class KhachHangDAO {
         Date d = rs.getDate("ngay_tao");
         kh.setNgayTao(d != null ? d.toLocalDate() : LocalDate.now());
 
-        kh.setCreatedAt(rs.getTimestamp("created_at"));
-        kh.setUpdatedAt(rs.getTimestamp("updated_at"));
+        try {
+            kh.setCreatedAt(rs.getTimestamp("created_at"));
+        } catch (SQLException ignored) {}
+        try {
+            kh.setUpdatedAt(rs.getTimestamp("updated_at"));
+        } catch (SQLException ignored) {}
 
         // Join columns nếu có
         try {
@@ -391,5 +510,9 @@ public class KhachHangDAO {
         } catch (SQLException ignored) {}
 
         return kh;
+    }
+
+    public KhachHang mapResultSet(ResultSet rs) throws SQLException {
+        return mapResultSetToKhachHang(rs);
     }
 }

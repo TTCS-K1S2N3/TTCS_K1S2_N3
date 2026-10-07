@@ -110,6 +110,10 @@
                     <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
                     <span>Nhập Excel</span>
                 </a>
+                <a href="${pageContext.request.contextPath}/yeu-cau-ho-tro" class="btn btn-outline" id="btnYeuCauHoTro" title="Quản lý yêu cầu hỗ trợ sau bán và khách hàng có rủi ro rời bỏ (Story S3-08)">
+                    <span class="material-symbols-outlined" aria-hidden="true">support_agent</span>
+                    <span>Yêu Cầu Hỗ Trợ & Cờ Rủi Ro</span>
+                </a>
                 <button type="button" class="btn btn-outline" id="btnExportExcel" title="Tải danh sách khách hàng dưới dạng file Excel (.xlsx)">
                     <span class="material-symbols-outlined" aria-hidden="true">table_view</span>
                     <span>Xuất Excel</span>
@@ -165,8 +169,17 @@
                                     </td>
                                     <td><c:out value="${kh.tenNguoiPhuTrach}" /></td>
                                     <td><c:out value="${kh.tenNhom}" /></td>
-                                    <td><c:out value="${kh.giaTri}" /></td>
-                                    <td><span class="badge badge-success"><c:out value="${kh.trangThai}" /></span></td>
+                                    <td>
+                                        <span class="badge badge-success"><c:out value="${kh.trangThai}" /></span>
+                                        <c:if test="${kh.coRuiRo}">
+                                            <a href="${pageContext.request.contextPath}/yeu-cau-ho-tro?khachHangId=${kh.id}" style="text-decoration: none;" title="Khách hàng có nguy cơ rời bỏ (${kh.soYeuCauChuaXuLy} yêu cầu chưa xử lý) - Xem chi tiết">
+                                                <span class="badge badge-danger" style="background: #dc2626; color: #fff; margin-left: 4px; font-weight: 700; font-size: 11px; padding: 2px 7px; border-radius: 9999px; display: inline-flex; align-items: center; gap: 3px; box-shadow: 0 1px 3px rgba(220, 38, 38, 0.25);">
+                                                    <span class="material-symbols-outlined" style="font-size: 13px;" aria-hidden="true">warning</span>
+                                                    Rủi ro rời bỏ (${kh.soYeuCauChuaXuLy})
+                                                </span>
+                                            </a>
+                                        </c:if>
+                                    </td>
                                     <td style="text-align: center;">
                                         <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" class="btn-action" title="Xem chi tiết khách hàng" aria-label="Xem chi tiết khách hàng">
                                             <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
