@@ -106,6 +106,10 @@
                 <p class="page-subtitle">Quản lý và chăm sóc danh mục khách hàng thuộc quyền phụ trách</p>
             </div>
             <div class="page-actions">
+                <a href="${pageContext.request.contextPath}/yeu-cau-ho-tro" class="btn btn-outline" id="btnYeuCauHoTro" title="Quản lý yêu cầu hỗ trợ sau bán và khách hàng có rủi ro rời bỏ (Story S3-08)">
+                    <span class="material-symbols-outlined" aria-hidden="true">support_agent</span>
+                    <span>Yêu Cầu Hỗ Trợ & Cờ Rủi Ro</span>
+                </a>
                 <button type="button" class="btn btn-outline" id="btnExportExcel" title="Tải danh sách khách hàng dưới dạng file Excel (.xlsx)">
                     <span class="material-symbols-outlined" aria-hidden="true">table_view</span>
                     <span>Xuất Excel</span>
@@ -164,10 +168,12 @@
                                     <td>
                                         <span class="badge badge-success"><c:out value="${kh.trangThai}" /></span>
                                         <c:if test="${kh.coRuiRo}">
-                                            <span class="badge badge-danger" title="Khách hàng có nguy cơ rời bỏ (${kh.soYeuCauChuaXuLy} yêu cầu chưa xử lý)" style="background: #ef4444; color: #fff; margin-left: 4px; font-weight: 700; font-size: 11px; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 2px;">
-                                                <span class="material-symbols-outlined" style="font-size: 13px;" aria-hidden="true">warning</span>
-                                                Rủi ro rời bỏ
-                                            </span>
+                                            <a href="${pageContext.request.contextPath}/yeu-cau-ho-tro?khachHangId=${kh.id}" style="text-decoration: none;" title="Khách hàng có nguy cơ rời bỏ (${kh.soYeuCauChuaXuLy} yêu cầu chưa xử lý) - Xem chi tiết">
+                                                <span class="badge badge-danger" style="background: #dc2626; color: #fff; margin-left: 4px; font-weight: 700; font-size: 11px; padding: 2px 7px; border-radius: 9999px; display: inline-flex; align-items: center; gap: 3px; box-shadow: 0 1px 3px rgba(220, 38, 38, 0.25);">
+                                                    <span class="material-symbols-outlined" style="font-size: 13px;" aria-hidden="true">warning</span>
+                                                    Rủi ro rời bỏ (${kh.soYeuCauChuaXuLy})
+                                                </span>
+                                            </a>
                                         </c:if>
                                     </td>
                                     <td style="text-align: center;">
