@@ -414,4 +414,53 @@ class KhachHangServletTest {
 
         verify(response).sendRedirect("/crm/khach-hang");
     }
+
+    @Test
+    @DisplayName("S3-03 AC3: API lấy danh sách hoạt động JSON trả về dữ liệu chuẩn khi có quyền")
+    void testKhachHang_ApiHoatDong_TraVeJson() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getServletPath()).thenReturn("/khach-hang/chi-tiet");
+        when(request.getParameter("action")).thenReturn("api-hoat-dong");
+        when(request.getParameter("id")).thenReturn("1");
+
+        java.io.StringWriter sw = new java.io.StringWriter();
+        java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+        when(response.getWriter()).thenReturn(pw);
+
+        servlet.doGet(request, response);
+
+        verify(response).setContentType(startsWith("application/json"));
+        String json = sw.toString();
+        assertTrue(json.startsWith("[") && json.endsWith("]"), "Kết quả trả về phải là mảng JSON");
+    }
+
+    @Test
+    @DisplayName("S3-03: Gửi POST thêm hoạt động mới qua /khach-hang/chi-tiet thành công")
+    void testKhachHang_ThemHoatDong_PostThanhCong() throws Exception {
+        vn.nhom10.crm.service.KhachHang360Service mockService = mock(vn.nhom10.crm.service.KhachHang360Service.class);
+        vn.nhom10.crm.model.HoatDong mockHd = new vn.nhom10.crm.model.HoatDong();
+        mockHd.setId(99L);
+        mockHd.setTieuDe("Trao đổi báo giá");
+        when(mockService.themHoatDong(anyLong(), any(), any(), any(), any(), any())).thenReturn(mockHd);
+
+        KhachHangServlet servletWithMock = new KhachHangServlet(new PhanQuyenDuLieuService(null), mockService);
+
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getServletPath()).thenReturn("/khach-hang/chi-tiet");
+        when(request.getParameter("action")).thenReturn("them-hoat-dong");
+        when(request.getParameter("idKhachHang")).thenReturn("1");
+        when(request.getParameter("loai")).thenReturn("CUOC_GOI");
+        when(request.getParameter("tieuDe")).thenReturn("Trao đổi báo giá");
+        when(request.getParameter("noiDung")).thenReturn("Đã chốt cấu hình");
+
+        java.io.StringWriter sw = new java.io.StringWriter();
+        java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+        when(response.getWriter()).thenReturn(pw);
+
+        servletWithMock.doPost(request, response);
+
+        verify(response).setContentType(startsWith("application/json"));
+        String res = sw.toString();
+        assertTrue(res.contains("\"success\":true"), "Phải trả về success: true");
+    }
 }

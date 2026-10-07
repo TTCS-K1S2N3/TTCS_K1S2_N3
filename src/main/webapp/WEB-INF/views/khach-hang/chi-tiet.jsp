@@ -101,17 +101,14 @@
                 </div>
                 <div>
                     <div class="kpi-card-value text-success" id="kpiGiaTriDaKy">
-                        <c:choose>
-                            <c:when test="${banGhi.id == 9}">650.000.000 đ</c:when>
-                            <c:when test="${banGhi.id == 5}">0 đ</c:when>
-                            <c:otherwise>850.000.000 đ</c:otherwise>
-                        </c:choose>
+                        <c:out value="${not empty khachHang360.tongGiaTriDaKyDinhDang ? khachHang360.tongGiaTriDaKyDinhDang : kpiGiaTriDaKy}" />
                     </div>
                     <div class="kpi-card-sub">
                         <c:choose>
-                            <c:when test="${banGhi.id == 9}">1 hợp đồng thành công &bull; Đã nghiệm thu</c:when>
-                            <c:when test="${banGhi.id == 5}">Chưa ký hợp đồng &bull; Đang đàm phán</c:when>
-                            <c:otherwise>2 hợp đồng đã ký &bull; Đã hoàn tất thanh toán</c:otherwise>
+                            <c:when test="${not empty khachHang360.dsCoHoiDaDong}">
+                                <c:out value="${khachHang360.dsCoHoiDaDong.size()}" /> hợp đồng/cơ hội đã chốt
+                            </c:when>
+                            <c:otherwise>Chưa có hợp đồng hoàn tất</c:otherwise>
                         </c:choose>
                     </div>
                 </div>
@@ -127,17 +124,14 @@
                 </div>
                 <div>
                     <div class="kpi-card-value text-primary" id="kpiGiaTriDangMo">
-                        <c:choose>
-                            <c:when test="${banGhi.id == 5}">1.200.000.000 đ</c:when>
-                            <c:when test="${banGhi.id == 9}">150.000.000 đ</c:when>
-                            <c:otherwise>1.200.000.000 đ</c:otherwise>
-                        </c:choose>
+                        <c:out value="${not empty khachHang360.tongGiaTriCoHoiDangMoDinhDang ? khachHang360.tongGiaTriCoHoiDangMoDinhDang : kpiGiaTriDangMo}" />
                     </div>
                     <div class="kpi-card-sub">
                         <c:choose>
-                            <c:when test="${banGhi.id == 5}">1 deal lớn đang khảo sát &bull; Khả năng thắng 50%</c:when>
-                            <c:when test="${banGhi.id == 9}">1 gói gia hạn dịch vụ bảo trì định kỳ</c:when>
-                            <c:otherwise>3 cơ hội đang mở &bull; Xác suất chốt trung bình 65%</c:otherwise>
+                            <c:when test="${not empty khachHang360.dsCoHoiDangMo}">
+                                <c:out value="${khachHang360.dsCoHoiDangMo.size()}" /> cơ hội đang mở
+                            </c:when>
+                            <c:otherwise>0 cơ hội đang mở</c:otherwise>
                         </c:choose>
                     </div>
                 </div>
@@ -194,66 +188,64 @@
                         <div class="info-list">
                             <div class="info-row">
                                 <span class="info-label">Mã khách hàng</span>
-                                <span class="info-value font-mono"><c:out value="${banGhi.maBanGhi}" /></span>
+                                <span class="info-value font-mono"><c:out value="${not empty khachHang.maKhachHang ? khachHang.maKhachHang : banGhi.maBanGhi}" /></span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Tên đầy đủ</span>
-                                <span class="info-value" style="font-weight: 700;"><c:out value="${banGhi.tieuDe}" /></span>
+                                <span class="info-value" style="font-weight: 700;"><c:out value="${not empty khachHang.tenKhachHang ? khachHang.tenKhachHang : banGhi.tieuDe}" /></span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Mã số thuế (MST)</span>
-                                <span class="info-value font-mono"><c:out value="${not empty banGhi.maSoThue ? banGhi.maSoThue : '0101234567'}" /></span>
+                                <span class="info-value font-mono"><c:out value="${not empty khachHang.maSoThue ? khachHang.maSoThue : (not empty banGhi.maSoThue ? banGhi.maSoThue : '---')}" /></span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Website</span>
                                 <span class="info-value">
+                                    <c:set var="webUrl" value="${not empty khachHang.website ? khachHang.website : banGhi.website}" />
                                     <c:choose>
-                                        <c:when test="${not empty banGhi.website}">
-                                            <a href="https://${banGhi.website}" target="_blank" rel="noopener noreferrer" class="info-link">
-                                                <c:out value="${banGhi.website}" />
+                                        <c:when test="${not empty webUrl}">
+                                            <a href="${webUrl.startsWith('http') ? webUrl : 'https://'.concat(webUrl)}" target="_blank" rel="noopener noreferrer" class="info-link">
+                                                <c:out value="${webUrl}" />
                                                 <span class="material-symbols-outlined" style="font-size: 15px;" aria-hidden="true">open_in_new</span>
                                             </a>
                                         </c:when>
                                         <c:otherwise>
-                                            <a href="https://fpt.com.vn" target="_blank" rel="noopener noreferrer" class="info-link">
-                                                fpt.com.vn
-                                                <span class="material-symbols-outlined" style="font-size: 15px;" aria-hidden="true">open_in_new</span>
-                                            </a>
+                                            <span class="text-muted">---</span>
                                         </c:otherwise>
                                     </c:choose>
                                 </span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Ngành nghề kinh doanh</span>
-                                <span class="info-value">Công nghệ thông tin & Viễn thông</span>
+                                <span class="info-value"><c:out value="${not empty khachHang.nganhNghe ? khachHang.nganhNghe : 'Công nghệ thông tin & Dịch vụ'}" /></span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Quy mô doanh nghiệp</span>
-                                <span class="info-value">Doanh nghiệp lớn (&gt; 1.000 nhân sự)</span>
+                                <span class="info-value"><c:out value="${not empty khachHang.quyMo ? khachHang.quyMo : 'Doanh nghiệp'}" /></span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Doanh thu ước tính</span>
-                                <span class="info-value"><c:out value="${not empty banGhi.giaTri ? banGhi.giaTri : 'Khách hàng VIP'}" /></span>
+                                <span class="info-value"><c:out value="${not empty khachHang.doanhThuUocTinh ? khachHang.doanhThuUocTinh : (not empty banGhi.giaTri ? banGhi.giaTri : '---')}" /></span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Địa chỉ trụ sở</span>
-                                <span class="info-value">Tòa nhà FPT, Phố Duy Tân, Cầu Giấy, Hà Nội</span>
+                                <span class="info-value"><c:out value="${not empty khachHang.diaChi ? khachHang.diaChi : '---'}" /></span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Khu vực địa lý</span>
-                                <span class="info-value">Miền Bắc</span>
+                                <span class="info-value"><c:out value="${not empty khachHang.khuVuc ? khachHang.khuVuc : 'Toàn quốc'}" /></span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Người phụ trách (Owner)</span>
-                                <span class="info-value"><c:out value="${banGhi.tenNguoiPhuTrach}" /></span>
+                                <span class="info-value"><c:out value="${not empty khachHang.tenNguoiPhuTrach ? khachHang.tenNguoiPhuTrach : banGhi.tenNguoiPhuTrach}" /></span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Nhóm phụ trách</span>
-                                <span class="info-value"><c:out value="${banGhi.tenNhom}" /></span>
+                                <span class="info-value"><c:out value="${not empty khachHang.tenNhom ? khachHang.tenNhom : banGhi.tenNhom}" /></span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Ngày tạo hồ sơ</span>
-                                <span class="info-value"><c:out value="${banGhi.ngayTao}" /></span>
+                                <span class="info-value"><c:out value="${not empty khachHang.ngayTao ? khachHang.ngayTao : banGhi.ngayTao}" /></span>
                             </div>
                         </div>
                     </div>
@@ -286,22 +278,22 @@
                     <button type="button" class="nav-tab-btn active" data-tab="timeline" role="tab" aria-selected="true">
                         <span class="material-symbols-outlined" aria-hidden="true">timeline</span>
                         <span>Dòng thời gian hoạt động</span>
-                        <span class="tab-badge" id="badgeSoHoatDong">500</span>
+                        <span class="tab-badge" id="badgeSoHoatDong">${not empty khachHang360.dsHoatDong ? khachHang360.dsHoatDong.size() : 0}</span>
                     </button>
                     <button type="button" class="nav-tab-btn" data-tab="deals" role="tab" aria-selected="false">
                         <span class="material-symbols-outlined" aria-hidden="true">monetization_on</span>
                         <span>Cơ hội bán hàng</span>
-                        <span class="tab-badge">Mở: 3 | Đã đóng: 2</span>
+                        <span class="tab-badge">Mở: ${not empty khachHang360.dsCoHoiDangMo ? khachHang360.dsCoHoiDangMo.size() : 0} | Đã chốt: ${not empty khachHang360.dsCoHoiDaDong ? khachHang360.dsCoHoiDaDong.size() : 0}</span>
                     </button>
                     <button type="button" class="nav-tab-btn" data-tab="contacts" role="tab" aria-selected="false">
                         <span class="material-symbols-outlined" aria-hidden="true">contacts</span>
                         <span>Người liên hệ</span>
-                        <span class="tab-badge">4 người</span>
+                        <span class="tab-badge">${not empty khachHang360.dsNguoiLienHe ? khachHang360.dsNguoiLienHe.size() : 0} người</span>
                     </button>
                     <button type="button" class="nav-tab-btn" data-tab="attachments" role="tab" aria-selected="false">
                         <span class="material-symbols-outlined" aria-hidden="true">attach_file</span>
                         <span>Tệp đính kèm</span>
-                        <span class="tab-badge">4 tệp</span>
+                        <span class="tab-badge">${not empty khachHang360.dsTepDinhKem ? khachHang360.dsTepDinhKem.size() : 0} tệp</span>
                     </button>
                     <button type="button" class="nav-tab-btn" data-tab="all" role="tab" aria-selected="false">
                         <span class="material-symbols-outlined" aria-hidden="true">view_agenda</span>
@@ -365,9 +357,9 @@
                         <div class="deals-section-header">
                             <h3 class="deals-section-title">
                                 <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary);">trending_up</span>
-                                Cơ Hội Đang Mở (3)
+                                Cơ Hội Đang Mở (${not empty khachHang360.dsCoHoiDangMo ? khachHang360.dsCoHoiDangMo.size() : 0})
                             </h3>
-                            <span class="deals-section-sum">Tổng giá trị đang mở: <strong>1.200.000.000 đ</strong></span>
+                            <span class="deals-section-sum">Tổng giá trị đang mở: <strong><c:out value="${not empty khachHang360.tongGiaTriCoHoiDangMoDinhDang ? khachHang360.tongGiaTriCoHoiDangMoDinhDang : '0 đ'}" /></strong></span>
                         </div>
                         <div class="table-responsive">
                             <table class="data-table">
@@ -383,48 +375,35 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td class="font-mono">CH-101</td>
-                                        <td><strong>Triển khai hệ thống Cloud CRM Enterprise cho FPT</strong></td>
-                                        <td><span class="pipeline-stage-badge">Đàm phán hợp đồng</span></td>
-                                        <td style="text-align: right; font-weight: 700; color: var(--primary);">850.000.000 đ</td>
-                                        <td style="text-align: center;">
-                                            <div class="probability-bar-wrap">
-                                                <div class="probability-bar"><div class="probability-bar-fill" style="width: 80%;"></div></div>
-                                                <span>80%</span>
-                                            </div>
-                                        </td>
-                                        <td>30/10/2026</td>
-                                        <td>Nguyễn Văn A</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-mono">CH-104</td>
-                                        <td><strong>Gói mở rộng 50 User CRM cho khối Bán lẻ Viettel IDC</strong></td>
-                                        <td><span class="pipeline-stage-badge" style="background: #f1f5f9; color: #475569;">Báo giá & Đề xuất</span></td>
-                                        <td style="text-align: right; font-weight: 700; color: var(--primary);">250.000.000 đ</td>
-                                        <td style="text-align: center;">
-                                            <div class="probability-bar-wrap">
-                                                <div class="probability-bar"><div class="probability-bar-fill" style="width: 50%;"></div></div>
-                                                <span>50%</span>
-                                            </div>
-                                        </td>
-                                        <td>15/11/2026</td>
-                                        <td>Nguyễn Văn A</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-mono">CH-105</td>
-                                        <td><strong>Tích hợp hệ thống Email Marketing tự động hóa</strong></td>
-                                        <td><span class="pipeline-stage-badge" style="background: #eff6ff; color: #1d4ed8;">Khảo sát kỹ thuật</span></td>
-                                        <td style="text-align: right; font-weight: 700; color: var(--primary);">100.000.000 đ</td>
-                                        <td style="text-align: center;">
-                                            <div class="probability-bar-wrap">
-                                                <div class="probability-bar"><div class="probability-bar-fill" style="width: 40%;"></div></div>
-                                                <span>40%</span>
-                                            </div>
-                                        </td>
-                                        <td>30/11/2026</td>
-                                        <td>Nguyễn Văn A</td>
-                                    </tr>
+                                    <c:choose>
+                                        <c:when test="${not empty khachHang360.dsCoHoiDangMo}">
+                                            <c:forEach var="deal" items="${khachHang360.dsCoHoiDangMo}">
+                                                <tr>
+                                                    <td class="font-mono"><c:out value="${deal.maCoHoi}" /></td>
+                                                    <td><strong><c:out value="${deal.tenCoHoi}" /></strong></td>
+                                                    <td><span class="pipeline-stage-badge"><c:out value="${deal.giaiDoan}" /></span></td>
+                                                    <td style="text-align: right; font-weight: 700; color: var(--primary);">
+                                                        <c:out value="${deal.giaTriDuKienDinhDang}" />
+                                                    </td>
+                                                    <td style="text-align: center;">
+                                                        <div class="probability-bar-wrap">
+                                                            <div class="probability-bar"><div class="probability-bar-fill" style="width: ${deal.xacSuatThanhCong}%;"></div></div>
+                                                            <span><c:out value="${deal.xacSuatThanhCong}" />%</span>
+                                                        </div>
+                                                    </td>
+                                                    <td><c:out value="${deal.ngayDuKienDong}" /></td>
+                                                    <td><c:out value="${deal.tenNguoiPhuTrach}" /></td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr>
+                                                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                                                    Chưa có cơ hội bán hàng nào đang mở cho khách hàng này.
+                                                </td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </tbody>
                             </table>
                         </div>
@@ -435,9 +414,9 @@
                         <div class="deals-section-header">
                             <h3 class="deals-section-title">
                                 <span class="material-symbols-outlined" aria-hidden="true" style="color: #059669;">task_alt</span>
-                                Cơ Hội Đã Đóng (2)
+                                Cơ Hội Đã Đóng / Đã Ký (${not empty khachHang360.dsCoHoiDaDong ? khachHang360.dsCoHoiDaDong.size() : 0})
                             </h3>
-                            <span class="deals-section-sum">Tổng giá trị đã ký: <strong style="color: #059669;">850.000.000 đ</strong></span>
+                            <span class="deals-section-sum">Tổng giá trị đã ký: <strong style="color: #059669;"><c:out value="${not empty khachHang360.tongGiaTriDaKyDinhDang ? khachHang360.tongGiaTriDaKyDinhDang : '0 đ'}" /></strong></span>
                         </div>
                         <div class="table-responsive">
                             <table class="data-table">
@@ -452,22 +431,38 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td class="font-mono">CH-098</td>
-                                        <td><strong>Nâng cấp bản quyền phần mềm CRM v1.0 năm 2025</strong></td>
-                                        <td><span class="badge badge-success">Đóng Thắng (Đã ký)</span></td>
-                                        <td style="text-align: right; font-weight: 700; color: #059669;">500.000.000 đ</td>
-                                        <td>15/01/2026</td>
-                                        <td>Giải pháp bảo mật đáp ứng chuẩn nội bộ; Giá cả cạnh tranh</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-mono">CH-082</td>
-                                        <td><strong>Dịch vụ tư vấn quy trình quản trị bán hàng chuyên sâu</strong></td>
-                                        <td><span class="badge badge-success">Đóng Thắng (Đã ký)</span></td>
-                                        <td style="text-align: right; font-weight: 700; color: #059669;">350.000.000 đ</td>
-                                        <td>10/08/2025</td>
-                                        <td>Đội ngũ chuyên gia am hiểu nghiệp vụ doanh nghiệp B2B</td>
-                                    </tr>
+                                    <c:choose>
+                                        <c:when test="${not empty khachHang360.dsCoHoiDaDong}">
+                                            <c:forEach var="deal" items="${khachHang360.dsCoHoiDaDong}">
+                                                <tr>
+                                                    <td class="font-mono"><c:out value="${deal.maCoHoi}" /></td>
+                                                    <td><strong><c:out value="${deal.tenCoHoi}" /></strong></td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${deal.trangThai == 'DONG_THANG' || deal.trangThai == 'DA_KY'}">
+                                                                <span class="badge badge-success">Đóng Thắng (Đã ký)</span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="badge" style="background: #fee2e2; color: #b91c1c;">Đóng Thua</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td style="text-align: right; font-weight: 700; color: #059669;">
+                                                        <c:out value="${deal.giaTriThucTeDinhDang}" />
+                                                    </td>
+                                                    <td><c:out value="${deal.ngayThucTeDong}" /></td>
+                                                    <td><c:out value="${not empty deal.lyDoThatBai ? deal.lyDoThatBai : 'Đạt yêu cầu & ký kết thành công'}" /></td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr>
+                                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                                                    Chưa có cơ hội bán hàng nào đã đóng cho khách hàng này.
+                                                </td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </tbody>
                             </table>
                         </div>
@@ -482,166 +477,81 @@
                     </div>
 
                     <div class="contacts-grid">
-                        <!-- Người liên hệ 1: Quyết định chính -->
-                        <div class="contact-card">
-                            <div>
-                                <div class="contact-card-top">
-                                    <div class="contact-avatar">M</div>
-                                    <div class="contact-info-block">
-                                        <h3>Nguyễn Đức Mạnh</h3>
-                                        <div class="contact-job-title">Giám đốc Công nghệ Thông tin (CTO)</div>
-                                        <div class="contact-badges">
-                                            <span class="badge-role decision-maker">Người quyết định chính</span>
-                                            <span class="badge-primary-contact">Đầu mối chính</span>
+                        <c:choose>
+                            <c:when test="${not empty khachHang360.dsNguoiLienHe}">
+                                <c:forEach var="contact" items="${khachHang360.dsNguoiLienHe}">
+                                    <div class="contact-card">
+                                        <div>
+                                            <div class="contact-card-top">
+                                                <div class="contact-avatar">
+                                                    <c:out value="${not empty contact.hoTen ? contact.hoTen.substring(0, 1) : 'U'}" />
+                                                </div>
+                                                <div class="contact-info-block">
+                                                    <h3><c:out value="${contact.hoTen}" /></h3>
+                                                    <div class="contact-job-title"><c:out value="${not empty contact.chucVu ? contact.chucVu : 'Nhân sự liên hệ'}" /></div>
+                                                    <div class="contact-badges">
+                                                        <c:choose>
+                                                            <c:when test="${contact.vaiTroQuyetDinh == 'NGUOI_QUYET_DINH'}">
+                                                                <span class="badge-role decision-maker">Người quyết định chính</span>
+                                                            </c:when>
+                                                            <c:when test="${contact.vaiTroQuyetDinh == 'NGUOI_ANH_HUONG'}">
+                                                                <span class="badge-role">Người ảnh hưởng</span>
+                                                            </c:when>
+                                                            <c:when test="${contact.vaiTroQuyetDinh == 'NGUOI_DUNG_CUOI'}">
+                                                                <span class="badge-role">Người dùng cuối</span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="badge-role">Thành viên tham gia</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                        <c:if test="${contact.laDauMoiChinh}">
+                                                            <span class="badge-primary-contact">Đầu mối chính</span>
+                                                        </c:if>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="contact-details-list" style="margin-top: 14px;">
+                                                <c:if test="${not empty contact.email}">
+                                                    <div class="contact-detail-item">
+                                                        <span class="material-symbols-outlined" aria-hidden="true">mail</span>
+                                                        <a href="mailto:${contact.email}" class="info-link"><c:out value="${contact.email}" /></a>
+                                                    </div>
+                                                </c:if>
+                                                <c:if test="${not empty contact.soDienThoai}">
+                                                    <div class="contact-detail-item">
+                                                        <span class="material-symbols-outlined" aria-hidden="true">call</span>
+                                                        <a href="tel:${contact.soDienThoai}" class="info-link"><c:out value="${contact.soDienThoai}" /></a>
+                                                    </div>
+                                                </c:if>
+                                                <div class="contact-detail-item">
+                                                    <span class="material-symbols-outlined" aria-hidden="true">location_city</span>
+                                                    <span><c:out value="${not empty contact.phongBan ? contact.phongBan : 'Khối vận hành'}" /></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="contact-card-actions">
+                                            <c:if test="${not empty contact.soDienThoai}">
+                                                <a href="tel:${contact.soDienThoai}" class="btn-contact-action call">
+                                                    <span class="material-symbols-outlined" aria-hidden="true">call</span>
+                                                    Gọi điện
+                                                </a>
+                                            </c:if>
+                                            <c:if test="${not empty contact.email}">
+                                                <a href="mailto:${contact.email}" class="btn-contact-action">
+                                                    <span class="material-symbols-outlined" aria-hidden="true">mail</span>
+                                                    Gửi email
+                                                </a>
+                                            </c:if>
                                         </div>
                                     </div>
+                                </c:forEach>
+                            </c:when>
+                            <c:otherwise>
+                                <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 32px; background: #fff; border-radius: 8px;">
+                                    Chưa có người liên hệ nào được lưu cho khách hàng này.
                                 </div>
-                                <div class="contact-details-list" style="margin-top: 14px;">
-                                    <div class="contact-detail-item">
-                                        <span class="material-symbols-outlined" aria-hidden="true">mail</span>
-                                        <a href="mailto:manh.nd@fpt.com.vn" class="info-link">manh.nd@fpt.com.vn</a>
-                                    </div>
-                                    <div class="contact-detail-item">
-                                        <span class="material-symbols-outlined" aria-hidden="true">call</span>
-                                        <a href="tel:0912345678" class="info-link">0912 345 678</a>
-                                    </div>
-                                    <div class="contact-detail-item">
-                                        <span class="material-symbols-outlined" aria-hidden="true">location_city</span>
-                                        <span>Khối Công nghệ Thông tin & Chuyển đổi số</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="contact-card-actions">
-                                <a href="tel:0912345678" class="btn-contact-action call">
-                                    <span class="material-symbols-outlined" aria-hidden="true">call</span>
-                                    Gọi điện
-                                </a>
-                                <a href="mailto:manh.nd@fpt.com.vn" class="btn-contact-action">
-                                    <span class="material-symbols-outlined" aria-hidden="true">mail</span>
-                                    Gửi email
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Người liên hệ 2: Mua sắm -->
-                        <div class="contact-card">
-                            <div>
-                                <div class="contact-card-top">
-                                    <div class="contact-avatar">L</div>
-                                    <div class="contact-info-block">
-                                        <h3>Trần Mai Linh</h3>
-                                        <div class="contact-job-title">Trưởng phòng Mua sắm & Hợp đồng</div>
-                                        <div class="contact-badges">
-                                            <span class="badge-role">Người thẩm định hợp đồng</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="contact-details-list" style="margin-top: 14px;">
-                                    <div class="contact-detail-item">
-                                        <span class="material-symbols-outlined" aria-hidden="true">mail</span>
-                                        <a href="mailto:linh.tm@fpt.com.vn" class="info-link">linh.tm@fpt.com.vn</a>
-                                    </div>
-                                    <div class="contact-detail-item">
-                                        <span class="material-symbols-outlined" aria-hidden="true">call</span>
-                                        <a href="tel:0988765432" class="info-link">0988 765 432</a>
-                                    </div>
-                                    <div class="contact-detail-item">
-                                        <span class="material-symbols-outlined" aria-hidden="true">location_city</span>
-                                        <span>Phòng Mua sắm Doanh nghiệp</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="contact-card-actions">
-                                <a href="tel:0988765432" class="btn-contact-action call">
-                                    <span class="material-symbols-outlined" aria-hidden="true">call</span>
-                                    Gọi điện
-                                </a>
-                                <a href="mailto:linh.tm@fpt.com.vn" class="btn-contact-action">
-                                    <span class="material-symbols-outlined" aria-hidden="true">mail</span>
-                                    Gửi email
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Người liên hệ 3: Kỹ thuật ảnh hưởng -->
-                        <div class="contact-card">
-                            <div>
-                                <div class="contact-card-top">
-                                    <div class="contact-avatar">N</div>
-                                    <div class="contact-info-block">
-                                        <h3>Phạm Hoàng Nam</h3>
-                                        <div class="contact-job-title">Kiến trúc sư Trưởng (Lead Architect)</div>
-                                        <div class="contact-badges">
-                                            <span class="badge-role">Người ảnh hưởng kỹ thuật</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="contact-details-list" style="margin-top: 14px;">
-                                    <div class="contact-detail-item">
-                                        <span class="material-symbols-outlined" aria-hidden="true">mail</span>
-                                        <a href="mailto:nam.ph@fpt.com.vn" class="info-link">nam.ph@fpt.com.vn</a>
-                                    </div>
-                                    <div class="contact-detail-item">
-                                        <span class="material-symbols-outlined" aria-hidden="true">call</span>
-                                        <a href="tel:0903111222" class="info-link">0903 111 222</a>
-                                    </div>
-                                    <div class="contact-detail-item">
-                                        <span class="material-symbols-outlined" aria-hidden="true">location_city</span>
-                                        <span>Trung tâm Giải pháp Hạ tầng & Cloud</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="contact-card-actions">
-                                <a href="tel:0903111222" class="btn-contact-action call">
-                                    <span class="material-symbols-outlined" aria-hidden="true">call</span>
-                                    Gọi điện
-                                </a>
-                                <a href="mailto:nam.ph@fpt.com.vn" class="btn-contact-action">
-                                    <span class="material-symbols-outlined" aria-hidden="true">mail</span>
-                                    Gửi email
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Người liên hệ 4: Key User -->
-                        <div class="contact-card">
-                            <div>
-                                <div class="contact-card-top">
-                                    <div class="contact-avatar">H</div>
-                                    <div class="contact-info-block">
-                                        <h3>Vũ Thị Thu Hà</h3>
-                                        <div class="contact-job-title">Trưởng nhóm Vận hành Bán hàng</div>
-                                        <div class="contact-badges">
-                                            <span class="badge-role">Người dùng chính (End User)</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="contact-details-list" style="margin-top: 14px;">
-                                    <div class="contact-detail-item">
-                                        <span class="material-symbols-outlined" aria-hidden="true">mail</span>
-                                        <a href="mailto:ha.vtt@fpt.com.vn" class="info-link">ha.vtt@fpt.com.vn</a>
-                                    </div>
-                                    <div class="contact-detail-item">
-                                        <span class="material-symbols-outlined" aria-hidden="true">call</span>
-                                        <a href="tel:0977888999" class="info-link">0977 888 999</a>
-                                    </div>
-                                    <div class="contact-detail-item">
-                                        <span class="material-symbols-outlined" aria-hidden="true">location_city</span>
-                                        <span>Khối Kinh doanh Doanh nghiệp</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="contact-card-actions">
-                                <a href="tel:0977888999" class="btn-contact-action call">
-                                    <span class="material-symbols-outlined" aria-hidden="true">call</span>
-                                    Gọi điện
-                                </a>
-                                <a href="mailto:ha.vtt@fpt.com.vn" class="btn-contact-action">
-                                    <span class="material-symbols-outlined" aria-hidden="true">mail</span>
-                                    Gửi email
-                                </a>
-                            </div>
-                        </div>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </div>
 
@@ -665,106 +575,50 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>
-                                        <div class="file-row-item">
-                                            <div class="file-type-icon pdf">
-                                                <span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
-                                            </div>
-                                            <div>
-                                                <div class="file-meta-name">Hop_dong_cung_cap_dich_vu_Cloud_CRM_2026.pdf</div>
-                                                <div class="file-meta-sub">Hợp đồng pháp lý có chữ ký số hai bên</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><span class="badge badge-success">Hợp đồng đã ký</span></td>
-                                    <td class="font-mono">3.8 MB</td>
-                                    <td>Nguyễn Văn A</td>
-                                    <td>05/10/2026</td>
-                                    <td style="text-align: center;">
-                                        <button type="button" class="btn-action" title="Tải xuống tệp" aria-label="Tải xuống tệp">
-                                            <span class="material-symbols-outlined" aria-hidden="true">download</span>
-                                        </button>
-                                        <button type="button" class="btn-action" title="Xem trước tài liệu" aria-label="Xem trước tài liệu">
-                                            <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="file-row-item">
-                                            <div class="file-type-icon excel">
-                                                <span class="material-symbols-outlined" aria-hidden="true">table_view</span>
-                                            </div>
-                                            <div>
-                                                <div class="file-meta-name">Bao_gia_phien_ban_Enterprise_FPT_v2.xlsx</div>
-                                                <div class="file-meta-sub">Bảng bóc tách chi phí bản quyền & hạ tầng</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><span class="badge" style="background: #e0f2fe; color: #0369a1;">Báo giá đã duyệt</span></td>
-                                    <td class="font-mono">1.2 MB</td>
-                                    <td>Nguyễn Văn A</td>
-                                    <td>02/10/2026</td>
-                                    <td style="text-align: center;">
-                                        <button type="button" class="btn-action" title="Tải xuống tệp" aria-label="Tải xuống tệp">
-                                            <span class="material-symbols-outlined" aria-hidden="true">download</span>
-                                        </button>
-                                        <button type="button" class="btn-action" title="Xem trước tài liệu" aria-label="Xem trước tài liệu">
-                                            <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="file-row-item">
-                                            <div class="file-type-icon pdf">
-                                                <span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
-                                            </div>
-                                            <div>
-                                                <div class="file-meta-name">Ho_so_nang_luc_va_Kien_truc_He_thong.pdf</div>
-                                                <div class="file-meta-sub">Tài liệu giới thiệu giải pháp kỹ thuật bảo mật</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><span class="badge" style="background: #f1f5f9; color: #475569;">Hồ sơ năng lực</span></td>
-                                    <td class="font-mono">8.5 MB</td>
-                                    <td>Nguyễn Văn A</td>
-                                    <td>28/09/2026</td>
-                                    <td style="text-align: center;">
-                                        <button type="button" class="btn-action" title="Tải xuống tệp" aria-label="Tải xuống tệp">
-                                            <span class="material-symbols-outlined" aria-hidden="true">download</span>
-                                        </button>
-                                        <button type="button" class="btn-action" title="Xem trước tài liệu" aria-label="Xem trước tài liệu">
-                                            <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="file-row-item">
-                                            <div class="file-type-icon word">
-                                                <span class="material-symbols-outlined" aria-hidden="true">description</span>
-                                            </div>
-                                            <div>
-                                                <div class="file-meta-name">Bien_ban_khao_sat_yeu_cau_ky_thuat.docx</div>
-                                                <div class="file-meta-sub">Ghi nhận chi tiết yêu cầu tích hợp SSO nội bộ</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><span class="badge" style="background: #fef3c7; color: #92400e;">Biên bản khảo sát</span></td>
-                                    <td class="font-mono">640 KB</td>
-                                    <td>Nguyễn Văn A</td>
-                                    <td>25/09/2026</td>
-                                    <td style="text-align: center;">
-                                        <button type="button" class="btn-action" title="Tải xuống tệp" aria-label="Tải xuống tệp">
-                                            <span class="material-symbols-outlined" aria-hidden="true">download</span>
-                                        </button>
-                                        <button type="button" class="btn-action" title="Xem trước tài liệu" aria-label="Xem trước tài liệu">
-                                            <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
-                                        </button>
-                                    </td>
-                                </tr>
+                                <c:choose>
+                                    <c:when test="${not empty khachHang360.dsTepDinhKem}">
+                                        <c:forEach var="file" items="${khachHang360.dsTepDinhKem}">
+                                            <tr>
+                                                <td>
+                                                    <div class="file-row-item">
+                                                        <div class="file-type-icon ${file.loaiTep.toLowerCase().contains('pdf') ? 'pdf' : (file.loaiTep.toLowerCase().contains('xls') ? 'excel' : 'word')}">
+                                                            <span class="material-symbols-outlined" aria-hidden="true">
+                                                                <c:choose>
+                                                                    <c:when test="${file.loaiTep.toLowerCase().contains('pdf')}">picture_as_pdf</c:when>
+                                                                    <c:when test="${file.loaiTep.toLowerCase().contains('xls')}">table_view</c:when>
+                                                                    <c:otherwise>description</c:otherwise>
+                                                                </c:choose>
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <div class="file-meta-name"><c:out value="${file.tenTep}" /></div>
+                                                            <div class="file-meta-sub"><c:out value="${not empty file.ghiChu ? file.ghiChu : 'Tài liệu đính kèm hồ sơ'}" /></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td><span class="badge" style="background: #e0f2fe; color: #0369a1;"><c:out value="${file.loaiTep}" /></span></td>
+                                                <td class="font-mono"><c:out value="${file.dungLuongDinhDang}" /></td>
+                                                <td><c:out value="${file.tenNguoiTaiLen}" /></td>
+                                                <td><c:out value="${file.ngayTaiLen}" /></td>
+                                                <td style="text-align: center;">
+                                                    <a href="${pageContext.request.contextPath}${file.duongDan}" target="_blank" class="btn-action" title="Tải xuống tệp" aria-label="Tải xuống tệp">
+                                                        <span class="material-symbols-outlined" aria-hidden="true">download</span>
+                                                    </a>
+                                                    <a href="${pageContext.request.contextPath}${file.duongDan}" target="_blank" class="btn-action" title="Xem trước tài liệu" aria-label="Xem trước tài liệu">
+                                                        <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </c:forEach>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                                                Chưa có tệp đính kèm nào được tải lên cho khách hàng này.
+                                            </td>
+                                        </tr>
+                                    </c:otherwise>
+                                </c:choose>
                             </tbody>
                         </table>
                     </div>
@@ -816,6 +670,13 @@
         </div>
     </main>
 
+    <script id="initialActivitiesJson" type="application/json">
+        ${not empty hoatDongJson ? hoatDongJson : '[]'}
+    </script>
+    <script>
+        window.CURRENT_CUSTOMER_ID = "${not empty banGhi.id ? banGhi.id : (not empty khachHang.id ? khachHang.id : 0)}";
+        window.APP_CONTEXT_PATH = "${pageContext.request.contextPath}";
+    </script>
     <script src="${pageContext.request.contextPath}/assets/js/navigation.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/session-keep-alive.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/khach-hang-360.js"></script>
