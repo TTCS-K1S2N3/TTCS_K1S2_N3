@@ -7,9 +7,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import vn.nhom10.crm.dto.BanGhiNghiepVuDTO;
+import vn.nhom10.crm.dto.CapKhachHangTrungDTO;
+import vn.nhom10.crm.dto.KetQuaGopKhachHangDTO;
 import vn.nhom10.crm.dto.NguoiDungDTO;
+import vn.nhom10.crm.dto.SoSanhKhachHangDTO;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.PhamViDuLieu;
+import vn.nhom10.crm.service.GopKhachHangService;
 import vn.nhom10.crm.service.PhanQuyenDuLieuService;
 
 import java.io.IOException;
@@ -18,19 +22,26 @@ import java.util.List;
 /**
  * Controller phục vụ trang danh mục khách hàng (trang nghiệp vụ chính của khối kinh doanh).
  * Tích hợp kiểm tra phân quyền phạm vi dữ liệu (Data Scope) ở server-side (Story S1-05).
+ * Tích hợp cảnh báo và gộp khách hàng trùng lặp (Story S3-04).
  * URL: /khach-hang
  */
 @WebServlet(name = "KhachHangServlet", urlPatterns = {"/khach-hang"})
 public class KhachHangServlet extends HttpServlet {
 
     private final PhanQuyenDuLieuService phanQuyenService;
+    private final GopKhachHangService gopKhachHangService;
 
     public KhachHangServlet() {
-        this.phanQuyenService = new PhanQuyenDuLieuService();
+        this(new PhanQuyenDuLieuService(), new GopKhachHangService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService) {
+        this(phanQuyenService, new GopKhachHangService());
+    }
+
+    public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, GopKhachHangService gopKhachHangService) {
         this.phanQuyenService = phanQuyenService;
+        this.gopKhachHangService = gopKhachHangService != null ? gopKhachHangService : new GopKhachHangService();
     }
 
     @Override
@@ -119,9 +130,16 @@ public class KhachHangServlet extends HttpServlet {
         }
 
         boolean coQuyenDanhMuc = user != null && (user.coVaiTro("ADMIN") || user.coVaiTro("DIRECTOR"));
-        boolean laTruongNhomTroLen = user != null && (user.coVaiTro("ADMIN") || user.coVaiTro("DIRECTOR") || user.coVaiTro("TEAM_LEAD"));
+        boolean laTruongNhomTroLen = gopKhachHangService.laTruongNhomTroLen(user);
         String paramTab = request.getParameter("tab");
         String tabHienTai = (paramTab != null && !paramTab.trim().isEmpty()) ? paramTab.trim() : "tat-ca";
+
+        // Phát hiện trùng lặp tự động (Story S3-04, AC1)
+        List<CapKhachHangTrungDTO> danhSachCapTrung = gopKhachHangService.quetKhachHangTrungLap(userDTO);
+        if (danhSachCapTrung.isEmpty() && danhSachKhachHang != null && !danhSachKhachHang.isEmpty()) {
+            danhSachCapTrung = gopKhachHangService.phatHienTrungLap(danhSachKhachHang);
+        }
+        int soCapTrung = danhSachCapTrung != null ? danhSachCapTrung.size() : 0;
 
         request.setAttribute("coQuyenDanhMuc", coQuyenDanhMuc);
         request.setAttribute("laTruongNhomTroLen", laTruongNhomTroLen);
@@ -133,6 +151,8 @@ public class KhachHangServlet extends HttpServlet {
         request.setAttribute("danhSachKhachHang", danhSachKhachHang);
         request.setAttribute("tongSoKhachHang", danhSachKhachHang.size());
         request.setAttribute("tuKhoaHienTai", tuKhoa != null ? tuKhoa : "");
+        request.setAttribute("danhSachCapTrung", danhSachCapTrung);
+        request.setAttribute("soCapTrung", soCapTrung);
 
         response.setStatus(HttpServletResponse.SC_OK);
         request.getRequestDispatcher("/WEB-INF/views/khach-hang/danh-sach.jsp").forward(request, response);
@@ -193,7 +213,7 @@ public class KhachHangServlet extends HttpServlet {
             request.setAttribute("thongBaoThanhCong", "Cập nhật dữ liệu khách hàng thành công.");
         } else if ("gop".equals(action)) {
             // Story S3-04: Cảnh báo và gộp khách hàng trùng lặp (AC3, AC4)
-            boolean laTruongNhomTroLen = user != null && (user.coVaiTro("ADMIN") || user.coVaiTro("DIRECTOR") || user.coVaiTro("TEAM_LEAD"));
+            boolean laTruongNhomTroLen = gopKhachHangService.laTruongNhomTroLen(user);
             if (!laTruongNhomTroLen) {
                 // CHẶN GỘP NGOÀI PHẠM VỊ: Chỉ Trưởng nhóm trở lên được thực hiện gộp (AC4)
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -233,19 +253,20 @@ public class KhachHangServlet extends HttpServlet {
                 return;
             }
 
-            BanGhiNghiepVuDTO bgNguon = phanQuyenService.timBanGhiTheoId(idNguon, "KHACH_HANG");
-            BanGhiNghiepVuDTO bgDich = phanQuyenService.timBanGhiTheoId(idDich, "KHACH_HANG");
+            KetQuaGopKhachHangDTO ketQua = gopKhachHangService.thucHienGopKhachHang(
+                    idNguon, idDich, lyDoGop, userDTO, request.getRemoteAddr(), request.getHeader("User-Agent")
+            );
 
-            String tenNguon = (bgNguon != null && bgNguon.getTieuDe() != null) ? bgNguon.getTieuDe() : ("#" + idNguon);
-            String tenDich = (bgDich != null && bgDich.getTieuDe() != null) ? bgDich.getTieuDe() : ("#" + idDich);
-
-            // Gộp giữ lại toàn bộ người liên hệ, cơ hội và hoạt động của cả hai bản ghi (AC3)
-            String thongBao = "Đã thực hiện gộp khách hàng '" + tenNguon + "' vào '" + tenDich + "' thành công. " +
-                    "Toàn bộ người liên hệ, cơ hội bán hàng và lịch sử hoạt động đã được bảo toàn và lưu vết kiểm toán.";
-            request.setAttribute("thongBaoThanhCong", thongBao);
+            if (!ketQua.isThanhCong()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                request.setAttribute("thongBaoLoi", ketQua.getThongBao());
+            } else {
+                request.setAttribute("thongBaoThanhCong", ketQua.getThongBao());
+                request.setAttribute("ketQuaGop", ketQua);
+            }
             request.setAttribute("tabHienTai", "trung");
         } else if ("them".equals(action) || "create".equals(action) || paramId == null) {
-            // 5. Xử lý thao tác thêm mới khách hàng (Story S1-05)
+            // 5. Xử lý thao tác thêm mới khách hàng (Story S1-05 & S3-04)
             String tenCongTy = request.getParameter("tenCongTy");
             if (tenCongTy == null || tenCongTy.trim().isEmpty()) {
                 tenCongTy = request.getParameter("tieuDe");
@@ -255,6 +276,9 @@ public class KhachHangServlet extends HttpServlet {
             if (maKhachHang == null || maKhachHang.trim().isEmpty()) {
                 maKhachHang = request.getParameter("maBanGhi");
             }
+
+            String maSoThue = request.getParameter("maSoThue");
+            String website = request.getParameter("website");
 
             String giaTri = request.getParameter("doanhThuUocTinh");
             if (giaTri == null || giaTri.trim().isEmpty()) {
@@ -292,6 +316,10 @@ public class KhachHangServlet extends HttpServlet {
                         trangThai,
                         moTaChiTiet
                 );
+                if (khachHangMoi != null) {
+                    khachHangMoi.setMaSoThue(maSoThue);
+                    khachHangMoi.setWebsite(website);
+                }
                 request.setAttribute("thongBaoThanhCong", "Thêm mới khách hàng '" + khachHangMoi.getTieuDe() + "' thành công.");
                 request.setAttribute("khachHangVuaThem", khachHangMoi);
             } catch (IllegalArgumentException e) {
