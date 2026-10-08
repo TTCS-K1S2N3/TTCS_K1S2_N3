@@ -6,21 +6,25 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import vn.nhom10.crm.dao.KhachHang360DAO;
 import vn.nhom10.crm.dao.KhachHangDAO;
 import vn.nhom10.crm.dao.NguoiDungDAO;
 import vn.nhom10.crm.dao.YeuCauHoTroDAO;
 import vn.nhom10.crm.dto.BanGhiNghiepVuDTO;
+import vn.nhom10.crm.dto.KhachHang360DTO;
 import vn.nhom10.crm.dto.KhachHangChamSocDTO;
 import vn.nhom10.crm.dto.NguoiDungDTO;
 import vn.nhom10.crm.dto.ThongKeChamSocDTO;
 import vn.nhom10.crm.dto.ThongKeNhomCongTyDTO;
 import vn.nhom10.crm.dto.ThongTinRuiRoDTO;
+import vn.nhom10.crm.model.HoatDong;
 import vn.nhom10.crm.model.MucUuTienYeuCauEnum;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.PhamViDuLieu;
 import vn.nhom10.crm.model.TrangThaiYeuCauEnum;
 import vn.nhom10.crm.service.ChamSocKhachHangService;
 import vn.nhom10.crm.service.CongTyMeConService;
+import vn.nhom10.crm.service.KhachHang360Service;
 import vn.nhom10.crm.service.PhanQuyenDuLieuService;
 import vn.nhom10.crm.service.YeuCauHoTroService;
 import vn.nhom10.crm.util.LoiKhongTimThayException;
@@ -36,14 +40,15 @@ import java.util.logging.Logger;
  * Controller phục vụ trang danh mục khách hàng, trang chi tiết khách hàng và quản lý quan hệ công ty mẹ - con.
  * Tích hợp:
  * - Data Scope server-side (S1-05)
+ * - Trang 360 khách hàng (S3-03)
  * - Khai báo quan hệ công ty mẹ và công ty con (S3-05 AC1)
  * - Hiển thị tổng giá trị hợp đồng của cả nhóm công ty (S3-05 AC2)
  * - Ghi nhận yêu cầu hỗ trợ sau bán và theo dõi cờ rủi ro rời bỏ khách hàng (S3-08)
  * - Chăm sóc khách hàng định kỳ sau ký hợp đồng (S3-09)
  *
- * URL Patterns: /khach-hang, /khach-hang/chi-tiet, /khach-hang/cong-ty-con
+ * URL Patterns: /khach-hang, /khach-hang/chi-tiet, /khach-hang/cong-ty-con, /khach-hang/360
  */
-@WebServlet(name = "KhachHangServlet", urlPatterns = {"/khach-hang", "/khach-hang/chi-tiet", "/khach-hang/cong-ty-con"})
+@WebServlet(name = "KhachHangServlet", urlPatterns = {"/khach-hang", "/khach-hang/chi-tiet", "/khach-hang/cong-ty-con", "/khach-hang/360"})
 public class KhachHangServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(KhachHangServlet.class.getName());
@@ -51,27 +56,38 @@ public class KhachHangServlet extends HttpServlet {
     private final PhanQuyenDuLieuService phanQuyenService;
     private final CongTyMeConService congTyMeConService;
     private final ChamSocKhachHangService chamSocService;
+    private final KhachHang360Service khachHang360Service;
 
     public KhachHangServlet() {
-        this(new PhanQuyenDuLieuService(), new CongTyMeConService(), new ChamSocKhachHangService());
+        this(new PhanQuyenDuLieuService(), new CongTyMeConService(), new ChamSocKhachHangService(), new KhachHang360Service());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService) {
-        this(phanQuyenService, new CongTyMeConService(), new ChamSocKhachHangService());
+        this(phanQuyenService, new CongTyMeConService(), new ChamSocKhachHangService(), new KhachHang360Service(new KhachHang360DAO(), phanQuyenService));
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, CongTyMeConService congTyMeConService) {
-        this(phanQuyenService, congTyMeConService, new ChamSocKhachHangService());
+        this(phanQuyenService, congTyMeConService, new ChamSocKhachHangService(), new KhachHang360Service(new KhachHang360DAO(), phanQuyenService));
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, ChamSocKhachHangService chamSocService) {
-        this(phanQuyenService, new CongTyMeConService(), chamSocService);
+        this(phanQuyenService, new CongTyMeConService(), chamSocService, new KhachHang360Service(new KhachHang360DAO(), phanQuyenService));
+    }
+
+    public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, KhachHang360Service khachHang360Service) {
+        this(phanQuyenService, new CongTyMeConService(), new ChamSocKhachHangService(), khachHang360Service);
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, CongTyMeConService congTyMeConService, ChamSocKhachHangService chamSocService) {
+        this(phanQuyenService, congTyMeConService, chamSocService, new KhachHang360Service(new KhachHang360DAO(), phanQuyenService));
+    }
+
+    public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, CongTyMeConService congTyMeConService,
+                            ChamSocKhachHangService chamSocService, KhachHang360Service khachHang360Service) {
         this.phanQuyenService = (phanQuyenService != null) ? phanQuyenService : new PhanQuyenDuLieuService();
         this.congTyMeConService = (congTyMeConService != null) ? congTyMeConService : new CongTyMeConService();
         this.chamSocService = (chamSocService != null) ? chamSocService : new ChamSocKhachHangService();
+        this.khachHang360Service = (khachHang360Service != null) ? khachHang360Service : new KhachHang360Service(new KhachHang360DAO(), this.phanQuyenService);
     }
 
     @Override
@@ -103,10 +119,65 @@ public class KhachHangServlet extends HttpServlet {
 
         String paramId = request.getParameter("id");
         String servletPath = request.getServletPath();
+        String action = request.getParameter("action");
         String viewParam = request.getParameter("view");
-        String actionParam = request.getParameter("action");
 
-        // 1. Kiểm tra quyền khi xem chi tiết khách hàng trực tiếp bằng ID (S1-05 & S3-05)
+        // 0. API lấy danh sách hoạt động dạng JSON (Story S3-03, AC3)
+        if ("api-hoat-dong".equalsIgnoreCase(action)) {
+            response.setContentType("application/json;charset=UTF-8");
+            Long id = null;
+            if (paramId != null && !paramId.trim().isEmpty()) {
+                try { id = Long.parseLong(paramId.trim()); } catch (NumberFormatException ignored) {}
+            }
+            if (id == null) {
+                String khIdParam = request.getParameter("khachHangId");
+                if (khIdParam != null && !khIdParam.trim().isEmpty()) {
+                    try { id = Long.parseLong(khIdParam.trim()); } catch (NumberFormatException ignored) {}
+                }
+            }
+            if (id == null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("[]");
+                return;
+            }
+
+            // BẢO VỆ BẰNG DATA SCOPE SERVER-SIDE: Không cho truy cập khách ngoài phạm vi
+            BanGhiNghiepVuDTO banGhi = phanQuyenService.timBanGhiTheoId(id, "KHACH_HANG");
+            if (banGhi == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("[]");
+                return;
+            }
+            PhanQuyenDuLieuService.KetQuaKiemTra ketQua = phanQuyenService.kiemTraQuyenTruyCap(userDTO, banGhi);
+            if (!ketQua.isCoQuyen()) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("[]");
+                return;
+            }
+
+            int limit = 500;
+            String limitParam = request.getParameter("limit");
+            if (limitParam != null && !limitParam.isBlank()) {
+                try { limit = Integer.parseInt(limitParam.trim()); } catch (NumberFormatException ignored) {}
+            }
+            List<HoatDong> ds = khachHang360Service.layDsHoatDong(id, limit, 0);
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().write(chuyenDsHoatDongSangJson(ds));
+            return;
+        }
+
+        // 1.1. Điều hướng canonical khi truy cập route chi tiết mà không truyền ID
+        boolean laRouteChiTiet = "/khach-hang/chi-tiet".equals(servletPath)
+                || "/khach-hang/360".equals(servletPath)
+                || "chi-tiet".equalsIgnoreCase(action)
+                || "360".equalsIgnoreCase(action);
+
+        if (laRouteChiTiet && (paramId == null || paramId.trim().isEmpty())) {
+            response.sendRedirect(request.getContextPath() + "/khach-hang");
+            return;
+        }
+
+        // 1. Kiểm tra quyền khi xem chi tiết khách hàng trực tiếp bằng ID (S1-05 & S3-05 & S3-03)
         if (paramId != null && !paramId.trim().isEmpty()) {
             Long id = null;
             try {
@@ -138,12 +209,46 @@ public class KhachHangServlet extends HttpServlet {
                 request.setAttribute("thongBaoThanhCong", ketQua.getThongBao());
             }
 
+            // Nạp CẢ thông tin nhóm công ty (S3-05) và thông tin ticket/rủi ro (S3-08)
             napDuLieuChiTietKhachHang(request, id, banGhi);
 
-            // Nếu người dùng yêu cầu trang chi tiết (/khach-hang/chi-tiet hoặc view=chi-tiet hoặc action=chi-tiet hoặc chiTiet=true)
-            if ("/khach-hang/chi-tiet".equals(servletPath) || "chi-tiet".equalsIgnoreCase(viewParam)
-                    || "chi-tiet".equalsIgnoreCase(actionParam) || "true".equalsIgnoreCase(request.getParameter("chiTiet"))) {
+            // Nạp dữ liệu 360 (Story S3-03)
+            try {
+                KhachHang360DTO khachHang360 = khachHang360Service.layThongTin360(id, userDTO);
+                if (khachHang360 != null) {
+                    request.setAttribute("khachHang360", khachHang360);
+                    if (khachHang360.getKhachHang() != null) {
+                        request.setAttribute("khachHang", khachHang360.getKhachHang());
+                    }
+                    request.setAttribute("dsNguoiLienHe", khachHang360.getDsNguoiLienHe());
+                    request.setAttribute("dsCoHoiDangMo", khachHang360.getDsCoHoiDangMo());
+                    request.setAttribute("dsCoHoiDaDong", khachHang360.getDsCoHoiDaDong());
+                    request.setAttribute("dsHoatDong", khachHang360.getDsHoatDong());
+                    request.setAttribute("dsTepDinhKem", khachHang360.getDsTepDinhKem());
+                    request.setAttribute("dsHopDong", khachHang360.getDsHopDong());
+                    request.setAttribute("kpiGiaTriDaKy", khachHang360.getTongGiaTriDaKyDinhDang());
+                    request.setAttribute("kpiGiaTriDangMo", khachHang360.getTongGiaTriCoHoiDangMoDinhDang());
+                    request.setAttribute("soCoHoiDangMo", khachHang360.getSoCoHoiDangMo());
+                    request.setAttribute("soCoHoiDaDong", khachHang360.getSoCoHoiDaDong());
+                    request.setAttribute("tongSoHoatDong", khachHang360.getTongSoHoatDong());
+                    request.setAttribute("hoatDongJson", chuyenDsHoatDongSangJson(khachHang360.getDsHoatDong()));
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Không thể tải dữ liệu 360 cho ID " + id + ": " + e.getMessage());
+            }
+
+            // Nếu người dùng yêu cầu trang chi tiết (/khach-hang/chi-tiet, /khach-hang/360 hoặc view/action tương ứng)
+            boolean chuyenHuongChiTiet = "/khach-hang/chi-tiet".equals(servletPath)
+                    || "/khach-hang/360".equals(servletPath)
+                    || "chi-tiet".equalsIgnoreCase(viewParam)
+                    || "360".equalsIgnoreCase(viewParam)
+                    || "chi-tiet".equalsIgnoreCase(action)
+                    || "360".equalsIgnoreCase(action)
+                    || "true".equalsIgnoreCase(request.getParameter("chiTiet"));
+
+            if (chuyenHuongChiTiet) {
                 request.setAttribute("currentUser", userDTO);
+                request.setAttribute("nguoiDung", user);
                 response.setStatus(HttpServletResponse.SC_OK);
                 request.getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp").forward(request, response);
                 return;
@@ -283,6 +388,70 @@ public class KhachHangServlet extends HttpServlet {
         // STORY S3-09: Đánh dấu đã liên hệ ngay trên danh sách (AC3)
         if ("danhDauLienHe".equals(action)) {
             xuLyDanhDauLienHe(request, response, userDTO);
+            return;
+        }
+
+        // STORY S3-03: Ghi nhận hoạt động nhanh trên trang 360 (Bảo vệ bằng Data Scope)
+        if ("them-hoat-dong".equalsIgnoreCase(action)) {
+            response.setContentType("application/json;charset=UTF-8");
+            String rawKhId = request.getParameter("khachHangId");
+            if (rawKhId == null || rawKhId.isBlank()) {
+                rawKhId = request.getParameter("idKhachHang");
+            }
+            if (rawKhId == null || rawKhId.isBlank()) {
+                rawKhId = request.getParameter("id");
+            }
+            Long khId = null;
+            try {
+                if (rawKhId != null) khId = Long.parseLong(rawKhId.trim());
+            } catch (NumberFormatException ignored) {}
+
+            if (khId == null || khId <= 0) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"success\":false,\"message\":\"ID khách hàng không hợp lệ.\"}");
+                return;
+            }
+
+            // BẢO MẬT & DATA SCOPE: Chặn ghi hoạt động vào khách ngoài phạm vi
+            BanGhiNghiepVuDTO banGhi = phanQuyenService.timBanGhiTheoId(khId, "KHACH_HANG");
+            if (banGhi == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("{\"success\":false,\"message\":\"Không tìm thấy khách hàng.\"}");
+                return;
+            }
+            PhanQuyenDuLieuService.KetQuaKiemTra ketQua = phanQuyenService.kiemTraQuyenTruyCap(userDTO, banGhi);
+            if (!ketQua.isCoQuyen()) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("{\"success\":false,\"message\":\"Từ chối thao tác: Khách hàng nằm ngoài phạm vi phân quyền của bạn.\"}");
+                return;
+            }
+
+            String loai = request.getParameter("loaiHoatDong");
+            if (loai == null || loai.isBlank()) loai = request.getParameter("loai");
+            String tieuDe = request.getParameter("tieuDe");
+            String noiDung = request.getParameter("noiDung");
+
+            if (tieuDe == null || tieuDe.trim().isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"success\":false,\"message\":\"Tiêu đề hoạt động không được để trống.\"}");
+                return;
+            }
+
+            try {
+                HoatDong hd = khachHang360Service.themHoatDong(
+                        khId,
+                        user.getId(),
+                        user.getNhomKinhDoanhId() != null ? (long) user.getNhomKinhDoanhId() : null,
+                        loai,
+                        tieuDe,
+                        noiDung
+                );
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write("{\"success\":true,\"message\":\"Ghi nhận hoạt động thành công.\",\"hoatDong\":" + chuyenHoatDongSangJson(hd) + "}");
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write("{\"success\":false,\"message\":\"" + escapeJson(e.getMessage()) + "\"}");
+            }
             return;
         }
 
@@ -572,7 +741,10 @@ public class KhachHangServlet extends HttpServlet {
 
         String tenCongTy = request.getParameter("tenCongTy");
         String ghiChu = request.getParameter("ghiChu");
-        String kenhLienHe = request.getParameter("kenhLienHe");
+        String kenhLienHe = request.getParameter("kenhLyeHe");
+        if (kenhLienHe == null || kenhLienHe.isBlank()) {
+            kenhLienHe = request.getParameter("kenhLienHe");
+        }
         String tenKhach = (tenCongTy != null && !tenCongTy.trim().isEmpty()) ? tenCongTy.trim() : "khách hàng";
 
         try {
@@ -630,8 +802,42 @@ public class KhachHangServlet extends HttpServlet {
         }
     }
 
-    private static String escapeJson(String s) {
-        if (s == null) return "";
-        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");
+    private String chuyenDsHoatDongSangJson(List<HoatDong> ds) {
+        if (ds == null || ds.isEmpty()) {
+            return "[]";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        for (int i = 0; i < ds.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(chuyenHoatDongSangJson(ds.get(i)));
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+    private String chuyenHoatDongSangJson(HoatDong h) {
+        if (h == null) return "{}";
+        return "{" +
+                "\"id\":" + (h.getId() != null ? h.getId() : 0) + "," +
+                "\"maHoatDong\":\"" + escapeJson(h.getMaHoatDong()) + "\"," +
+                "\"loai\":\"" + escapeJson(h.getLoaiHoatDong()) + "\"," +
+                "\"tieuDe\":\"" + escapeJson(h.getTieuDe()) + "\"," +
+                "\"thoiGian\":\"" + escapeJson(h.getThoiGianDinhDang()) + "\"," +
+                "\"nguoiThucHien\":\"" + escapeJson(h.getTenNguoiThucHien()) + "\"," +
+                "\"nguoiLienHe\":\"" + escapeJson(h.getTenNguoiLienHe()) + "\"," +
+                "\"noiDung\":\"" + escapeJson(h.getNoiDung()) + "\"" +
+                "}";
+    }
+
+    private static String escapeJson(String text) {
+        if (text == null) return "";
+        return text.replace("\\", "\\\\")
+                   .replace("\"", "\\\"")
+                   .replace("\b", "\\b")
+                   .replace("\f", "\\f")
+                   .replace("\n", "\\n")
+                   .replace("\r", "\\r")
+                   .replace("\t", "\\t");
     }
 }

@@ -1,5 +1,6 @@
 package vn.nhom10.crm.model;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -9,8 +10,11 @@ import java.util.Objects;
 /**
  * Model đại diện cho thực thể Hợp đồng bán hàng trong bảng 'hop_dong'.
  * Phục vụ tính toán tổng giá trị hợp đồng của khách hàng và nhóm công ty (Story S3-05).
+ * Phục vụ tính toán tổng giá trị đã ký trên trang 360 (Story S3-03, AC2).
  */
-public class HopDong {
+public class HopDong implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private Long id;
     private String soHopDong;
@@ -23,7 +27,7 @@ public class HopDong {
     private LocalDate ngayHetHan;
     private BigDecimal giaTriHopDong = BigDecimal.ZERO;
     private String dieuKhoanThanhToan;
-    private String trangThai = "DA_KY";
+    private String trangThai = "DA_KY"; // DA_KY, DANG_HIEU_LUC, HET_HAN, DA_HUY
     private Long hopDongGocId;
     private Long coHoiGiaHanId;
     private Long createdBy;

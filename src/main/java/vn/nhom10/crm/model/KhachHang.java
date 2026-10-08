@@ -13,6 +13,7 @@ import java.util.Objects;
  * Hỗ trợ quan hệ công ty mẹ - công ty con thông qua trường 'cong_ty_me_id' (Story S3-05).
  * Hỗ trợ import khách hàng Excel (Story S3-06).
  * Hỗ trợ cờ rủi ro rời bỏ 'co_rui_ro' và thông tin hỗ trợ sau bán (Story S3-08).
+ * Chứa thông tin công ty phục vụ trang 360 (Story S3-03).
  */
 public class KhachHang implements Serializable {
 
@@ -87,6 +88,18 @@ public class KhachHang implements Serializable {
         this.nhomKinhDoanhId = nhomKinhDoanhId;
     }
 
+    public KhachHang(String tenCongTy, String maSoThue, Long nganhNgheId, Long quyMoId,
+                     String website, String diaChi, Long nguoiSoHuuId, Long nhomKinhDoanhId) {
+        this.tenCongTy = tenCongTy;
+        this.maSoThue = maSoThue;
+        this.nganhNgheId = nganhNgheId;
+        this.quyMoId = quyMoId;
+        this.website = website;
+        this.diaChi = diaChi;
+        this.nguoiSoHuuId = nguoiSoHuuId;
+        this.nhomKinhDoanhId = nhomKinhDoanhId;
+    }
+
     public Long getId() {
         return id;
     }
@@ -136,7 +149,7 @@ public class KhachHang implements Serializable {
     }
 
     public String getTenNganhNghe() {
-        return tenNganhNghe;
+        return tenNganhNghe != null ? tenNganhNghe : "Chưa xác định";
     }
 
     public void setTenNganhNghe(String tenNganhNghe) {
@@ -152,7 +165,7 @@ public class KhachHang implements Serializable {
     }
 
     public String getTenQuyMo() {
-        return tenQuyMo;
+        return tenQuyMo != null ? tenQuyMo : "Chưa xác định";
     }
 
     public void setTenQuyMo(String tenQuyMo) {
@@ -192,7 +205,7 @@ public class KhachHang implements Serializable {
     }
 
     public String getTenKhuVuc() {
-        return tenKhuVuc;
+        return tenKhuVuc != null ? tenKhuVuc : "Chưa xác định";
     }
 
     public void setTenKhuVuc(String tenKhuVuc) {
@@ -269,6 +282,15 @@ public class KhachHang implements Serializable {
 
     public void setTrangThai(String trangThai) {
         this.trangThai = trangThai;
+    }
+
+    public TrangThaiKhachHangEnum getTrangThaiEnum() {
+        return TrangThaiKhachHangEnum.tuChuoi(this.trangThai);
+    }
+
+    public String getTrangThaiHienThi() {
+        TrangThaiKhachHangEnum en = getTrangThaiEnum();
+        return en != null ? en.getTenHienThi() : (trangThai != null ? trangThai : "Tiềm năng");
     }
 
     public boolean isCoRuiRo() {
@@ -408,6 +430,7 @@ public class KhachHang implements Serializable {
                 "id=" + id +
                 ", maKhachHang='" + maKhachHang + '\'' +
                 ", tenCongTy='" + tenCongTy + '\'' +
+                ", maSoThue='" + maSoThue + '\'' +
                 ", congTyMeId=" + congTyMeId +
                 ", nguoiSoHuuId=" + nguoiSoHuuId +
                 ", trangThai='" + trangThai + '\'' +

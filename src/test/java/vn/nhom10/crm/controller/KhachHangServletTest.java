@@ -401,4 +401,130 @@ class KhachHangServletTest {
         verify(request).setAttribute(eq("tabHienTai"), eq("cham-soc"));
         verify(request).setAttribute(eq("soNgayCauHinh"), eq("45"));
     }
+
+    @Test
+    @DisplayName("S3-03 AC1 & AC2: User A truy cập /khach-hang/chi-tiet?id=1 hiển thị view chi-tiet.jsp (Trang 360)")
+    void testKhachHang_NhanVienA_Xem360_KhachCuaMinh_ChuyenHuongChiTietJsp() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getServletPath()).thenReturn("/khach-hang/chi-tiet");
+        when(request.getParameter("id")).thenReturn("1"); // FPT thuộc về A
+
+        servlet.doGet(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_OK);
+        verify(request).setAttribute(eq("banGhiChiTiet"), any(BanGhiNghiepVuDTO.class));
+        verify(request).getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp");
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("S3-03 Data Scope: User A cố tình truy cập /khach-hang/chi-tiet?id=5 (khách của B) bị chặn 403")
+    void testKhachHang_NhanVienA_Xem360_KhachCuaB_TraVe403() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getServletPath()).thenReturn("/khach-hang/chi-tiet");
+        when(request.getParameter("id")).thenReturn("5"); // Viettel thuộc về B
+
+        servlet.doGet(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+        verify(request).setAttribute(eq("thongBaoLoi"), contains("Từ chối truy cập"));
+        verify(request).getRequestDispatcher("/WEB-INF/views/phan-quyen/ngoai-pham-vi.jsp");
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("S3-03: Truy cập /khach-hang/chi-tiet không truyền id sẽ redirect về /khach-hang")
+    void testKhachHang_Xem360_KhongTruyenId_RedirectDanhSach() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getServletPath()).thenReturn("/khach-hang/chi-tiet");
+        when(request.getParameter("id")).thenReturn(null);
+
+        servlet.doGet(request, response);
+
+        verify(response).sendRedirect("/crm/khach-hang");
+    }
+
+    @Test
+    @DisplayName("S3-03 AC3: API lấy danh sách hoạt động JSON trả về dữ liệu chuẩn khi có quyền")
+    void testKhachHang_ApiHoatDong_TraVeJson() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getServletPath()).thenReturn("/khach-hang/chi-tiet");
+        when(request.getParameter("action")).thenReturn("api-hoat-dong");
+        when(request.getParameter("id")).thenReturn("1");
+
+        java.io.StringWriter sw = new java.io.StringWriter();
+        java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+        when(response.getWriter()).thenReturn(pw);
+
+        servlet.doGet(request, response);
+
+        verify(response).setContentType(startsWith("application/json"));
+        String json = sw.toString();
+        assertTrue(json.startsWith("[") && json.endsWith("]"), "Kết quả trả về phải là mảng JSON");
+    }
+
+    @Test
+    @DisplayName("S3-03 Data Scope: API hoạt động chặn khách ngoài phạm vi (HTTP 403)")
+    void testKhachHang_ApiHoatDong_KhachCuaB_TraVe403() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getServletPath()).thenReturn("/khach-hang/chi-tiet");
+        when(request.getParameter("action")).thenReturn("api-hoat-dong");
+        when(request.getParameter("id")).thenReturn("5"); // Viettel thuộc B
+
+        java.io.StringWriter sw = new java.io.StringWriter();
+        java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+        when(response.getWriter()).thenReturn(pw);
+
+        servlet.doGet(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+    }
+
+    @Test
+    @DisplayName("S3-03: Gửi POST thêm hoạt động mới qua /khach-hang/chi-tiet thành công")
+    void testKhachHang_ThemHoatDong_PostThanhCong() throws Exception {
+        vn.nhom10.crm.service.KhachHang360Service mockService = mock(vn.nhom10.crm.service.KhachHang360Service.class);
+        vn.nhom10.crm.model.HoatDong mockHd = new vn.nhom10.crm.model.HoatDong();
+        mockHd.setId(99L);
+        mockHd.setTieuDe("Trao đổi báo giá");
+        when(mockService.themHoatDong(anyLong(), any(), any(), any(), any(), any())).thenReturn(mockHd);
+
+        KhachHangServlet servletWithMock = new KhachHangServlet(new PhanQuyenDuLieuService(null), mockService);
+
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getServletPath()).thenReturn("/khach-hang/chi-tiet");
+        when(request.getParameter("action")).thenReturn("them-hoat-dong");
+        when(request.getParameter("idKhachHang")).thenReturn("1");
+        when(request.getParameter("loai")).thenReturn("CUOC_GOI");
+        when(request.getParameter("tieuDe")).thenReturn("Trao đổi báo giá");
+        when(request.getParameter("noiDung")).thenReturn("Đã chốt cấu hình");
+
+        java.io.StringWriter sw = new java.io.StringWriter();
+        java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+        when(response.getWriter()).thenReturn(pw);
+
+        servletWithMock.doPost(request, response);
+
+        verify(response).setContentType(startsWith("application/json"));
+        String res = sw.toString();
+        assertTrue(res.contains("\"success\":true"), "Phải trả về success: true");
+    }
+
+    @Test
+    @DisplayName("S3-03 Data Scope: Gửi POST thêm hoạt động vào khách ngoài phạm vi bị chặn HTTP 403")
+    void testKhachHang_ThemHoatDong_KhachCuaB_TraVe403() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getServletPath()).thenReturn("/khach-hang/chi-tiet");
+        when(request.getParameter("action")).thenReturn("them-hoat-dong");
+        when(request.getParameter("idKhachHang")).thenReturn("5"); // Viettel thuộc B
+        when(request.getParameter("tieuDe")).thenReturn("Ghi nhận ngoài luồng");
+
+        java.io.StringWriter sw = new java.io.StringWriter();
+        java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+        when(response.getWriter()).thenReturn(pw);
+
+        servlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+    }
 }

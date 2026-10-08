@@ -202,7 +202,7 @@
                                             </c:if>
                                         </td>
                                         <td style="text-align: center;">
-                                            <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" class="btn-action" title="Xem chi tiết khách hàng" aria-label="Xem chi tiết khách hàng">
+                                            <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${kh.id}" class="btn-action" title="Xem chi tiết khách hàng" aria-label="Xem chi tiết khách hàng">
                                                 <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
                                             </a>
                                         </td>
@@ -213,7 +213,6 @@
                                 <tr>
                                     <td colspan="7" style="text-align: center; padding: 32px; color: var(--slate-500);">
                                         Không tìm thấy khách hàng nào trong phạm vi dữ liệu tài khoản của bạn.
-                                    </td>
                                     </td>
                                 </tr>
                             </c:otherwise>
@@ -380,7 +379,7 @@
                                         <td class="font-mono"><c:out value="${not empty kh.maKhachHang ? kh.maKhachHang : kh.maBanGhi}" /></td>
                                         <td>
                                             <div class="customer-name">
-                                                <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" style="color: inherit; text-decoration: none;">
+                                                <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${kh.id}" style="color: inherit; text-decoration: none;">
                                                     <c:out value="${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}" />
                                                 </a>
                                             </div>
@@ -431,7 +430,7 @@
                                                         </button>
                                                     </c:otherwise>
                                                 </c:choose>
-                                                <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" class="btn-action" title="Xem chi tiết hồ sơ khách hàng" aria-label="Xem chi tiết ${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}">
+                                                <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${kh.id}" class="btn-action" title="Xem chi tiết hồ sơ khách hàng" aria-label="Xem chi tiết ${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}">
                                                     <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
                                                 </a>
                                             </div>
