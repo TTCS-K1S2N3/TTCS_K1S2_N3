@@ -58,7 +58,7 @@ public enum TrangThaiKhachHangEnum {
     }
 
     /**
-     * Kiểm tra xem chuỗi có đại diện cho một trạng thái hợp lệ trong 4 trạng thái hay không.
+     * Kiểm tra xem chuỗi có đại diện cho một trạng thái hợp lệ trong 4 trạng thái (S3-01, S3-03) hay không.
      */
     public static boolean laHopLe(String giaTri) {
         return tuChuoi(giaTri) != null;

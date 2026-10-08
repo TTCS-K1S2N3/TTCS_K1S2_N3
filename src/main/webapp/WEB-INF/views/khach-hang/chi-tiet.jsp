@@ -20,6 +20,9 @@
     <jsp:include page="/WEB-INF/views/layout/navigation.jsp" />
 
     <main class="crm-main-content page-container" id="crm-main-content">
+        <c:set var="currentStatus" value="${not empty khachHang ? khachHang.trangThaiHienThi : banGhi.trangThai}" />
+        <c:set var="tenHienThi" value="${not empty khachHang.tenCongTy ? khachHang.tenCongTy : banGhi.tieuDe}" />
+        <c:set var="maHienThi" value="${not empty khachHang.maKhachHang ? khachHang.maKhachHang : banGhi.maBanGhi}" />
         <!-- Breadcrumb chuẩn hệ thống -->
         <nav class="breadcrumb-nav" aria-label="Breadcrumb">
             <ol class="breadcrumb-list">
@@ -125,9 +128,23 @@
                 <div class="customer-title-group">
                     <h1>
                         <span><c:out value="${banGhi.tieuDe}" /></span>
-                        <span class="badge badge-success">
-                            <c:out value="${not empty banGhi.trangThai ? banGhi.trangThai : 'Đang hợp tác'}" />
-                        </span>
+                        <c:choose>
+                            <c:when test="${currentStatus == 'Tiềm năng' || currentStatus == 'TIEM_NANG'}">
+                                <span class="badge-status-tiem-nang"><span class="badge-dot" aria-hidden="true"></span>Tiềm năng</span>
+                            </c:when>
+                            <c:when test="${currentStatus == 'Đang giao dịch' || currentStatus == 'DANG_GIAO_DICH'}">
+                                <span class="badge-status-dang-giao-dich"><span class="badge-dot" aria-hidden="true"></span>Đang giao dịch</span>
+                            </c:when>
+                            <c:when test="${currentStatus == 'Khách hàng' || currentStatus == 'KHACH_HANG'}">
+                                <span class="badge-status-khach-hang"><span class="badge-dot" aria-hidden="true"></span>Khách hàng</span>
+                            </c:when>
+                            <c:when test="${currentStatus == 'Ngừng hợp tác' || currentStatus == 'NGUNG_HOP_TAC'}">
+                                <span class="badge-status-ngung-hop-tac"><span class="badge-dot" aria-hidden="true"></span>Ngừng hợp tác</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="badge badge-success"><c:out value="${currentStatus}" /></span>
+                            </c:otherwise>
+                        </c:choose>
                         <c:if test="${banGhi.coRuiRo or (not empty thongTinRuiRo and thongTinRuiRo.coRuiRo)}">
                             <span class="badge" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a;">
                                 <span class="material-symbols-outlined" style="font-size: 14px;" aria-hidden="true">warning</span>
@@ -144,7 +161,30 @@
                     <div class="customer-meta-row">
                         <span>Mã KH: <strong class="font-mono"><c:out value="${banGhi.maBanGhi}" /></strong></span>
                         <span class="customer-meta-sep">&bull;</span>
-                        <span>Mã số thuế: <strong class="font-mono"><c:out value="${not empty khachHang.maSoThue ? khachHang.maSoThue : '---'}" /></strong></span>
+                        <c:choose>
+                            <c:when test="${not empty khachHang and not empty khachHang.maSoThue}">
+                                <span>Mã số thuế: <code class="mst-badge"><c:out value="${khachHang.maSoThue}" /></code></span>
+                            </c:when>
+                            <c:otherwise>
+                                <span>Mã số thuế: <span class="text-muted-italic">Chưa khai báo</span></span>
+                            </c:otherwise>
+                        </c:choose>
+                        <c:if test="${not empty khachHang and not empty khachHang.website}">
+                            <span class="customer-meta-sep">&bull;</span>
+                            <span>Website: <a href="${khachHang.website.startsWith('http') ? khachHang.website : 'https://'.concat(khachHang.website)}" target="_blank" rel="noopener noreferrer" class="link-website"><c:out value="${khachHang.website}" /></a></span>
+                        </c:if>
+                        <c:if test="${not empty khachHang and not empty khachHang.diaChi}">
+                            <span class="customer-meta-sep">&bull;</span>
+                            <span>Địa chỉ: <c:out value="${khachHang.diaChi}" /></span>
+                        </c:if>
+                        <c:if test="${not empty khachHang and not empty khachHang.tenNganhNghe}">
+                            <span class="customer-meta-sep">&bull;</span>
+                            <span>Ngành nghề: <strong><c:out value="${khachHang.tenNganhNghe}" /></strong></span>
+                        </c:if>
+                        <c:if test="${not empty khachHang and not empty khachHang.tenQuyMo}">
+                            <span class="customer-meta-sep">&bull;</span>
+                            <span>Quy mô: <strong><c:out value="${khachHang.tenQuyMo}" /></strong></span>
+                        </c:if>
                         <span class="customer-meta-sep">&bull;</span>
                         <span>Phụ trách: <strong><c:out value="${banGhi.tenNguoiPhuTrach}" /></strong> (<c:out value="${banGhi.tenNhom}" />)</span>
                         <span class="customer-meta-sep">&bull;</span>
@@ -1317,6 +1357,83 @@
             </div>
         </div>
 
+                        <div>
+                        <h2 class="modal-title" id="modalSuaKhachHangTieuDe">Chỉnh Sửa Hồ Sơ Khách Hàng</h2>
+                        <p class="modal-subtitle">Cập nhật thông tin hồ sơ khách hàng doanh nghiệp (Story S3-01)</p>
+                    </div>
+                    <button type="button" class="modal-close-btn" id="btnDongModalSuaKhachHang" aria-label="Đóng" title="Đóng">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
+                </div>
+                <form id="formSuaKhachHang" method="POST" action="${pageContext.request.contextPath}/khach-hang">
+                    <input type="hidden" name="action" value="sua">
+                    <input type="hidden" id="suaKhachHangId" name="id" value="">
+
+                    <div class="modal-body">
+                        <!-- Tên công ty & Mã khách hàng -->
+                        <div class="form-row">
+                            <div class="form-col" style="flex: 2;">
+                                <label class="form-label" for="suaTenCongTy">Tên công ty / Khách hàng (AC1) <span class="required">*</span></label>
+                                <input type="text" id="suaTenCongTy" name="tenCongTy" class="form-input" required autocomplete="off">
+                            </div>
+                            <div class="form-col" style="flex: 1;">
+                                <label class="form-label" for="suaMaKhachHang">Mã khách hàng</label>
+                                <input type="text" id="suaMaKhachHang" name="maKhachHang" class="form-input" readonly style="background-color: var(--slate-100); font-family: monospace;">
+                            </div>
+                        </div>
+
+                        <!-- Mã số thuế & Website -->
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label class="form-label" for="suaMaSoThue">Mã số thuế (AC1, AC2) <small style="color: var(--slate-500); font-weight: normal;">(Nếu có phải duy nhất)</small></label>
+                                <input type="text" id="suaMaSoThue" name="maSoThue" class="form-input" autocomplete="off">
+                            </div>
+                            <div class="form-col">
+                                <label class="form-label" for="suaWebsite">Website (AC1)</label>
+                                <input type="text" id="suaWebsite" name="website" class="form-input" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <!-- Địa chỉ -->
+                        <div class="form-group">
+                            <label class="form-label" for="suaDiaChi">Địa chỉ trụ sở / văn phòng (AC1)</label>
+                            <input type="text" id="suaDiaChi" name="diaChi" class="form-input" autocomplete="off">
+                        </div>
+
+                        <!-- Trạng thái & Doanh thu ước tính -->
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label class="form-label" for="suaTrangThai">Trạng thái khách hàng (AC3) <span class="required">*</span></label>
+                                <select id="suaTrangThai" name="trangThai" class="form-select" required>
+                                    <option value="Tiềm năng">Tiềm năng</option>
+                                    <option value="Đang giao dịch">Đang giao dịch</option>
+                                    <option value="Khách hàng">Khách hàng</option>
+                                    <option value="Ngừng hợp tác">Ngừng hợp tác</option>
+                                </select>
+                            </div>
+                            <div class="form-col">
+                                <label class="form-label" for="suaDoanhThuUocTinh">Doanh thu ước tính (VND)</label>
+                                <input type="text" id="suaDoanhThuUocTinh" name="doanhThuUocTinh" class="form-input" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <!-- Ghi chú chi tiết -->
+                        <div class="form-group">
+                            <label class="form-label" for="suaMoTaChiTiet">Ghi chú / Mô tả chi tiết</label>
+                            <textarea id="suaMoTaChiTiet" name="moTaChiTiet" class="form-textarea" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" id="btnHuySuaKhachHang">Hủy bỏ</button>
+                        <button type="submit" class="btn btn-primary" id="btnXacNhanSuaKhachHang">
+                            <span class="material-symbols-outlined" aria-hidden="true">save</span>
+                            <span>Lưu Thay Đổi</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </main>
 
     <!-- Scripts chuẩn hệ thống và các module -->
@@ -1326,9 +1443,11 @@
     <script>
         window.CURRENT_CUSTOMER_ID = "${not empty banGhi.id ? banGhi.id : (not empty khachHang.id ? khachHang.id : 0)}";
         window.APP_CONTEXT_PATH = "${pageContext.request.contextPath}";
+        window.CONTEXT_PATH = "${pageContext.request.contextPath}";
     </script>
     <script src="${pageContext.request.contextPath}/assets/js/navigation.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/session-keep-alive.js"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/khach-hang.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/khach-hang/chi-tiet.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/yeu-cau-ho-tro.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/khach-hang-360.js"></script>

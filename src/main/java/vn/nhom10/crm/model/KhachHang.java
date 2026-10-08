@@ -10,10 +10,12 @@ import java.util.Objects;
 
 /**
  * Model đại diện cho thực thể Khách hàng doanh nghiệp trong bảng 'khach_hang'.
- * Hỗ trợ quan hệ công ty mẹ - công ty con thông qua trường 'cong_ty_me_id' (Story S3-05).
- * Hỗ trợ import khách hàng Excel (Story S3-06).
- * Hỗ trợ cờ rủi ro rời bỏ 'co_rui_ro' và thông tin hỗ trợ sau bán (Story S3-08).
- * Chứa thông tin công ty phục vụ trang 360 (Story S3-03).
+ * - Story S3-01: Quản lý hồ sơ doanh nghiệp (tên, MST, ngành nghề, quy mô, website, địa chỉ, người sở hữu).
+ * - Story S3-03: Hồ sơ 360° khách hàng.
+ * - Story S3-05: Quan hệ công ty mẹ - công ty con (cong_ty_me_id).
+ * - Story S3-06: Import khách hàng từ file Excel.
+ * - Story S3-08: Cảnh báo rủi ro rời bỏ (co_rui_ro) và dịch vụ sau bán.
+ * - Story S3-09: Chăm sóc định kỳ và tương tác khách hàng.
  */
 public class KhachHang implements Serializable {
 
@@ -41,13 +43,13 @@ public class KhachHang implements Serializable {
     private Long congTyMeId;
     private String tenCongTyMe;
     private String maCongTyMe;
-    private String trangThai = "Tiềm năng";
+    private String trangThai = TrangThaiKhachHangEnum.TIEM_NANG.getMa();
     private boolean coRuiRo = false;
     private Timestamp ruiRoCapNhatLuc;
     private Timestamp lanTuongTacCuoi;
     private Long gopVaoKhachHangId;
     private String moTaChiTiet;
-    private LocalDate ngayTao = LocalDate.now();
+    private LocalDate ngayTao;
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
@@ -88,16 +90,23 @@ public class KhachHang implements Serializable {
         this.nhomKinhDoanhId = nhomKinhDoanhId;
     }
 
-    public KhachHang(String tenCongTy, String maSoThue, Long nganhNgheId, Long quyMoId,
-                     String website, String diaChi, Long nguoiSoHuuId, Long nhomKinhDoanhId) {
+    public KhachHang(Long id, String maKhachHang, String tenCongTy, String trangThai, Long nguoiSoHuuId, String tenNguoiSoHuu) {
+        this.id = id;
+        this.maKhachHang = maKhachHang;
+        this.tenCongTy = tenCongTy;
+        this.trangThai = trangThai;
+        this.nguoiSoHuuId = nguoiSoHuuId;
+        this.tenNguoiSoHuu = tenNguoiSoHuu;
+    }
+
+    public KhachHang(Long id, String maKhachHang, String tenCongTy, String maSoThue, Long nguoiSoHuuId, Long congTyMeId, String trangThai) {
+        this.id = id;
+        this.maKhachHang = maKhachHang;
         this.tenCongTy = tenCongTy;
         this.maSoThue = maSoThue;
-        this.nganhNgheId = nganhNgheId;
-        this.quyMoId = quyMoId;
-        this.website = website;
-        this.diaChi = diaChi;
         this.nguoiSoHuuId = nguoiSoHuuId;
-        this.nhomKinhDoanhId = nhomKinhDoanhId;
+        this.congTyMeId = congTyMeId;
+        this.trangThai = trangThai;
     }
 
     public Long getId() {
@@ -149,7 +158,7 @@ public class KhachHang implements Serializable {
     }
 
     public String getTenNganhNghe() {
-        return tenNganhNghe != null ? tenNganhNghe : "Chưa xác định";
+        return tenNganhNghe;
     }
 
     public void setTenNganhNghe(String tenNganhNghe) {
@@ -165,7 +174,7 @@ public class KhachHang implements Serializable {
     }
 
     public String getTenQuyMo() {
-        return tenQuyMo != null ? tenQuyMo : "Chưa xác định";
+        return tenQuyMo;
     }
 
     public void setTenQuyMo(String tenQuyMo) {
@@ -205,7 +214,7 @@ public class KhachHang implements Serializable {
     }
 
     public String getTenKhuVuc() {
-        return tenKhuVuc != null ? tenKhuVuc : "Chưa xác định";
+        return tenKhuVuc;
     }
 
     public void setTenKhuVuc(String tenKhuVuc) {
@@ -221,7 +230,7 @@ public class KhachHang implements Serializable {
     }
 
     public String getTenNguoiSoHuu() {
-        return tenNguoiSoHuu != null ? tenNguoiSoHuu : "Chưa xác định";
+        return tenNguoiSoHuu;
     }
 
     public void setTenNguoiSoHuu(String tenNguoiSoHuu) {
@@ -237,7 +246,7 @@ public class KhachHang implements Serializable {
     }
 
     public String getTenNhomKinhDoanh() {
-        return tenNhomKinhDoanh != null ? tenNhomKinhDoanh : "Chưa phân nhóm";
+        return tenNhomKinhDoanh;
     }
 
     public void setTenNhomKinhDoanh(String tenNhomKinhDoanh) {
@@ -249,7 +258,7 @@ public class KhachHang implements Serializable {
     }
 
     public void setDoanhThuUocTinh(BigDecimal doanhThuUocTinh) {
-        this.doanhThuUocTinh = doanhThuUocTinh != null ? doanhThuUocTinh : BigDecimal.ZERO;
+        this.doanhThuUocTinh = doanhThuUocTinh;
     }
 
     public Long getCongTyMeId() {
@@ -288,6 +297,10 @@ public class KhachHang implements Serializable {
         return TrangThaiKhachHangEnum.tuChuoi(this.trangThai);
     }
 
+    public void setTrangThaiEnum(TrangThaiKhachHangEnum trangThaiEnum) {
+        this.trangThai = (trangThaiEnum != null) ? trangThaiEnum.getMa() : TrangThaiKhachHangEnum.TIEM_NANG.getMa();
+    }
+
     public String getTrangThaiHienThi() {
         TrangThaiKhachHangEnum en = getTrangThaiEnum();
         return en != null ? en.getTenHienThi() : (trangThai != null ? trangThai : "Tiềm năng");
@@ -299,6 +312,14 @@ public class KhachHang implements Serializable {
 
     public void setCoRuiRo(boolean coRuiRo) {
         this.coRuiRo = coRuiRo;
+    }
+
+    public boolean isCoRuiRoiRoiBo() {
+        return coRuiRo;
+    }
+
+    public void setCoRuiRoiRoiBo(boolean coRuiRoiRoiBo) {
+        this.coRuiRo = coRuiRoiRoiBo;
     }
 
     public LocalDateTime getRuiRoCapNhatLuc() {
@@ -408,7 +429,21 @@ public class KhachHang implements Serializable {
         if (createdAt != null) {
             return createdAt.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
         }
-        return "";
+        return "Chưa cập nhật";
+    }
+
+    public String getDoanhThuDinhDang() {
+        if (doanhThuUocTinh == null || doanhThuUocTinh.compareTo(BigDecimal.ZERO) == 0) {
+            return "0 ₫";
+        }
+        return String.format("%,.0f ₫", doanhThuUocTinh);
+    }
+
+    public String getTongGiaTriHopDongDinhDang() {
+        if (tongGiaTriHopDong == null || tongGiaTriHopDong.compareTo(BigDecimal.ZERO) == 0) {
+            return "0 ₫";
+        }
+        return String.format("%,.0f ₫", tongGiaTriHopDong);
     }
 
     @Override

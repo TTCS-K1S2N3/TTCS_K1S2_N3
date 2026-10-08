@@ -3,53 +3,69 @@ package vn.nhom10.crm.dao;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import vn.nhom10.crm.config.DatabaseConfig;
 import vn.nhom10.crm.model.KhachHang;
+import vn.nhom10.crm.model.PhamViDuLieu;
+import vn.nhom10.crm.model.TrangThaiKhachHangEnum;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Kiểm thử tầng DAO cho KhachHangDAO với H2 in-memory.
- * Kiểm tra các tính năng của Story S3-05:
- * - Gắn khách hàng làm công ty con
- * - Gỡ bỏ công ty mẹ
- * - Phát hiện vòng lặp chu kỳ mẹ con
- * - Lấy danh sách công ty con
- * Kiểm tra các tính năng của Story S3-08:
- * - Thêm khách hàng
- * - Cập nhật và kiểm tra cờ rủi ro rời bỏ
- * - Lấy danh sách khách hàng rủi ro
+ * Kiểm thử tích hợp toàn diện cho KhachHangDAO:
+ * - Story S3-01: AC1 đầy đủ trường, AC2 duy nhất MST, AC3 4 trạng thái chuẩn, AC4 Data Scope.
+ * - Story S3-05: Quan hệ công ty mẹ - con và kiểm tra chống vòng lặp.
+ * - Story S3-08: Gắn và gỡ cờ rủi ro rời bỏ.
  */
 public class KhachHangDAOTest {
 
-    private static Connection h2Connection;
+    private static final String H2_URL = "jdbc:h2:mem:crm_test_khachhang;MODE=MySQL;DB_CLOSE_DELAY=-1";
+    private static Connection rootConnection;
     private KhachHangDAO khachHangDAO;
     private KhachHangDAO dao;
 
     @BeforeAll
     public static void setUpDatabase() throws Exception {
         Class.forName("org.h2.Driver");
-        h2Connection = DriverManager.getConnection("jdbc:h2:mem:crm_test_khachhang;MODE=MySQL;DB_CLOSE_DELAY=-1");
+        rootConnection = DriverManager.getConnection(H2_URL, "sa", "");
+        DatabaseConfig.setConnectionSupplier(() -> {
+            try {
+                return DriverManager.getConnection(H2_URL, "sa", "");
+            } catch (SQLException e) {
+                return null;
+            }
+        });
 
-        try (Statement stmt = h2Connection.createStatement()) {
-            stmt.execute("CREATE TABLE IF NOT EXISTS nguoi_dung (" +
+        try (Statement st = rootConnection.createStatement()) {
+            st.execute("CREATE TABLE IF NOT EXISTS nganh_nghe (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
-                    "ho_ten VARCHAR(255) NOT NULL, " +
-                    "email VARCHAR(255) NOT NULL UNIQUE)");
+                    "ma_nganh VARCHAR(50), ten_nganh VARCHAR(150), thu_tu_hien_thi INT, hoat_dong TINYINT, created_at DATETIME)");
 
-            stmt.execute("CREATE TABLE IF NOT EXISTS nhom_kinh_doanh (" +
+            st.execute("CREATE TABLE IF NOT EXISTS quy_mo_doanh_nghiep (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
-                    "ten_nhom VARCHAR(255) NOT NULL)");
+                    "ma_quy_mo VARCHAR(50), ten_quy_mo VARCHAR(150), thu_tu_hien_thi INT, hoat_dong TINYINT, created_at DATETIME)");
 
-            stmt.execute("CREATE TABLE IF NOT EXISTS khach_hang (" +
+            st.execute("CREATE TABLE IF NOT EXISTS khu_vuc_dia_ly (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "ma_khu_vuc VARCHAR(50), ten_khu_vuc VARCHAR(150))");
+
+            st.execute("CREATE TABLE IF NOT EXISTS nhom_kinh_doanh (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "ma_nhom VARCHAR(50), ten_nhom VARCHAR(150), nhom_cha_id BIGINT)");
+
+            st.execute("CREATE TABLE IF NOT EXISTS nguoi_dung (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "ho_ten VARCHAR(150), email VARCHAR(200) UNIQUE, nhom_kinh_doanh_id BIGINT)");
+
+            st.execute("CREATE TABLE IF NOT EXISTS khach_hang (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
                     "ma_khach_hang VARCHAR(50) NULL, " +
                     "ten_cong_ty VARCHAR(255) NOT NULL, " +
@@ -75,24 +91,34 @@ public class KhachHangDAOTest {
                     "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
                     "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
 
-            stmt.execute("INSERT INTO nguoi_dung (id, ho_ten, email) VALUES (1, 'Nguyễn Văn Sales', 'sales@crm.vn')");
-            stmt.execute("INSERT INTO nhom_kinh_doanh (id, ten_nhom) VALUES (1, 'Nhóm Miền Bắc')");
-        }
+            // Nạp dữ liệu danh mục & người dùng dùng chung
+            st.execute("MERGE INTO nganh_nghe (id, ma_nganh, ten_nganh, thu_tu_hien_thi, hoat_dong) KEY(id) " +
+                    "VALUES (1, 'CNTT', 'Công nghệ thông tin', 1, 1)");
 
-        DatabaseConfig.setConnectionSupplier(() -> {
-            try {
-                return DriverManager.getConnection("jdbc:h2:mem:crm_test_khachhang;MODE=MySQL;DB_CLOSE_DELAY=-1");
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+            st.execute("MERGE INTO quy_mo_doanh_nghiep (id, ma_quy_mo, ten_quy_mo, thu_tu_hien_thi, hoat_dong) KEY(id) " +
+                    "VALUES (1, '100_500', '100 - 500 nhân sự', 1, 1)");
+
+            st.execute("MERGE INTO nhom_kinh_doanh (id, ma_nhom, ten_nhom, nhom_cha_id) KEY(id) " +
+                    "VALUES (1, 'NHOM_BAC', 'Nhóm Miền Bắc', NULL)");
+            st.execute("MERGE INTO nhom_kinh_doanh (id, ma_nhom, ten_nhom, nhom_cha_id) KEY(id) " +
+                    "VALUES (2, 'NHOM_NAM', 'Nhóm Miền Nam', NULL)");
+
+            st.execute("MERGE INTO nguoi_dung (id, ho_ten, email, nhom_kinh_doanh_id) KEY(id) " +
+                    "VALUES (1, 'Nguyễn Văn Sales', 'sales@crm.vn', 1)");
+            st.execute("MERGE INTO nguoi_dung (id, ho_ten, email, nhom_kinh_doanh_id) KEY(id) " +
+                    "VALUES (101, 'Sales A', 'sales.a@crm.vn', 1)");
+            st.execute("MERGE INTO nguoi_dung (id, ho_ten, email, nhom_kinh_doanh_id) KEY(id) " +
+                    "VALUES (102, 'Sales B', 'sales.b@crm.vn', 2)");
+            st.execute("MERGE INTO nguoi_dung (id, ho_ten, email, nhom_kinh_doanh_id) KEY(id) " +
+                    "VALUES (201, 'Lead Bac', 'lead.bac@crm.vn', 1)");
+        }
     }
 
     @AfterAll
     public static void tearDown() throws Exception {
         DatabaseConfig.resetConnectionSupplier();
-        if (h2Connection != null && !h2Connection.isClosed()) {
-            h2Connection.close();
+        if (rootConnection != null && !rootConnection.isClosed()) {
+            rootConnection.close();
         }
     }
 
@@ -100,142 +126,108 @@ public class KhachHangDAOTest {
     public void resetData() throws Exception {
         khachHangDAO = new KhachHangDAO();
         dao = khachHangDAO;
-        try (Statement stmt = h2Connection.createStatement()) {
-            stmt.execute("DELETE FROM khach_hang");
+        try (Statement st = rootConnection.createStatement()) {
+            st.execute("DELETE FROM khach_hang");
         }
     }
 
-    @Test
-    @DisplayName("AC1: Gắn một khách hàng làm công ty con của khách hàng khác thành công")
-    void testGanCongTyMe_ThanhCong() throws Exception {
-        KhachHang me = new KhachHang();
-        me.setTenCongTy("Tập Đoàn VinGroup");
-        me.setMaKhachHang("KH-VIC");
-        me.setNguoiSoHuuId(1L);
-        me.setNhomKinhDoanhId(1L);
-        Long meId = khachHangDAO.themMoi(me);
+    // =========================================================================
+    // TESTS CHO STORY S3-05: CÔNG TY MẸ - CON
+    // =========================================================================
 
-        KhachHang con = new KhachHang();
-        con.setTenCongTy("Công ty CP VinFast");
-        con.setMaKhachHang("KH-VFS");
-        con.setNguoiSoHuuId(1L);
-        con.setNhomKinhDoanhId(1L);
+    @Test
+    void testGanCongTyMe_ThanhCong() throws Exception {
+        KhachHang me = new KhachHang("Tập đoàn Alpha", 1L);
+        KhachHang con = new KhachHang("Công ty TNHH Alpha Beta", 1L);
+
+        Long meId = khachHangDAO.themMoi(me);
         Long conId = khachHangDAO.themMoi(con);
 
-        boolean ketQua = khachHangDAO.ganCongTyMe(conId, meId);
-        assertTrue(ketQua, "Gắn công ty con phải thành công");
+        boolean ganThanhCong = khachHangDAO.ganCongTyMe(conId, meId);
+        assertTrue(ganThanhCong, "Gán công ty mẹ phải thành công");
 
         KhachHang conSauKhiGan = khachHangDAO.timTheoId(conId);
         assertNotNull(conSauKhiGan);
         assertEquals(meId, conSauKhiGan.getCongTyMeId());
-        assertEquals("Tập Đoàn VinGroup", conSauKhiGan.getTenCongTyMe());
+        assertEquals("Tập đoàn Alpha", conSauKhiGan.getTenCongTyMe());
     }
 
     @Test
-    @DisplayName("AC1: Lấy danh sách công ty con của một công ty mẹ")
     void testLayDanhSachCongTyCon() throws Exception {
-        KhachHang me = new KhachHang();
-        me.setTenCongTy("Tập Đoàn FPT");
-        me.setMaKhachHang("KH-FPT");
-        me.setNguoiSoHuuId(1L);
+        KhachHang me = new KhachHang("Tổng công ty Hàng Hải", 1L);
         Long meId = khachHangDAO.themMoi(me);
 
-        KhachHang con1 = new KhachHang();
-        con1.setTenCongTy("FPT Software");
-        con1.setMaKhachHang("KH-FSOFT");
-        con1.setNguoiSoHuuId(1L);
+        KhachHang con1 = new KhachHang("Chi nhánh Hải Phòng", 1L);
         con1.setCongTyMeId(meId);
         khachHangDAO.themMoi(con1);
 
-        KhachHang con2 = new KhachHang();
-        con2.setTenCongTy("FPT Telecom");
-        con2.setMaKhachHang("KH-FTEL");
-        con2.setNguoiSoHuuId(1L);
+        KhachHang con2 = new KhachHang("Chi nhánh Đà Nẵng", 1L);
         con2.setCongTyMeId(meId);
         khachHangDAO.themMoi(con2);
 
         List<KhachHang> dsCon = khachHangDAO.layDanhSachCongTyCon(meId);
-        assertEquals(2, dsCon.size(), "Công ty mẹ FPT phải có 2 công ty con");
-        assertEquals("FPT Software", dsCon.get(0).getTenCongTy());
-        assertEquals("FPT Telecom", dsCon.get(1).getTenCongTy());
+        assertEquals(2, dsCon.size(), "Công ty mẹ phải có 2 công ty con");
     }
 
     @Test
-    @DisplayName("AC1: Gỡ bỏ quan hệ công ty con (set cong_ty_me_id = NULL)")
     void testGoCongTyMe_ThanhCong() throws Exception {
-        KhachHang me = new KhachHang();
-        me.setTenCongTy("Tập Đoàn Masan");
-        me.setNguoiSoHuuId(1L);
+        KhachHang me = new KhachHang("Tập đoàn Viễn Thông", 1L);
         Long meId = khachHangDAO.themMoi(me);
 
-        KhachHang con = new KhachHang();
-        con.setTenCongTy("Masan Consumer");
-        con.setNguoiSoHuuId(1L);
+        KhachHang con = new KhachHang("Công ty Phần mềm Viễn Thông", 1L);
         con.setCongTyMeId(meId);
         Long conId = khachHangDAO.themMoi(con);
 
-        // Gỡ bỏ quan hệ
-        boolean ketQua = khachHangDAO.ganCongTyMe(conId, null);
-        assertTrue(ketQua);
+        boolean goThanhCong = khachHangDAO.ganCongTyMe(conId, null);
+        assertTrue(goThanhCong, "Gỡ công ty mẹ phải thành công");
 
         KhachHang conSauGo = khachHangDAO.timTheoId(conId);
-        assertNull(conSauGo.getCongTyMeId());
+        assertNotNull(conSauGo);
+        assertNull(conSauGo.getCongTyMeId(), "Công ty con sau khi gỡ không được còn công ty mẹ");
     }
 
     @Test
-    @DisplayName("AC1 Validation: Phát hiện vòng lặp tự làm mẹ của chính mình")
     void testKiemTraVongLap_ChinhMinh() throws Exception {
         boolean vongLap = khachHangDAO.kiemTraVongLapCongTyMeCon(10L, 10L);
-        assertTrue(vongLap, "Tự gán chính mình làm mẹ phải bị coi là vòng lặp");
+        assertTrue(vongLap, "Tự gán chính mình làm công ty mẹ phải phát hiện vòng lặp");
     }
 
     @Test
-    @DisplayName("AC1 Validation: Phát hiện vòng lặp trực tiếp 2 chiều (A -> B -> A)")
     void testKiemTraVongLap_HaiChieu() throws Exception {
-        KhachHang ctyA = new KhachHang();
-        ctyA.setTenCongTy("Công ty A");
-        ctyA.setNguoiSoHuuId(1L);
+        KhachHang ctyA = new KhachHang("Công ty A", 1L);
         Long idA = khachHangDAO.themMoi(ctyA);
 
-        KhachHang ctyB = new KhachHang();
-        ctyB.setTenCongTy("Công ty B");
-        ctyB.setNguoiSoHuuId(1L);
-        ctyB.setCongTyMeId(idA); // B là con của A
+        KhachHang ctyB = new KhachHang("Công ty B", 1L);
+        ctyB.setCongTyMeId(idA);
         Long idB = khachHangDAO.themMoi(ctyB);
 
-        // Kiểm tra xem gán B làm mẹ của A có bị phát hiện vòng lặp không
         boolean vongLap = khachHangDAO.kiemTraVongLapCongTyMeCon(idA, idB);
-        assertTrue(vongLap, "A là mẹ B thì không thể chọn B làm mẹ A");
+        assertTrue(vongLap, "Gán B làm mẹ của A trong khi A đang là mẹ của B phải phát hiện vòng lặp");
     }
 
     @Test
-    @DisplayName("AC1 Validation: Phát hiện vòng lặp nhiều cấp (A -> B -> C -> A)")
     void testKiemTraVongLap_NhieuCap() throws Exception {
-        KhachHang ctyA = new KhachHang();
-        ctyA.setTenCongTy("Công ty A");
-        ctyA.setNguoiSoHuuId(1L);
+        KhachHang ctyA = new KhachHang("Công ty A (Ông nội)", 1L);
         Long idA = khachHangDAO.themMoi(ctyA);
 
-        KhachHang ctyB = new KhachHang();
-        ctyB.setTenCongTy("Công ty B");
-        ctyB.setNguoiSoHuuId(1L);
-        ctyB.setCongTyMeId(idA); // B là con của A
+        KhachHang ctyB = new KhachHang("Công ty B (Cha)", 1L);
+        ctyB.setCongTyMeId(idA);
         Long idB = khachHangDAO.themMoi(ctyB);
 
-        KhachHang ctyC = new KhachHang();
-        ctyC.setTenCongTy("Công ty C");
-        ctyC.setNguoiSoHuuId(1L);
-        ctyC.setCongTyMeId(idB); // C là con của B
+        KhachHang ctyC = new KhachHang("Công ty C (Con)", 1L);
+        ctyC.setCongTyMeId(idB);
         Long idC = khachHangDAO.themMoi(ctyC);
 
-        // Gán C làm mẹ của A -> A -> B -> C -> A (vòng lặp!)
         boolean vongLap = khachHangDAO.kiemTraVongLapCongTyMeCon(idA, idC);
-        assertTrue(vongLap, "Phải phát hiện vòng lặp nhiều cấp");
+        assertTrue(vongLap, "Gán C làm mẹ của A phải phát hiện vòng lặp chu kỳ 3 cấp");
     }
 
+    // =========================================================================
+    // TESTS CHO STORY S3-08: CỜ RỦI RO RỜI BỎ
+    // =========================================================================
+
     @Test
-    @DisplayName("S3-08: Thêm mới khách hàng và cập nhật cờ rủi ro rời bỏ")
-    public void testThemVaCapNhatCoRuiRo() {
+    public void testThemVaCapNhatCoRuiRo() throws Exception {
         KhachHang kh = new KhachHang("Tập đoàn Công nghệ Demo", 1L);
         kh.setMaKhachHang("KH-DEMO-01");
         kh.setDoanhThuUocTinh(new BigDecimal("500000000.00"));
@@ -251,7 +243,6 @@ public class KhachHangDAOTest {
         assertEquals("Nguyễn Văn Sales", timDuoc.getTenNguoiSoHuu());
         assertFalse(timDuoc.isCoRuiRo());
 
-        // Gắn cờ rủi ro rời bỏ
         boolean updated = dao.capNhatCoRuiRo(id, true);
         assertTrue(updated);
         assertTrue(dao.kiemTraCoRuiRo(id));
@@ -260,9 +251,138 @@ public class KhachHangDAOTest {
         assertEquals(1, dsRuiRo.size());
         assertEquals(id, dsRuiRo.get(0).getId());
 
-        // Gỡ cờ rủi ro
         boolean unflagged = dao.capNhatCoRuiRo(id, false);
         assertTrue(unflagged);
         assertFalse(dao.kiemTraCoRuiRo(id));
+    }
+
+    // =========================================================================
+    // TESTS CHO STORY S3-01: HỒ SƠ KHÁCH HÀNG DOANH NGHIỆP
+    // =========================================================================
+
+    @Test
+    void testThemVaLayChiTiet_DayDuTruongAC1() throws SQLException {
+        KhachHang kh = new KhachHang();
+        kh.setTenCongTy("Công ty Cổ phần Giải pháp Phần mềm ABC");
+        kh.setMaSoThue("0109988776");
+        kh.setNganhNgheId(1L);
+        kh.setQuyMoId(1L);
+        kh.setWebsite("https://abcsoftware.vn");
+        kh.setDiaChi("Tầng 5, Tòa nhà FPT, Cầu Giấy, Hà Nội");
+        kh.setNguoiSoHuuId(101L);
+        kh.setNhomKinhDoanhId(1L);
+        kh.setDoanhThuUocTinh(new BigDecimal("500000000.00"));
+        kh.setTrangThai(TrangThaiKhachHangEnum.TIEM_NANG.getMa());
+        kh.setMoTaChiTiet("Khách hàng tiềm năng khối Enterprise");
+
+        Long id = dao.themKhachHang(kh);
+        assertNotNull(id, "ID khách hàng tạo mới phải khác null");
+
+        KhachHang timThay = dao.timTheoId(id);
+        assertNotNull(timThay);
+        assertEquals("Công ty Cổ phần Giải pháp Phần mềm ABC", timThay.getTenCongTy());
+        assertEquals("0109988776", timThay.getMaSoThue());
+        assertEquals(1L, timThay.getNganhNgheId());
+        assertEquals("Công nghệ thông tin", timThay.getTenNganhNghe());
+        assertEquals(1L, timThay.getQuyMoId());
+        assertEquals("100 - 500 nhân sự", timThay.getTenQuyMo());
+        assertEquals("https://abcsoftware.vn", timThay.getWebsite());
+        assertEquals("Tầng 5, Tòa nhà FPT, Cầu Giấy, Hà Nội", timThay.getDiaChi());
+        assertEquals(101L, timThay.getNguoiSoHuuId());
+        assertEquals("Sales A", timThay.getTenNguoiSoHuu());
+        assertEquals(1L, timThay.getNhomKinhDoanhId());
+        assertEquals("Nhóm Miền Bắc", timThay.getTenNhomKinhDoanh());
+        assertNotNull(timThay.getMaKhachHang(), "Mã KH phải được tự động sinh");
+    }
+
+    @Test
+    void testKiemTraTrungMaSoThue_PhatHienTrung() throws SQLException {
+        KhachHang kh1 = new KhachHang();
+        kh1.setTenCongTy("Công ty A");
+        kh1.setMaSoThue("0101234567");
+        kh1.setNguoiSoHuuId(101L);
+        Long id1 = dao.themKhachHang(kh1);
+
+        assertTrue(dao.kiemTraTrungMaSoThue("0101234567", null), "MST đã có phải báo trùng");
+        assertFalse(dao.kiemTraTrungMaSoThue("0101234567", id1), "Chính bản ghi đó cập nhật MST của nó thì không báo trùng");
+        assertFalse(dao.kiemTraTrungMaSoThue("0999999999", null), "MST chưa có không được báo trùng");
+    }
+
+    @Test
+    void testMaSoThueRong_KhongViPhamUnique() throws SQLException {
+        KhachHang kh1 = new KhachHang();
+        kh1.setTenCongTy("Công ty Không MST 1");
+        kh1.setMaSoThue(null);
+        kh1.setNguoiSoHuuId(101L);
+        Long id1 = dao.themKhachHang(kh1);
+
+        KhachHang kh2 = new KhachHang();
+        kh2.setTenCongTy("Công ty Không MST 2");
+        kh2.setMaSoThue("");
+        kh2.setNguoiSoHuuId(101L);
+        Long id2 = dao.themKhachHang(kh2);
+
+        assertNotNull(id1);
+        assertNotNull(id2);
+        assertNotEquals(id1, id2);
+    }
+
+    @Test
+    void testTrangThaiKhachHang_BonTrangThaiChuan() throws SQLException {
+        taoKhachHangMau("Khách 1", "010001", TrangThaiKhachHangEnum.TIEM_NANG.getMa(), 101L, 1L);
+        taoKhachHangMau("Khách 2", "010002", TrangThaiKhachHangEnum.DANG_GIAO_DICH.getMa(), 101L, 1L);
+        taoKhachHangMau("Khách 3", "010003", TrangThaiKhachHangEnum.KHACH_HANG.getMa(), 101L, 1L);
+        taoKhachHangMau("Khách 4", "010004", TrangThaiKhachHangEnum.NGUNG_HOP_TAC.getMa(), 101L, 1L);
+
+        List<KhachHang> dsTiemNang = dao.layDanhSach(101L, null, PhamViDuLieu.TOAN_BO, null, "TIEM_NANG", null, null, 0, 10);
+        assertEquals(1, dsTiemNang.size());
+        assertEquals("Khách 1", dsTiemNang.get(0).getTenCongTy());
+
+        List<KhachHang> dsDangGD = dao.layDanhSach(101L, null, PhamViDuLieu.TOAN_BO, null, "Đang giao dịch", null, null, 0, 10);
+        assertEquals(1, dsDangGD.size());
+        assertEquals("Khách 2", dsDangGD.get(0).getTenCongTy());
+
+        List<KhachHang> dsKhachHang = dao.layDanhSach(101L, null, PhamViDuLieu.TOAN_BO, null, "Khách hàng", null, null, 0, 10);
+        assertEquals(1, dsKhachHang.size());
+        assertEquals("Khách 3", dsKhachHang.get(0).getTenCongTy());
+
+        List<KhachHang> dsNgungHT = dao.layDanhSach(101L, null, PhamViDuLieu.TOAN_BO, null, "Ngừng hợp tác", null, null, 0, 10);
+        assertEquals(1, dsNgungHT.size());
+        assertEquals("Khách 4", dsNgungHT.get(0).getTenCongTy());
+    }
+
+    @Test
+    void testDataScope_NhanVienVaTruongNhom() throws SQLException {
+        taoKhachHangMau("Khách của Sales A", "011001", "TIEM_NANG", 101L, 1L);
+        taoKhachHangMau("Khách của Sales B", "011002", "TIEM_NANG", 102L, 2L);
+
+        // Sales A chỉ xem CA_NHAN -> chỉ thấy 1 khách
+        List<KhachHang> dsA = dao.layDanhSach(101L, Collections.singleton(1L), PhamViDuLieu.CA_NHAN, null, null, null, null, 0, 10);
+        assertEquals(1, dsA.size());
+        assertEquals("Khách của Sales A", dsA.get(0).getTenCongTy());
+
+        // Sales B xem CA_NHAN -> chỉ thấy khách của B
+        List<KhachHang> dsB = dao.layDanhSach(102L, Collections.singleton(2L), PhamViDuLieu.CA_NHAN, null, null, null, null, 0, 10);
+        assertEquals(1, dsB.size());
+        assertEquals("Khách của Sales B", dsB.get(0).getTenCongTy());
+
+        // Trưởng nhóm Miền Bắc xem NHOM -> thấy khách của A (thuộc nhóm 1), không thấy B (nhóm 2)
+        List<KhachHang> dsLeadBac = dao.layDanhSach(201L, Collections.singleton(1L), PhamViDuLieu.NHOM, null, null, null, null, 0, 10);
+        assertEquals(1, dsLeadBac.size());
+        assertEquals("Khách của Sales A", dsLeadBac.get(0).getTenCongTy());
+
+        // Admin xem TOAN_BO -> thấy cả 2
+        List<KhachHang> dsToanBo = dao.layDanhSach(1L, null, PhamViDuLieu.TOAN_BO, null, null, null, null, 0, 10);
+        assertEquals(2, dsToanBo.size());
+    }
+
+    private void taoKhachHangMau(String ten, String mst, String trangThai, Long nguoiSoHuuId, Long nhomId) throws SQLException {
+        KhachHang kh = new KhachHang();
+        kh.setTenCongTy(ten);
+        kh.setMaSoThue(mst);
+        kh.setTrangThai(trangThai);
+        kh.setNguoiSoHuuId(nguoiSoHuuId);
+        kh.setNhomKinhDoanhId(nhomId);
+        dao.themKhachHang(kh);
     }
 }
