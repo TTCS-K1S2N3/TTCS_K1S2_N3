@@ -859,7 +859,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (suaKhachHangId) suaKhachHangId.value = dataset.id || '';
         if (suaTenCongTy) suaTenCongTy.value = dataset.ten || '';
-        if (suaMaKhachHang) suaMaKhachHang.value = dataset.makh || '';
+        if (suaMaKhachHang) suaMaKhachHang.value = dataset.makh || dataset.ma || '';
         if (suaMaSoThue) suaMaSoThue.value = dataset.mst || '';
         if (suaNganhNgheId) suaNganhNgheId.value = dataset.nganh || '';
         if (suaQuyMoId) suaQuyMoId.value = dataset.quymo || '';
@@ -870,15 +870,16 @@ document.addEventListener('DOMContentLoaded', function () {
             var tt = dataset.trangthai || '';
             // Chuẩn hóa trạng thái nếu là mã enum sang tên tiếng Việt
             if (tt === 'TIEM_NANG') tt = 'Tiềm năng';
-            else if (tt === 'DANG_GIAO_DICH') tt = 'Đang giao dịch';
+            else if (tt === 'DANG_GIAO_DICH' || tt === 'DANG_TIEP_CAN') tt = 'Đang giao dịch';
             else if (tt === 'KHACH_HANG') tt = 'Khách hàng';
             else if (tt === 'NGUNG_HOP_TAC') tt = 'Ngừng hợp tác';
             suaTrangThai.value = tt;
         }
 
-        if (suaDoanhThuUocTinh) suaDoanhThuUocTinh.value = dataset.gia || '';
-        if (suaNguoiSoHuuId && dataset.nguoisohuu) {
-            suaNguoiSoHuuId.value = dataset.nguoisohuu;
+        if (suaDoanhThuUocTinh) suaDoanhThuUocTinh.value = dataset.doanhthu || dataset.gia || '';
+        var ownerId = dataset.nguoisohuu || dataset.sohuu;
+        if (suaNguoiSoHuuId && ownerId) {
+            suaNguoiSoHuuId.value = ownerId;
         }
         if (suaMoTaChiTiet) suaMoTaChiTiet.value = dataset.mota || '';
 
@@ -887,7 +888,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Gắn sự kiện cho các nút Sửa trong bảng và trong Thẻ chi tiết
     document.addEventListener('click', function (e) {
-        var btnSua = e.target.closest('.btn-sua-khach-hang');
+        var btnSua = e.target.closest('.btn-sua-khach-hang, .btn-edit-customer, .btnSuaKhachHang');
         if (btnSua) {
             e.preventDefault();
             moModalSua(btnSua.dataset);
@@ -979,10 +980,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (btnExportExcel) {
         btnExportExcel.addEventListener('click', function (e) {
             e.preventDefault();
-            var contextPath = window.CONTEXT_PATH || '';
-            var urlParams = new URLSearchParams(window.location.search);
-            urlParams.set('xuatExcel', 'true');
-            window.location.href = contextPath + '/khach-hang?' + urlParams.toString();
+            const url = new URL(window.location.href);
+            url.searchParams.set('xuatExcel', 'true');
+            window.location.href = url.toString();
         });
     }
 
@@ -1764,7 +1764,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnClearTuKhoa = document.getElementById('btnClearTuKhoa');
     const btnXoaBoLocHienTai = document.getElementById('btnXoaBoLocHienTai');
     const btnDatMacDinhHienTai = document.getElementById('btnDatMacDinhHienTai');
-    const btnExportExcel = document.getElementById('btnExportExcel');
 
     function moModalLuuBoLoc() {
         if (!modalLuuBoLoc) return;
@@ -1835,13 +1834,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }).join('');
             }
         }
-    }
-
-    function escapeHtml(text) {
-        if (!text) return '';
-        var div = document.createElement('div');
-        div.innerText = text;
-        return div.innerHTML;
     }
 
     if (btnMoModalLuuBoLoc) {
@@ -1999,16 +1991,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         }
-    }
-
-    // Nút xuất Excel kết hợp bộ lọc hiện tại
-    if (btnExportExcel) {
-        btnExportExcel.addEventListener('click', function (e) {
-            e.preventDefault();
-            const url = new URL(window.location.href);
-            url.searchParams.set('xuatExcel', 'true');
-            window.location.href = url.toString();
-        });
     }
 
 });

@@ -680,20 +680,23 @@
                                                     <a href="${pageContext.request.contextPath}/khach-hang/360?id=${kh.id}" class="crm-btn-action" title="Hồ sơ 360° khách hàng (S3-03)" aria-label="Xem chi tiết hồ sơ 360 khách hàng ${kh.tenCongTy}">
                                                         <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
                                                     </a>
-                                                    <button type="button" class="crm-btn-action btn-edit-customer btnSuaKhachHang" title="Chỉnh sửa thông tin khách hàng"
+                                                    <button type="button" class="crm-btn-action btn-edit-customer btnSuaKhachHang btn-sua-khach-hang" title="Chỉnh sửa thông tin khách hàng"
                                                             data-id="${kh.id}"
                                                             data-ma="${kh.maKhachHang}"
-                                                            data-ten="${kh.tenCongTy}"
-                                                            data-mst="${kh.maSoThue}"
+                                                            data-makh="${kh.maKhachHang}"
+                                                            data-ten="<c:out value="${kh.tenCongTy}" />"
+                                                            data-mst="<c:out value="${kh.maSoThue}" />"
                                                             data-nganh="${kh.nganhNgheId}"
                                                             data-quymo="${kh.quyMoId}"
                                                             data-khuvuc="${kh.khuVucId}"
-                                                            data-website="${kh.website}"
-                                                            data-diachi="${kh.diaChi}"
+                                                            data-website="<c:out value="${kh.website}" />"
+                                                            data-diachi="<c:out value="${kh.diaChi}" />"
                                                             data-sohuu="${kh.nguoiSoHuuId}"
+                                                            data-nguoisohuu="${kh.nguoiSoHuuId}"
                                                             data-trangthai="${kh.trangThai}"
                                                             data-doanhthu="${kh.doanhThuUocTinh}"
-                                                            data-mota="${kh.moTaChiTiet}">
+                                                            data-gia="${kh.doanhThuUocTinh}"
+                                                            data-mota="<c:out value="${kh.moTaChiTiet}" />">
                                                         <span class="material-symbols-outlined" aria-hidden="true">edit</span>
                                                     </button>
                                                 </div>
