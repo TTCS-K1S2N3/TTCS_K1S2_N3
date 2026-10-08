@@ -596,4 +596,70 @@ class KhachHangServletTest {
 
         verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
     }
+
+    // =========================================================================
+    // Story S3-04: Cảnh báo và gộp khách hàng trùng lặp (AC3, AC4)
+    // =========================================================================
+
+    @Test
+    @DisplayName("S3-04 AC4: Chỉ Trưởng nhóm trở lên được thực hiện gộp - Trưởng nhóm Bắc gộp thành công")
+    void testGopKhachHang_TruongNhomBac_ThanhCong() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userLeadBac);
+        when(request.getParameter("action")).thenReturn("gop");
+        when(request.getParameter("khachHangDichId")).thenReturn("1"); // FPT của A
+        when(request.getParameter("khachHangNguonId")).thenReturn("5"); // Viettel của B
+        when(request.getParameter("lyDoGop")).thenReturn("Hai nhân viên cùng chào công ty, gộp về hồ sơ chính");
+
+        servlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_OK);
+        verify(request).setAttribute(eq("thongBaoThanhCong"), contains("Đã thực hiện gộp khách hàng"));
+        verify(request).setAttribute(eq("tabHienTai"), eq("trung"));
+        verify(request).getRequestDispatcher("/WEB-INF/views/khach-hang/danh-sach.jsp");
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("S3-04 AC4: Nhân viên Sales Rep không có quyền gộp bị chặn với HTTP 403 Forbidden")
+    void testGopKhachHang_SalesRepA_KhongCoQuyen_TraVe403() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userA);
+        when(request.getParameter("action")).thenReturn("gop");
+        when(request.getParameter("khachHangDichId")).thenReturn("1");
+        when(request.getParameter("khachHangNguonId")).thenReturn("5");
+        when(request.getParameter("lyDoGop")).thenReturn("Tự ý gộp trộm");
+
+        servlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+        verify(request).setAttribute(eq("thongBaoLoi"), contains("Chỉ Trưởng nhóm kinh doanh trở lên"));
+    }
+
+    @Test
+    @DisplayName("S3-04 Validation: Gộp một khách hàng vào chính nó bị từ chối với HTTP 400 Bad Request")
+    void testGopKhachHang_TrungId_TraVe400() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userLeadBac);
+        when(request.getParameter("action")).thenReturn("gop");
+        when(request.getParameter("khachHangDichId")).thenReturn("1");
+        when(request.getParameter("khachHangNguonId")).thenReturn("1"); // Trùng nhau
+        when(request.getParameter("lyDoGop")).thenReturn("Lý do");
+
+        servlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        verify(request).setAttribute(eq("thongBaoLoi"), contains("Không thể gộp một khách hàng vào chính nó"));
+    }
+
+    @Test
+    @DisplayName("S3-04 Validation: Thiếu ID khách hàng nguồn hoặc đích bị từ chối với HTTP 400 Bad Request")
+    void testGopKhachHang_ThieuThamSo_TraVe400() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userLeadBac);
+        when(request.getParameter("action")).thenReturn("gop");
+        when(request.getParameter("khachHangDichId")).thenReturn("1");
+        when(request.getParameter("khachHangNguonId")).thenReturn(null); // Thiếu nguồn
+
+        servlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        verify(request).setAttribute(eq("thongBaoLoi"), contains("Vui lòng chọn đầy đủ"));
+    }
 }

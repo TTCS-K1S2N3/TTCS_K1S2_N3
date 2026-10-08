@@ -40,6 +40,10 @@
                 <p class="page-subtitle">Quản lý danh mục khách hàng và theo dõi chăm sóc định kỳ cho khách đã ký hợp đồng</p>
             </div>
             <div class="page-actions">
+                <button type="button" class="btn btn-outline" id="btnChuyenTabTrung" title="Xem cảnh báo và gộp khách hàng trùng lặp (Story S3-04)">
+                    <span class="material-symbols-outlined" aria-hidden="true">call_merge</span>
+                    <span>Kiểm Tra Trùng & Gộp</span>
+                </button>
                 <a href="${pageContext.request.contextPath}/khach-hang/import-excel" class="btn btn-outline" id="btnImportExcel" title="Nhập danh sách khách hàng từ file Excel (.xlsx, .xls)">
                     <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
                     <span>Nhập Excel</span>
@@ -219,7 +223,7 @@
 
 
         <div class="crm-tabs-nav" role="tablist" aria-label="Phân hệ khách hàng">
-            <button type="button" class="crm-tab-btn ${tabHienTai ne 'cham-soc' ? 'active' : ''}" id="tabBtnDanhSach" role="tab" aria-selected="${tabHienTai ne 'cham-soc' ? 'true' : 'false'}" aria-controls="paneDanhSach" data-tab="tat-ca">
+            <button type="button" class="crm-tab-btn ${tabHienTai ne 'cham-soc' and tabHienTai ne 'trung' ? 'active' : ''}" id="tabBtnDanhSach" role="tab" aria-selected="${tabHienTai ne 'cham-soc' and tabHienTai ne 'trung' ? 'true' : 'false'}" aria-controls="paneDanhSach" data-tab="tat-ca">
                 <span class="material-symbols-outlined" aria-hidden="true">group</span>
                 <span>Tất cả khách hàng</span>
                 <span class="crm-tab-badge"><c:out value="${not empty tongSoKhachHang ? tongSoKhachHang : 0}" /></span>
@@ -229,12 +233,31 @@
                 <span>Chăm sóc định kỳ</span>
                 <span class="crm-tab-badge badge-amber" id="badgeSoKhachCanChamSoc">S3-09</span>
             </button>
+            <button type="button" class="crm-tab-btn ${tabHienTai eq 'trung' ? 'active' : ''}" id="tabBtnTrungLap" role="tab" aria-selected="${tabHienTai eq 'trung' ? 'true' : 'false'}" aria-controls="paneTrungLap" data-tab="trung">
+                <span class="material-symbols-outlined" aria-hidden="true">call_merge</span>
+                <span>Cảnh báo trùng lặp & Gộp</span>
+                <span class="crm-tab-badge badge-warning" id="tabBadgeSoCapTrung"><c:out value="${not empty soCapTrung ? soCapTrung : 0}" /></span>
+            </button>
         </div>
 
         <!-- ===================================================================
              TAB 1: TẤT CẢ KHÁCH HÀNG (Bao gồm S1-02 và S1-05)
              =================================================================== -->
-        <div class="crm-tab-pane ${tabHienTai ne 'cham-soc' ? 'active' : ''}" id="paneDanhSach" role="tabpanel" aria-labelledby="tabBtnDanhSach">
+        <div class="crm-tab-pane ${tabHienTai ne 'cham-soc' and tabHienTai ne 'trung' ? 'active' : ''}" id="paneDanhSach" role="tabpanel" aria-labelledby="tabBtnDanhSach">
+            <!-- Banner cảnh báo phát hiện trùng lặp trong danh mục (Story S3-04) -->
+            <div class="dup-banner" id="bannerCanhBaoTrung" style="display: none;">
+                <div class="dup-banner-left">
+                    <span class="material-symbols-outlined dup-banner-icon" aria-hidden="true">warning</span>
+                    <div>
+                        <strong>Phát hiện khách hàng nghi trùng lặp:</strong>
+                        <span id="bannerCanhBaoText">Hệ thống phát hiện có cặp khách hàng trùng thông tin (MST, Tên hoặc Website) giữa các nhân viên.</span>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline" id="btnXemCapTrungTuBanner" style="font-size: 13px; padding: 6px 14px;">
+                    <span class="material-symbols-outlined" aria-hidden="true">call_merge</span>
+                    <span>Xem & Gộp Trùng Ngay</span>
+                </button>
+            </div>
             <!-- Story S1-02: Khu vực soạn thảo ghi chú cuộc gặp (Duy trì phiên & Tự động lưu) -->
             <div class="card" style="margin-bottom: 24px;">
                 <div class="card-title">
@@ -371,7 +394,7 @@
 
             <!-- Bảng danh sách khách hàng doanh nghiệp & Phân trang (Story S3-01 & S3-08) -->
             <div class="table-container" style="margin-top: 20px;">
-            <table class="data-table">
+            <table class="data-table" id="tableKhachHang">
                 <thead>
                     <tr>
                         <th style="width: 100px;">Mã KH</th>
@@ -388,10 +411,21 @@
                     <c:choose>
                         <c:when test="${not empty danhSachKhachHangModel}">
                             <c:forEach var="kh" items="${danhSachKhachHangModel}">
-                                <tr>
+                                <tr data-id="${kh.id}"
+                                    data-ma="${kh.maKhachHang}"
+                                    data-ten="${kh.tenCongTy}"
+                                    data-mst="${not empty kh.maSoThue ? kh.maSoThue : ''}"
+                                    data-web="${not empty kh.website ? kh.website : ''}"
+                                    data-owner-id="${kh.nguoiSoHuuId}"
+                                    data-owner-name="${kh.tenNguoiSoHuu}"
+                                    data-team-name="${kh.tenNhom}"
+                                    data-gia-tri="${kh.doanhThuUocTinh}"
+                                    data-trang-thai="${kh.trangThai}"
+                                    data-ngay-tao="${kh.ngayTao}"
+                                    data-mo-ta="${kh.moTaChiTiet}">
                                     <td class="font-mono"><c:out value="${kh.maKhachHang}" /></td>
                                     <td>
-                                        <div class="customer-name" style="font-weight: 600; color: var(--slate-900);"><c:out value="${kh.tenCongTy}" /></div>
+                                        <div class="customer-name" style="font-weight: 600; color: var(--slate-900); display: flex; align-items: center; flex-wrap: wrap; gap: 4px;"><c:out value="${kh.tenCongTy}" /><span class="badge badge-warning dup-badge-inline" style="display: none; font-size: 11px;">Trùng</span></div>
                                         <c:if test="${not empty kh.moTaChiTiet}">
                                             <div class="customer-sub" style="font-size: 12px; color: var(--slate-500);"><c:out value="${kh.moTaChiTiet}" /></div>
                                         </c:if>
@@ -479,6 +513,12 @@
                                                 data-mota="<c:out value="${kh.moTaChiTiet}" />">
                                                 <span class="material-symbols-outlined" aria-hidden="true">edit</span>
                                             </button>
+                                            <button type="button" class="btn-action btn-action-warning btn-row-compare-trigger btn-check-dup-row" data-id="${kh.id}" style="display: none;"
+                                                data-kh-id="${kh.id}"
+                                                title="Kiểm tra khách hàng này có bị trùng với ai không"
+                                                aria-label="Kiểm tra trùng lặp">
+                                                <span class="material-symbols-outlined" aria-hidden="true">call_merge</span>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -486,7 +526,18 @@
                         </c:when>
                         <c:when test="${not empty danhSachKhachHang}">
                             <c:forEach var="kh" items="${danhSachKhachHang}">
-                                <tr>
+                                <tr data-id="${kh.id}"
+                                    data-ma="${kh.maBanGhi}"
+                                    data-ten="${kh.tieuDe}"
+                                    data-mst="${not empty kh.maSoThue ? kh.maSoThue : ''}"
+                                    data-web="${not empty kh.website ? kh.website : ''}"
+                                    data-owner-id="${kh.nguoiPhuTrachId}"
+                                    data-owner-name="${kh.tenNguoiPhuTrach}"
+                                    data-team-name="${kh.tenNhom}"
+                                    data-gia-tri="${kh.giaTri}"
+                                    data-trang-thai="${kh.trangThai}"
+                                    data-ngay-tao="${kh.ngayTao}"
+                                    data-mo-ta="${kh.moTaChiTiet}">
                                     <td class="font-mono"><c:out value="${kh.maBanGhi}" /></td>
                                     <td>
                                         <div class="customer-name" style="font-weight: 600;"><c:out value="${kh.tieuDe}" /></div>
@@ -541,6 +592,12 @@
                                                 data-nguoisohuu="${kh.nguoiPhuTrachId}"
                                                 data-mota="<c:out value="${kh.moTaChiTiet}" />">
                                                 <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                                            </button>
+                                            <button type="button" class="btn-action btn-action-warning btn-row-compare-trigger btn-check-dup-row" data-id="${kh.id}" style="display: none;"
+                                                data-kh-id="${kh.id}"
+                                                title="Kiểm tra khách hàng này có bị trùng với ai không"
+                                                aria-label="Kiểm tra trùng lặp">
+                                                <span class="material-symbols-outlined" aria-hidden="true">call_merge</span>
                                             </button>
                                         </div>
                                     </td>
@@ -921,6 +978,297 @@
         </div>
 
 
+        <!-- TAB 2: Trung Tâm Cảnh Báo Trùng Lặp & Gộp Khách Hàng (Story S3-04) -->
+        <div class="crm-tab-pane tab-pane ${tabHienTai eq 'trung' ? 'active' : ''}" id="paneTrungLap" role="tabpanel" aria-labelledby="tabBtnTrungLap" style="${tabHienTai eq 'trung' ? 'display: block;' : 'display: none;'}">
+            <!-- Thẻ giới thiệu quy trình phát hiện và gộp -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                            <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary); font-size: 24px;">call_merge</span>
+                            <h2 style="font-size: 17px; font-weight: 800; color: var(--slate-900);">Trung Tâm Cảnh Báo Trùng Lặp & Gộp Khách Hàng</h2>
+                        </div>
+                        <p style="color: var(--slate-600); font-size: 13.5px; line-height: 1.5; max-width: 860px;">
+                            Hệ thống tự động phát hiện trùng theo <strong>Mã số thuế</strong>, <strong>Tên công ty gần giống</strong> và <strong>Website</strong>.
+                            Trưởng nhóm kinh doanh kiểm tra so sánh cạnh nhau và thực hiện gộp để hai nhân viên không cùng chào một công ty mà không biết nhau.
+                        </p>
+                    </div>
+                    <div>
+                        <c:choose>
+                            <c:when test="${laTruongNhomTroLen}">
+                                <span class="badge badge-success" style="padding: 6px 12px; font-size: 12.5px;">
+                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">verified_user</span>
+                                    Quyền: Trưởng nhóm trở lên (Được phép gộp)
+                                </span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="badge badge-warning" style="padding: 6px 12px; font-size: 12.5px;" title="Chỉ Trưởng nhóm kinh doanh trở lên có quyền thực hiện gộp khách hàng">
+                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">lock</span>
+                                    Chế độ xem (Chỉ Trưởng nhóm được gộp)
+                                </span>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thanh điều khiển lọc và tìm kiếm cặp trùng -->
+            <div class="dup-controls-bar">
+                <div class="dup-filter-chips" role="group" aria-label="Lọc theo tiêu chí phát hiện">
+                    <span style="font-size: 13px; font-weight: 600; color: var(--slate-600); margin-right: 4px;">Tiêu chí:</span>
+                    <button type="button" class="dup-chip active" data-filter="all">Tất cả tiêu chí</button>
+                    <button type="button" class="dup-chip" data-filter="mst">Trùng Mã số thuế</button>
+                    <button type="button" class="dup-chip" data-filter="name">Tên gần giống</button>
+                    <button type="button" class="dup-chip" data-filter="web">Trùng Website</button>
+                </div>
+                <div class="dup-search-box">
+                    <span class="material-symbols-outlined dup-search-icon" aria-hidden="true">search</span>
+                    <input type="text" id="inputTimKiemTrung" class="dup-search-input" placeholder="Tìm theo tên công ty, MST..." aria-label="Tìm kiếm cặp khách hàng trùng">
+                </div>
+            </div>
+
+            <!-- Danh sách các thẻ cặp khách hàng trùng lặp -->
+            <div class="dup-cards-list" id="containerDanhSachTrung">
+                <!-- JS sẽ render các thẻ cặp khách hàng trùng lặp tại đây -->
+            </div>
+
+            <!-- Trạng thái không có bản ghi trùng lặp -->
+            <div class="card" id="emptyStateTrung" style="display: none; text-align: center; padding: 48px 24px; color: var(--slate-500);">
+                <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 48px; color: #16a34a; margin-bottom: 12px;">check_circle</span>
+                <h3 style="font-size: 16px; font-weight: 700; color: var(--slate-800); margin-bottom: 6px;">Không Phát Hiện Khách Hàng Trùng Lặp</h3>
+                <p style="font-size: 13.5px; max-width: 500px; margin: 0 auto;">
+                    Dữ liệu khách hàng trong phạm vi của bạn hiện tại không có xung đột về Mã số thuế, Tên công ty hay Website.
+                </p>
+            </div>
+        </div>
+
+        <!-- ==========================================================================
+             MODAL SO SÁNH CẠNH NHAU TRƯỚC KHI GỘP (Story S3-04 - AC2, AC3, AC4)
+             ========================================================================== -->
+        <div class="modal-backdrop" id="modalSoSanhGop" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalSoSanhGopTieuDe">
+            <div class="modal-compare-card">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="modal-title" id="modalSoSanhGopTieuDe" style="display: flex; align-items: center; gap: 8px;">
+                            <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary);">compare_arrows</span>
+                            So Sánh Khách Hàng Trùng Lặp Cạnh Nhau
+                        </h2>
+                        <p class="modal-subtitle">Kiểm tra thông tin trước khi gộp. Toàn bộ người liên hệ, cơ hội và hoạt động sẽ được giữ lại (AC3).</p>
+                    </div>
+                    <button type="button" class="modal-close-btn" id="btnDongModalSoSanh" aria-label="Đóng cửa sổ" title="Đóng">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
+                </div>
+
+                <form id="formXacNhanGop" method="POST" action="${pageContext.request.contextPath}/khach-hang" style="display: flex; flex-direction: column; overflow: hidden; height: 100%;">
+                    <input type="hidden" name="action" value="gop">
+                    <input type="hidden" name="khachHangDichId" id="compareKhachHangDichId">
+                    <input type="hidden" name="khachHangNguonId" id="compareKhachHangNguonId">
+
+                    <div class="modal-compare-body">
+                        <!-- Toolbar điều khiển Nguồn/Đích -->
+                        <div class="compare-toolbar">
+                            <div style="font-size: 13px; color: var(--slate-600);">
+                                <span class="material-symbols-outlined icon-xs" aria-hidden="true" style="vertical-align: text-bottom; color: var(--primary);">info</span>
+                                <strong>Bản ghi đích (Cột trái):</strong> Giữ lại làm hồ sơ chính &bull; <strong>Bản ghi nguồn (Cột phải):</strong> Gộp vào và lưu lịch sử.
+                            </div>
+                            <button type="button" class="btn btn-outline" id="btnHoanDoiViTri" style="font-size: 13px; padding: 6px 14px;">
+                                <span class="material-symbols-outlined" aria-hidden="true">swap_horiz</span>
+                                <span>Đổi Vị Trí Đích / Nguồn</span>
+                            </button>
+                        </div>
+
+                        <!-- Cảnh báo xung đột 2 nhân viên (nếu có) -->
+                        <div class="dup-conflict-alert" id="compareConflictAlert" style="display: none; border-radius: var(--radius-sm);">
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true" style="color: #dc2626;">warning</span>
+                            <span><strong>Cảnh báo hai nhân viên cùng chào một công ty:</strong> <span id="compareConflictText"></span></span>
+                        </div>
+
+                        <!-- Bảng so sánh 2 cột cạnh nhau (Side-by-Side Table - AC2) -->
+                        <div class="compare-table-wrap">
+                            <table class="compare-table">
+                                <thead>
+                                    <tr>
+                                        <th class="compare-field-name">Trường thông tin</th>
+                                        <th class="col-dest">
+                                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                                <span>BẢN GHI ĐÍCH (GIỮ LẠI CHÍNH)</span>
+                                                <span class="badge badge-success" style="font-size: 11px;">Hồ sơ chính</span>
+                                            </div>
+                                        </th>
+                                        <th class="col-source">
+                                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                                <span>BẢN GHI NGUỒN (GỘP VÀO)</span>
+                                                <span class="badge badge-warning" style="font-size: 11px;">Gộp & Lưu lịch sử</span>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="compare-field-name">Mã khách hàng</td>
+                                        <td class="font-mono" id="cmpDestMa">-</td>
+                                        <td class="font-mono" id="cmpSrcMa">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="compare-field-name">Tên công ty</td>
+                                        <td class="compare-val-cell">
+                                            <label class="compare-val-box">
+                                                <input type="radio" name="chonTenCongTy" value="dest" class="compare-radio" checked>
+                                                <span class="compare-val-text" id="cmpDestTen">-</span>
+                                            </label>
+                                        </td>
+                                        <td class="compare-val-cell">
+                                            <label class="compare-val-box">
+                                                <input type="radio" name="chonTenCongTy" value="source" class="compare-radio">
+                                                <span class="compare-val-text" id="cmpSrcTen">-</span>
+                                            </label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="compare-field-name">Mã số thuế (MST)</td>
+                                        <td class="compare-val-cell">
+                                            <span class="compare-val-text font-mono" id="cmpDestMst">-</span>
+                                        </td>
+                                        <td class="compare-val-cell">
+                                            <span class="compare-val-text font-mono" id="cmpSrcMst">-</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="compare-field-name">Website</td>
+                                        <td class="compare-val-cell">
+                                            <span class="compare-val-text" id="cmpDestWeb">-</span>
+                                        </td>
+                                        <td class="compare-val-cell">
+                                            <span class="compare-val-text" id="cmpSrcWeb">-</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="compare-field-name">Người phụ trách</td>
+                                        <td class="compare-val-cell">
+                                            <label class="compare-val-box">
+                                                <input type="radio" name="chonNguoiPhuTrach" value="dest" class="compare-radio" checked>
+                                                <span class="compare-val-text" id="cmpDestOwner" style="font-weight: 700;">-</span>
+                                            </label>
+                                        </td>
+                                        <td class="compare-val-cell">
+                                            <label class="compare-val-box">
+                                                <input type="radio" name="chonNguoiPhuTrach" value="source" class="compare-radio">
+                                                <span class="compare-val-text" id="cmpSrcOwner" style="font-weight: 700;">-</span>
+                                            </label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="compare-field-name">Nhóm kinh doanh</td>
+                                        <td id="cmpDestTeam">-</td>
+                                        <td id="cmpSrcTeam">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="compare-field-name">Doanh thu ước tính</td>
+                                        <td id="cmpDestGiaTri">-</td>
+                                        <td id="cmpSrcGiaTri">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="compare-field-name">Trạng thái</td>
+                                        <td><span class="badge badge-success" id="cmpDestTrangThai">-</span></td>
+                                        <td><span class="badge badge-neutral" id="cmpSrcTrangThai">-</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="compare-field-name">Ngày tạo</td>
+                                        <td id="cmpDestNgayTao">-</td>
+                                        <td id="cmpSrcNgayTao">-</td>
+                                    </tr>
+                                    <!-- AC3: Bảo toàn số lượng Người liên hệ, Cơ hội và Hoạt động -->
+                                    <tr style="background-color: #f0fdf4;">
+                                        <td class="compare-field-name" style="color: #166534; font-weight: 700;">
+                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true" style="vertical-align: text-bottom;">person_add</span>
+                                            Người liên hệ
+                                        </td>
+                                        <td style="color: #166534; font-weight: 600;" id="cmpDestNlh">1 người liên hệ</td>
+                                        <td style="color: #166534; font-weight: 600;" id="cmpSrcNlh">1 người liên hệ (Được giữ lại 100%)</td>
+                                    </tr>
+                                    <tr style="background-color: #f0fdf4;">
+                                        <td class="compare-field-name" style="color: #166534; font-weight: 700;">
+                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true" style="vertical-align: text-bottom;">briefcase</span>
+                                            Cơ hội bán hàng
+                                        </td>
+                                        <td style="color: #166534; font-weight: 600;" id="cmpDestCoHoi">1 cơ hội</td>
+                                        <td style="color: #166534; font-weight: 600;" id="cmpSrcCoHoi">1 cơ hội (Được giữ lại 100%)</td>
+                                    </tr>
+                                    <tr style="background-color: #f0fdf4;">
+                                        <td class="compare-field-name" style="color: #166534; font-weight: 700;">
+                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true" style="vertical-align: text-bottom;">calendar_month</span>
+                                            Lịch sử hoạt động
+                                        </td>
+                                        <td style="color: #166534; font-weight: 600;" id="cmpDestHoatDong">1 hoạt động</td>
+                                        <td style="color: #166534; font-weight: 600;" id="cmpSrcHoatDong">1 hoạt động (Được giữ lại 100%)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Cam kết bảo toàn dữ liệu khi gộp (AC3) -->
+                        <div class="data-preservation-card">
+                            <div class="preservation-title">
+                                <span class="material-symbols-outlined" aria-hidden="true">security</span>
+                                Cam Kết Bảo Toàn Dữ Liệu Sau Khi Gộp (Acceptance Criteria AC3)
+                            </div>
+                            <ul class="preservation-list">
+                                <li class="preservation-item">
+                                    <span class="material-symbols-outlined icon-check" aria-hidden="true">check_circle</span>
+                                    <span>Toàn bộ <strong>Người liên hệ</strong> của cả hai bản ghi được giữ lại và chuyển về khách hàng chính.</span>
+                                </li>
+                                <li class="preservation-item">
+                                    <span class="material-symbols-outlined icon-check" aria-hidden="true">check_circle</span>
+                                    <span>Toàn bộ <strong>Cơ hội bán hàng</strong> (Pipeline) đang chăm sóc của cả hai bên đều được bảo toàn.</span>
+                                </li>
+                                <li class="preservation-item">
+                                    <span class="material-symbols-outlined icon-check" aria-hidden="true">check_circle</span>
+                                    <span>Toàn bộ <strong>Lịch sử hoạt động</strong> (Cuộc gọi, Họp, Ghi chú) được gom đầy đủ vào dòng thời gian khách hàng chính.</span>
+                                </li>
+                                <li class="preservation-item">
+                                    <span class="material-symbols-outlined icon-check" aria-hidden="true">check_circle</span>
+                                    <span>Lưu vết kiểm toán vào bảng <strong>lich_su_gop_khach_hang</strong> phục vụ tra cứu minh bạch về sau.</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Lý do gộp khách hàng -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="lyDoGop">Lý do thực hiện gộp khách hàng <span class="required">*</span></label>
+                            <textarea id="lyDoGop" name="lyDoGop" class="form-textarea" rows="2" placeholder="Ví dụ: Hai nhân viên A và B cùng chào một công ty, thống nhất gộp lại và phân bổ cho nhân viên chính chăm sóc..." required></textarea>
+                        </div>
+
+                        <!-- Kiểm tra quyền thực hiện gộp (AC4) -->
+                        <c:if test="${!laTruongNhomTroLen}">
+                            <div class="alert alert-warning" style="margin-top: 10px;">
+                                <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+                                <span><strong>Giới hạn quyền hạn (AC4):</strong> Chỉ Trưởng nhóm kinh doanh trở lên (Team Lead, Director, Admin) mới có quyền thực hiện gộp khách hàng. Tài khoản của bạn có thể xem so sánh dữ liệu nhưng không thể gửi yêu cầu gộp.</span>
+                            </div>
+                        </c:if>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" id="btnHuySoSanhGop">Đóng</button>
+                        <c:choose>
+                            <c:when test="${laTruongNhomTroLen}">
+                                <button type="submit" class="btn btn-primary" id="btnXacNhanThucHienGop">
+                                    <span class="material-symbols-outlined" aria-hidden="true">call_merge</span>
+                                    <span>Xác Nhận Gộp Khách Hàng</span>
+                                </button>
+                            </c:when>
+                            <c:otherwise>
+                                <button type="button" class="btn btn-primary" disabled title="Chỉ Trưởng nhóm kinh doanh trở lên có quyền thực hiện gộp">
+                                    <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+                                    <span>Yêu Cầu Quyền Trưởng Nhóm</span>
+                                </button>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Modal Thêm Khách Hàng Mới (Story S3-01 & S1-05) -->
         <div class="modal-backdrop" id="modalThemKhachHang" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalThemKhachHangTieuDe">
             <div class="modal-card">
@@ -941,6 +1289,11 @@
                             <div class="form-col" style="flex: 2;">
                                 <label class="form-label" for="tenCongTy">Tên công ty / Khách hàng (AC1) <span class="required">*</span></label>
                                 <input type="text" id="tenCongTy" name="tenCongTy" class="form-input" placeholder="Ví dụ: Công ty Cổ phần Công nghệ ABC" required autocomplete="off">
+                            <!-- Cảnh báo trùng lặp thời gian thực khi gõ tên công ty (S3-04) -->
+                            <div class="inline-dup-alert" id="inlineDupNameAlert" style="display: none;">
+                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">warning</span>
+                                <div><strong>Cảnh báo tên gần giống:</strong> Có thể trùng với khách hàng <strong id="dupMatchedName"></strong> do <strong id="dupMatchedOwner"></strong> phụ trách!</div>
+                            </div>
                             </div>
                             <div class="form-col" style="flex: 1;">
                                 <label class="form-label" for="maKhachHang">Mã khách hàng</label>
@@ -953,10 +1306,20 @@
                             <div class="form-col">
                                 <label class="form-label" for="maSoThue">Mã số thuế (AC1, AC2) <small style="color: var(--slate-500); font-weight: normal;">(Nếu có phải duy nhất)</small></label>
                                 <input type="text" id="maSoThue" name="maSoThue" class="form-input" placeholder="Ví dụ: 0101234567" autocomplete="off">
+                                <!-- Cảnh báo trùng MST thời gian thực (S3-04) -->
+                                <div class="inline-dup-alert" id="inlineDupMstAlert" style="display: none;">
+                                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">error</span>
+                                    <div><strong>Cảnh báo trùng MST:</strong> Mã số thuế đã tồn tại cho khách hàng <strong id="dupMatchedMstName"></strong> do <strong id="dupMatchedMstOwner"></strong> phụ trách!</div>
+                                </div>
                             </div>
                             <div class="form-col">
                                 <label class="form-label" for="website">Website (AC1)</label>
                                 <input type="text" id="website" name="website" class="form-input" placeholder="Ví dụ: https://congtyabc.vn" autocomplete="off">
+                                <!-- Cảnh báo trùng Website thời gian thực (S3-04) -->
+                                <div class="inline-dup-alert" id="inlineDupWebAlert" style="display: none;">
+                                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">warning</span>
+                                    <div><strong>Cảnh báo trùng Website:</strong> Website trùng với khách hàng <strong id="dupMatchedWebName"></strong> do <strong id="dupMatchedWebOwner"></strong> phụ trách!</div>
+                                </div>
                             </div>
                         </div>
 
@@ -1182,6 +1545,11 @@
         <!-- Toast Notifications Container -->
         <div class="crm-toast-container" id="crmToastContainer" aria-live="polite"></div>
     </main>
+
+    <script>
+        window.LA_TRUONG_NHOM = ${laTruongNhomTroLen ? 'true' : 'false'};
+        window.TAB_HIEN_TAI = "${not empty tabHienTai ? tabHienTai : 'tat-ca'}";
+    </script>
 
     <script src="${pageContext.request.contextPath}/assets/js/navigation.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/session-keep-alive.js"></script>

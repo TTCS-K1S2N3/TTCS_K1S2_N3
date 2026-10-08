@@ -10,9 +10,12 @@ import vn.nhom10.crm.dao.KhachHang360DAO;
 import vn.nhom10.crm.dao.KhachHangDAO;
 import vn.nhom10.crm.dao.NguoiDungDAO;
 import vn.nhom10.crm.dto.BanGhiNghiepVuDTO;
+import vn.nhom10.crm.dto.CapKhachHangTrungDTO;
+import vn.nhom10.crm.dto.KetQuaGopKhachHangDTO;
 import vn.nhom10.crm.dto.KhachHang360DTO;
 import vn.nhom10.crm.dto.MucDanhMucDTO;
 import vn.nhom10.crm.dto.NguoiDungDTO;
+import vn.nhom10.crm.dto.SoSanhKhachHangDTO;
 import vn.nhom10.crm.dto.ThongKeNhomCongTyDTO;
 import vn.nhom10.crm.dto.KhachHangChamSocDTO;
 import vn.nhom10.crm.dto.ThongKeChamSocDTO;
@@ -31,13 +34,12 @@ import vn.nhom10.crm.model.VaiTroEnum;
 import vn.nhom10.crm.service.ChamSocKhachHangService;
 import vn.nhom10.crm.service.CongTyMeConService;
 import vn.nhom10.crm.service.DanhMucBanHangService;
+import vn.nhom10.crm.service.GopKhachHangService;
 import vn.nhom10.crm.service.KhachHang360Service;
 import vn.nhom10.crm.service.KhachHangService;
 import vn.nhom10.crm.model.NguoiLienHe;
 import vn.nhom10.crm.model.VaiTroQuyetDinhEnum;
-import vn.nhom10.crm.service.NguoiLienHeService;
-
-import vn.nhom10.crm.service.PhanQuyenDuLieuService;
+import vn.nhom10.crm.service.NguoiLienHeService;import vn.nhom10.crm.service.PhanQuyenDuLieuService;
 import vn.nhom10.crm.service.YeuCauHoTroService;
 
 import java.io.IOException;
@@ -52,7 +54,9 @@ import java.util.logging.Logger;
 /**
  * Controller xử lý các tác vụ quản lý khách hàng:
  * - Quản lý hồ sơ doanh nghiệp & Data Scope server-side (Story S3-01)
+ * - Quản lý người liên hệ & vai trò quyết định mua (Story S3-02)
  * - Trang 360° khách hàng (Story S3-03)
+ * - Cảnh báo và gộp khách hàng trùng lặp (Story S3-04)
  * - Quản lý quan hệ công ty mẹ - con (Story S3-05)
  * - Cảnh báo cờ rủi ro rời bỏ & dịch vụ sau bán (Story S3-08)
  * - Quản lý chăm sóc định kỳ sau ký hợp đồng (Story S3-09)
@@ -72,42 +76,48 @@ public class KhachHangServlet extends HttpServlet {
     private final DanhMucBanHangService danhMucBanHangService;
     private final NguoiDungDAO nguoiDungDAO;
     private final NguoiLienHeService nguoiLienHeService;
+    private final GopKhachHangService gopKhachHangService;
 
     public KhachHangServlet() {
         this(new PhanQuyenDuLieuService(), new CongTyMeConService(), new ChamSocKhachHangService(),
-                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService());
+                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService(), new GopKhachHangService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService) {
         this(phanQuyenService, new CongTyMeConService(), new ChamSocKhachHangService(),
-                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService());
+                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService(), new GopKhachHangService());
+    }
+
+    public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, GopKhachHangService gopKhachHangService) {
+        this(phanQuyenService, new CongTyMeConService(), new ChamSocKhachHangService(),
+                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService(), gopKhachHangService);
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, KhachHangService khachHangService) {
         this(phanQuyenService, new CongTyMeConService(), new ChamSocKhachHangService(),
-                new KhachHang360Service(), khachHangService, new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService());
+                new KhachHang360Service(), khachHangService, new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService(), new GopKhachHangService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, CongTyMeConService congTyMeConService) {
         this(phanQuyenService, congTyMeConService, new ChamSocKhachHangService(),
-                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService());
+                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService(), new GopKhachHangService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, ChamSocKhachHangService chamSocService) {
         this(phanQuyenService, new CongTyMeConService(), chamSocService,
-                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService());
+                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService(), new GopKhachHangService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, KhachHang360Service khachHang360Service) {
         this(phanQuyenService, new CongTyMeConService(), new ChamSocKhachHangService(),
-                khachHang360Service, new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService());
+                khachHang360Service, new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService(), new GopKhachHangService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService,
                             CongTyMeConService congTyMeConService,
                             ChamSocKhachHangService chamSocService) {
         this(phanQuyenService, congTyMeConService, chamSocService,
-                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService());
+                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService(), new GopKhachHangService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService,
@@ -115,7 +125,7 @@ public class KhachHangServlet extends HttpServlet {
                             ChamSocKhachHangService chamSocService,
                             KhachHang360Service khachHang360Service) {
         this(phanQuyenService, congTyMeConService, chamSocService,
-                khachHang360Service, new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService());
+                khachHang360Service, new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService(), new GopKhachHangService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService,
@@ -123,7 +133,7 @@ public class KhachHangServlet extends HttpServlet {
                             DanhMucBanHangService danhMucBanHangService,
                             NguoiDungDAO nguoiDungDAO) {
         this(phanQuyenService, new CongTyMeConService(), new ChamSocKhachHangService(),
-                new KhachHang360Service(), khachHangService, danhMucBanHangService, nguoiDungDAO, new NguoiLienHeService());
+                new KhachHang360Service(), khachHangService, danhMucBanHangService, nguoiDungDAO, new NguoiLienHeService(), new GopKhachHangService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService,
@@ -132,7 +142,7 @@ public class KhachHangServlet extends HttpServlet {
                             NguoiDungDAO nguoiDungDAO,
                             NguoiLienHeService nguoiLienHeService) {
         this(phanQuyenService, new CongTyMeConService(), new ChamSocKhachHangService(),
-                new KhachHang360Service(), khachHangService, danhMucBanHangService, nguoiDungDAO, nguoiLienHeService);
+                new KhachHang360Service(), khachHangService, danhMucBanHangService, nguoiDungDAO, nguoiLienHeService, new GopKhachHangService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService,
@@ -143,6 +153,19 @@ public class KhachHangServlet extends HttpServlet {
                             DanhMucBanHangService danhMucBanHangService,
                             NguoiDungDAO nguoiDungDAO,
                             NguoiLienHeService nguoiLienHeService) {
+        this(phanQuyenService, congTyMeConService, chamSocService,
+                khachHang360Service, khachHangService, danhMucBanHangService, nguoiDungDAO, nguoiLienHeService, new GopKhachHangService());
+    }
+
+    public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService,
+                            CongTyMeConService congTyMeConService,
+                            ChamSocKhachHangService chamSocService,
+                            KhachHang360Service khachHang360Service,
+                            KhachHangService khachHangService,
+                            DanhMucBanHangService danhMucBanHangService,
+                            NguoiDungDAO nguoiDungDAO,
+                            NguoiLienHeService nguoiLienHeService,
+                            GopKhachHangService gopKhachHangService) {
         this.phanQuyenService = (phanQuyenService != null) ? phanQuyenService : new PhanQuyenDuLieuService();
         this.congTyMeConService = (congTyMeConService != null) ? congTyMeConService : new CongTyMeConService();
         this.chamSocService = (chamSocService != null) ? chamSocService : new ChamSocKhachHangService();
@@ -151,6 +174,7 @@ public class KhachHangServlet extends HttpServlet {
         this.danhMucBanHangService = (danhMucBanHangService != null) ? danhMucBanHangService : new DanhMucBanHangService();
         this.nguoiDungDAO = (nguoiDungDAO != null) ? nguoiDungDAO : new NguoiDungDAO();
         this.nguoiLienHeService = (nguoiLienHeService != null) ? nguoiLienHeService : new NguoiLienHeService();
+        this.gopKhachHangService = (gopKhachHangService != null) ? gopKhachHangService : new GopKhachHangService();
     }
 
     @Override
@@ -406,9 +430,12 @@ public class KhachHangServlet extends HttpServlet {
         int soNgay = chamSocService.laySoNgayCauHinh(paramSoNgay);
 
         boolean laChamSocKhachHang = user != null && user.coVaiTro("CUST_SUCCESS");
-        String tabHienTai = (paramTab != null && !paramTab.trim().isEmpty())
-                ? paramTab.trim()
-                : (laChamSocKhachHang ? "cham-soc" : "tat-ca");
+        Object attrTab = request.getAttribute("tabHienTai");
+        String tabHienTai = (attrTab != null && !attrTab.toString().trim().isEmpty())
+                ? attrTab.toString().trim()
+                : ((paramTab != null && !paramTab.trim().isEmpty())
+                    ? paramTab.trim()
+                    : (laChamSocKhachHang ? "cham-soc" : "tat-ca"));
 
         List<KhachHangChamSocDTO> danhSachChamSoc = chamSocService.layDanhSachCanChamSoc(
                 userDTO, soNgay, tuKhoa, true
@@ -427,7 +454,18 @@ public class KhachHangServlet extends HttpServlet {
         napDanhMucBaoTro(request, user);
 
         boolean coQuyenDanhMuc = user != null && (user.coVaiTro("ADMIN") || user.coVaiTro("DIRECTOR"));
+        boolean laTruongNhomTroLen = gopKhachHangService.laTruongNhomTroLen(user);
+
+
+        // Phát hiện trùng lặp tự động (Story S3-04, AC1)
+        List<CapKhachHangTrungDTO> danhSachCapTrung = gopKhachHangService.quetKhachHangTrungLap(userDTO);
+        if (danhSachCapTrung.isEmpty() && danhSachKhachHang != null && !danhSachKhachHang.isEmpty()) {
+            danhSachCapTrung = gopKhachHangService.phatHienTrungLap(danhSachKhachHang);
+        }
+        int soCapTrung = danhSachCapTrung != null ? danhSachCapTrung.size() : 0;
+
         request.setAttribute("coQuyenDanhMuc", coQuyenDanhMuc);
+        request.setAttribute("laTruongNhomTroLen", laTruongNhomTroLen);
         request.setAttribute("nguoiDung", user);
         request.setAttribute("currentUser", userDTO);
         request.setAttribute("phamViHienTai", phamViHieuLuc);
@@ -441,6 +479,8 @@ public class KhachHangServlet extends HttpServlet {
         request.setAttribute("quyMoIdHienTai", quyMoId);
         request.setAttribute("trangHienTai", trang);
         request.setAttribute("kichThuocTrang", kichThuocTrang);
+        request.setAttribute("danhSachCapTrung", danhSachCapTrung);
+        request.setAttribute("soCapTrung", soCapTrung);
 
         response.setStatus(HttpServletResponse.SC_OK);
         request.getRequestDispatcher("/WEB-INF/views/khach-hang/danh-sach.jsp").forward(request, response);
@@ -635,8 +675,62 @@ public class KhachHangServlet extends HttpServlet {
             }
 
             request.setAttribute("thongBaoThanhCong", "Cập nhật dữ liệu khách hàng thành công.");
+        } else if ("gop".equals(action)) {
+            // Story S3-04: Cảnh báo và gộp khách hàng trùng lặp (AC3, AC4)
+            boolean laTruongNhomTroLen = gopKhachHangService.laTruongNhomTroLen(user);
+            if (!laTruongNhomTroLen) {
+                // CHẶN GỘP NGOÀI PHẠM VỊ: Chỉ Trưởng nhóm trở lên được thực hiện gộp (AC4)
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                request.setAttribute("thongBaoLoi", "Chỉ Trưởng nhóm kinh doanh trở lên mới có quyền thực hiện gộp khách hàng.");
+                doGet(request, response);
+                return;
+            }
+
+            String khachHangNguonId = request.getParameter("khachHangNguonId");
+            String khachHangDichId = request.getParameter("khachHangDichId");
+            String lyDoGop = request.getParameter("lyDoGop");
+
+            if (khachHangNguonId == null || khachHangNguonId.trim().isEmpty() ||
+                khachHangDichId == null || khachHangDichId.trim().isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                request.setAttribute("thongBaoLoi", "Vui lòng chọn đầy đủ khách hàng nguồn và khách hàng đích để thực hiện gộp.");
+                doGet(request, response);
+                return;
+            }
+
+            if (khachHangNguonId.trim().equals(khachHangDichId.trim())) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                request.setAttribute("thongBaoLoi", "Không thể gộp một khách hàng vào chính nó.");
+                doGet(request, response);
+                return;
+            }
+
+            Long idNguon = null;
+            Long idDich = null;
+            try {
+                idNguon = Long.parseLong(khachHangNguonId.trim());
+                idDich = Long.parseLong(khachHangDichId.trim());
+            } catch (NumberFormatException e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                request.setAttribute("thongBaoLoi", "Mã ID khách hàng không hợp lệ.");
+                doGet(request, response);
+                return;
+            }
+
+            KetQuaGopKhachHangDTO ketQua = gopKhachHangService.thucHienGopKhachHang(
+                    idNguon, idDich, lyDoGop, userDTO, request.getRemoteAddr(), request.getHeader("User-Agent")
+            );
+
+            if (!ketQua.isThanhCong()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                request.setAttribute("thongBaoLoi", ketQua.getThongBao());
+            } else {
+                request.setAttribute("thongBaoThanhCong", ketQua.getThongBao());
+                request.setAttribute("ketQuaGop", ketQua);
+            }
+            request.setAttribute("tabHienTai", "trung");
         } else if ("them".equals(action) || "create".equals(action) || paramId == null) {
-            // 7. XỬ LÝ THAO TÁC THÊM MỚI KHÁCH HÀNG (STORY S3-01 & S1-05)
+            // 7. XỬ LÝ THAO TÁC THÊM MỚI KHÁCH HÀNG (STORY S3-01 & S3-04)
             String tenCongTy = request.getParameter("tenCongTy");
             if (tenCongTy == null || tenCongTy.trim().isEmpty()) {
                 tenCongTy = request.getParameter("tieuDe");
@@ -714,7 +808,10 @@ public class KhachHangServlet extends HttpServlet {
                         TrangThaiKhachHangEnum.chuanHoaTen(trangThai),
                         moTaChiTiet
                 );
-
+                if (bgMoi != null) {
+                    bgMoi.setMaSoThue(maSoThue);
+                    bgMoi.setWebsite(website);
+                }
                 request.setAttribute("thongBaoThanhCong", "Thêm mới khách hàng '" + tenCongTy.trim() + "' thành công.");
                 request.setAttribute("khachHangVuaThem", bgMoi);
                 request.setAttribute("khachHangMoi", khLuu);
