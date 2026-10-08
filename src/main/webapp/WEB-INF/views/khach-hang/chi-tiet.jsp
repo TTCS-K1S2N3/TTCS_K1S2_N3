@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/khach-hang/khach-hang.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
+    <script>
+        window.CONTEXT_PATH = "${pageContext.request.contextPath}";
+    </script>
     <style>
         .breadcrumb-nav { margin-bottom: 20px; }
         .breadcrumb-list { display: flex; align-items: center; list-style: none; gap: 8px; font-size: 13.5px; color: var(--slate-500); flex-wrap: wrap; }
@@ -29,10 +32,6 @@
         .detail-value.font-mono { font-family: monospace; font-size: 14px; }
         .detail-desc-box { background-color: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-md); padding: 16px; color: var(--slate-700); font-size: 14px; line-height: 1.6; white-space: pre-wrap; min-height: 80px; }
         .detail-footer { padding: 16px 24px; background-color: var(--slate-50); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-        .badge-status-tiem-nang { background-color: #e0f2fe; color: #0369a1; font-weight: 600; padding: 4px 10px; border-radius: 9999px; font-size: 12px; }
-        .badge-status-dang-giao-dich { background-color: #fef3c7; color: #b45309; font-weight: 600; padding: 4px 10px; border-radius: 9999px; font-size: 12px; }
-        .badge-status-khach-hang { background-color: #dcfce7; color: #15803d; font-weight: 600; padding: 4px 10px; border-radius: 9999px; font-size: 12px; }
-        .badge-status-ngung-hop-tac { background-color: #fee2e2; color: #b91c1c; font-weight: 600; padding: 4px 10px; border-radius: 9999px; font-size: 12px; }
     </style>
 </head>
 <body class="crm-body">
@@ -43,7 +42,7 @@
         <!-- Breadcrumb -->
         <nav class="breadcrumb-nav" aria-label="Breadcrumb">
             <ol class="breadcrumb-list">
-                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/dieu-huong">Trang chủ</a></li>
                 <span class="breadcrumb-separator">/</span>
                 <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/khach-hang">Khách hàng</a></li>
                 <span class="breadcrumb-separator">/</span>
@@ -58,6 +57,16 @@
                 <span><c:out value="${thongBaoThanhCong}" /></span>
             </div>
         </c:if>
+        <c:if test="${not empty thongBaoLoi}">
+            <div class="alert alert-danger" style="margin-bottom: 20px;">
+                <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                <span><c:out value="${thongBaoLoi}" /></span>
+            </div>
+        </c:if>
+
+        <c:set var="tenHienThi" value="${not empty khachHang ? khachHang.tenCongTy : banGhi.tieuDe}" />
+        <c:set var="maHienThi" value="${not empty khachHang ? khachHang.maKhachHang : banGhi.maBanGhi}" />
+        <c:set var="currentStatus" value="${not empty khachHang ? khachHang.trangThaiHienThi : banGhi.trangThai}" />
 
         <!-- Thẻ chi tiết bản ghi -->
         <div class="detail-card">
@@ -65,29 +74,45 @@
                 <div class="detail-title-group">
                     <h1>
                         <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary);">business</span>
-                        <span><c:out value="${not empty khachHang ? khachHang.tenCongTy : banGhi.tieuDe}" /></span>
+                        <span><c:out value="${tenHienThi}" /></span>
                     </h1>
-                    <p>Mã KH: <span class="font-mono"><c:out value="${not empty khachHang ? khachHang.maKhachHang : banGhi.maBanGhi}" /></span> • Hồ sơ doanh nghiệp chuẩn (Story S3-01)</p>
+                    <p>Mã KH: <span class="font-mono"><c:out value="${maHienThi}" /></span> &bull; Hồ sơ doanh nghiệp chuẩn (Story S3-01)</p>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                    <c:set var="currentStatus" value="${not empty khachHang ? khachHang.trangThaiHienThi : banGhi.trangThai}" />
                     <c:choose>
                         <c:when test="${currentStatus == 'Tiềm năng' || currentStatus == 'TIEM_NANG'}">
-                            <span class="badge-status-tiem-nang">● Tiềm năng</span>
+                            <span class="badge-status-tiem-nang"><span class="badge-dot" aria-hidden="true"></span>Tiềm năng</span>
                         </c:when>
                         <c:when test="${currentStatus == 'Đang giao dịch' || currentStatus == 'DANG_GIAO_DICH'}">
-                            <span class="badge-status-dang-giao-dich">● Đang giao dịch</span>
+                            <span class="badge-status-dang-giao-dich"><span class="badge-dot" aria-hidden="true"></span>Đang giao dịch</span>
                         </c:when>
                         <c:when test="${currentStatus == 'Khách hàng' || currentStatus == 'KHACH_HANG'}">
-                            <span class="badge-status-khach-hang">● Khách hàng</span>
+                            <span class="badge-status-khach-hang"><span class="badge-dot" aria-hidden="true"></span>Khách hàng</span>
                         </c:when>
                         <c:when test="${currentStatus == 'Ngừng hợp tác' || currentStatus == 'NGUNG_HOP_TAC'}">
-                            <span class="badge-status-ngung-hop-tac">● Ngừng hợp tác</span>
+                            <span class="badge-status-ngung-hop-tac"><span class="badge-dot" aria-hidden="true"></span>Ngừng hợp tác</span>
                         </c:when>
                         <c:otherwise>
                             <span class="badge badge-success"><c:out value="${currentStatus}" /></span>
                         </c:otherwise>
                     </c:choose>
+
+                    <button type="button" class="btn btn-primary btn-sua-khach-hang" id="btnSuaKhachHangChiTiet"
+                        data-id="${not empty khachHang ? khachHang.id : banGhi.id}"
+                        data-ten="<c:out value="${tenHienThi}" />"
+                        data-makh="<c:out value="${maHienThi}" />"
+                        data-mst="<c:out value="${not empty khachHang ? khachHang.maSoThue : ''}" />"
+                        data-nganh="${not empty khachHang ? khachHang.nganhNgheId : ''}"
+                        data-quymo="${not empty khachHang ? khachHang.quyMoId : ''}"
+                        data-website="<c:out value="${not empty khachHang ? khachHang.website : ''}" />"
+                        data-diachi="<c:out value="${not empty khachHang ? khachHang.diaChi : ''}" />"
+                        data-trangthai="<c:out value="${not empty khachHang ? khachHang.trangThai : banGhi.trangThai}" />"
+                        data-gia="<c:out value="${not empty khachHang ? khachHang.doanhThuUocTinh : banGhi.giaTri}" />"
+                        data-nguoisohuu="${not empty khachHang ? khachHang.nguoiSoHuuId : banGhi.nguoiPhuTrachId}"
+                        data-mota="<c:out value="${not empty khachHang ? khachHang.moTaChiTiet : banGhi.moTaChiTiet}" />">
+                        <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                        <span>Sửa hồ sơ</span>
+                    </button>
 
                     <a href="${pageContext.request.contextPath}/khach-hang" class="btn btn-outline" id="btnBackKhachHang">
                         <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
@@ -100,12 +125,12 @@
                 <div class="detail-grid">
                     <div class="detail-item">
                         <span class="detail-label">Mã khách hàng</span>
-                        <span class="detail-value font-mono"><c:out value="${not empty khachHang ? khachHang.maKhachHang : banGhi.maBanGhi}" /></span>
+                        <span class="detail-value font-mono"><c:out value="${maHienThi}" /></span>
                     </div>
 
                     <div class="detail-item">
                         <span class="detail-label">Tên công ty / Khách hàng (AC1)</span>
-                        <span class="detail-value" style="font-weight: 700; color: var(--slate-900);"><c:out value="${not empty khachHang ? khachHang.tenCongTy : banGhi.tieuDe}" /></span>
+                        <span class="detail-value" style="font-weight: 700; color: var(--slate-900);"><c:out value="${tenHienThi}" /></span>
                     </div>
 
                     <div class="detail-item">
@@ -113,10 +138,10 @@
                         <span class="detail-value font-mono">
                             <c:choose>
                                 <c:when test="${not empty khachHang and not empty khachHang.maSoThue}">
-                                    <c:out value="${khachHang.maSoThue}" />
+                                    <code class="mst-badge"><c:out value="${khachHang.maSoThue}" /></code>
                                 </c:when>
                                 <c:otherwise>
-                                    <span style="color: var(--slate-400); font-style: italic;">Chưa khai báo</span>
+                                    <span class="text-muted-italic">Chưa khai báo</span>
                                 </c:otherwise>
                             </c:choose>
                         </span>
@@ -137,12 +162,12 @@
                         <span class="detail-value">
                             <c:choose>
                                 <c:when test="${not empty khachHang and not empty khachHang.website}">
-                                    <a href="${khachHang.website.startsWith('http') ? khachHang.website : 'https://'.concat(khachHang.website)}" target="_blank" rel="noopener noreferrer" style="color: var(--primary);">
+                                    <a href="${khachHang.website.startsWith('http') ? khachHang.website : 'https://'.concat(khachHang.website)}" target="_blank" rel="noopener noreferrer" class="link-website">
                                         <c:out value="${khachHang.website}" />
                                     </a>
                                 </c:when>
                                 <c:otherwise>
-                                    <span style="color: var(--slate-400); font-style: italic;">Chưa khai báo</span>
+                                    <span class="text-muted-italic">Chưa khai báo</span>
                                 </c:otherwise>
                             </c:choose>
                         </span>
@@ -188,7 +213,7 @@
                                 <c:out value="${desc}" />
                             </c:when>
                             <c:otherwise>
-                                <span style="color: var(--slate-400); font-style: italic;">Chưa có mô tả chi tiết cho hồ sơ khách hàng này.</span>
+                                <span class="text-muted-italic">Chưa có mô tả chi tiết cho hồ sơ khách hàng này.</span>
                             </c:otherwise>
                         </c:choose>
                     </div>
@@ -197,13 +222,100 @@
 
             <div class="detail-footer">
                 <span style="font-size: 13px; color: var(--slate-500);">
-                    Chế độ: <strong>Hồ sơ khách hàng doanh nghiệp</strong> • Phân quyền Data Scope tự động (AC4).
+                    Chế độ: <strong>Hồ sơ khách hàng doanh nghiệp</strong> &bull; Phân quyền Data Scope tự động (AC4).
                 </span>
-                <a href="${pageContext.request.contextPath}/khach-hang" class="btn btn-outline">
-                    <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span> Quay lại danh sách khách hàng
-                </a>
+                <div style="display: flex; gap: 8px;">
+                    <a href="${pageContext.request.contextPath}/khach-hang" class="btn btn-outline">
+                        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+                        <span>Quay lại danh sách</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Sửa Khách Hàng (Story S3-01 & S1-05) -->
+        <div class="modal-backdrop" id="modalSuaKhachHang" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalSuaKhachHangTieuDe">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="modal-title" id="modalSuaKhachHangTieuDe">Chỉnh Sửa Hồ Sơ Khách Hàng</h2>
+                        <p class="modal-subtitle">Cập nhật thông tin hồ sơ khách hàng doanh nghiệp (Story S3-01)</p>
+                    </div>
+                    <button type="button" class="modal-close-btn" id="btnDongModalSuaKhachHang" aria-label="Đóng" title="Đóng">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
+                </div>
+                <form id="formSuaKhachHang" method="POST" action="${pageContext.request.contextPath}/khach-hang">
+                    <input type="hidden" name="action" value="sua">
+                    <input type="hidden" id="suaKhachHangId" name="id" value="">
+
+                    <div class="modal-body">
+                        <!-- Tên công ty & Mã khách hàng -->
+                        <div class="form-row">
+                            <div class="form-col" style="flex: 2;">
+                                <label class="form-label" for="suaTenCongTy">Tên công ty / Khách hàng (AC1) <span class="required">*</span></label>
+                                <input type="text" id="suaTenCongTy" name="tenCongTy" class="form-input" required autocomplete="off">
+                            </div>
+                            <div class="form-col" style="flex: 1;">
+                                <label class="form-label" for="suaMaKhachHang">Mã khách hàng</label>
+                                <input type="text" id="suaMaKhachHang" name="maKhachHang" class="form-input" readonly style="background-color: var(--slate-100); font-family: monospace;">
+                            </div>
+                        </div>
+
+                        <!-- Mã số thuế & Website -->
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label class="form-label" for="suaMaSoThue">Mã số thuế (AC1, AC2) <small style="color: var(--slate-500); font-weight: normal;">(Nếu có phải duy nhất)</small></label>
+                                <input type="text" id="suaMaSoThue" name="maSoThue" class="form-input" autocomplete="off">
+                            </div>
+                            <div class="form-col">
+                                <label class="form-label" for="suaWebsite">Website (AC1)</label>
+                                <input type="text" id="suaWebsite" name="website" class="form-input" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <!-- Địa chỉ -->
+                        <div class="form-group">
+                            <label class="form-label" for="suaDiaChi">Địa chỉ trụ sở / văn phòng (AC1)</label>
+                            <input type="text" id="suaDiaChi" name="diaChi" class="form-input" autocomplete="off">
+                        </div>
+
+                        <!-- Trạng thái & Doanh thu ước tính -->
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label class="form-label" for="suaTrangThai">Trạng thái khách hàng (AC3) <span class="required">*</span></label>
+                                <select id="suaTrangThai" name="trangThai" class="form-select" required>
+                                    <option value="Tiềm năng">Tiềm năng</option>
+                                    <option value="Đang giao dịch">Đang giao dịch</option>
+                                    <option value="Khách hàng">Khách hàng</option>
+                                    <option value="Ngừng hợp tác">Ngừng hợp tác</option>
+                                </select>
+                            </div>
+                            <div class="form-col">
+                                <label class="form-label" for="suaDoanhThuUocTinh">Doanh thu ước tính (VND)</label>
+                                <input type="text" id="suaDoanhThuUocTinh" name="doanhThuUocTinh" class="form-input" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <!-- Ghi chú chi tiết -->
+                        <div class="form-group">
+                            <label class="form-label" for="suaMoTaChiTiet">Ghi chú / Mô tả chi tiết</label>
+                            <textarea id="suaMoTaChiTiet" name="moTaChiTiet" class="form-textarea" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" id="btnHuySuaKhachHang">Hủy bỏ</button>
+                        <button type="submit" class="btn btn-primary" id="btnXacNhanSuaKhachHang">
+                            <span class="material-symbols-outlined" aria-hidden="true">save</span>
+                            <span>Lưu Thay Đổi</span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </main>
+
+    <script src="${pageContext.request.contextPath}/assets/js/navigation.js"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/khach-hang.js"></script>
 </body>
 </html>
