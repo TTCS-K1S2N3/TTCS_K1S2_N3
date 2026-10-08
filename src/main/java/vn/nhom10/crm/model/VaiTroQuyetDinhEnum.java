@@ -9,10 +9,10 @@ package vn.nhom10.crm.model;
  * - Người cản trở (Blocker)
  */
 public enum VaiTroQuyetDinhEnum {
-    NGUOI_QUYET_DINH("NGUOI_QUYET_DINH", "Người quyết định", "Người có thẩm quyền đưa ra quyết định mua hàng cuối cùng", "badge-role decision-maker", "#4f46e5"),
-    NGUOI_ANH_HUONG("NGUOI_ANH_HUONG", "Người ảnh hưởng", "Người tư vấn, đề xuất hoặc tác động lớn đến quyết định mua", "badge-role", "#0ea5e9"),
-    NGUOI_DUNG_CUOI("NGUOI_DUNG_CUOI", "Người dùng cuối", "Người trực tiếp vận hành hoặc sử dụng giải pháp/sản phẩm", "badge-role", "#10b981"),
-    NGUOI_CAN_TRO("NGUOI_CAN_TRO", "Người cản trở", "Người có xu hướng phản đối, nghi ngại hoặc cản trở tiến trình thương vụ", "badge-role danger", "#ef4444");
+    NGUOI_QUYET_DINH("NGUOI_QUYET_DINH", "Người quyết định", "Người có thẩm quyền đưa ra quyết định mua hàng cuối cùng", "badge-primary", "#4f46e5"),
+    NGUOI_ANH_HUONG("NGUOI_ANH_HUONG", "Người ảnh hưởng", "Người tư vấn, đề xuất hoặc tác động lớn đến quyết định mua", "badge-info", "#0ea5e9"),
+    NGUOI_DUNG_CUOI("NGUOI_DUNG_CUOI", "Người dùng cuối", "Người trực tiếp vận hành hoặc sử dụng giải pháp/sản phẩm", "badge-success", "#10b981"),
+    NGUOI_CAN_TRO("NGUOI_CAN_TRO", "Người cản trở", "Người có xu hướng phản đối, nghi ngại hoặc cản trở tiến trình thương vụ", "badge-danger", "#ef4444");
 
     private final String ma;
     private final String tenHienThi;
@@ -51,6 +51,7 @@ public enum VaiTroQuyetDinhEnum {
     /**
      * Parse chuỗi mã hoặc tên hiển thị sang VaiTroQuyetDinhEnum.
      * Trả về null nếu giá trị đầu vào null hoặc rỗng.
+     * Ném IllegalArgumentException nếu giá trị không hợp lệ.
      */
     public static VaiTroQuyetDinhEnum fromMa(String value) {
         if (value == null || value.trim().isEmpty()) {
@@ -62,11 +63,13 @@ public enum VaiTroQuyetDinhEnum {
                 return v;
             }
         }
+        // Thử đối chiếu theo tên tiếng Việt
         for (VaiTroQuyetDinhEnum v : values()) {
             if (v.tenHienThi.equalsIgnoreCase(value.trim())) {
                 return v;
             }
         }
-        return null;
+        throw new IllegalArgumentException("Vai trò quyết định mua không hợp lệ: " + value +
+                ". Các giá trị hợp lệ: NGUOI_QUYET_DINH, NGUOI_ANH_HUONG, NGUOI_DUNG_CUOI, NGUOI_CAN_TRO");
     }
 }

@@ -239,7 +239,7 @@ class KhachHang360DAOTest {
         List<NguoiLienHe> contacts = khachHang360DAO.layDsNguoiLienHe(10L);
         assertEquals(2, contacts.size());
         assertTrue(contacts.get(0).isLaDauMoiChinh());
-        assertEquals("NGUOI_QUYET_DINH", contacts.get(0).getVaiTroQuyetDinh());
+        assertEquals(VaiTroQuyetDinhEnum.NGUOI_QUYET_DINH, contacts.get(0).getVaiTroQuyetDinh());
 
         List<CoHoi> deals = khachHang360DAO.layDsCoHoi(10L);
         assertEquals(2, deals.size());

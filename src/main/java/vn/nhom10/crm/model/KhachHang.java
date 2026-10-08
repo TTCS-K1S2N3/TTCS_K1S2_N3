@@ -11,6 +11,7 @@ import java.util.Objects;
 /**
  * Model đại diện cho thực thể Khách hàng doanh nghiệp trong bảng 'khach_hang'.
  * - Story S3-01: Quản lý hồ sơ doanh nghiệp (tên, MST, ngành nghề, quy mô, website, địa chỉ, người sở hữu).
+ * - Story S3-02: Quản lý người liên hệ và vai trò quyết định mua.
  * - Story S3-03: Hồ sơ 360° khách hàng.
  * - Story S3-05: Quan hệ công ty mẹ - công ty con (cong_ty_me_id).
  * - Story S3-06: Import khách hàng từ file Excel.
@@ -49,7 +50,7 @@ public class KhachHang implements Serializable {
     private Timestamp lanTuongTacCuoi;
     private Long gopVaoKhachHangId;
     private String moTaChiTiet;
-    private LocalDate ngayTao;
+    private LocalDate ngayTao = LocalDate.now();
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
@@ -86,6 +87,18 @@ public class KhachHang implements Serializable {
         this.maKhachHang = maKhachHang;
         this.tenCongTy = tenCongTy;
         this.maSoThue = maSoThue;
+        this.nguoiSoHuuId = nguoiSoHuuId;
+        this.nhomKinhDoanhId = nhomKinhDoanhId;
+    }
+
+    public KhachHang(String tenCongTy, String maSoThue, Long nganhNgheId, Long quyMoId,
+                     String website, String diaChi, Long nguoiSoHuuId, Long nhomKinhDoanhId) {
+        this.tenCongTy = tenCongTy;
+        this.maSoThue = maSoThue;
+        this.nganhNgheId = nganhNgheId;
+        this.quyMoId = quyMoId;
+        this.website = website;
+        this.diaChi = diaChi;
         this.nguoiSoHuuId = nguoiSoHuuId;
         this.nhomKinhDoanhId = nhomKinhDoanhId;
     }
@@ -230,7 +243,7 @@ public class KhachHang implements Serializable {
     }
 
     public String getTenNguoiSoHuu() {
-        return tenNguoiSoHuu;
+        return tenNguoiSoHuu != null ? tenNguoiSoHuu : "Chưa xác định";
     }
 
     public void setTenNguoiSoHuu(String tenNguoiSoHuu) {
@@ -246,7 +259,7 @@ public class KhachHang implements Serializable {
     }
 
     public String getTenNhomKinhDoanh() {
-        return tenNhomKinhDoanh;
+        return tenNhomKinhDoanh != null ? tenNhomKinhDoanh : "Chưa phân nhóm";
     }
 
     public void setTenNhomKinhDoanh(String tenNhomKinhDoanh) {
@@ -258,7 +271,7 @@ public class KhachHang implements Serializable {
     }
 
     public void setDoanhThuUocTinh(BigDecimal doanhThuUocTinh) {
-        this.doanhThuUocTinh = doanhThuUocTinh;
+        this.doanhThuUocTinh = doanhThuUocTinh != null ? doanhThuUocTinh : BigDecimal.ZERO;
     }
 
     public Long getCongTyMeId() {
@@ -451,12 +464,14 @@ public class KhachHang implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         KhachHang khachHang = (KhachHang) o;
-        return Objects.equals(id, khachHang.id);
+        return Objects.equals(id, khachHang.id) &&
+                Objects.equals(maKhachHang, khachHang.maKhachHang) &&
+                Objects.equals(maSoThue, khachHang.maSoThue);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(id, maKhachHang, maSoThue);
     }
 
     @Override

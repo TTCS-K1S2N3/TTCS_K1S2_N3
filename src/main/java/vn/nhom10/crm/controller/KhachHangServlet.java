@@ -33,6 +33,10 @@ import vn.nhom10.crm.service.CongTyMeConService;
 import vn.nhom10.crm.service.DanhMucBanHangService;
 import vn.nhom10.crm.service.KhachHang360Service;
 import vn.nhom10.crm.service.KhachHangService;
+import vn.nhom10.crm.model.NguoiLienHe;
+import vn.nhom10.crm.model.VaiTroQuyetDinhEnum;
+import vn.nhom10.crm.service.NguoiLienHeService;
+
 import vn.nhom10.crm.service.PhanQuyenDuLieuService;
 import vn.nhom10.crm.service.YeuCauHoTroService;
 
@@ -67,42 +71,43 @@ public class KhachHangServlet extends HttpServlet {
     private final KhachHangService khachHangService;
     private final DanhMucBanHangService danhMucBanHangService;
     private final NguoiDungDAO nguoiDungDAO;
+    private final NguoiLienHeService nguoiLienHeService;
 
     public KhachHangServlet() {
         this(new PhanQuyenDuLieuService(), new CongTyMeConService(), new ChamSocKhachHangService(),
-                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO());
+                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService) {
         this(phanQuyenService, new CongTyMeConService(), new ChamSocKhachHangService(),
-                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO());
+                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, KhachHangService khachHangService) {
         this(phanQuyenService, new CongTyMeConService(), new ChamSocKhachHangService(),
-                new KhachHang360Service(), khachHangService, new DanhMucBanHangService(), new NguoiDungDAO());
+                new KhachHang360Service(), khachHangService, new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, CongTyMeConService congTyMeConService) {
         this(phanQuyenService, congTyMeConService, new ChamSocKhachHangService(),
-                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO());
+                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, ChamSocKhachHangService chamSocService) {
         this(phanQuyenService, new CongTyMeConService(), chamSocService,
-                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO());
+                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, KhachHang360Service khachHang360Service) {
         this(phanQuyenService, new CongTyMeConService(), new ChamSocKhachHangService(),
-                khachHang360Service, new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO());
+                khachHang360Service, new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService,
                             CongTyMeConService congTyMeConService,
                             ChamSocKhachHangService chamSocService) {
         this(phanQuyenService, congTyMeConService, chamSocService,
-                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO());
+                new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService,
@@ -110,7 +115,7 @@ public class KhachHangServlet extends HttpServlet {
                             ChamSocKhachHangService chamSocService,
                             KhachHang360Service khachHang360Service) {
         this(phanQuyenService, congTyMeConService, chamSocService,
-                khachHang360Service, new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO());
+                khachHang360Service, new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService());
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService,
@@ -118,7 +123,16 @@ public class KhachHangServlet extends HttpServlet {
                             DanhMucBanHangService danhMucBanHangService,
                             NguoiDungDAO nguoiDungDAO) {
         this(phanQuyenService, new CongTyMeConService(), new ChamSocKhachHangService(),
-                new KhachHang360Service(), khachHangService, danhMucBanHangService, nguoiDungDAO);
+                new KhachHang360Service(), khachHangService, danhMucBanHangService, nguoiDungDAO, new NguoiLienHeService());
+    }
+
+    public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService,
+                            KhachHangService khachHangService,
+                            DanhMucBanHangService danhMucBanHangService,
+                            NguoiDungDAO nguoiDungDAO,
+                            NguoiLienHeService nguoiLienHeService) {
+        this(phanQuyenService, new CongTyMeConService(), new ChamSocKhachHangService(),
+                new KhachHang360Service(), khachHangService, danhMucBanHangService, nguoiDungDAO, nguoiLienHeService);
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService,
@@ -127,7 +141,8 @@ public class KhachHangServlet extends HttpServlet {
                             KhachHang360Service khachHang360Service,
                             KhachHangService khachHangService,
                             DanhMucBanHangService danhMucBanHangService,
-                            NguoiDungDAO nguoiDungDAO) {
+                            NguoiDungDAO nguoiDungDAO,
+                            NguoiLienHeService nguoiLienHeService) {
         this.phanQuyenService = (phanQuyenService != null) ? phanQuyenService : new PhanQuyenDuLieuService();
         this.congTyMeConService = (congTyMeConService != null) ? congTyMeConService : new CongTyMeConService();
         this.chamSocService = (chamSocService != null) ? chamSocService : new ChamSocKhachHangService();
@@ -135,6 +150,7 @@ public class KhachHangServlet extends HttpServlet {
         this.khachHangService = (khachHangService != null) ? khachHangService : new KhachHangService();
         this.danhMucBanHangService = (danhMucBanHangService != null) ? danhMucBanHangService : new DanhMucBanHangService();
         this.nguoiDungDAO = (nguoiDungDAO != null) ? nguoiDungDAO : new NguoiDungDAO();
+        this.nguoiLienHeService = (nguoiLienHeService != null) ? nguoiLienHeService : new NguoiLienHeService();
     }
 
     @Override
@@ -283,12 +299,33 @@ public class KhachHangServlet extends HttpServlet {
                 LOGGER.log(Level.WARNING, "Không thể tải dữ liệu 360 cho ID " + id + ": " + e.getMessage());
             }
 
+            // Lấy danh sách người liên hệ của khách hàng này (Story S3-02 AC1, AC2, AC3)
+            try {
+                List<NguoiLienHe> dsNguoiLienHe = nguoiLienHeService.layDanhSachTheoKhachHang(user, id);
+                if (dsNguoiLienHe != null && !dsNguoiLienHe.isEmpty()) {
+                    request.setAttribute("dsNguoiLienHe", dsNguoiLienHe);
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.FINE, "Lỗi nạp danh sách người liên hệ: " + e.getMessage());
+            }
+
+            request.setAttribute("dsVaiTroQuyetDinh", VaiTroQuyetDinhEnum.values());
+
+            // Nạp danh sách khách hàng để hỗ trợ chọn công ty chuyển đến (Story S3-02 AC4)
+            try {
+                List<KhachHang> dsKhachChuyen = khachHangService.layDanhSachTheoQuyen(user, userDTO.getPhamViHienTai(), null, null, null, null, 1, 100);
+                request.setAttribute("dsKhachHangChuyen", dsKhachChuyen);
+            } catch (Exception e) {
+                LOGGER.log(Level.FINE, "Lỗi lấy ds khách chuyển: " + e.getMessage());
+            }
+
             // Nếu người dùng yêu cầu trang chi tiết trực tiếp, forward về chi-tiet.jsp
             String viewParam = request.getParameter("view");
             if (isChiTietEndpoint
                     || "/khach-hang/cong-ty-con".equals(servletPath)
                     || "360".equalsIgnoreCase(viewParam)
                     || "chi-tiet".equalsIgnoreCase(viewParam)) {
+                napDanhMucBaoTro(request, user);
                 response.setStatus(HttpServletResponse.SC_OK);
                 request.getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp").forward(request, response);
                 return;
@@ -942,6 +979,10 @@ public class KhachHangServlet extends HttpServlet {
         }
         request.setAttribute("currentUser", userDTO);
         request.getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp").forward(request, response);
+    }
+
+    private Long parseLongOrNull(String val) {
+        return parseLong(val);
     }
 
     private Long parseLong(String val) {

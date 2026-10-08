@@ -5,11 +5,11 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 /**
- * Model biểu diễn Người liên hệ (bảng `nguoi_lien_he`).
- * Phục vụ danh sách người liên hệ và vai trò quyết định trong trang 360 (Story S3-03).
+ * Model biểu diễn Người liên hệ (bảng nguoi_lien_he) trong Story S3-02 và S3-03.
+ * Mỗi khách hàng có nhiều người liên hệ với chức danh, email, số điện thoại.
+ * Hỗ trợ đánh dấu vai trò quyết định mua và đánh dấu đầu mối chính.
  */
 public class NguoiLienHe implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     private Long id;
@@ -18,15 +18,16 @@ public class NguoiLienHe implements Serializable {
     private String chucDanh;
     private String email;
     private String soDienThoai;
-    private String vaiTroQuyetDinh; // NGUOI_QUYET_DINH, NGUOI_ANH_HUONG, NGUOI_DUNG_CUOI, NGUOI_CAN_TRO
+    private VaiTroQuyetDinhEnum vaiTroQuyetDinh;
     private boolean laDauMoiChinh;
-    private String trangThai = "DANG_HOAT_DONG";
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
+    private String trangThai = "DANG_HOAT_DONG"; // DANG_HOAT_DONG, NGUNG_HOAT_DONG
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    // Joined / display fields
+    // Các trường join thông tin khách hàng (phục vụ hiển thị)
     private String tenKhachHang;
     private String maKhachHang;
+    private String maSoThueKhachHang;
 
     public NguoiLienHe() {
         this.laDauMoiChinh = false;
@@ -34,7 +35,7 @@ public class NguoiLienHe implements Serializable {
     }
 
     public NguoiLienHe(Long id, Long khachHangId, String hoTen, String chucDanh, String email,
-                       String soDienThoai, String vaiTroQuyetDinh, boolean laDauMoiChinh) {
+                       String soDienThoai, VaiTroQuyetDinhEnum vaiTroQuyetDinh, boolean laDauMoiChinh) {
         this.id = id;
         this.khachHangId = khachHangId;
         this.hoTen = hoTen;
@@ -94,16 +95,24 @@ public class NguoiLienHe implements Serializable {
         this.soDienThoai = soDienThoai;
     }
 
-    public String getVaiTroQuyetDinh() {
+    public VaiTroQuyetDinhEnum getVaiTroQuyetDinh() {
         return vaiTroQuyetDinh;
     }
 
-    public void setVaiTroQuyetDinh(String vaiTroQuyetDinh) {
+    public void setVaiTroQuyetDinh(VaiTroQuyetDinhEnum vaiTroQuyetDinh) {
         this.vaiTroQuyetDinh = vaiTroQuyetDinh;
     }
 
+    public void setVaiTroQuyetDinh(String vaiTroQuyetDinh) {
+        this.vaiTroQuyetDinh = vaiTroQuyetDinh != null ? VaiTroQuyetDinhEnum.fromMa(vaiTroQuyetDinh) : null;
+    }
+
     public VaiTroQuyetDinhEnum getVaiTroQuyetDinhEnum() {
-        return VaiTroQuyetDinhEnum.fromMa(this.vaiTroQuyetDinh);
+        return this.vaiTroQuyetDinh;
+    }
+
+    public String getVaiTroQuyetDinhMa() {
+        return vaiTroQuyetDinh != null ? vaiTroQuyetDinh.getMa() : null;
     }
 
     public boolean isLaDauMoiChinh() {
@@ -122,20 +131,36 @@ public class NguoiLienHe implements Serializable {
         this.trangThai = trangThai;
     }
 
-    public Timestamp getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Timestamp getUpdatedAt() {
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt != null ? createdAt.toLocalDateTime() : null;
+    }
+
+    public Timestamp getCreatedAtTimestamp() {
+        return createdAt != null ? Timestamp.valueOf(createdAt) : null;
+    }
+
+    public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Timestamp updatedAt) {
+    public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt != null ? updatedAt.toLocalDateTime() : null;
+    }
+
+    public Timestamp getUpdatedAtTimestamp() {
+        return updatedAt != null ? Timestamp.valueOf(updatedAt) : null;
     }
 
     public String getTenKhachHang() {
@@ -154,17 +179,20 @@ public class NguoiLienHe implements Serializable {
         this.maKhachHang = maKhachHang;
     }
 
+    public String getMaSoThueKhachHang() {
+        return maSoThueKhachHang;
+    }
+
+    public void setMaSoThueKhachHang(String maSoThueKhachHang) {
+        this.maSoThueKhachHang = maSoThueKhachHang;
+    }
+
     public String getTenVaiTroHienThi() {
-        VaiTroQuyetDinhEnum en = getVaiTroQuyetDinhEnum();
-        if (en != null) {
-            return en.getTenHienThi();
-        }
-        return vaiTroQuyetDinh != null && !vaiTroQuyetDinh.isBlank() ? vaiTroQuyetDinh : "Chưa xác định";
+        return vaiTroQuyetDinh != null ? vaiTroQuyetDinh.getTenHienThi() : "Chưa xác định";
     }
 
     public String getBadgeClassVaiTro() {
-        VaiTroQuyetDinhEnum en = getVaiTroQuyetDinhEnum();
-        return en != null ? en.getBadgeClass() : "badge-role";
+        return vaiTroQuyetDinh != null ? vaiTroQuyetDinh.getBadgeClass() : "badge-secondary";
     }
 
     public String getChuCaiDau() {
@@ -174,5 +202,20 @@ public class NguoiLienHe implements Serializable {
         String[] parts = hoTen.trim().split("\\s+");
         String last = parts[parts.length - 1];
         return last.substring(0, 1).toUpperCase();
+    }
+
+    @Override
+    public String toString() {
+        return "NguoiLienHe{" +
+                "id=" + id +
+                ", khachHangId=" + khachHangId +
+                ", hoTen='" + hoTen + '\'' +
+                ", chucDanh='" + chucDanh + '\'' +
+                ", email='" + email + '\'' +
+                ", soDienThoai='" + soDienThoai + '\'' +
+                ", vaiTroQuyetDinh=" + (vaiTroQuyetDinh != null ? vaiTroQuyetDinh.getMa() : null) +
+                ", laDauMoiChinh=" + laDauMoiChinh +
+                ", trangThai='" + trangThai + '\'' +
+                '}';
     }
 }

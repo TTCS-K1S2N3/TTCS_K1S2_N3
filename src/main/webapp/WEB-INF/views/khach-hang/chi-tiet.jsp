@@ -458,7 +458,7 @@
                     <button type="button" class="nav-tab-btn" data-tab="contacts" role="tab" aria-selected="false">
                         <span class="material-symbols-outlined" aria-hidden="true">contacts</span>
                         <span>Người liên hệ</span>
-                        <span class="tab-badge">${not empty khachHang360.dsNguoiLienHe ? khachHang360.dsNguoiLienHe.size() : 0} người</span>
+                        <span class="tab-badge">${not empty dsNguoiLienHe ? dsNguoiLienHe.size() : (not empty khachHang360.dsNguoiLienHe ? khachHang360.dsNguoiLienHe.size() : 0)} người</span>
                     </button>
                     <button type="button" class="nav-tab-btn" data-tab="attachments" role="tab" aria-selected="false">
                         <span class="material-symbols-outlined" aria-hidden="true">attach_file</span>
@@ -640,77 +640,188 @@
                 </div>
 
                 <!-- PANEL 3: Danh Sách Người Liên Hệ (Contacts) (AC1) -->
+                <!-- PANEL 3: Danh Sách Người Liên Hệ & Vai Trò Quyết Định (Story S3-02 AC1, AC2, AC3, AC4) -->
                 <div class="tab-panel" id="panel-contacts" style="display: none;">
-                    <div class="panel-section-title">
-                        <span class="material-symbols-outlined" aria-hidden="true">supervisor_account</span>
-                        <span>Danh Sách Người Liên Hệ & Vai Trò Quyết Định (AC1)</span>
-                    </div>
+                    <div class="detail-card" id="cardNguoiLienHe" style="margin-bottom: 0; box-shadow: none; border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px;">
+                        <div class="detail-header" style="background-color: #f8fafc; padding: 16px 20px; border-bottom: 1px solid var(--border-color, #e2e8f0); display: flex; justify-content: space-between; align-items: center; border-radius: 8px 8px 0 0;">
+                            <div class="detail-title-group">
+                                <h2 style="font-size: 18px; font-weight: 800; color: var(--slate-900); display: flex; align-items: center; gap: 8px; margin: 0;">
+                                    <span class="material-symbols-outlined" style="color: var(--primary); font-size: 24px;" aria-hidden="true">group</span>
+                                    <span>Danh Sách Người Liên Hệ &amp; Vai Trò Quyết Định (Story S3-02)</span>
+                                </h2>
+                                <p style="margin: 4px 0 0; color: var(--slate-500); font-size: 13px;">Mỗi khách hàng có nhiều người liên hệ; đánh dấu vai trò quyết định mua, đầu mối chính và lịch sử chuyển công ty</p>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-primary" id="btnMoModalThemNlh" onclick="moModalThemNlh()" style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">person_add</span>
+                                    <span>Thêm Người Liên Hệ</span>
+                                </button>
+                            </div>
+                        </div>
 
-                    <div class="contacts-grid">
-                        <c:choose>
-                            <c:when test="${not empty khachHang360.dsNguoiLienHe}">
-                                <c:forEach var="contact" items="${khachHang360.dsNguoiLienHe}">
-                                    <div class="contact-card">
-                                        <div>
-                                            <div class="contact-card-top">
-                                                <div class="contact-avatar">
-                                                    <c:out value="${contact.chuCaiDau}" />
-                                                </div>
-                                                <div class="contact-info-block">
-                                                    <h3><c:out value="${contact.hoTen}" /></h3>
-                                                    <div class="contact-job-title"><c:out value="${not empty contact.chucDanh ? contact.chucDanh : 'Nhân sự liên hệ'}" /></div>
-                                                    <div class="contact-badges">
-                                                        <span class="${contact.badgeClassVaiTro}">
-                                                            <c:out value="${contact.tenVaiTroHienThi}" />
-                                                        </span>
-                                                        <c:if test="${contact.laDauMoiChinh}">
-                                                            <span class="badge-primary-contact">Đầu mối chính</span>
-                                                        </c:if>
+                        <!-- Bảng danh sách người liên hệ -->
+                        <div style="overflow-x: auto;">
+                            <table class="contact-table crm-table" id="tableNguoiLienHe">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width: 180px;">Họ và tên</th>
+                                        <th style="min-width: 150px;">Chức danh</th>
+                                        <th style="min-width: 170px;">Email</th>
+                                        <th style="min-width: 130px;">Số điện thoại</th>
+                                        <th style="text-align: center; min-width: 170px;">Vai trò quyết định mua (AC2)</th>
+                                        <th style="text-align: center; min-width: 120px;">Đầu mối chính (AC3)</th>
+                                        <th style="text-align: center; min-width: 130px;">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyNguoiLienHe">
+                                    <c:set var="contactList" value="${not empty dsNguoiLienHe ? dsNguoiLienHe : khachHang360.dsNguoiLienHe}" />
+                                    <c:choose>
+                                        <c:when test="${not empty contactList}">
+                                            <c:forEach var="nlh" items="${contactList}">
+                                                <tr id="row-nlh-${nlh.id}">
+                                                    <td>
+                                                        <div class="contact-name-cell">
+                                                            <strong style="color: var(--slate-900);"><c:out value="${nlh.hoTen}" /></strong>
+                                                            <c:if test="${nlh.laDauMoiChinh}">
+                                                                <span class="badge-dau-moi-chinh" title="Đầu mối chính của khách hàng">
+                                                                    <span class="material-symbols-outlined" aria-hidden="true">star</span>
+                                                                    <span>Đầu mối chính</span>
+                                                                </span>
+                                                            </c:if>
+                                                        </div>
+                                                    </td>
+                                                    <td style="color: var(--slate-700);">
+                                                        <c:out value="${not empty nlh.chucDanh ? nlh.chucDanh : '—'}" />
+                                                    </td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${not empty nlh.email}">
+                                                                <a href="mailto:${nlh.email}" style="color: var(--primary); text-decoration: none;">
+                                                                    <c:out value="${nlh.email}" />
+                                                                </a>
+                                                            </c:when>
+                                                            <c:otherwise><span style="color: var(--slate-400); font-style: italic;">—</span></c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${not empty nlh.soDienThoai}">
+                                                                <a href="tel:${nlh.soDienThoai}" style="color: var(--slate-700); text-decoration: none;">
+                                                                    <c:out value="${nlh.soDienThoai}" />
+                                                                </a>
+                                                            </c:when>
+                                                            <c:otherwise><span style="color: var(--slate-400); font-style: italic;">—</span></c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td style="text-align: center;">
+                                                        <c:choose>
+                                                            <c:when test="${nlh.vaiTroQuyetDinh != null}">
+                                                                <c:choose>
+                                                                    <c:when test="${nlh.vaiTroQuyetDinh.ma == 'NGUOI_QUYET_DINH' || nlh.vaiTroQuyetDinh == 'NGUOI_QUYET_DINH'}">
+                                                                        <span class="badge-vai-tro badge-quyet-dinh" title="Người có thẩm quyền quyết định cuối cùng (Decision Maker)">
+                                                                            <span class="material-symbols-outlined" aria-hidden="true">verified_user</span>
+                                                                            <span>Người quyết định</span>
+                                                                        </span>
+                                                                    </c:when>
+                                                                    <c:when test="${nlh.vaiTroQuyetDinh.ma == 'NGUOI_ANH_HUONG' || nlh.vaiTroQuyetDinh == 'NGUOI_ANH_HUONG'}">
+                                                                        <span class="badge-vai-tro badge-anh-huong" title="Người có tiếng nói ảnh hưởng quan trọng (Influencer)">
+                                                                            <span class="material-symbols-outlined" aria-hidden="true">insights</span>
+                                                                            <span>Người ảnh hưởng</span>
+                                                                        </span>
+                                                                    </c:when>
+                                                                    <c:when test="${nlh.vaiTroQuyetDinh.ma == 'NGUOI_DUNG_CUOI' || nlh.vaiTroQuyetDinh == 'NGUOI_DUNG_CUOI'}">
+                                                                        <span class="badge-vai-tro badge-dung-cuoi" title="Người trực tiếp sử dụng sản phẩm dịch vụ (End User)">
+                                                                            <span class="material-symbols-outlined" aria-hidden="true">person</span>
+                                                                            <span>Người dùng cuối</span>
+                                                                        </span>
+                                                                    </c:when>
+                                                                    <c:when test="${nlh.vaiTroQuyetDinh.ma == 'NGUOI_CAN_TRO' || nlh.vaiTroQuyetDinh == 'NGUOI_CAN_TRO'}">
+                                                                        <span class="badge-vai-tro badge-can-tro" title="Người có khả năng cản trở thương vụ (Blocker)">
+                                                                            <span class="material-symbols-outlined" aria-hidden="true">block</span>
+                                                                            <span>Người cản trở</span>
+                                                                        </span>
+                                                                    </c:when>
+                                                                    <c:otherwise>
+                                                                        <span class="badge-vai-tro badge-chua-xac-dinh">
+                                                                            <c:out value="${not empty nlh.tenVaiTroHienThi ? nlh.tenVaiTroHienThi : 'Chưa xác định'}" />
+                                                                        </span>
+                                                                    </c:otherwise>
+                                                                </c:choose>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="badge-vai-tro badge-chua-xac-dinh">Chưa xác định</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td style="text-align: center;">
+                                                        <c:choose>
+                                                            <c:when test="${nlh.laDauMoiChinh}">
+                                                                <button type="button" class="btn btn-sm btn-dau-moi-active" title="Bỏ đánh dấu đầu mối chính" aria-label="Bỏ đánh dấu đầu mối chính cho <c:out value="${nlh.hoTen}" />" onclick="doiDauMoiChinh(${nlh.id}, ${not empty nlh.khachHangId ? nlh.khachHangId : (not empty khachHang ? khachHang.id : banGhi.id)}, false)">
+                                                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">star</span>
+                                                                    <span>Đầu mối</span>
+                                                                </button>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <button type="button" class="btn btn-sm btn-outline btn-dau-moi-inactive" title="Đặt làm đầu mối chính của khách hàng" aria-label="Đặt <c:out value="${nlh.hoTen}" /> làm đầu mối chính" onclick="doiDauMoiChinh(${nlh.id}, ${not empty nlh.khachHangId ? nlh.khachHangId : (not empty khachHang ? khachHang.id : banGhi.id)}, true)">
+                                                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">star_outline</span>
+                                                                    <span>Đặt chính</span>
+                                                                </button>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td style="text-align: center;">
+                                                        <div class="btn-action-group">
+                                                            <button type="button" class="btn-action" title="Chỉnh sửa thông tin" aria-label="Chỉnh sửa thông tin người liên hệ <c:out value="${nlh.hoTen}" />"
+                                                                    data-id="${nlh.id}"
+                                                                    data-ho-ten="<c:out value="${nlh.hoTen}" />"
+                                                                    data-chuc-danh="<c:out value="${nlh.chucDanh}" />"
+                                                                    data-email="<c:out value="${nlh.email}" />"
+                                                                    data-sdt="<c:out value="${nlh.soDienThoai}" />"
+                                                                    data-vai-tro="${nlh.vaiTroQuyetDinh != null ? (nlh.vaiTroQuyetDinh.ma != null ? nlh.vaiTroQuyetDinh.ma : nlh.vaiTroQuyetDinh) : ''}"
+                                                                    onclick="moModalSuaNlhTuElement(this)">
+                                                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">edit</span>
+                                                            </button>
+                                                            <button type="button" class="btn-action btn-action-transfer" title="Chuyển sang công ty khác (AC4)" aria-label="Chuyển công ty cho <c:out value="${nlh.hoTen}" />"
+                                                                    data-id="${nlh.id}"
+                                                                    data-ho-ten="<c:out value="${nlh.hoTen}" />"
+                                                                    data-chuc-danh="<c:out value="${nlh.chucDanh}" />"
+                                                                    data-vai-tro="${nlh.vaiTroQuyetDinh != null ? (nlh.vaiTroQuyetDinh.ma != null ? nlh.vaiTroQuyetDinh.ma : nlh.vaiTroQuyetDinh) : ''}"
+                                                                    onclick="moModalChuyenCongTyTuElement(this)">
+                                                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">swap_horiz</span>
+                                                            </button>
+                                                            <button type="button" class="btn-action btn-action-history" title="Xem lịch sử làm việc (AC4)" aria-label="Xem lịch sử công tác của <c:out value="${nlh.hoTen}" />"
+                                                                    data-id="${nlh.id}"
+                                                                    data-ho-ten="<c:out value="${nlh.hoTen}" />"
+                                                                    onclick="xemLichSuCongTyTuElement(this)">
+                                                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">history</span>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr>
+                                                <td colspan="7" style="padding: 0;">
+                                                    <div class="empty-state-wrapper">
+                                                        <span class="material-symbols-outlined empty-state-icon" aria-hidden="true">contact_page</span>
+                                                        <div class="empty-state-title">Chưa có người liên hệ nào</div>
+                                                        <div class="empty-state-desc">Khách hàng này hiện chưa được khai báo người liên hệ. Hãy thêm người liên hệ để ghi nhận vai trò quyết định mua và đầu mối chính.</div>
+                                                        <button type="button" class="btn btn-primary btn-sm" onclick="moModalThemNlh()" style="margin-top: 14px;">
+                                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">person_add</span>
+                                                            <span>Thêm Người Liên Hệ</span>
+                                                        </button>
                                                     </div>
-                                                </div>
-                                            </div>
-                                            <div class="contact-details-list" style="margin-top: 14px;">
-                                                <c:if test="${not empty contact.email}">
-                                                    <div class="contact-detail-item">
-                                                        <span class="material-symbols-outlined" aria-hidden="true">mail</span>
-                                                        <a href="mailto:${contact.email}" class="info-link"><c:out value="${contact.email}" /></a>
-                                                    </div>
-                                                </c:if>
-                                                <c:if test="${not empty contact.soDienThoai}">
-                                                    <div class="contact-detail-item">
-                                                        <span class="material-symbols-outlined" aria-hidden="true">call</span>
-                                                        <a href="tel:${contact.soDienThoai}" class="info-link"><c:out value="${contact.soDienThoai}" /></a>
-                                                    </div>
-                                                </c:if>
-                                            </div>
-                                        </div>
-                                        <div class="contact-card-actions">
-                                            <c:if test="${not empty contact.soDienThoai}">
-                                                <a href="tel:${contact.soDienThoai}" class="btn-contact-action call">
-                                                    <span class="material-symbols-outlined" aria-hidden="true">call</span>
-                                                    Gọi điện
-                                                </a>
-                                            </c:if>
-                                            <c:if test="${not empty contact.email}">
-                                                <a href="mailto:${contact.email}" class="btn-contact-action">
-                                                    <span class="material-symbols-outlined" aria-hidden="true">mail</span>
-                                                    Gửi email
-                                                </a>
-                                            </c:if>
-                                        </div>
-                                    </div>
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 32px; background: #fff; border-radius: 8px;">
-                                    Chưa có người liên hệ nào được lưu cho khách hàng này.
-                                </div>
-                            </c:otherwise>
-                        </c:choose>
+                                                </td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-                <!-- PANEL 4: Tệp Đính Kèm & Hợp Đồng Pháp Lý (Attachments & Contracts) (AC1) -->
                 <div class="tab-panel" id="panel-attachments" style="display: none;">
                     <div class="panel-section-title">
                         <span class="material-symbols-outlined" aria-hidden="true">attachment</span>
@@ -1434,6 +1545,184 @@
             </div>
         </div>
 
+        <!-- ========================================== -->
+        <!-- MODAL THÊM / SỬA NGƯỜI LIÊN HỆ (Story S3-02 AC1, AC2, AC3) -->
+        <!-- ========================================== -->
+        <div class="modal-backdrop" id="modalNguoiLienHe" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalNlhTitle">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="modal-title" id="modalNlhTitle">Khai Báo Người Liên Hệ</h2>
+                        <p class="modal-subtitle">Gán vai trò quyết định mua và đánh dấu đầu mối chính (Story S3-02)</p>
+                    </div>
+                    <button type="button" class="modal-close-btn" aria-label="Đóng" onclick="dongModalNlh()">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
+                </div>
+                <form id="formNguoiLienHe" method="POST" action="${pageContext.request.contextPath}/nguoi-lien-he" onsubmit="return validateFormNlh()">
+                    <input type="hidden" name="action" id="nlhAction" value="create">
+                    <input type="hidden" name="id" id="nlhId" value="">
+                    <input type="hidden" name="khachHangId" id="nlhKhachHangId" value="${not empty khachHang ? khachHang.id : banGhi.id}">
+
+                    <div class="modal-body">
+                        <div class="form-group" style="margin-bottom: 14px;">
+                            <label class="form-label" for="nlhHoTen">Họ và tên <span style="color: #ef4444;">*</span></label>
+                            <input type="text" id="nlhHoTen" name="hoTen" class="form-input" placeholder="Ví dụ: Nguyễn Văn Hoàng" required autocomplete="off">
+                            <span id="errNlhHoTen" style="color: #ef4444; font-size: 12px; display: none; margin-top: 4px;">Vui lòng nhập họ và tên người liên hệ.</span>
+                        </div>
+
+                        <div class="form-row" style="margin-bottom: 14px;">
+                            <div class="form-col">
+                                <label class="form-label" for="nlhChucDanh">Chức danh / Vị trí</label>
+                                <input type="text" id="nlhChucDanh" name="chucDanh" class="form-input" placeholder="Ví dụ: Giám đốc CNTT (CIO)" autocomplete="off">
+                            </div>
+                            <div class="form-col">
+                                <label class="form-label" for="nlhVaiTro">Vai trò quyết định mua (AC2)</label>
+                                <select id="nlhVaiTro" name="vaiTroQuyetDinh" class="form-select">
+                                    <option value="">-- Chọn vai trò trong quyết định mua --</option>
+                                    <c:forEach var="vt" items="${dsVaiTroQuyetDinh}">
+                                        <option value="${vt.ma}">${vt.tenTiengViet} (${vt.moTa})</option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row" style="margin-bottom: 14px;">
+                            <div class="form-col">
+                                <label class="form-label" for="nlhEmail">Địa chỉ Email</label>
+                                <input type="email" id="nlhEmail" name="email" class="form-input" placeholder="hoang.nv@congty.com" autocomplete="off">
+                                <span id="errNlhEmail" style="color: #ef4444; font-size: 12px; display: none; margin-top: 4px;">Email không đúng định dạng.</span>
+                            </div>
+                            <div class="form-col">
+                                <label class="form-label" for="nlhSdt">Số điện thoại</label>
+                                <input type="tel" id="nlhSdt" name="soDienThoai" class="form-input" placeholder="0912345678" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="groupDauMoiChinh" style="margin-top: 10px;">
+                            <label class="form-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="nlhLaDauMoi" name="laDauMoiChinh" value="true" style="width: 17px; height: 17px;">
+                                <span style="font-weight: 600; color: var(--slate-800);">Đánh dấu là đầu mối chính của khách hàng (AC3)</span>
+                            </label>
+                            <span style="font-size: 12px; color: var(--slate-500); display: block; margin-left: 25px;">
+                                Mỗi khách hàng chỉ có tối đa một đầu mối chính. Đặt người này sẽ tự động thay thế đầu mối chính hiện tại.
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" onclick="dongModalNlh()">Hủy</button>
+                        <button type="submit" class="btn btn-primary" id="btnLuuNlh">Lưu Người Liên Hệ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- MODAL CHUYỂN CÔNG TY CHO LIÊN HỆ (Story S3-02 AC4) -->
+        <!-- ========================================== -->
+        <div class="modal-backdrop" id="modalChuyenCongTy" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalChuyenCongTyTitle">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="modal-title" id="modalChuyenCongTyTitle">Chuyển Người Liên Hệ Sang Công Ty Mới</h2>
+                        <p class="modal-subtitle">Gắn sang khách hàng mới và lưu toàn bộ lịch sử công tác (Story S3-02 AC4)</p>
+                    </div>
+                    <button type="button" class="modal-close-btn" aria-label="Đóng" onclick="dongModalChuyenCongTy()">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
+                </div>
+                <form id="formChuyenCongTy" method="POST" action="${pageContext.request.contextPath}/nguoi-lien-he" onsubmit="return validateFormChuyenCongTy()">
+                    <input type="hidden" name="action" value="transfer-company">
+                    <input type="hidden" name="id" id="chuyenNlhId" value="">
+
+                    <div class="modal-body">
+                        <div style="background-color: #f1f5f9; padding: 12px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 13px; color: var(--slate-700);">
+                            <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px; color: var(--primary);" aria-hidden="true">info</span>
+                            Đang chuyển: <strong id="chuyenTenNlh"></strong> (Hiện tại: <c:out value="${not empty khachHang ? khachHang.tenCongTy : banGhi.tenCongTy}" />)
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 14px;">
+                            <label class="form-label" for="chuyenKhachHangMoi">Công ty / Khách hàng mới <span style="color: #ef4444;">*</span></label>
+                            <select id="chuyenKhachHangMoi" name="khachHangMoiId" class="form-select" required>
+                                <option value="">-- Chọn công ty chuyển tới --</option>
+                                <c:forEach var="khMoi" items="${dsKhachHangChuyen}">
+                                    <c:if test="${khMoi.id != (not empty khachHang ? khachHang.id : banGhi.id)}">
+                                        <option value="${khMoi.id}">
+                                            <c:out value="${khMoi.tenCongTy}" /> (<c:out value="${khMoi.maKhachHang}" />)
+                                        </option>
+                                    </c:if>
+                                </c:forEach>
+                            </select>
+                            <span id="errChuyenKh" style="color: #ef4444; font-size: 12px; display: none; margin-top: 4px;">Vui lòng chọn khách hàng mới.</span>
+                        </div>
+
+                        <div class="form-row" style="margin-bottom: 14px;">
+                            <div class="form-col">
+                                <label class="form-label" for="chuyenChucDanhMoi">Chức danh tại công ty mới</label>
+                                <input type="text" id="chuyenChucDanhMoi" name="chucDanhMoi" class="form-input" placeholder="Ví dụ: Giám đốc Mua hàng">
+                            </div>
+                            <div class="form-col">
+                                <label class="form-label" for="chuyenVaiTroMoi">Vai trò quyết định mới (AC2)</label>
+                                <select id="chuyenVaiTroMoi" name="vaiTroMoi" class="form-select">
+                                    <option value="">-- Giữ nguyên hoặc chọn vai trò mới --</option>
+                                    <c:forEach var="vt" items="${dsVaiTroQuyetDinh}">
+                                        <option value="${vt.ma}">${vt.tenTiengViet} (${vt.moTa})</option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="chuyenGhiChu">Ghi chú chuyển công tác</label>
+                            <textarea id="chuyenGhiChu" name="ghiChu" class="form-textarea" rows="2" placeholder="Ví dụ: Chuyển công tác từ tháng 10/2026 sang phụ trách mảng mua sắm của công ty mới..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" onclick="dongModalChuyenCongTy()">Hủy</button>
+                        <button type="submit" class="btn btn-primary" id="btnXacNhanChuyenCongTy" style="display: inline-flex; align-items: center; gap: 6px;">
+                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">swap_horiz</span>
+                            <span>Xác Nhận Chuyển Công Ty</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- MODAL LỊCH SỬ CÔNG TY CỦA LIÊN HỆ (Story S3-02 AC4) -->
+        <!-- ========================================== -->
+        <div class="modal-backdrop" id="modalLichSuCongTy" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalLichSuTitle">
+            <div class="modal-card" style="max-width: 650px;">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="modal-title" id="modalLichSuTitle">Lịch Sử Công Tác Qua Các Công Ty</h2>
+                        <p class="modal-subtitle" id="modalLichSuSubtitle">Dòng thời gian làm việc (Story S3-02 AC4)</p>
+                    </div>
+                    <button type="button" class="modal-close-btn" aria-label="Đóng" onclick="dongModalLichSu()">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
+                </div>
+
+                <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                    <div id="loadingLichSu" class="timeline-loading">
+                        <span class="material-symbols-outlined" style="font-size: 28px; animation: spin 1s linear infinite;" aria-hidden="true">refresh</span>
+                        <span style="font-size: 13px;">Đang tải lịch sử công tác...</span>
+                    </div>
+
+                    <div id="timelineLichSu" style="display: none;">
+                        <ul class="timeline-container" id="timelineList">
+                            <!-- Render bằng JavaScript từ fetch API -->
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="dongModalLichSu()">Đóng</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Scripts chuẩn hệ thống và các module -->
@@ -1451,5 +1740,282 @@
     <script src="${pageContext.request.contextPath}/assets/js/khach-hang/chi-tiet.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/yeu-cau-ho-tro.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/khach-hang-360.js"></script>
+    <!-- Scripts Quản lý người liên hệ & Vai trò quyết định (Story S3-02) -->
+    <script>
+        function moModalThemNlh() {
+            document.getElementById('modalNlhTitle').innerText = 'Thêm Người Liên Hệ Mới';
+            document.getElementById('nlhAction').value = 'create';
+            document.getElementById('nlhId').value = '';
+            document.getElementById('nlhHoTen').value = '';
+            document.getElementById('nlhChucDanh').value = '';
+            document.getElementById('nlhEmail').value = '';
+            document.getElementById('nlhSdt').value = '';
+            document.getElementById('nlhVaiTro').value = '';
+            document.getElementById('nlhLaDauMoi').checked = false;
+            document.getElementById('groupDauMoiChinh').style.display = 'block';
+            anLoiFormNlh();
+            hienThiModal('modalNguoiLienHe');
+            document.getElementById('nlhHoTen').focus();
+        }
+
+        function moModalSuaNlh(id, hoTen, chucDanh, email, sdt, vaiTro) {
+            document.getElementById('modalNlhTitle').innerText = 'Chỉnh Sửa Người Liên Hệ';
+            document.getElementById('nlhAction').value = 'update';
+            document.getElementById('nlhId').value = id;
+            document.getElementById('nlhHoTen').value = hoTen || '';
+            document.getElementById('nlhChucDanh').value = chucDanh || '';
+            document.getElementById('nlhEmail').value = email || '';
+            document.getElementById('nlhSdt').value = sdt || '';
+            document.getElementById('nlhVaiTro').value = vaiTro || '';
+            document.getElementById('groupDauMoiChinh').style.display = 'none'; // Sửa cờ đầu mối qua nút chuyên dụng
+            anLoiFormNlh();
+            hienThiModal('modalNguoiLienHe');
+            document.getElementById('nlhHoTen').focus();
+        }
+
+        function moModalSuaNlhTuElement(btn) {
+            var id = btn.getAttribute('data-id');
+            var hoTen = btn.getAttribute('data-ho-ten') || '';
+            var chucDanh = btn.getAttribute('data-chuc-danh') || '';
+            var email = btn.getAttribute('data-email') || '';
+            var sdt = btn.getAttribute('data-sdt') || '';
+            var vaiTro = btn.getAttribute('data-vai-tro') || '';
+            moModalSuaNlh(id, hoTen, chucDanh, email, sdt, vaiTro);
+        }
+
+        function dongModalNlh() {
+            anModal('modalNguoiLienHe');
+        }
+
+        function anLoiFormNlh() {
+            var errName = document.getElementById('errNlhHoTen');
+            if (errName) errName.style.display = 'none';
+            var errEmail = document.getElementById('errNlhEmail');
+            if (errEmail) errEmail.style.display = 'none';
+        }
+
+        function validateFormNlh() {
+            var hoTen = document.getElementById('nlhHoTen').value.trim();
+            var email = document.getElementById('nlhEmail').value.trim();
+            var hopLe = true;
+
+            if (!hoTen) {
+                var errName = document.getElementById('errNlhHoTen');
+                if (errName) errName.style.display = 'block';
+                document.getElementById('nlhHoTen').focus();
+                hopLe = false;
+            } else {
+                var errName = document.getElementById('errNlhHoTen');
+                if (errName) errName.style.display = 'none';
+            }
+
+            if (email) {
+                var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    var errEmail = document.getElementById('errNlhEmail');
+                    if (errEmail) errEmail.style.display = 'block';
+                    hopLe = false;
+                } else {
+                    var errEmail = document.getElementById('errNlhEmail');
+                    if (errEmail) errEmail.style.display = 'none';
+                }
+            }
+
+            return hopLe;
+        }
+
+        function doiDauMoiChinh(nlhId, khachHangId, datChinh) {
+            var actionName = datChinh ? 'set-main' : 'unset-main';
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '${pageContext.request.contextPath}/nguoi-lien-he';
+
+            var inpAction = document.createElement('input');
+            inpAction.type = 'hidden';
+            inpAction.name = 'action';
+            inpAction.value = actionName;
+            form.appendChild(inpAction);
+
+            var inpId = document.createElement('input');
+            inpId.type = 'hidden';
+            inpId.name = 'id';
+            inpId.value = nlhId;
+            form.appendChild(inpId);
+
+            var inpKhId = document.createElement('input');
+            inpKhId.type = 'hidden';
+            inpKhId.name = 'khachHangId';
+            inpKhId.value = khachHangId;
+            form.appendChild(inpKhId);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function moModalChuyenCongTy(id, hoTen, chucDanh, vaiTro) {
+            document.getElementById('chuyenNlhId').value = id;
+            document.getElementById('chuyenTenNlh').innerText = hoTen || '';
+            document.getElementById('chuyenChucDanhMoi').value = chucDanh || '';
+            document.getElementById('chuyenVaiTroMoi').value = vaiTro || '';
+            document.getElementById('chuyenKhachHangMoi').value = '';
+            document.getElementById('chuyenGhiChu').value = '';
+            var err = document.getElementById('errChuyenKh');
+            if (err) err.style.display = 'none';
+            hienThiModal('modalChuyenCongTy');
+        }
+
+        function moModalChuyenCongTyTuElement(btn) {
+            var id = btn.getAttribute('data-id');
+            var hoTen = btn.getAttribute('data-ho-ten') || '';
+            var chucDanh = btn.getAttribute('data-chuc-danh') || '';
+            var vaiTro = btn.getAttribute('data-vai-tro') || '';
+            moModalChuyenCongTy(id, hoTen, chucDanh, vaiTro);
+        }
+
+        function dongModalChuyenCongTy() {
+            anModal('modalChuyenCongTy');
+        }
+
+        function validateFormChuyenCongTy() {
+            var khMoi = document.getElementById('chuyenKhachHangMoi').value;
+            if (!khMoi) {
+                var err = document.getElementById('errChuyenKh');
+                if (err) err.style.display = 'block';
+                return false;
+            }
+            return true;
+        }
+
+        function xemLichSuCongTy(id, hoTen) {
+            document.getElementById('modalLichSuSubtitle').innerText = 'Lịch sử công tác của: ' + (hoTen || '');
+            document.getElementById('loadingLichSu').style.display = 'flex';
+            document.getElementById('timelineLichSu').style.display = 'none';
+            hienThiModal('modalLichSuCongTy');
+
+            fetch('${pageContext.request.contextPath}/nguoi-lien-he?action=lich-su&id=' + id, {
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(json) {
+                document.getElementById('loadingLichSu').style.display = 'none';
+                var ul = document.getElementById('timelineList');
+                ul.innerHTML = '';
+                if (json.success && json.data && json.data.length > 0) {
+                    json.data.forEach(function(item) {
+                        var li = document.createElement('li');
+                        li.className = 'timeline-item';
+
+                        var isCurrent = (item.denNgay === 'Hiện tại');
+                        var dotClass = isCurrent ? 'timeline-dot current' : 'timeline-dot';
+                        var periodBadgeClass = isCurrent ? 'timeline-period-badge current' : 'timeline-period-badge past';
+
+                        var roleBadgeHtml = '';
+                        var rCode = item.vaiTroQuyetDinh || item.vaiTro;
+                        if (rCode) {
+                            if (rCode === 'NGUOI_QUYET_DINH') {
+                                roleBadgeHtml = '<span class="badge-vai-tro badge-quyet-dinh"><span class="material-symbols-outlined" aria-hidden="true">verified_user</span>' + escapeHtmlNlh(item.tenVaiTro || 'Người quyết định') + '</span>';
+                            } else if (rCode === 'NGUOI_ANH_HUONG') {
+                                roleBadgeHtml = '<span class="badge-vai-tro badge-anh-huong"><span class="material-symbols-outlined" aria-hidden="true">insights</span>' + escapeHtmlNlh(item.tenVaiTro || 'Người ảnh hưởng') + '</span>';
+                            } else if (rCode === 'NGUOI_DUNG_CUOI') {
+                                roleBadgeHtml = '<span class="badge-vai-tro badge-dung-cuoi"><span class="material-symbols-outlined" aria-hidden="true">person</span>' + escapeHtmlNlh(item.tenVaiTro || 'Người dùng cuối') + '</span>';
+                            } else if (rCode === 'NGUOI_CAN_TRO') {
+                                roleBadgeHtml = '<span class="badge-vai-tro badge-can-tro"><span class="material-symbols-outlined" aria-hidden="true">block</span>' + escapeHtmlNlh(item.tenVaiTro || 'Người cản trở') + '</span>';
+                            } else {
+                                roleBadgeHtml = '<span class="badge-vai-tro badge-chua-xac-dinh">' + escapeHtmlNlh(item.tenVaiTro || 'Chưa xác định') + '</span>';
+                            }
+                        } else {
+                            roleBadgeHtml = '<span class="badge-vai-tro badge-chua-xac-dinh">Chưa xác định</span>';
+                        }
+
+                        var html = '<span class="' + dotClass + '"></span>' +
+                            '<div class="timeline-card">' +
+                                '<div class="timeline-header">' +
+                                    '<span class="timeline-company-name">' + escapeHtmlNlh(item.tenCongTy) + '</span>' +
+                                    '<span class="timeline-period">' +
+                                        '<span>' + (item.tuNgay || '...') + ' &rarr; </span>' +
+                                        '<span class="' + periodBadgeClass + '">' + escapeHtmlNlh(item.denNgay) + '</span>' +
+                                    '</span>' +
+                                '</div>' +
+                                '<div class="timeline-position">' +
+                                    '<span>Chức danh: <strong>' + escapeHtmlNlh(item.chucDanh || '—') + '</strong></span>' +
+                                    '<span style="color: #94a3b8;">&bull;</span>' +
+                                    '<span>Vai trò: </span>' + roleBadgeHtml +
+                                '</div>';
+
+                        if (item.ghiChu) {
+                            html += '<div class="timeline-note">' + escapeHtmlNlh(item.ghiChu) + '</div>';
+                        }
+
+                        html += '</div>';
+                        li.innerHTML = html;
+                        ul.appendChild(li);
+                    });
+                } else {
+                    ul.innerHTML = '<li style="color: #94a3b8; font-style: italic; padding: 12px 0;">Chưa ghi nhận lịch sử công tác nào cho người liên hệ này.</li>';
+                }
+                document.getElementById('timelineLichSu').style.display = 'block';
+            })
+            .catch(function(err) {
+                document.getElementById('loadingLichSu').style.display = 'none';
+                document.getElementById('timelineLichSu').style.display = 'block';
+                document.getElementById('timelineList').innerHTML = '<li style="color: #ef4444; padding: 12px 0;">Lỗi tải lịch sử công tác: ' + escapeHtmlNlh(err.message) + '</li>';
+            });
+        }
+
+        function xemLichSuCongTyTuElement(btn) {
+            var id = btn.getAttribute('data-id');
+            var hoTen = btn.getAttribute('data-ho-ten') || '';
+            xemLichSuCongTy(id, hoTen);
+        }
+
+        function dongModalLichSu() {
+            anModal('modalLichSuCongTy');
+        }
+
+        function hienThiModal(modalId) {
+            var el = document.getElementById(modalId);
+            if (el) {
+                el.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function anModal(modalId) {
+            var el = document.getElementById(modalId);
+            if (el) {
+                el.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Bắt sự kiện phím ESC và click ra ngoài backdrop để đóng modal S3-02
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                ['modalNguoiLienHe', 'modalChuyenCongTy', 'modalLichSuCongTy'].forEach(function(id) {
+                    var m = document.getElementById(id);
+                    if (m && m.style.display === 'flex') {
+                        anModal(id);
+                    }
+                });
+            }
+        });
+
+        ['modalNguoiLienHe', 'modalChuyenCongTy', 'modalLichSuCongTy'].forEach(function(id) {
+            var m = document.getElementById(id);
+            if (m) {
+                m.addEventListener('click', function(e) {
+                    if (e.target === m) {
+                        anModal(id);
+                    }
+                });
+            }
+        });
+
+        function escapeHtmlNlh(text) {
+            if (!text) return '';
+            var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+    </script>
 </body>
 </html>
