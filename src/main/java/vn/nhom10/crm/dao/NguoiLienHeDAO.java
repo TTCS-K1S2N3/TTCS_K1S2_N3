@@ -16,6 +16,8 @@ import java.sql.Types;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +26,8 @@ import java.util.Optional;
  * và lịch sử công ty (lich_su_lien_he_cong_ty) theo Story S3-02.
  */
 public class NguoiLienHeDAO {
+
+    private static final Logger LOGGER = Logger.getLogger(NguoiLienHeDAO.class.getName());
 
     /**
      * Lấy danh sách người liên hệ của một khách hàng.
@@ -529,6 +533,29 @@ public class NguoiLienHeDAO {
             throw new RuntimeException("Lỗi khi đếm số người liên hệ của khách hàng id=" + khachHangId, e);
         }
         return 0;
+    }
+
+
+    /**
+     * Tìm đầu mối chính của khách hàng (Story S3-07).
+     */
+    public NguoiLienHe timDauMoiChinh(long khachHangId) {
+        String sql = "SELECT id, khach_hang_id, ho_ten, chuc_danh, email, so_dien_thoai, " +
+                "vai_tro_quyet_dinh, la_dau_moi_chinh, trang_thai, created_at, updated_at " +
+                "FROM nguoi_lien_he WHERE khach_hang_id = ? AND la_dau_moi_chinh = 1 LIMIT 1";
+
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, khachHangId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToNguoiLienHe(rs);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.FINE, "Lỗi tìm đầu mối chính của khách hàng " + khachHangId + ": " + e.getMessage());
+        }
+        return null;
     }
 
     private NguoiLienHe mapResultSetToNguoiLienHe(ResultSet rs) throws SQLException {

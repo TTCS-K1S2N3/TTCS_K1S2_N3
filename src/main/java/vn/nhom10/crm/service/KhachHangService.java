@@ -4,6 +4,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import vn.nhom10.crm.dao.KhachHangDAO;
 import vn.nhom10.crm.dao.NhomKinhDoanhDAO;
+import vn.nhom10.crm.dto.BoLocKhachHangDTO;
 import vn.nhom10.crm.dto.NguoiDungDTO;
 import vn.nhom10.crm.model.KhachHang;
 import vn.nhom10.crm.model.NguoiDung;
@@ -334,6 +335,91 @@ public class KhachHangService {
     /**
      * Lấy danh sách khách hàng phân trang lọc theo Data Scope của người dùng (AC4).
      */
+
+    /**
+     * Tìm kiếm và lọc danh sách khách hàng kết hợp quyền hạn Data Scope của người dùng (Story S3-07 AC1, AC2).
+     */
+    public List<KhachHang> timKiemVaLoc(NguoiDungDTO user, BoLocKhachHangDTO boLoc) {
+        if (user == null) {
+            return Collections.emptyList();
+        }
+
+        if (boLoc == null) {
+            boLoc = new BoLocKhachHangDTO();
+        }
+
+        PhamViDuLieu phamViHieuLuc = xacDinhPhamViHieuLuc(user, boLoc.getPhamVi());
+        boLoc.setPhamVi(phamViHieuLuc);
+
+        return khachHangDAO.timKiemVaLoc(user, boLoc);
+    }
+
+    /**
+     * Đếm tổng số lượng khách hàng theo bộ lọc và Data Scope (Story S3-07).
+     */
+    public int demSoLuong(NguoiDungDTO user, BoLocKhachHangDTO boLoc) {
+        if (user == null) {
+            return 0;
+        }
+        if (boLoc == null) {
+            boLoc = new BoLocKhachHangDTO();
+        }
+        PhamViDuLieu phamViHieuLuc = xacDinhPhamViHieuLuc(user, boLoc.getPhamVi());
+        boLoc.setPhamVi(phamViHieuLuc);
+
+        return khachHangDAO.demSoLuong(user, boLoc);
+    }
+
+    /**
+     * Tìm khách hàng theo ID và kiểm tra quyền truy cập theo Data Scope (Story S3-07).
+     */
+    public KhachHang timTheoId(long id, NguoiDungDTO user) {
+        if (id <= 0 || user == null) {
+            return null;
+        }
+
+        KhachHang kh = khachHangDAO.timTheoId(id);
+        if (kh == null) {
+            return null;
+        }
+
+        if (!kiemTraQuyenTruyCap(user, kh)) {
+            return null;
+        }
+
+        return kh;
+    }
+
+    public PhamViDuLieu xacDinhPhamViHieuLuc(NguoiDungDTO user, PhamViDuLieu phamViYeuCau) {
+        if (user == null) {
+            return PhamViDuLieu.CA_NHAN;
+        }
+        PhamViDuLieu maxScope = user.getPhamViToiDa() != null ? user.getPhamViToiDa() : PhamViDuLieu.CA_NHAN;
+        if (phamViYeuCau == null) {
+            return user.getPhamViHienTai() != null ? user.getPhamViHienTai() : maxScope;
+        }
+        if (!user.coQuyenChonPhamVi(phamViYeuCau)) {
+            return maxScope;
+        }
+        return phamViYeuCau;
+    }
+
+    private boolean kiemTraQuyenTruyCap(NguoiDungDTO user, KhachHang kh) {
+        if (user == null || kh == null) {
+            return false;
+        }
+        PhamViDuLieu maxScope = user.getPhamViToiDa() != null ? user.getPhamViToiDa() : PhamViDuLieu.CA_NHAN;
+        if (maxScope == PhamViDuLieu.TOAN_BO) {
+            return true;
+        }
+        if (maxScope == PhamViDuLieu.NHOM) {
+            Long userNhomId = user.getNhomKinhDoanhId() != null ? Long.valueOf(user.getNhomKinhDoanhId()) : null;
+            return userNhomId != null && userNhomId.equals(kh.getNhomKinhDoanhId());
+        }
+        // CA_NHAN
+        return user.getId() != null && user.getId().equals(kh.getNguoiSoHuuId());
+    }
+
     public List<KhachHang> layDanhSachTheoQuyen(NguoiDung user,
                                                 PhamViDuLieu phamViYeuCau,
                                                 String tuKhoa,

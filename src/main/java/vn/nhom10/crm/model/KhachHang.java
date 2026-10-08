@@ -61,6 +61,12 @@ public class KhachHang implements Serializable {
     // Thuộc tính bổ trợ số yêu cầu hỗ trợ chưa xử lý (Story S3-08)
     private int soYeuCauChuaXuLy = 0;
 
+    // S3-07: Thông tin người liên hệ chính hiển thị trên danh sách
+    private String tenNguoiLienHeChinh;
+    private String soDienThoaiLienHe;
+    private String emailLienHe;
+
+
     public KhachHang() {
     }
 
@@ -433,6 +439,31 @@ public class KhachHang implements Serializable {
 
     public void setSoYeuCauChuaXuLy(int soYeuCauChuaXuLy) {
         this.soYeuCauChuaXuLy = soYeuCauChuaXuLy;
+    }
+
+
+    public String getTenNguoiLienHeChinh() {
+        return tenNguoiLienHeChinh;
+    }
+
+    public void setTenNguoiLienHeChinh(String tenNguoiLienHeChinh) {
+        this.tenNguoiLienHeChinh = tenNguoiLienHeChinh;
+    }
+
+    public String getSoDienThoaiLienHe() {
+        return soDienThoaiLienHe;
+    }
+
+    public void setSoDienThoaiLienHe(String soDienThoaiLienHe) {
+        this.soDienThoaiLienHe = soDienThoaiLienHe;
+    }
+
+    public String getEmailLienHe() {
+        return emailLienHe;
+    }
+
+    public void setEmailLienHe(String emailLienHe) {
+        this.emailLienHe = emailLienHe;
     }
 
     public String getNgayTaoDinhDang() {

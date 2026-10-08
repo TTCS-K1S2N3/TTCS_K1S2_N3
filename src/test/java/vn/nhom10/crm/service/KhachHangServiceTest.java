@@ -8,6 +8,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import vn.nhom10.crm.dao.KhachHangDAO;
 import vn.nhom10.crm.dao.NhomKinhDoanhDAO;
+import vn.nhom10.crm.dto.BoLocKhachHangDTO;
+import vn.nhom10.crm.dto.NguoiDungDTO;
 import vn.nhom10.crm.model.KhachHang;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.PhamViDuLieu;
@@ -319,4 +321,67 @@ class KhachHangServiceTest {
         assertNotNull(excelBytes);
         assertTrue(excelBytes.length > 0, "Dữ liệu Excel phải có dung lượng lớn hơn 0 byte");
     }
+
+
+    // =========================================================================
+    // TESTS CHO STORY S3-07: TÌM KIẾM, LỌC & DATA SCOPE
+    // =========================================================================
+
+    @Test
+    @DisplayName("AC1 & AC2: timKiemVaLoc gọi đúng DAO với bộ lọc và người dùng")
+    void testTimKiemVaLoc_GoiDAO() {
+        NguoiDungDTO userDTOA = NguoiDungDTO.tuNguoiDung(salesA);
+        BoLocKhachHangDTO boLoc = new BoLocKhachHangDTO();
+        boLoc.setTrangThai("TIEM_NANG");
+        boLoc.setTenCongTy("FPT");
+
+        KhachHang kh = new KhachHang(1L, "Tập đoàn FPT", 101L);
+        when(khachHangDAO.timKiemVaLoc(eq(userDTOA), any(BoLocKhachHangDTO.class)))
+                .thenReturn(Collections.singletonList(kh));
+
+        List<KhachHang> result = service.timKiemVaLoc(userDTOA, boLoc);
+        assertEquals(1, result.size());
+        assertEquals("Tập đoàn FPT", result.get(0).getTenCongTy());
+
+        verify(khachHangDAO).timKiemVaLoc(eq(userDTOA), any(BoLocKhachHangDTO.class));
+    }
+
+    @Test
+    @DisplayName("Data Scope: Người dùng chỉ có quyền CA_NHAN khi yêu cầu TOAN_BO bị ép về phạm vi an toàn")
+    void testTimKiemVaLoc_EpDataScopeAnToan() {
+        NguoiDungDTO userDTOA = NguoiDungDTO.tuNguoiDung(salesA);
+        BoLocKhachHangDTO boLoc = new BoLocKhachHangDTO();
+        boLoc.setPhamVi(PhamViDuLieu.TOAN_BO);
+
+        service.timKiemVaLoc(userDTOA, boLoc);
+
+        assertEquals(PhamViDuLieu.CA_NHAN, boLoc.getPhamVi(),
+                "Sales Rep chỉ có quyền CA_NHAN, phạm vi yêu cầu phải bị ép về CA_NHAN");
+    }
+
+    @Test
+    @DisplayName("AC3: timTheoId trả về khách hàng khi người dùng có quyền sở hữu")
+    void testTimTheoId_DungQuyen_TraVeKhachHang() {
+        NguoiDungDTO userDTOA = NguoiDungDTO.tuNguoiDung(salesA);
+        KhachHang kh = new KhachHang(1L, "Khách hàng của A", 101L);
+        kh.setNhomKinhDoanhId(1L);
+        when(khachHangDAO.timTheoId(1L)).thenReturn(kh);
+
+        KhachHang result = service.timTheoId(1L, userDTOA);
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+    }
+
+    @Test
+    @DisplayName("AC3 Bảo mật: timTheoId từ chối trả về khách hàng của nhân viên khác (ngoài phạm vi CA_NHAN)")
+    void testTimTheoId_SaiQuyen_TraVeNull() {
+        NguoiDungDTO userDTOA = NguoiDungDTO.tuNguoiDung(salesA);
+        KhachHang khB = new KhachHang(2L, "Khách hàng của B", 102L);
+        khB.setNhomKinhDoanhId(1L);
+        when(khachHangDAO.timTheoId(2L)).thenReturn(khB);
+
+        KhachHang result = service.timTheoId(2L, userDTOA);
+        assertNull(result, "Sales Rep A không được xem chi tiết khách hàng của Sales Rep B");
+    }
+
 }

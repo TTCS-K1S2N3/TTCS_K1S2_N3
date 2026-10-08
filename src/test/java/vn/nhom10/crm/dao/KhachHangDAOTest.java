@@ -5,6 +5,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import vn.nhom10.crm.config.DatabaseConfig;
+import org.junit.jupiter.api.DisplayName;
+import vn.nhom10.crm.dto.BoLocKhachHangDTO;
+import vn.nhom10.crm.dto.NguoiDungDTO;
+import vn.nhom10.crm.model.NguoiDung;
+import vn.nhom10.crm.model.VaiTro;
+import vn.nhom10.crm.model.VaiTroEnum;
 import vn.nhom10.crm.model.KhachHang;
 import vn.nhom10.crm.model.PhamViDuLieu;
 import vn.nhom10.crm.model.TrangThaiKhachHangEnum;
@@ -31,6 +37,11 @@ public class KhachHangDAOTest {
     private static Connection rootConnection;
     private KhachHangDAO khachHangDAO;
     private KhachHangDAO dao;
+
+    private static NguoiDungDTO salesA;
+    private static NguoiDungDTO salesB;
+    private static NguoiDungDTO teamLeadBac;
+
 
     @BeforeAll
     public static void setUpDatabase() throws Exception {
@@ -65,6 +76,20 @@ public class KhachHangDAOTest {
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
                     "ho_ten VARCHAR(150), email VARCHAR(200) UNIQUE, nhom_kinh_doanh_id BIGINT)");
 
+
+            st.execute("CREATE TABLE IF NOT EXISTS nguoi_lien_he (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "khach_hang_id BIGINT, " +
+                    "ho_ten VARCHAR(150), " +
+                    "so_dien_thoai VARCHAR(50), " +
+                    "email VARCHAR(150), " +
+                    "chuc_danh VARCHAR(150), " +
+                    "vai_tro_quyet_dinh VARCHAR(50), " +
+                    "la_dau_moi_chinh TINYINT DEFAULT 0, " +
+                    "trang_thai VARCHAR(50) DEFAULT 'DANG_HOAT_DONG', " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+
             st.execute("CREATE TABLE IF NOT EXISTS khach_hang (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
                     "ma_khach_hang VARCHAR(50) NULL, " +
@@ -96,7 +121,10 @@ public class KhachHangDAOTest {
                     "VALUES (1, 'CNTT', 'Công nghệ thông tin', 1, 1)");
 
             st.execute("MERGE INTO quy_mo_doanh_nghiep (id, ma_quy_mo, ten_quy_mo, thu_tu_hien_thi, hoat_dong) KEY(id) " +
-                    "VALUES (1, '100_500', '100 - 500 nhân sự', 1, 1)");
+                    "VALUES (1, '100_500', '100 - 500 nhân sự', 1, 1), (2, 'LON', 'Trên 500 người', 2, 1)");
+
+            st.execute("MERGE INTO khu_vuc_dia_ly (id, ma_khu_vuc, ten_khu_vuc) KEY(id) " +
+                    "VALUES (1, 'MB', 'Miền Bắc'), (2, 'MN', 'Miền Nam')");
 
             st.execute("MERGE INTO nhom_kinh_doanh (id, ma_nhom, ten_nhom, nhom_cha_id) KEY(id) " +
                     "VALUES (1, 'NHOM_BAC', 'Nhóm Miền Bắc', NULL)");
@@ -104,14 +132,27 @@ public class KhachHangDAOTest {
                     "VALUES (2, 'NHOM_NAM', 'Nhóm Miền Nam', NULL)");
 
             st.execute("MERGE INTO nguoi_dung (id, ho_ten, email, nhom_kinh_doanh_id) KEY(id) " +
-                    "VALUES (1, 'Nguyễn Văn Sales', 'sales@crm.vn', 1)");
-            st.execute("MERGE INTO nguoi_dung (id, ho_ten, email, nhom_kinh_doanh_id) KEY(id) " +
-                    "VALUES (101, 'Sales A', 'sales.a@crm.vn', 1)");
-            st.execute("MERGE INTO nguoi_dung (id, ho_ten, email, nhom_kinh_doanh_id) KEY(id) " +
-                    "VALUES (102, 'Sales B', 'sales.b@crm.vn', 2)");
-            st.execute("MERGE INTO nguoi_dung (id, ho_ten, email, nhom_kinh_doanh_id) KEY(id) " +
-                    "VALUES (201, 'Lead Bac', 'lead.bac@crm.vn', 1)");
+                    "VALUES (1, 'Nguyễn Văn Sales', 'sales@crm.vn', 1), " +
+                    "(100, 'Lê Thị Lead', 'lead.bac@crm.vn', 1), " +
+                    "(101, 'Sales A', 'sales.a@crm.vn', 1), " +
+                    "(102, 'Sales B', 'sales.b@crm.vn', 2), " +
+                    "(201, 'Lead Bac Old', 'lead.bac.old@crm.vn', 1)");
         }
+
+        NguoiDung uA = new NguoiDung(101L, "Nguyễn Văn A", "sales.a@crm.vn");
+        uA.setNhomKinhDoanhId(1);
+        uA.setDanhSachVaiTro(Collections.singleton(new VaiTro(VaiTroEnum.SALES_REP, PhamViDuLieu.CA_NHAN)));
+        salesA = NguoiDungDTO.tuNguoiDung(uA);
+
+        NguoiDung uB = new NguoiDung(102L, "Trần Văn B", "sales.b@crm.vn");
+        uB.setNhomKinhDoanhId(2);
+        uB.setDanhSachVaiTro(Collections.singleton(new VaiTro(VaiTroEnum.SALES_REP, PhamViDuLieu.CA_NHAN)));
+        salesB = NguoiDungDTO.tuNguoiDung(uB);
+
+        NguoiDung uLead = new NguoiDung(100L, "Lê Thị Lead", "lead.bac@crm.vn");
+        uLead.setNhomKinhDoanhId(1);
+        uLead.setDanhSachVaiTro(Collections.singleton(new VaiTro(VaiTroEnum.TEAM_LEAD, PhamViDuLieu.NHOM)));
+        teamLeadBac = NguoiDungDTO.tuNguoiDung(uLead);
     }
 
     @AfterAll
@@ -385,4 +426,157 @@ public class KhachHangDAOTest {
         kh.setNhomKinhDoanhId(nhomId);
         dao.themKhachHang(kh);
     }
+
+
+    // =========================================================================
+    // TESTS CHO STORY S3-07: TÌM KIẾM VÀ LỌC KHÁCH HÀNG
+    // =========================================================================
+
+    private void napDuLieuMauS307() throws Exception {
+        try (Statement st = rootConnection.createStatement()) {
+            st.execute("DELETE FROM nguoi_lien_he");
+            st.execute("DELETE FROM khach_hang");
+
+            st.execute("MERGE INTO nganh_nghe (id, ma_nganh, ten_nganh, thu_tu_hien_thi, hoat_dong) KEY(id) VALUES (1, 'CNTT', 'Công nghệ thông tin', 1, 1), (2, 'BAN_LE', 'Bán lẻ', 2, 1)");
+            st.execute("MERGE INTO quy_mo_doanh_nghiep (id, ma_quy_mo, ten_quy_mo, thu_tu_hien_thi, hoat_dong) KEY(id) VALUES (1, '100_500', '100 - 500 nhân sự', 1, 1), (2, 'LON', 'Trên 500 người', 2, 1)");
+            st.execute("MERGE INTO khu_vuc_dia_ly (id, ma_khu_vuc, ten_khu_vuc) KEY(id) VALUES (1, 'MB', 'Miền Bắc'), (2, 'MN', 'Miền Nam')");
+            st.execute("MERGE INTO nhom_kinh_doanh (id, ma_nhom, ten_nhom) KEY(id) VALUES (1, 'NHOM_BAC', 'Nhóm Miền Bắc'), (2, 'NHOM_NAM', 'Nhóm Miền Nam')");
+
+            st.execute("INSERT INTO khach_hang (id, ma_khach_hang, ten_cong_ty, ten_chuan_hoa, ma_so_thue, nganh_nghe_id, quy_mo_id, khu_vuc_id, nguoi_so_huu_id, nhom_kinh_doanh_id, trang_thai) " +
+                    "VALUES (1, 'KH-001', 'Tập đoàn FPT', 'tap doan fpt', '010111222', 1, 2, 1, 101, 1, 'TIEM_NANG')");
+            st.execute("INSERT INTO nguoi_lien_he (id, khach_hang_id, ho_ten, so_dien_thoai, la_dau_moi_chinh) VALUES (1, 1, 'Trương Gia Bình', '0912345678', 1)");
+
+            st.execute("INSERT INTO khach_hang (id, ma_khach_hang, ten_cong_ty, ten_chuan_hoa, ma_so_thue, nganh_nghe_id, quy_mo_id, khu_vuc_id, nguoi_so_huu_id, nhom_kinh_doanh_id, trang_thai) " +
+                    "VALUES (2, 'KH-002', 'Chuỗi Cửa Hàng WinMart', 'chuoi cua hang winmart', '010333444', 2, 1, 1, 101, 1, 'DANG_GIAO_DICH')");
+            st.execute("INSERT INTO nguoi_lien_he (id, khach_hang_id, ho_ten, so_dien_thoai, la_dau_moi_chinh) VALUES (2, 2, 'Nguyễn Thị Thu', '0988776655', 1)");
+
+            st.execute("INSERT INTO khach_hang (id, ma_khach_hang, ten_cong_ty, ten_chuan_hoa, ma_so_thue, nganh_nghe_id, quy_mo_id, khu_vuc_id, nguoi_so_huu_id, nhom_kinh_doanh_id, trang_thai) " +
+                    "VALUES (3, 'KH-003', 'Tập đoàn Viettel', 'tap doan viettel', '010555666', 1, 2, 1, 102, 1, 'KHACH_HANG')");
+            st.execute("INSERT INTO nguoi_lien_he (id, khach_hang_id, ho_ten, so_dien_thoai, la_dau_moi_chinh) VALUES (3, 3, 'Tào Đức Thắng', '0905123456', 1)");
+        }
+    }
+
+    @Test
+    @DisplayName("AC1: Lọc theo trạng thái (TIEM_NANG)")
+    void testLoc_TheoTrangThai() throws Exception {
+        napDuLieuMauS307();
+        BoLocKhachHangDTO boLoc = new BoLocKhachHangDTO();
+        boLoc.setTrangThai("TIEM_NANG");
+
+        List<KhachHang> ketQua = khachHangDAO.timKiemVaLoc(salesA, boLoc);
+        assertEquals(1, ketQua.size());
+        assertEquals("Tập đoàn FPT", ketQua.get(0).getTenCongTy());
+    }
+
+    @Test
+    @DisplayName("AC1: Lọc theo ngành nghề (Bán lẻ ID=2)")
+    void testLoc_TheoNganhNghe() throws Exception {
+        napDuLieuMauS307();
+        BoLocKhachHangDTO boLoc = new BoLocKhachHangDTO();
+        boLoc.setNganhNgheId(2L);
+
+        List<KhachHang> ketQua = khachHangDAO.timKiemVaLoc(salesA, boLoc);
+        assertEquals(1, ketQua.size());
+        assertEquals("Chuỗi Cửa Hàng WinMart", ketQua.get(0).getTenCongTy());
+    }
+
+    @Test
+    @DisplayName("AC1: Lọc theo quy mô và khu vực")
+    void testLoc_TheoQuyMoVaKhuVuc() throws Exception {
+        napDuLieuMauS307();
+        BoLocKhachHangDTO boLoc = new BoLocKhachHangDTO();
+        boLoc.setQuyMoId(2L);   // Lớn
+        boLoc.setKhuVucId(1L);  // Miền Bắc
+
+        List<KhachHang> ketQua = khachHangDAO.timKiemVaLoc(salesA, boLoc);
+        assertEquals(1, ketQua.size());
+        assertEquals("Tập đoàn FPT", ketQua.get(0).getTenCongTy());
+    }
+
+    @Test
+    @DisplayName("AC2: Tìm theo tên công ty")
+    void testTim_TheoTenCongTy() throws Exception {
+        napDuLieuMauS307();
+        BoLocKhachHangDTO boLoc = new BoLocKhachHangDTO();
+        boLoc.setTenCongTy("WinMart");
+
+        List<KhachHang> ketQua = khachHangDAO.timKiemVaLoc(salesA, boLoc);
+        assertEquals(1, ketQua.size());
+        assertEquals("Chuỗi Cửa Hàng WinMart", ketQua.get(0).getTenCongTy());
+    }
+
+    @Test
+    @DisplayName("AC2: Tìm theo mã số thuế")
+    void testTim_TheoMaSoThue() throws Exception {
+        napDuLieuMauS307();
+        BoLocKhachHangDTO boLoc = new BoLocKhachHangDTO();
+        boLoc.setMaSoThue("010111222");
+
+        List<KhachHang> ketQua = khachHangDAO.timKiemVaLoc(salesA, boLoc);
+        assertEquals(1, ketQua.size());
+        assertEquals("Tập đoàn FPT", ketQua.get(0).getTenCongTy());
+    }
+
+    @Test
+    @DisplayName("AC2: Tìm theo số điện thoại người liên hệ")
+    void testTim_TheoSoDienThoaiLienHe() throws Exception {
+        napDuLieuMauS307();
+        BoLocKhachHangDTO boLoc = new BoLocKhachHangDTO();
+        boLoc.setSoDienThoai("0988776655");
+
+        List<KhachHang> ketQua = khachHangDAO.timKiemVaLoc(salesA, boLoc);
+        assertEquals(1, ketQua.size());
+        assertEquals("Chuỗi Cửa Hàng WinMart", ketQua.get(0).getTenCongTy());
+        assertEquals("Nguyễn Thị Thu", ketQua.get(0).getTenNguoiLienHeChinh());
+        assertEquals("0988776655", ketQua.get(0).getSoDienThoaiLienHe());
+    }
+
+    @Test
+    @DisplayName("AC2: Tìm kiếm tổng hợp theo từ khóa (khớp SĐT)")
+    void testTim_TuKhoaTongHop() throws Exception {
+        napDuLieuMauS307();
+        BoLocKhachHangDTO boLoc = new BoLocKhachHangDTO();
+        boLoc.setTuKhoa("0912345678");
+
+        List<KhachHang> ketQua = khachHangDAO.timKiemVaLoc(salesA, boLoc);
+        assertEquals(1, ketQua.size());
+        assertEquals("Tập đoàn FPT", ketQua.get(0).getTenCongTy());
+    }
+
+    @Test
+    @DisplayName("Data Scope & AC1: Sales Rep A (CA_NHAN) không thấy khách của Sales Rep B")
+    void testDataScope_SalesRepA_KhongThayKhachCuaB() throws Exception {
+        napDuLieuMauS307();
+        BoLocKhachHangDTO boLoc = new BoLocKhachHangDTO();
+        boLoc.setPhamVi(PhamViDuLieu.CA_NHAN);
+
+        List<KhachHang> dsA = khachHangDAO.timKiemVaLoc(salesA, boLoc);
+        assertEquals(2, dsA.size());
+        for (KhachHang kh : dsA) {
+            assertEquals(101L, kh.getNguoiSoHuuId(), "Chỉ thấy khách do A sở hữu");
+        }
+    }
+
+    @Test
+    @DisplayName("Data Scope & AC1: Trưởng nhóm (NHOM) thấy cả khách của A và B trong nhóm Miền Bắc")
+    void testDataScope_TeamLead_ThayToanBoNhom() throws Exception {
+        napDuLieuMauS307();
+        BoLocKhachHangDTO boLoc = new BoLocKhachHangDTO();
+        boLoc.setPhamVi(PhamViDuLieu.NHOM);
+
+        List<KhachHang> dsLead = khachHangDAO.timKiemVaLoc(teamLeadBac, boLoc);
+        assertEquals(3, dsLead.size());
+    }
+
+    @Test
+    @DisplayName("Đếm số lượng khách hàng theo bộ lọc")
+    void testDemSoLuong() throws Exception {
+        napDuLieuMauS307();
+        BoLocKhachHangDTO boLoc = new BoLocKhachHangDTO();
+        boLoc.setTrangThai("TIEM_NANG");
+
+        int count = khachHangDAO.demSoLuong(salesA, boLoc);
+        assertEquals(1, count);
+    }
+
 }

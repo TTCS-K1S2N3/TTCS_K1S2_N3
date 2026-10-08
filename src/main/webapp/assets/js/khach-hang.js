@@ -1,3 +1,17 @@
+
+// Story S3-07: Chuyển đổi và áp dụng bộ lọc đã lưu
+window.chuyenBoLoc = function (boLocId) {
+    if (!boLocId || boLocId === '') {
+        window.location.href = window.location.pathname;
+        return;
+    }
+    const url = new URL(window.location.href);
+    url.searchParams.set('boLocId', boLocId);
+    url.searchParams.delete('trang');
+    url.searchParams.delete('reset');
+    window.location.href = url.toString();
+};
+
 /**
  * khach-hang.js - Xử lý giao diện Quản lý khách hàng, Hồ sơ doanh nghiệp & Chăm sóc định kỳ
  * Story S1-05: Danh mục khách hàng & Data Scope
@@ -1730,4 +1744,271 @@ document.addEventListener('DOMContentLoaded', function () {
             chuyenTab('cham-soc');
         }
     }
+
+
+    // =========================================================================
+    // STORY S3-07: TÌM KIẾM, LỌC ĐA ĐIỀU KIỆN & BỘ LỌC ĐÃ LƯU
+    // =========================================================================
+
+    const modalLuuBoLoc = document.getElementById('modalLuuBoLoc');
+    const btnMoModalLuuBoLoc = document.getElementById('btnMoModalLuuBoLoc');
+    const btnDongModalLuuBoLoc = document.getElementById('btnDongModalLuuBoLoc');
+    const btnHuyLuuBoLoc = document.getElementById('btnHuyLuuBoLoc');
+    const formLuuBoLoc = document.getElementById('formLuuBoLoc');
+    const tenBoLocInput = document.getElementById('tenBoLocInput');
+    const tenBoLocError = document.getElementById('tenBoLocError');
+    const modalFilterSummaryContent = document.getElementById('modalFilterSummaryContent');
+
+    const formLocKhachHang = document.getElementById('formLocKhachHang');
+    const tuKhoaInput = document.getElementById('tuKhoa');
+    const btnClearTuKhoa = document.getElementById('btnClearTuKhoa');
+    const btnXoaBoLocHienTai = document.getElementById('btnXoaBoLocHienTai');
+    const btnDatMacDinhHienTai = document.getElementById('btnDatMacDinhHienTai');
+    const btnExportExcel = document.getElementById('btnExportExcel');
+
+    function moModalLuuBoLoc() {
+        if (!modalLuuBoLoc) return;
+        dongBoTieuChiSangModalLuu();
+        modalLuuBoLoc.style.display = 'flex';
+        modalLuuBoLoc.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        if (tenBoLocInput) {
+            setTimeout(function () {
+                tenBoLocInput.focus();
+            }, 100);
+        }
+    }
+
+    function dongModalLuuBoLoc() {
+        if (!modalLuuBoLoc) return;
+        modalLuuBoLoc.style.display = 'none';
+        modalLuuBoLoc.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        if (tenBoLocError) tenBoLocError.style.display = 'none';
+    }
+
+    function dongBoTieuChiSangModalLuu() {
+        if (!formLocKhachHang || !formLuuBoLoc) return;
+
+        const fields = [
+            'tuKhoa', 'tenCongTy', 'maSoThue', 'soDienThoai',
+            'trangThai', 'nganhNgheId', 'quyMoId', 'khuVucId', 'nguoiSoHuuId'
+        ];
+
+        const summaryItems = [];
+
+        fields.forEach(function (field) {
+            const srcEl = formLocKhachHang.querySelector('[name="' + field + '"]');
+            const targetHidden = formLuuBoLoc.querySelector('input[type="hidden"][name="' + field + '"]');
+
+            if (srcEl && targetHidden) {
+                const val = srcEl.value.trim();
+                targetHidden.value = val;
+
+                if (val !== '') {
+                    var labelText = field;
+                    var displayVal = val;
+
+                    if (srcEl.tagName === 'SELECT') {
+                        var opt = srcEl.options[srcEl.selectedIndex];
+                        if (opt && opt.value !== '') {
+                            displayVal = opt.text.trim();
+                        }
+                    }
+
+                    var labelEl = formLocKhachHang.querySelector('label[for="' + srcEl.id + '"]');
+                    if (labelEl) {
+                        labelText = labelEl.innerText.replace('*', '').trim();
+                    }
+
+                    summaryItems.push({ label: labelText, value: displayVal });
+                }
+            }
+        });
+
+        if (modalFilterSummaryContent) {
+            if (summaryItems.length === 0) {
+                modalFilterSummaryContent.innerHTML = '<span class="filter-tag-muted">Chưa chọn tiêu chí nào (sẽ lưu bộ lọc rỗng)</span>';
+            } else {
+                modalFilterSummaryContent.innerHTML = summaryItems.map(function (item) {
+                    return '<span class="filter-tag"><strong>' + escapeHtml(item.label) + ':</strong> ' + escapeHtml(item.value) + '</span>';
+                }).join('');
+            }
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.innerText = text;
+        return div.innerHTML;
+    }
+
+    if (btnMoModalLuuBoLoc) {
+        btnMoModalLuuBoLoc.addEventListener('click', function (e) {
+            e.preventDefault();
+            moModalLuuBoLoc();
+        });
+    }
+
+    if (btnDongModalLuuBoLoc) {
+        btnDongModalLuuBoLoc.addEventListener('click', function () {
+            dongModalLuuBoLoc();
+        });
+    }
+
+    if (btnHuyLuuBoLoc) {
+        btnHuyLuuBoLoc.addEventListener('click', function () {
+            dongModalLuuBoLoc();
+        });
+    }
+
+    if (modalLuuBoLoc) {
+        modalLuuBoLoc.addEventListener('click', function (e) {
+            if (e.target === modalLuuBoLoc) {
+                dongModalLuuBoLoc();
+            }
+        });
+    }
+
+    // Nút xóa nhanh từ khóa tìm kiếm
+    function capNhatNutClear() {
+        if (!tuKhoaInput || !btnClearTuKhoa) return;
+        btnClearTuKhoa.style.display = tuKhoaInput.value.trim() !== '' ? 'block' : 'none';
+    }
+
+    if (tuKhoaInput && btnClearTuKhoa) {
+        tuKhoaInput.addEventListener('input', capNhatNutClear);
+        capNhatNutClear();
+
+        btnClearTuKhoa.addEventListener('click', function () {
+            tuKhoaInput.value = '';
+            capNhatNutClear();
+            tuKhoaInput.focus();
+            if (formLocKhachHang) formLocKhachHang.submit();
+        });
+    }
+
+    // Xóa từng chip tiêu chí
+    const chipRemoveButtons = document.querySelectorAll('.filter-chip-remove');
+    chipRemoveButtons.forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const field = btn.getAttribute('data-field');
+            if (field && formLocKhachHang) {
+                const targetInput = formLocKhachHang.querySelector('[name="' + field + '"]');
+                if (targetInput) {
+                    targetInput.value = '';
+                    formLocKhachHang.submit();
+                }
+            }
+        });
+    });
+
+    // Xóa bộ lọc hiện tại (AC3)
+    if (btnXoaBoLocHienTai) {
+        btnXoaBoLocHienTai.addEventListener('click', function (e) {
+            e.preventDefault();
+            const boLocId = btnXoaBoLocHienTai.getAttribute('data-id');
+            const tenBoLoc = btnXoaBoLocHienTai.getAttribute('data-name') || 'này';
+            if (!boLocId) return;
+
+            if (confirm('Bạn có chắc chắn muốn xóa bộ lọc "' + tenBoLoc + '" không? Hành động này không thể hoàn tác.')) {
+                const f = document.createElement('form');
+                f.method = 'POST';
+                f.action = window.location.pathname;
+
+                const actInput = document.createElement('input');
+                actInput.type = 'hidden';
+                actInput.name = 'action';
+                actInput.value = 'xoa-bo-loc';
+                f.appendChild(actInput);
+
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'boLocId';
+                idInput.value = boLocId;
+                f.appendChild(idInput);
+
+                document.body.appendChild(f);
+                f.submit();
+            }
+        });
+    }
+
+    // Đặt bộ lọc hiện tại làm mặc định (AC3)
+    if (btnDatMacDinhHienTai) {
+        btnDatMacDinhHienTai.addEventListener('click', function (e) {
+            e.preventDefault();
+            const boLocId = btnDatMacDinhHienTai.getAttribute('data-id');
+            if (!boLocId) return;
+
+            const f = document.createElement('form');
+            f.method = 'POST';
+            f.action = window.location.pathname;
+
+            const actInput = document.createElement('input');
+            actInput.type = 'hidden';
+            actInput.name = 'action';
+            actInput.value = 'dat-mac-dinh';
+            f.appendChild(actInput);
+
+            const idInput = document.createElement('input');
+            idInput.type = 'hidden';
+            idInput.name = 'boLocId';
+            idInput.value = boLocId;
+            f.appendChild(idInput);
+
+            document.body.appendChild(f);
+            f.submit();
+        });
+    }
+
+    // Validate form lưu bộ lọc
+    if (formLuuBoLoc) {
+        formLuuBoLoc.addEventListener('submit', function (e) {
+            if (!tenBoLocInput) return;
+            const val = tenBoLocInput.value.trim();
+            if (val === '') {
+                e.preventDefault();
+                if (tenBoLocError) {
+                    tenBoLocError.textContent = 'Vui lòng nhập tên cho bộ lọc.';
+                    tenBoLocError.style.display = 'block';
+                }
+                tenBoLocInput.focus();
+                return false;
+            }
+            if (val.length > 100) {
+                e.preventDefault();
+                if (tenBoLocError) {
+                    tenBoLocError.textContent = 'Tên bộ lọc không được vượt quá 100 ký tự.';
+                    tenBoLocError.style.display = 'block';
+                }
+                tenBoLocInput.focus();
+                return false;
+            }
+            if (tenBoLocError) {
+                tenBoLocError.style.display = 'none';
+            }
+        });
+
+        if (tenBoLocInput) {
+            tenBoLocInput.addEventListener('input', function () {
+                if (tenBoLocError && tenBoLocInput.value.trim() !== '') {
+                    tenBoLocError.style.display = 'none';
+                }
+            });
+        }
+    }
+
+    // Nút xuất Excel kết hợp bộ lọc hiện tại
+    if (btnExportExcel) {
+        btnExportExcel.addEventListener('click', function (e) {
+            e.preventDefault();
+            const url = new URL(window.location.href);
+            url.searchParams.set('xuatExcel', 'true');
+            window.location.href = url.toString();
+        });
+    }
+
 });

@@ -34,6 +34,15 @@ public class NguoiLienHe implements Serializable {
         this.trangThai = "DANG_HOAT_DONG";
     }
 
+    public NguoiLienHe(Long khachHangId, String hoTen, String soDienThoai) {
+        this.khachHangId = khachHangId;
+        this.hoTen = hoTen;
+        this.soDienThoai = soDienThoai;
+        this.laDauMoiChinh = false;
+        this.trangThai = "DANG_HOAT_DONG";
+    }
+
+
     public NguoiLienHe(Long id, Long khachHangId, String hoTen, String chucDanh, String email,
                        String soDienThoai, VaiTroQuyetDinhEnum vaiTroQuyetDinh, boolean laDauMoiChinh) {
         this.id = id;
@@ -202,6 +211,19 @@ public class NguoiLienHe implements Serializable {
         String[] parts = hoTen.trim().split("\\s+");
         String last = parts[parts.length - 1];
         return last.substring(0, 1).toUpperCase();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        NguoiLienHe that = (NguoiLienHe) o;
+        return java.util.Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(id);
     }
 
     @Override

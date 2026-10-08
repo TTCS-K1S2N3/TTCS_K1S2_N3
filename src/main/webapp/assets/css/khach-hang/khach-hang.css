@@ -3850,3 +3850,461 @@ body {
     from { opacity: 0; transform: translateY(-4px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+
+/* ====================================================================
+   STORY S3-07: KHUNG TÌM KIẾM, LỌC & QUẢN LÝ BỘ LỌC ĐÃ LƯU
+   ==================================================================== */
+.filter-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Thanh Quản Lý Bộ Lọc Đã Lưu (AC3) */
+.saved-filters-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding-bottom: 16px;
+    margin-bottom: 18px;
+    border-bottom: 1px dashed var(--slate-200);
+}
+
+.saved-filters-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.saved-filter-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--slate-700);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.saved-filter-select {
+    padding: 7px 12px;
+    font-size: 13px;
+    border: 1px solid var(--slate-300);
+    border-radius: var(--radius-sm);
+    background-color: #ffffff;
+    color: var(--slate-800);
+    font-weight: 600;
+    min-width: 240px;
+    max-width: 320px;
+    outline: none;
+    transition: all 0.15s ease;
+}
+
+.saved-filter-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.saved-filter-active-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background-color: var(--primary-light);
+    color: var(--primary);
+    border: 1px solid var(--primary-border);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* Khung Tìm Kiếm Nhanh (AC2) */
+.quick-search-wrapper {
+    position: relative;
+    margin-bottom: 14px;
+}
+
+.quick-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--slate-400);
+    pointer-events: none;
+}
+
+.quick-search-input {
+    width: 100%;
+    padding: 10px 40px 10px 40px;
+    font-size: 14px;
+    font-family: inherit;
+    border: 1.5px solid var(--slate-300);
+    border-radius: var(--radius-md);
+    background-color: var(--slate-50);
+    color: var(--slate-900);
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.quick-search-input:focus {
+    background-color: #ffffff;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.quick-search-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--slate-400);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s;
+}
+
+.quick-search-clear:hover {
+    color: var(--slate-700);
+    background-color: var(--slate-200);
+}
+
+/* Lưới Lọc Chi Tiết (AC1 & AC2) */
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--slate-600);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.filter-input,
+.filter-select {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 13.5px;
+    font-family: inherit;
+    border: 1px solid var(--slate-300);
+    border-radius: var(--radius-sm);
+    background-color: #ffffff;
+    color: var(--slate-800);
+    outline: none;
+    transition: all 0.15s ease;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+/* Thanh Thao Tác Lọc & Active Chips */
+.filter-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--slate-100);
+}
+
+.filter-actions-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.active-filter-chips {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 16px;
+    background-color: var(--primary-light);
+    color: var(--primary);
+    border: 1px solid var(--primary-border);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.filter-chip-remove {
+    background: transparent;
+    border: none;
+    color: var(--primary);
+    cursor: pointer;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+}
+
+.filter-chip-remove:hover {
+    opacity: 1;
+}
+
+.filter-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+.filter-summary-box {
+    background-color: var(--slate-50);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    margin-bottom: 18px;
+}
+
+.filter-summary-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--slate-600);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filter-summary-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.filter-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    background-color: #ffffff;
+    border: 1px solid var(--slate-300);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--slate-700);
+}
+
+.filter-tag-muted {
+    font-size: 12.5px;
+    color: var(--slate-500);
+    font-style: italic;
+}
+
+/* Form Controls */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-row {
+    display: flex;
+    gap: 14px;
+}
+
+.form-col {
+    flex: 1;
+}
+
+.form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--slate-700);
+    margin-bottom: 5px;
+}
+
+.form-label .required {
+    color: var(--danger);
+    margin-left: 2px;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 13.5px;
+    font-family: inherit;
+    border: 1px solid var(--slate-300);
+    border-radius: var(--radius-md);
+    background-color: #ffffff;
+    color: var(--slate-800);
+    outline: none;
+    transition: all 0.15s ease;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.form-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13.5px;
+    color: var(--slate-700);
+    user-select: none;
+}
+
+.form-checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--primary);
+}
+
+.form-error-inline {
+    font-size: 12px;
+    color: var(--danger);
+    margin-top: 4px;
+    display: none;
+}
+
+
+/* S3-07: Contact Person Name & Quick Phone Call Badge */
+.contact-person-name {
+    font-weight: 600;
+    color: var(--slate-800);
+    font-size: 13.5px;
+}
+
+.phone-call-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.phone-call-badge:hover {
+    background: #d1fae5;
+    color: #047857;
+    border-color: #6ee7b7;
+}
+
+.badge-info {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.badge-warning {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+
+/* ====================================================================
+   S3-07: RESPONSIVE CHO KHUNG TÌM KIẾM, LỌC & MODAL BỘ LỌC (360px - 768px)
+   ==================================================================== */
+@media (max-width: 768px) {
+    .saved-filters-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .saved-filters-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .saved-filter-select {
+        width: 100%;
+    }
+
+    .filter-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .filter-actions-right {
+        width: 100%;
+    }
+
+    .filter-actions-right .btn {
+        flex: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-search-wrapper {
+        flex-direction: column;
+    }
+
+    .quick-search-wrapper .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 360px) {
+    .saved-filter-label {
+        font-size: 12px;
+    }
+
+    .filter-chip {
+        font-size: 11.5px;
+        padding: 3px 8px;
+    }
+}
