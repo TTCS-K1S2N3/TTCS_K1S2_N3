@@ -298,7 +298,7 @@
                                         </c:choose>
                                     </td>
                                     <td style="text-align: center;">
-                                        <a href="${pageContext.request.contextPath}/khach-hang?id=${kh.id}" class="btn-action" title="Xem chi tiết hồ sơ khách hàng" aria-label="Xem chi tiết">
+                                        <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${kh.id}" class="btn-action" title="Xem chi tiết hồ sơ khách hàng" aria-label="Xem chi tiết hồ sơ <c:out value="${kh.tenCongTy}" />">
                                             <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
                                         </a>
                                     </td>
@@ -322,7 +322,7 @@
                                     </td>
                                     <td><span class="badge badge-success"><c:out value="${kh.trangThai}" /></span></td>
                                     <td style="text-align: center;">
-                                        <a href="${pageContext.request.contextPath}/khach-hang?id=${kh.id}" class="btn-action" title="Xem chi tiết khách hàng" aria-label="Xem chi tiết khách hàng">
+                                        <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${kh.id}" class="btn-action" title="Xem chi tiết khách hàng" aria-label="Xem chi tiết khách hàng <c:out value="${kh.tieuDe}" />">
                                             <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
                                         </a>
                                     </td>
