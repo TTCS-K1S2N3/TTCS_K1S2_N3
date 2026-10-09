@@ -753,16 +753,16 @@
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </td>
-                                                    <td style="text-align: center;">
+                                                    <td style="text-align: center;" class="cell-dau-moi-action">
                                                         <c:choose>
                                                             <c:when test="${nlh.laDauMoiChinh}">
-                                                                <button type="button" class="btn btn-sm btn-dau-moi-active" title="Bỏ đánh dấu đầu mối chính" aria-label="Bỏ đánh dấu đầu mối chính cho <c:out value="${nlh.hoTen}" />" onclick="doiDauMoiChinh(${nlh.id}, ${not empty nlh.khachHangId ? nlh.khachHangId : (not empty khachHang ? khachHang.id : banGhi.id)}, false)">
+                                                                <button type="button" class="btn btn-sm btn-dau-moi-active" title="Đầu mối chính hiện tại" aria-label="Đầu mối chính cho <c:out value="${nlh.hoTen}" />" onclick="doiDauMoiChinh(${nlh.id}, ${not empty nlh.khachHangId ? nlh.khachHangId : (not empty khachHang ? khachHang.id : banGhi.id)}, false, this)">
                                                                     <span class="material-symbols-outlined icon-xs" aria-hidden="true">star</span>
                                                                     <span>Đầu mối</span>
                                                                 </button>
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <button type="button" class="btn btn-sm btn-outline btn-dau-moi-inactive" title="Đặt làm đầu mối chính của khách hàng" aria-label="Đặt <c:out value="${nlh.hoTen}" /> làm đầu mối chính" onclick="doiDauMoiChinh(${nlh.id}, ${not empty nlh.khachHangId ? nlh.khachHangId : (not empty khachHang ? khachHang.id : banGhi.id)}, true)">
+                                                                <button type="button" class="btn btn-sm btn-outline btn-dau-moi-inactive" title="Đặt làm đầu mối chính của khách hàng" aria-label="Đặt <c:out value="${nlh.hoTen}" /> làm đầu mối chính" onclick="doiDauMoiChinh(${nlh.id}, ${not empty nlh.khachHangId ? nlh.khachHangId : (not empty khachHang ? khachHang.id : banGhi.id)}, true, this)">
                                                                     <span class="material-symbols-outlined icon-xs" aria-hidden="true">star_outline</span>
                                                                     <span>Đặt chính</span>
                                                                 </button>
@@ -1563,6 +1563,7 @@
                     <input type="hidden" name="action" id="nlhAction" value="create">
                     <input type="hidden" name="id" id="nlhId" value="">
                     <input type="hidden" name="khachHangId" id="nlhKhachHangId" value="${not empty khachHang ? khachHang.id : banGhi.id}">
+                    <input type="hidden" name="returnUrl" value="/khach-hang/360?id=${not empty khachHang ? khachHang.id : banGhi.id}">
 
                     <div class="modal-body">
                         <div class="form-group" style="margin-bottom: 14px;">
@@ -1581,7 +1582,7 @@
                                 <select id="nlhVaiTro" name="vaiTroQuyetDinh" class="form-select">
                                     <option value="">-- Chọn vai trò trong quyết định mua --</option>
                                     <c:forEach var="vt" items="${dsVaiTroQuyetDinh}">
-                                        <option value="${vt.ma}">${vt.tenTiengViet} (${vt.moTa})</option>
+                                        <option value="${vt.ma}">${not empty vt.tenTiengViet ? vt.tenTiengViet : vt.tenHienThi} (${vt.moTa})</option>
                                     </c:forEach>
                                 </select>
                             </div>
@@ -1635,11 +1636,12 @@
                 <form id="formChuyenCongTy" method="POST" action="${pageContext.request.contextPath}/nguoi-lien-he" onsubmit="return validateFormChuyenCongTy()">
                     <input type="hidden" name="action" value="transfer-company">
                     <input type="hidden" name="id" id="chuyenNlhId" value="">
+                    <input type="hidden" name="returnUrl" value="/khach-hang/360?id=${not empty khachHang ? khachHang.id : banGhi.id}">
 
                     <div class="modal-body">
                         <div style="background-color: #f1f5f9; padding: 12px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 13px; color: var(--slate-700);">
                             <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px; color: var(--primary);" aria-hidden="true">info</span>
-                            Đang chuyển: <strong id="chuyenTenNlh"></strong> (Hiện tại: <c:out value="${not empty khachHang ? khachHang.tenCongTy : banGhi.tenCongTy}" />)
+                            Đang chuyển: <strong id="chuyenTenNlh"></strong> (Hiện tại: <c:out value="${not empty khachHang ? khachHang.tenCongTy : banGhi.tieuDe}" />)
                         </div>
 
                         <div class="form-group" style="margin-bottom: 14px;">
@@ -1667,7 +1669,7 @@
                                 <select id="chuyenVaiTroMoi" name="vaiTroMoi" class="form-select">
                                     <option value="">-- Giữ nguyên hoặc chọn vai trò mới --</option>
                                     <c:forEach var="vt" items="${dsVaiTroQuyetDinh}">
-                                        <option value="${vt.ma}">${vt.tenTiengViet} (${vt.moTa})</option>
+                                        <option value="${vt.ma}">${not empty vt.tenTiengViet ? vt.tenTiengViet : vt.tenHienThi} (${vt.moTa})</option>
                                     </c:forEach>
                                 </select>
                             </div>
@@ -1739,7 +1741,7 @@
     <script src="${pageContext.request.contextPath}/assets/js/khach-hang.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/khach-hang/chi-tiet.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/yeu-cau-ho-tro.js"></script>
-    <script src="${pageContext.request.contextPath}/assets/js/khach-hang-360.js"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/khach-hang-360.js?v=20261008_tabfix"></script>
     <!-- Scripts Quản lý người liên hệ & Vai trò quyết định (Story S3-02) -->
     <script>
         function moModalThemNlh() {
@@ -1824,32 +1826,164 @@
             return hopLe;
         }
 
-        function doiDauMoiChinh(nlhId, khachHangId, datChinh) {
-            var actionName = datChinh ? 'set-main' : 'unset-main';
-            var form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '${pageContext.request.contextPath}/nguoi-lien-he';
+        var dangDoiDauMoi = false;
+        function doiDauMoiChinh(nlhId, khachHangId, datChinh, btn) {
+            if (dangDoiDauMoi) return;
 
-            var inpAction = document.createElement('input');
-            inpAction.type = 'hidden';
-            inpAction.name = 'action';
-            inpAction.value = actionName;
-            form.appendChild(inpAction);
+            // BUG-02 / S3-02 AC3: Khách hàng có người liên hệ bắt buộc phải có ít nhất 1 đầu mối chính
+            // Không cho phép tự ý bỏ đầu mối chính cuối cùng khi chưa chỉ định người thay thế
+            if (!datChinh) {
+                hienThiThongBaoToast('Mỗi khách hàng phải có ít nhất một đầu mối chính. Để thay đổi, vui lòng bấm "Đặt chính" tại người liên hệ mà bạn muốn chọn làm đầu mối mới!', 'warning');
+                return;
+            }
 
-            var inpId = document.createElement('input');
-            inpId.type = 'hidden';
-            inpId.name = 'id';
-            inpId.value = nlhId;
-            form.appendChild(inpId);
+            dangDoiDauMoi = true;
+            if (btn) {
+                btn.disabled = true;
+                btn.classList.add('loading');
+                btn.style.pointerEvents = 'none';
+                btn.style.opacity = '0.6';
+            }
 
-            var inpKhId = document.createElement('input');
-            inpKhId.type = 'hidden';
-            inpKhId.name = 'khachHangId';
-            inpKhId.value = khachHangId;
-            form.appendChild(inpKhId);
+            var params = new URLSearchParams();
+            params.append('action', 'set-main');
+            params.append('id', nlhId);
+            params.append('khachHangId', khachHangId);
 
-            document.body.appendChild(form);
-            form.submit();
+            fetch('${pageContext.request.contextPath}/nguoi-lien-he', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: params.toString()
+            })
+            .then(function (response) {
+                return response.json().then(function (data) {
+                    return { ok: response.ok, status: response.status, data: data };
+                });
+            })
+            .then(function (result) {
+                if (result.ok && result.data && result.data.success) {
+                    capNhatGiaoDienDauMoiChinh(nlhId, khachHangId);
+                    hienThiThongBaoToast(result.data.message || 'Đã đánh dấu đầu mối chính thành công!', 'success');
+                } else {
+                    var msg = (result.data && result.data.message) ? result.data.message : 'Có lỗi khi cập nhật đầu mối chính.';
+                    hienThiThongBaoToast(msg, 'error');
+                }
+            })
+            .catch(function (error) {
+                console.error('Lỗi gọi API đổi đầu mối chính:', error);
+                hienThiThongBaoToast('Không thể kết nối tới máy chủ. Vui lòng kiểm tra lại.', 'error');
+            })
+            .finally(function () {
+                dangDoiDauMoi = false;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('loading');
+                    btn.style.pointerEvents = '';
+                    btn.style.opacity = '1';
+                }
+            });
+        }
+
+        function capNhatGiaoDienDauMoiChinh(mainNlhId, khachHangId) {
+            var tbody = document.getElementById('tbodyNguoiLienHe');
+            if (!tbody) return;
+
+            var rows = tbody.querySelectorAll('tr[id^="row-nlh-"]');
+            rows.forEach(function (row) {
+                var rowIdStr = row.id.replace('row-nlh-', '');
+                var isThisMain = (rowIdStr === String(mainNlhId));
+
+                // 1. Cột Tên người liên hệ: Cập nhật huy hiệu đầu mối chính
+                var nameCell = row.querySelector('.contact-name-cell');
+                if (nameCell) {
+                    var existingBadge = nameCell.querySelector('.badge-dau-moi-chinh');
+                    if (isThisMain) {
+                        if (!existingBadge) {
+                            var badge = document.createElement('span');
+                            badge.className = 'badge-dau-moi-chinh';
+                            badge.title = 'Đầu mối chính của khách hàng';
+                            badge.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">star</span> <span>Đầu mối chính</span>';
+                            nameCell.appendChild(badge);
+                        }
+                    } else {
+                        if (existingBadge) {
+                            existingBadge.remove();
+                        }
+                    }
+                }
+
+                // 2. Cột Đầu mối chính (AC3): Cập nhật nút Đặt chính / Đầu mối
+                var cells = row.getElementsByTagName('td');
+                for (var i = 0; i < cells.length; i++) {
+                    var cell = cells[i];
+                    if (cell.querySelector('.btn-dau-moi-active') || cell.querySelector('.btn-dau-moi-inactive')) {
+                        if (isThisMain) {
+                            cell.innerHTML = '<button type="button" class="btn btn-sm btn-dau-moi-active" title="Đầu mối chính hiện tại" aria-label="Đầu mối chính" onclick="doiDauMoiChinh(' + rowIdStr + ', ' + khachHangId + ', false, this)">' +
+                                '<span class="material-symbols-outlined icon-xs" aria-hidden="true">star</span>' +
+                                ' <span>Đầu mối</span>' +
+                                '</button>';
+                        } else {
+                            cell.innerHTML = '<button type="button" class="btn btn-sm btn-outline btn-dau-moi-inactive" title="Đặt làm đầu mối chính của khách hàng" aria-label="Đặt làm đầu mối chính" onclick="doiDauMoiChinh(' + rowIdStr + ', ' + khachHangId + ', true, this)">' +
+                                '<span class="material-symbols-outlined icon-xs" aria-hidden="true">star_outline</span>' +
+                                ' <span>Đặt chính</span>' +
+                                '</button>';
+                        }
+                        break;
+                    }
+                }
+            });
+        }
+
+        function hienThiThongBaoToast(message, loai) {
+            var container = document.getElementById('crmToastContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'crmToastContainer';
+                container.className = 'crm-toast-container';
+                document.body.appendChild(container);
+            }
+
+            var toastClass = 'crm-toast-info';
+            var iconName = 'info';
+            if (loai === 'success') {
+                toastClass = 'crm-toast-success';
+                iconName = 'check_circle';
+            } else if (loai === 'error') {
+                toastClass = 'crm-toast-danger';
+                iconName = 'error';
+            } else if (loai === 'warning') {
+                toastClass = 'crm-toast-warning';
+                iconName = 'warning';
+            }
+
+            var toast = document.createElement('div');
+            toast.className = 'crm-toast ' + toastClass;
+            toast.innerHTML = '<span class="material-symbols-outlined crm-toast-icon" aria-hidden="true">' + iconName + '</span>' +
+                '<div class="crm-toast-body">' + escapeHtmlNlh(message) + '</div>' +
+                '<button type="button" class="crm-toast-close" aria-label="Đóng">&times;</button>';
+
+            var closeBtn = toast.querySelector('.crm-toast-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function () {
+                    toast.remove();
+                });
+            }
+
+            container.appendChild(toast);
+
+            setTimeout(function () {
+                if (toast.parentNode) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(20px)';
+                    setTimeout(function () {
+                        if (toast.parentNode) toast.parentNode.removeChild(toast);
+                    }, 300);
+                }
+            }, 4000);
         }
 
         function moModalChuyenCongTy(id, hoTen, chucDanh, vaiTro) {

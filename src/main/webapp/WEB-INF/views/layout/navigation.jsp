@@ -6,6 +6,13 @@
     if (navData == null) {
         navData = new ThongTinDieuHuongDTO();
     }
+    String navThumbUrl = navData.getAnhDaiDienThumbUrl();
+    if (navThumbUrl != null && !navThumbUrl.isBlank()) {
+        String ctx = request.getContextPath();
+        if (ctx != null && !ctx.isBlank() && !"/".equals(ctx) && !navThumbUrl.startsWith(ctx) && !navThumbUrl.startsWith("http")) {
+            navThumbUrl = ctx + (navThumbUrl.startsWith("/") ? navThumbUrl : "/" + navThumbUrl);
+        }
+    }
 %>
 
 <!-- Import Google Material Symbols Outlined một lần duy nhất tại layout chung -->
@@ -25,8 +32,8 @@
     <div class="crm-nav-right">
         <button type="button" class="crm-mobile-user-avatar-btn" id="btn-mobile-user-profile" aria-label="Xem hồ sơ người dùng: <%= navData.getHoTen() %>" title="<%= navData.getHoTen() %> (<%= navData.getVaiTroHienThi() %>)">
             <span class="crm-mobile-user-avatar">
-                <% if (navData.getAnhDaiDienThumbUrl() != null && !navData.getAnhDaiDienThumbUrl().isBlank()) { %>
-                    <img src="<%= navData.getAnhDaiDienThumbUrl() %>" alt="<%= navData.getHoTen() %>" class="crm-user-avatar-img" width="36" height="36" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                <% if (navThumbUrl != null && !navThumbUrl.isBlank()) { %>
+                    <img src="<%= navThumbUrl %>" alt="<%= navData.getHoTen() %>" class="crm-user-avatar-img" width="36" height="36" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
                     <span style="display:none;"><%= navData.getTenVietTat() %></span>
                 <% } else { %>
                     <%= navData.getTenVietTat() %>
@@ -65,8 +72,8 @@
     <a href="<%= request.getContextPath() %>/ho-so" class="crm-user-profile-box" id="crm-user-profile-card" style="text-decoration: none; color: inherit;">
         <div class="crm-user-avatar-wrap">
             <div class="crm-user-avatar" title="<%= navData.getHoTen() %>">
-                <% if (navData.getAnhDaiDienThumbUrl() != null && !navData.getAnhDaiDienThumbUrl().isBlank()) { %>
-                    <img src="<%= navData.getAnhDaiDienThumbUrl() %>" alt="<%= navData.getHoTen() %>" class="crm-user-avatar-img" width="44" height="44" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <% if (navThumbUrl != null && !navThumbUrl.isBlank()) { %>
+                    <img src="<%= navThumbUrl %>" alt="<%= navData.getHoTen() %>" class="crm-user-avatar-img" width="44" height="44" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <span style="display:none;"><%= navData.getTenVietTat() %></span>
                 <% } else { %>
                     <%= navData.getTenVietTat() %>

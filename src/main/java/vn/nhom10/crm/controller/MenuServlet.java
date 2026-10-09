@@ -41,7 +41,12 @@ public class MenuServlet extends HttpServlet {
 
         NguoiDung nguoiDung = (NguoiDung) session.getAttribute("nguoiDung");
         String currentUri = request.getRequestURI();
-        ThongTinDieuHuongDTO thongTinDieuHuong = menuService.layThongTinDieuHuong(nguoiDung, currentUri);
+        ThongTinDieuHuongDTO thongTinDieuHuong =
+    menuService.layThongTinDieuHuong(
+        nguoiDung,
+        currentUri,
+        request.getContextPath()
+    );
         request.setAttribute("thongTinDieuHuong", thongTinDieuHuong);
         request.setAttribute("nguoiDungHienTai", nguoiDung);
 

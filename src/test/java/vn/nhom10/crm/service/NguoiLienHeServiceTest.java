@@ -186,6 +186,36 @@ class NguoiLienHeServiceTest {
     }
 
     @Test
+    @DisplayName("AC3: Từ chối bỏ đầu mối chính cuối cùng khi khách hàng chỉ có 1 đầu mối chính")
+    void testBoDauMoiChinh_TuChoiKhiLaDauMoiDuyNhat() {
+        NguoiLienHe nlh = new NguoiLienHe(10L, 1L, "Người Đầu Mối Duy Nhất", "Trưởng phòng", "nlh1@fpt.com", "0911", null, true);
+        when(nlhDAO.timTheoId(10L)).thenReturn(Optional.of(nlh));
+        when(nlhDAO.layDanhSachTheoKhachHang(1L)).thenReturn(List.of(nlh));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
+            service.boDauMoiChinh(salesA, 10L, 1L);
+        });
+
+        assertTrue(ex.getMessage().contains("ít nhất một người liên hệ làm đầu mối chính"));
+        verify(nlhDAO, never()).boDauMoiChinh(anyLong(), anyLong());
+    }
+
+    @Test
+    @DisplayName("AC3: Bỏ đầu mối chính thành công khi khách hàng còn đầu mối chính khác")
+    void testBoDauMoiChinh_ThanhCongKhiConDauMoiKhac() {
+        NguoiLienHe nlh1 = new NguoiLienHe(10L, 1L, "Đầu mối 1", "Trưởng phòng", "nlh1@fpt.com", "0911", null, true);
+        NguoiLienHe nlh2 = new NguoiLienHe(11L, 1L, "Đầu mối 2", "Phó phòng", "nlh2@fpt.com", "0922", null, true);
+        when(nlhDAO.timTheoId(10L)).thenReturn(Optional.of(nlh1));
+        when(nlhDAO.layDanhSachTheoKhachHang(1L)).thenReturn(List.of(nlh1, nlh2));
+        when(nlhDAO.boDauMoiChinh(10L, 1L)).thenReturn(true);
+
+        boolean result = service.boDauMoiChinh(salesA, 10L, 1L);
+
+        assertTrue(result);
+        verify(nlhDAO).boDauMoiChinh(10L, 1L);
+    }
+
+    @Test
     @DisplayName("AC4: Chuyển công ty giữ nguyên lịch sử khi có quyền trên cả công ty cũ và công ty mới")
     void testChuyenCongTy_ThanhCongVoiQuyenHopLe() {
         NguoiLienHe nlh = new NguoiLienHe(10L, 1L, "Vũ Chuyển Công Tác", "Phó ban", "vu@fpt.com", "0933", VaiTroQuyetDinhEnum.NGUOI_ANH_HUONG, true);

@@ -9,17 +9,18 @@ document.addEventListener('DOMContentLoaded', function () {
     'use strict';
 
     // 1. Quản lý hệ thống Tabs
-    const tabButtons = document.querySelectorAll('.nav-tab-btn');
-    const tabPanels = document.querySelectorAll('.tab-panel');
-
     function switchTab(targetTabId) {
-        tabButtons.forEach(function (btn) {
+        if (!targetTabId) return;
+        const currentTabButtons = document.querySelectorAll('.nav-tab-btn');
+        const currentTabPanels = document.querySelectorAll('.tab-panel');
+
+        currentTabButtons.forEach(function (btn) {
             const isTarget = btn.getAttribute('data-tab') === targetTabId;
             btn.classList.toggle('active', isTarget);
             btn.setAttribute('aria-selected', isTarget ? 'true' : 'false');
         });
 
-        tabPanels.forEach(function (panel) {
+        currentTabPanels.forEach(function (panel) {
             if (targetTabId === 'all') {
                 // Chế độ xem toàn bộ gom chung trên 1 trang dài
                 panel.style.display = 'block';
@@ -35,11 +36,19 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    tabButtons.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const targetTab = this.getAttribute('data-tab');
-            switchTab(targetTab);
-        });
+    window.switchTab360 = switchTab;
+    window.switchTab = switchTab;
+
+    // Bắt sự kiện click qua ủy quyền sự kiện trên document
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.nav-tab-btn');
+        if (btn) {
+            e.preventDefault();
+            const targetTab = btn.getAttribute('data-tab');
+            if (targetTab) {
+                switchTab(targetTab);
+            }
+        }
     });
 
     // 2. Dữ liệu Hoạt động từ Server & AC3 Benchmark Engine

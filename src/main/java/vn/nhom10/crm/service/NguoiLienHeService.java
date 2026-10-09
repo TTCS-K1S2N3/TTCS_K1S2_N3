@@ -87,6 +87,12 @@ public class NguoiLienHeService {
         // Validate dữ liệu đầu vào
         validateThongTinNguoiLienHe(nlh);
 
+        // Quy tắc nghiệp vụ (S3-02 AC3): Khách hàng chưa có người liên hệ thì người đầu tiên mặc định là đầu mối chính
+        List<NguoiLienHe> danhSachHienTai = nguoiLienHeDAO.layDanhSachTheoKhachHang(nlh.getKhachHangId());
+        if (danhSachHienTai == null || danhSachHienTai.isEmpty()) {
+            nlh.setLaDauMoiChinh(true);
+        }
+
         long newId = nguoiLienHeDAO.themNguoiLienHe(nlh);
         nlh.setId(newId);
         return nlh;
@@ -153,6 +159,18 @@ public class NguoiLienHeService {
 
         KhachHang kh = layKhachHangHoacBaoLoi(khachHangId);
         kiemTraQuyenSuaKhachHang(currentUser, kh);
+
+        // Quy tắc bắt buộc (Story S3-02 AC3):
+        // Khi khách hàng đã có người liên hệ, bắt buộc phải có ít nhất một đầu mối chính.
+        // Không cho phép bỏ đánh dấu đầu mối chính cuối cùng khi chưa chỉ định người thay thế.
+        List<NguoiLienHe> danhSach = nguoiLienHeDAO.layDanhSachTheoKhachHang(khachHangId);
+        long soLuongDauMoi = (danhSach != null)
+                ? danhSach.stream().filter(NguoiLienHe::isLaDauMoiChinh).count()
+                : 0;
+
+        if (nlh.isLaDauMoiChinh() && soLuongDauMoi <= 1) {
+            throw new IllegalStateException("Mỗi khách hàng phải có ít nhất một người liên hệ làm đầu mối chính. Vui lòng chỉ định người liên hệ khác làm đầu mối chính thay thế thay vì bỏ đầu mối!");
+        }
 
         return nguoiLienHeDAO.boDauMoiChinh(nlhId, khachHangId);
     }

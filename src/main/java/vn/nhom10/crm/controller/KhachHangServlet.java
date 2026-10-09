@@ -399,6 +399,11 @@ public class KhachHangServlet extends HttpServlet {
         String reset = request.getParameter("reset");
         String tuKhoa = request.getParameter("tuKhoa");
 
+        String thongBaoParam = request.getParameter("thongBaoThanhCong");
+        if (thongBaoParam != null && !thongBaoParam.trim().isEmpty()) {
+            request.setAttribute("thongBaoThanhCong", thongBaoParam.trim());
+        }
+
         if (boLocIdParam != null && !boLocIdParam.trim().isEmpty()) {
             try {
                 long boLocId = Long.parseLong(boLocIdParam.trim());
@@ -463,7 +468,10 @@ public class KhachHangServlet extends HttpServlet {
         List<KhachHang> dsKhachHangModel = khachHangService.timKiemVaLoc(userDTO, boLoc);
         int tongSoKhachHangModel = khachHangService.demSoLuong(userDTO, boLoc);
 
-        if (dsKhachHangModel == null || dsKhachHangModel.isEmpty()) {
+        if (dsKhachHangModel == null) {
+            dsKhachHangModel = Collections.emptyList();
+        }
+        if (dsKhachHangModel.isEmpty() && !boLoc.coDieuKienLoc()) {
             try {
                 dsKhachHangModel = khachHangService.layDanhSachTheoQuyen(
                         user, phamViHieuLuc, boLoc.getTuKhoa(), boLoc.getTrangThai(),
@@ -536,6 +544,7 @@ public class KhachHangServlet extends HttpServlet {
             danhSachCapTrung = gopKhachHangService.phatHienTrungLap(danhSachKhachHang);
         }
         int soCapTrung = danhSachCapTrung != null ? danhSachCapTrung.size() : 0;
+        String danhSachCapTrungJson = CapKhachHangTrungDTO.danhSachToJson(danhSachCapTrung);
 
         request.setAttribute("coQuyenDanhMuc", coQuyenDanhMuc);
         request.setAttribute("laTruongNhomTroLen", laTruongNhomTroLen);
@@ -553,10 +562,16 @@ public class KhachHangServlet extends HttpServlet {
         request.setAttribute("trangThaiHienTai", boLoc.getTrangThai() != null ? boLoc.getTrangThai() : "");
         request.setAttribute("nganhNgheIdHienTai", boLoc.getNganhNgheId());
         request.setAttribute("quyMoIdHienTai", boLoc.getQuyMoId());
+        request.setAttribute("khuVucIdHienTai", boLoc.getKhuVucId());
+        request.setAttribute("nguoiSoHuuIdHienTai", boLoc.getNguoiSoHuuId());
+        request.setAttribute("tenCongTyHienTai", boLoc.getTenCongTy() != null ? boLoc.getTenCongTy() : "");
+        request.setAttribute("maSoThueHienTai", boLoc.getMaSoThue() != null ? boLoc.getMaSoThue() : "");
+        request.setAttribute("soDienThoaiHienTai", boLoc.getSoDienThoai() != null ? boLoc.getSoDienThoai() : "");
         request.setAttribute("trangHienTai", trang);
         request.setAttribute("tongSoTrang", Math.max(1, (int) Math.ceil((double) tongSoKhachHangModel / kichThuocTrang)));
         request.setAttribute("kichThuocTrang", kichThuocTrang);
         request.setAttribute("danhSachCapTrung", danhSachCapTrung);
+        request.setAttribute("danhSachCapTrungJson", danhSachCapTrungJson);
         request.setAttribute("soCapTrung", soCapTrung);
         request.setAttribute("boLocHienTai", boLoc);
 
@@ -1147,6 +1162,7 @@ public class KhachHangServlet extends HttpServlet {
             List<MucDanhMucDTO> dsQuyMo = danhMucBanHangService.layDanhSachTheoLoai(LoaiDanhMuc.QUY_MO);
             request.setAttribute("dsQuyMo", dsQuyMo);
 
+            request.setAttribute("dsTrangThai", TrangThaiKhachHangEnum.values());
             request.setAttribute("dsTrangThaiKhachHang", TrangThaiKhachHangEnum.values());
 
             try {
@@ -1332,17 +1348,28 @@ public class KhachHangServlet extends HttpServlet {
                 throw new IllegalArgumentException("Mã bộ lọc không hợp lệ.");
             }
 
-            boolean xoa = boLocService.xoaBoLoc(id, user);
-            if (!xoa) {
+            BoLocDaLuu boLocCanXoa = boLocService.timBoLocTheoId(id, user);
+            if (boLocCanXoa == null) {
                 throw new SecurityException("Không tìm thấy bộ lọc hoặc bạn không có quyền xóa bộ lọc này.");
             }
 
+            boolean laMacDinh = boLocCanXoa.isMacDinh();
+
+            boolean xoa = boLocService.xoaBoLoc(id, user);
+            if (!xoa) {
+                throw new SecurityException("Không thể xóa bộ lọc này.");
+            }
+
+            String msg = laMacDinh
+                    ? "Đã xóa bộ lọc mặc định \"" + boLocCanXoa.getTenBoLoc() + "\" thành công."
+                    : "Đã xóa bộ lọc \"" + boLocCanXoa.getTenBoLoc() + "\" thành công.";
+
             if (isAjax) {
                 response.setContentType("application/json;charset=UTF-8");
-                response.getWriter().write("{\"success\":true}");
+                response.getWriter().write("{\"success\":true,\"message\":\"" + escapeJson(msg) + "\"}");
             } else {
                 response.sendRedirect(request.getContextPath() + "/khach-hang?reset=1" +
-                        "&thongBaoThanhCong=" + java.net.URLEncoder.encode("Đã xóa bộ lọc thành công.", "UTF-8"));
+                        "&thongBaoThanhCong=" + java.net.URLEncoder.encode(msg, "UTF-8"));
             }
         } catch (IllegalArgumentException | SecurityException e) {
             if (isAjax) {
