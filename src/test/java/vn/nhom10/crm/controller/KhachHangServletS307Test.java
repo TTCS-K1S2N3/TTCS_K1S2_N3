@@ -85,7 +85,27 @@ class KhachHangServletS307Test {
 
         verify(response).setStatus(HttpServletResponse.SC_OK);
         verify(request).setAttribute(eq("boLocHienTai"), any(BoLocKhachHangDTO.class));
+        verify(request).setAttribute(eq("dsTrangThai"), any());
+        verify(request).setAttribute(eq("dsTrangThaiKhachHang"), any());
         verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("AC1: Nạp đầy đủ 4 trạng thái khách hàng (TIEM_NANG, DANG_GIAO_DICH, KHACH_HANG, NGUNG_HOP_TAC) vào request attribute dsTrangThai")
+    void testNapDayDu4TrangThaiKhachHang() throws Exception {
+        servlet.doGet(request, response);
+
+        verify(request).setAttribute(eq("dsTrangThai"), argThat(val -> {
+            assertNotNull(val);
+            assertTrue(val instanceof TrangThaiKhachHangEnum[]);
+            TrangThaiKhachHangEnum[] arr = (TrangThaiKhachHangEnum[]) val;
+            assertEquals(4, arr.length);
+            assertEquals(TrangThaiKhachHangEnum.TIEM_NANG, arr[0]);
+            assertEquals(TrangThaiKhachHangEnum.DANG_GIAO_DICH, arr[1]);
+            assertEquals(TrangThaiKhachHangEnum.KHACH_HANG, arr[2]);
+            assertEquals(TrangThaiKhachHangEnum.NGUNG_HOP_TAC, arr[3]);
+            return true;
+        }));
     }
 
     @Test
@@ -172,6 +192,8 @@ class KhachHangServletS307Test {
     @Test
     @DisplayName("AC3: POST action=xoa-bo-loc xóa bộ lọc thành công")
     void testPost_XoaBoLoc() throws Exception {
+        BoLocDaLuu boLoc = new BoLocDaLuu(8L, 101L, BoLocDaLuu.LOAI_KHACH_HANG, "Bộ lọc cần xóa", "{}", false);
+        when(boLocService.timBoLocTheoId(8L, userA)).thenReturn(boLoc);
         when(request.getParameter("action")).thenReturn("xoa-bo-loc");
         when(request.getParameter("boLocId")).thenReturn("8");
         when(boLocService.xoaBoLoc(8L, userA)).thenReturn(true);
@@ -180,6 +202,47 @@ class KhachHangServletS307Test {
 
         verify(boLocService).xoaBoLoc(8L, userA);
         verify(response).sendRedirect(contains("/crm/khach-hang?reset=1"));
+    }
+
+    @Test
+    @DisplayName("AC3: Xóa bộ lọc đang đặt mặc định, xác nhận redirect reset=1 và khi F5 không xuất hiện lại")
+    void testPost_XoaBoLoc_DangDatMacDinh_SauDoGetKhongConApDung_F5KhongXuatHienLai() throws Exception {
+        // 1. Giả lập bộ lọc AC3 đang được đặt làm mặc định
+        BoLocDaLuu boLocMacDinh = new BoLocDaLuu(1L, 101L, BoLocDaLuu.LOAI_KHACH_HANG, "AC3 - Công nghệ Hà Nội", "{\"nganhNgheId\":1,\"khuVucId\":1}", true);
+        when(boLocService.timBoLocTheoId(1L, userA)).thenReturn(boLocMacDinh);
+        when(boLocService.xoaBoLoc(1L, userA)).thenReturn(true);
+
+        // 2. Gửi request POST xóa bộ lọc
+        when(request.getParameter("action")).thenReturn("xoa-bo-loc");
+        when(request.getParameter("boLocId")).thenReturn("1");
+
+        servlet.doPost(request, response);
+
+        verify(boLocService).xoaBoLoc(1L, userA);
+        verify(response).sendRedirect(argThat(url ->
+                url.contains("/crm/khach-hang?reset=1") && url.contains("thongBaoThanhCong")
+        ));
+
+        // 3. Giả lập người dùng F5 hoặc truy cập lại /khach-hang sau khi xóa (bộ lọc mặc định trong DB đã biến mất)
+        HttpServletRequest reqGet = mock(HttpServletRequest.class);
+        HttpServletResponse respGet = mock(HttpServletResponse.class);
+        RequestDispatcher rdGet = mock(RequestDispatcher.class);
+
+        when(reqGet.getContextPath()).thenReturn("/crm");
+        when(reqGet.getSession(anyBoolean())).thenReturn(session);
+        when(reqGet.getRequestDispatcher(anyString())).thenReturn(rdGet);
+        when(boLocService.timBoLocMacDinh(userA)).thenReturn(null); // Đã bị xóa khỏi DB
+
+        servlet.doGet(reqGet, respGet);
+
+        // Xác nhận bộ lọc hiện tại hoàn toàn rỗng, không tự nạp lại bộ lọc mặc định cũ
+        verify(reqGet).setAttribute(eq("boLocHienTai"), argThat(val -> {
+            BoLocKhachHangDTO dto = (BoLocKhachHangDTO) val;
+            assertNull(dto.getBoLocId());
+            assertFalse(dto.isMacDinh());
+            assertFalse(dto.coDieuKienLoc());
+            return true;
+        }));
     }
 
     @Test

@@ -20,10 +20,10 @@
 
     <main class="crm-main-content page-container" id="crm-main-content">
         <!-- Thông báo kết quả thao tác -->
-        <c:if test="${not empty thongBaoThanhCong}">
+        <c:if test="${not empty thongBaoThanhCong or not empty param.thongBaoThanhCong}">
             <div class="alert alert-success" id="alertSuccess">
                 <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
-                <span><c:out value="${thongBaoThanhCong}" /></span>
+                <span><c:out value="${not empty thongBaoThanhCong ? thongBaoThanhCong : param.thongBaoThanhCong}" /></span>
             </div>
         </c:if>
         <c:if test="${not empty thongBaoLoi}">
@@ -347,11 +347,16 @@
                                 <c:out value="${boLocHienTai.tenBoLoc}" />
                             </span>
                             <c:if test="${not boLocHienTai.macDinh}">
-                                <button type="button" class="btn btn-outline btn-sm" id="btnDatMacDinhHienTai" title="Đặt làm bộ lọc mặc định khi mở danh sách">
+                                <button type="button" class="btn btn-outline btn-sm" id="btnDatMacDinhHienTai"
+                                        data-id="${boLocHienTai.boLocId}"
+                                        title="Đặt làm bộ lọc mặc định khi mở danh sách">
                                     <span class="material-symbols-outlined icon-xs" aria-hidden="true">star</span> Đặt làm mặc định
                                 </button>
                             </c:if>
-                            <button type="button" class="btn btn-danger-outline btn-sm" id="btnXoaBoLocHienTai" title="Xóa bộ lọc đã lưu này">
+                            <button type="button" class="btn btn-danger-outline btn-sm" id="btnXoaBoLocHienTai"
+                                    data-id="${boLocHienTai.boLocId}"
+                                    data-name="<c:out value='${boLocHienTai.tenBoLoc}' />"
+                                    title="Xóa bộ lọc đã lưu này">
                                 <span class="material-symbols-outlined icon-xs" aria-hidden="true">delete</span> Xóa bộ lọc
                             </button>
                         </c:if>
@@ -413,11 +418,28 @@
                             <label class="filter-label" for="trangThaiFilter">Trạng thái khách hàng</label>
                             <select id="trangThaiFilter" name="trangThai" class="filter-select">
                                 <option value="">-- Tất cả trạng thái --</option>
-                                <c:forEach var="tt" items="${dsTrangThai}">
-                                    <option value="${tt.ma}" ${not empty boLocHienTai and (boLocHienTai.trangThai == tt.ma or boLocHienTai.trangThai == tt.tenHienThi) ? 'selected' : ''}>
-                                        <c:out value="${tt.tenHienThi}" />
-                                    </option>
-                                </c:forEach>
+                                <c:choose>
+                                    <c:when test="${not empty dsTrangThai}">
+                                        <c:forEach var="tt" items="${dsTrangThai}">
+                                            <option value="${tt.ma}" ${(not empty boLocHienTai and (boLocHienTai.trangThai == tt.ma or boLocHienTai.trangThai == tt.tenHienThi)) or param.trangThai == tt.ma or param.trangThai == tt.tenHienThi ? 'selected' : ''}>
+                                                <c:out value="${tt.tenHienThi}" />
+                                            </option>
+                                        </c:forEach>
+                                    </c:when>
+                                    <c:when test="${not empty dsTrangThaiKhachHang}">
+                                        <c:forEach var="tt" items="${dsTrangThaiKhachHang}">
+                                            <option value="${tt.ma}" ${(not empty boLocHienTai and (boLocHienTai.trangThai == tt.ma or boLocHienTai.trangThai == tt.tenHienThi)) or param.trangThai == tt.ma or param.trangThai == tt.tenHienThi ? 'selected' : ''}>
+                                                <c:out value="${tt.tenHienThi}" />
+                                            </option>
+                                        </c:forEach>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <option value="TIEM_NANG" ${(not empty boLocHienTai and (boLocHienTai.trangThai == 'TIEM_NANG' or boLocHienTai.trangThai == 'Tiềm năng')) or param.trangThai == 'TIEM_NANG' or param.trangThai == 'Tiềm năng' ? 'selected' : ''}>Tiềm năng</option>
+                                        <option value="DANG_GIAO_DICH" ${(not empty boLocHienTai and (boLocHienTai.trangThai == 'DANG_GIAO_DICH' or boLocHienTai.trangThai == 'Đang giao dịch')) or param.trangThai == 'DANG_GIAO_DICH' or param.trangThai == 'Đang giao dịch' ? 'selected' : ''}>Đang giao dịch</option>
+                                        <option value="KHACH_HANG" ${(not empty boLocHienTai and (boLocHienTai.trangThai == 'KHACH_HANG' or boLocHienTai.trangThai == 'Khách hàng')) or param.trangThai == 'KHACH_HANG' or param.trangThai == 'Khách hàng' ? 'selected' : ''}>Khách hàng</option>
+                                        <option value="NGUNG_HOP_TAC" ${(not empty boLocHienTai and (boLocHienTai.trangThai == 'NGUNG_HOP_TAC' or boLocHienTai.trangThai == 'Ngừng hợp tác')) or param.trangThai == 'NGUNG_HOP_TAC' or param.trangThai == 'Ngừng hợp tác' ? 'selected' : ''}>Ngừng hợp tác</option>
+                                    </c:otherwise>
+                                </c:choose>
                             </select>
                         </div>
 
@@ -427,7 +449,7 @@
                             <select id="nganhNgheIdFilter" name="nganhNgheId" class="filter-select">
                                 <option value="">-- Tất cả ngành nghề --</option>
                                 <c:forEach var="nn" items="${dsNganhNghe}">
-                                    <option value="${nn.id}" ${not empty boLocHienTai and boLocHienTai.nganhNgheId == nn.id ? 'selected' : ''}>
+                                    <option value="${nn.id}" ${(not empty boLocHienTai and boLocHienTai.nganhNgheId == nn.id) or param.nganhNgheId == nn.id ? 'selected' : ''}>
                                         <c:out value="${nn.tenMuc}" />
                                     </option>
                                 </c:forEach>
@@ -440,7 +462,7 @@
                             <select id="quyMoIdFilter" name="quyMoId" class="filter-select">
                                 <option value="">-- Tất cả quy mô --</option>
                                 <c:forEach var="qm" items="${dsQuyMo}">
-                                    <option value="${qm.id}" ${not empty boLocHienTai and boLocHienTai.quyMoId == qm.id ? 'selected' : ''}>
+                                    <option value="${qm.id}" ${(not empty boLocHienTai and boLocHienTai.quyMoId == qm.id) or param.quyMoId == qm.id ? 'selected' : ''}>
                                         <c:out value="${qm.tenMuc}" />
                                     </option>
                                 </c:forEach>
@@ -453,7 +475,7 @@
                             <select id="khuVucIdFilter" name="khuVucId" class="filter-select">
                                 <option value="">-- Tất cả khu vực --</option>
                                 <c:forEach var="kv" items="${dsKhuVuc}">
-                                    <option value="${kv.id}" ${not empty boLocHienTai and boLocHienTai.khuVucId == kv.id ? 'selected' : ''}>
+                                    <option value="${kv.id}" ${(not empty boLocHienTai and boLocHienTai.khuVucId == kv.id) or param.khuVucId == kv.id ? 'selected' : ''}>
                                         <c:out value="${kv.tenKhuVuc}" />
                                     </option>
                                 </c:forEach>
@@ -467,7 +489,7 @@
                                 <select id="nguoiSoHuuIdFilter" name="nguoiSoHuuId" class="filter-select">
                                     <option value="">-- Tất cả nhân viên --</option>
                                     <c:forEach var="nv" items="${dsNguoiSoHuu}">
-                                        <option value="${nv.id}" ${not empty boLocHienTai and boLocHienTai.nguoiSoHuuId == nv.id ? 'selected' : ''}>
+                                        <option value="${nv.id}" ${(not empty boLocHienTai and boLocHienTai.nguoiSoHuuId == nv.id) or param.nguoiSoHuuId == nv.id ? 'selected' : ''}>
                                             <c:out value="${nv.hoTen}" /> (${nv.email})
                                         </option>
                                     </c:forEach>
@@ -508,7 +530,14 @@
                                     </c:if>
                                     <c:if test="${not empty boLocHienTai.trangThai}">
                                         <span class="filter-chip">
-                                            Trạng thái: <c:out value='${boLocHienTai.trangThai}' />
+                                            Trạng thái: 
+                                            <c:choose>
+                                                <c:when test="${boLocHienTai.trangThai == 'TIEM_NANG' or boLocHienTai.trangThai == 'Tiềm năng'}">Tiềm năng</c:when>
+                                                <c:when test="${boLocHienTai.trangThai == 'DANG_GIAO_DICH' or boLocHienTai.trangThai == 'Đang giao dịch'}">Đang giao dịch</c:when>
+                                                <c:when test="${boLocHienTai.trangThai == 'KHACH_HANG' or boLocHienTai.trangThai == 'Khách hàng'}">Khách hàng</c:when>
+                                                <c:when test="${boLocHienTai.trangThai == 'NGUNG_HOP_TAC' or boLocHienTai.trangThai == 'Ngừng hợp tác'}">Ngừng hợp tác</c:when>
+                                                <c:otherwise><c:out value='${boLocHienTai.trangThai}' /></c:otherwise>
+                                            </c:choose>
                                             <button type="button" class="filter-chip-remove" data-field="trangThai" aria-label="Xóa điều kiện trạng thái" title="Xóa trạng thái">&times;</button>
                                         </span>
                                     </c:if>
@@ -609,7 +638,19 @@
                             <c:choose>
                                 <c:when test="${not empty dsKhachHangModel}">
                                     <c:forEach var="kh" items="${dsKhachHangModel}">
-                                        <tr data-khach-hang-id="${kh.id}" ${kh.coRuiRo ? 'class="row-rui-ro"' : ''}>
+                                        <tr data-id="${kh.id}" data-khach-hang-id="${kh.id}"
+                                            data-ma="<c:out value="${kh.maKhachHang}" />"
+                                            data-ten="<c:out value="${kh.tenCongTy}" />"
+                                            data-mst="<c:out value="${kh.maSoThue}" />"
+                                            data-web="<c:out value="${kh.website}" />"
+                                            data-owner-id="${kh.nguoiSoHuuId}"
+                                            data-owner-name="<c:out value="${kh.tenNguoiSoHuu}" />"
+                                            data-team-name="<c:out value="${kh.tenNhomKinhDoanh}" />"
+                                            data-gia-tri="<c:out value="${kh.doanhThuUocTinh}" />"
+                                            data-trang-thai="<c:out value="${kh.trangThaiHienThi}" />"
+                                            data-ngay-tao="<c:out value="${kh.ngayTao}" />"
+                                            data-mo-ta="<c:out value="${kh.moTaChiTiet}" />"
+                                            ${kh.coRuiRo ? 'class="row-rui-ro"' : ''}>
                                             <td class="font-mono">
                                                 <a href="${pageContext.request.contextPath}/khach-hang/360?id=${kh.id}" style="color: var(--primary); font-weight: 600;">
                                                     <c:out value="${not empty kh.maKhachHang ? kh.maKhachHang : ('KH-' += kh.id)}" />
@@ -757,18 +798,18 @@
                         </span>
                         <div style="display: flex; gap: 6px;">
                             <c:if test="${trangHienTai > 1}">
-                                <a href="${pageContext.request.contextPath}/khach-hang?trang=${trangHienTai - 1}&tuKhoa=${tuKhoaHienTai}&trangThai=${trangThaiHienTai}&nganhNgheId=${nganhNgheIdHienTai}&quyMoId=${quyMoIdHienTai}&boLocId=${boLocHienTai.boLocId}" class="btn btn-outline btn-sm">Trước</a>
+                                <a href="${pageContext.request.contextPath}/khach-hang?trang=${trangHienTai - 1}&tuKhoa=${tuKhoaHienTai}&trangThai=${trangThaiHienTai}&nganhNgheId=${nganhNgheIdHienTai}&quyMoId=${quyMoIdHienTai}&khuVucId=${boLocHienTai.khuVucId}&nguoiSoHuuId=${boLocHienTai.nguoiSoHuuId}&tenCongTy=${boLocHienTai.tenCongTy}&maSoThue=${boLocHienTai.maSoThue}&soDienThoai=${boLocHienTai.soDienThoai}&boLocId=${boLocHienTai.boLocId}" class="btn btn-outline btn-sm">Trước</a>
                             </c:if>
                             <c:forEach var="p" begin="1" end="${tongSoTrang}">
                                 <c:if test="${p == trangHienTai}">
                                     <span class="btn btn-primary btn-sm" style="font-weight: 700;">${p}</span>
                                 </c:if>
                                 <c:if test="${p != trangHienTai && (p == 1 || p == tongSoTrang || (p >= trangHienTai - 2 && p <= trangHienTai + 2))}">
-                                    <a href="${pageContext.request.contextPath}/khach-hang?trang=${p}&tuKhoa=${tuKhoaHienTai}&trangThai=${trangThaiHienTai}&nganhNgheId=${nganhNgheIdHienTai}&quyMoId=${quyMoIdHienTai}&boLocId=${boLocHienTai.boLocId}" class="btn btn-outline btn-sm">${p}</a>
+                                    <a href="${pageContext.request.contextPath}/khach-hang?trang=${p}&tuKhoa=${tuKhoaHienTai}&trangThai=${trangThaiHienTai}&nganhNgheId=${nganhNgheIdHienTai}&quyMoId=${quyMoIdHienTai}&khuVucId=${boLocHienTai.khuVucId}&nguoiSoHuuId=${boLocHienTai.nguoiSoHuuId}&tenCongTy=${boLocHienTai.tenCongTy}&maSoThue=${boLocHienTai.maSoThue}&soDienThoai=${boLocHienTai.soDienThoai}&boLocId=${boLocHienTai.boLocId}" class="btn btn-outline btn-sm">${p}</a>
                                 </c:if>
                             </c:forEach>
                             <c:if test="${trangHienTai < tongSoTrang}">
-                                <a href="${pageContext.request.contextPath}/khach-hang?trang=${trangHienTai + 1}&tuKhoa=${tuKhoaHienTai}&trangThai=${trangThaiHienTai}&nganhNgheId=${nganhNgheIdHienTai}&quyMoId=${quyMoIdHienTai}&boLocId=${boLocHienTai.boLocId}" class="btn btn-outline btn-sm">Sau</a>
+                                <a href="${pageContext.request.contextPath}/khach-hang?trang=${trangHienTai + 1}&tuKhoa=${tuKhoaHienTai}&trangThai=${trangThaiHienTai}&nganhNgheId=${nganhNgheIdHienTai}&quyMoId=${quyMoIdHienTai}&khuVucId=${boLocHienTai.khuVucId}&nguoiSoHuuId=${boLocHienTai.nguoiSoHuuId}&tenCongTy=${boLocHienTai.tenCongTy}&maSoThue=${boLocHienTai.maSoThue}&soDienThoai=${boLocHienTai.soDienThoai}&boLocId=${boLocHienTai.boLocId}" class="btn btn-outline btn-sm">Sau</a>
                             </c:if>
                         </div>
                     </div>
@@ -1751,9 +1792,18 @@
         <div class="crm-toast-container" id="crmToastContainer" aria-live="polite"></div>
     </main>
 
+    <script id="serverDataTrungLap" type="application/json">
+        ${not empty danhSachCapTrungJson ? danhSachCapTrungJson : '[]'}
+    </script>
     <script>
         window.LA_TRUONG_NHOM = ${laTruongNhomTroLen ? 'true' : 'false'};
         window.TAB_HIEN_TAI = "${not empty tabHienTai ? tabHienTai : 'tat-ca'}";
+        try {
+            var rawTrung = document.getElementById('serverDataTrungLap').textContent;
+            window.SERVER_DANH_SACH_CAP_TRUNG = JSON.parse(rawTrung);
+        } catch (e) {
+            window.SERVER_DANH_SACH_CAP_TRUNG = [];
+        }
     </script>
 
     <script src="${pageContext.request.contextPath}/assets/js/navigation.js"></script>

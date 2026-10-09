@@ -150,4 +150,20 @@ class BoLocKhachHangServiceTest {
         assertTrue(result);
         verify(boLocDAO).datMacDinh(5L, 101L, BoLocDaLuu.LOAI_KHACH_HANG);
     }
+
+    @Test
+    @DisplayName("AC3: Xóa bộ lọc đang đặt mặc định thành công và không còn tìm thấy mặc định")
+    void testXoaBoLoc_DangDatMacDinh_ThanhCongVaKhongConTimThayMacDinh() throws SQLException {
+        // Giả lập xóa bộ lọc mặc định thành công
+        when(boLocDAO.xoaBoLoc(1L, 101L)).thenReturn(true);
+        when(boLocDAO.timBoLocMacDinh(101L, BoLocDaLuu.LOAI_KHACH_HANG)).thenReturn(null);
+
+        boolean result = service.xoaBoLoc(1L, user);
+        assertTrue(result);
+        verify(boLocDAO).xoaBoLoc(1L, 101L);
+
+        // Sau khi xóa, tìm kiếm bộ lọc mặc định trả về null
+        BoLocDaLuu macDinhSauXoa = service.timBoLocMacDinh(user);
+        assertNull(macDinhSauXoa);
+    }
 }

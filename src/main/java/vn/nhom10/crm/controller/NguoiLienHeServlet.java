@@ -225,8 +225,14 @@ public class NguoiLienHeServlet extends HttpServlet {
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"success\":true,\"message\":\"Thêm người liên hệ thành công!\",\"id\":" + saved.getId() + "}");
         } else {
+            request.getSession().setAttribute("thongBaoThanhCong", "Thêm người liên hệ '" + saved.getHoTen() + "' thành công!");
             request.getSession().setAttribute("flashSuccess", "Thêm người liên hệ '" + saved.getHoTen() + "' thành công!");
-            response.sendRedirect(request.getContextPath() + "/khach-hang?id=" + khachHangId);
+            String returnUrl = request.getParameter("returnUrl");
+            if (returnUrl != null && !returnUrl.isBlank()) {
+                response.sendRedirect(request.getContextPath() + returnUrl);
+            } else {
+                response.sendRedirect(request.getContextPath() + "/khach-hang?id=" + khachHangId);
+            }
         }
     }
 
@@ -259,8 +265,12 @@ public class NguoiLienHeServlet extends HttpServlet {
             response.getWriter().write("{\"success\":" + updated + ",\"message\":\"Cập nhật thông tin người liên hệ thành công!\"}");
         } else {
             String redirectKhId = request.getParameter("khachHangId");
+            request.getSession().setAttribute("thongBaoThanhCong", "Cập nhật người liên hệ thành công!");
             request.getSession().setAttribute("flashSuccess", "Cập nhật người liên hệ thành công!");
-            if (redirectKhId != null && !redirectKhId.trim().isEmpty()) {
+            String returnUrl = request.getParameter("returnUrl");
+            if (returnUrl != null && !returnUrl.isBlank()) {
+                response.sendRedirect(request.getContextPath() + returnUrl);
+            } else if (redirectKhId != null && !redirectKhId.trim().isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/khach-hang?id=" + redirectKhId);
             } else {
                 response.sendRedirect(request.getContextPath() + "/khach-hang");
@@ -273,14 +283,24 @@ public class NguoiLienHeServlet extends HttpServlet {
         long id = Long.parseLong(request.getParameter("id").trim());
         long khachHangId = Long.parseLong(request.getParameter("khachHangId").trim());
 
-        boolean ok = nguoiLienHeService.datLamDauMoiChinh(user, id, khachHangId);
+        try {
+            boolean ok = nguoiLienHeService.datLamDauMoiChinh(user, id, khachHangId);
 
-        if (laAjax(request)) {
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"success\":" + ok + ",\"message\":\"Đã đánh dấu là đầu mối chính!\"}");
-        } else {
-            request.getSession().setAttribute("flashSuccess", "Đã đánh dấu đầu mối chính thành công!");
-            response.sendRedirect(request.getContextPath() + "/khach-hang?id=" + khachHangId);
+            if (laAjax(request)) {
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":" + ok + ",\"message\":\"Đã đánh dấu là đầu mối chính!\"}");
+            } else {
+                request.getSession().setAttribute("thongBaoThanhCong", "Đã đánh dấu đầu mối chính thành công!");
+                request.getSession().setAttribute("flashSuccess", "Đã đánh dấu đầu mối chính thành công!");
+                String returnUrl = request.getParameter("returnUrl");
+                if (returnUrl != null && !returnUrl.isBlank()) {
+                    response.sendRedirect(request.getContextPath() + returnUrl);
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/khach-hang?id=" + khachHangId);
+                }
+            }
+        } catch (IllegalStateException | IllegalArgumentException | SecurityException e) {
+            phanHoiLoi(request, response, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -289,14 +309,24 @@ public class NguoiLienHeServlet extends HttpServlet {
         long id = Long.parseLong(request.getParameter("id").trim());
         long khachHangId = Long.parseLong(request.getParameter("khachHangId").trim());
 
-        boolean ok = nguoiLienHeService.boDauMoiChinh(user, id, khachHangId);
+        try {
+            boolean ok = nguoiLienHeService.boDauMoiChinh(user, id, khachHangId);
 
-        if (laAjax(request)) {
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"success\":" + ok + ",\"message\":\"Đã bỏ đánh dấu đầu mối chính!\"}");
-        } else {
-            request.getSession().setAttribute("flashSuccess", "Đã bỏ đánh dấu đầu mối chính!");
-            response.sendRedirect(request.getContextPath() + "/khach-hang?id=" + khachHangId);
+            if (laAjax(request)) {
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":" + ok + ",\"message\":\"Đã bỏ đánh dấu đầu mối chính!\"}");
+            } else {
+                request.getSession().setAttribute("thongBaoThanhCong", "Đã bỏ đánh dấu đầu mối chính!");
+                request.getSession().setAttribute("flashSuccess", "Đã bỏ đánh dấu đầu mối chính!");
+                String returnUrl = request.getParameter("returnUrl");
+                if (returnUrl != null && !returnUrl.isBlank()) {
+                    response.sendRedirect(request.getContextPath() + returnUrl);
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/khach-hang?id=" + khachHangId);
+                }
+            }
+        } catch (IllegalStateException | IllegalArgumentException | SecurityException e) {
+            phanHoiLoi(request, response, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -319,8 +349,14 @@ public class NguoiLienHeServlet extends HttpServlet {
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"success\":" + ok + ",\"message\":\"Đã chuyển người liên hệ sang công ty mới và lưu lịch sử thành công!\"}");
         } else {
+            request.getSession().setAttribute("thongBaoThanhCong", "Đã chuyển người liên hệ sang công ty mới và lưu trữ lịch sử làm việc!");
             request.getSession().setAttribute("flashSuccess", "Đã chuyển người liên hệ sang công ty mới và lưu trữ lịch sử làm việc!");
-            response.sendRedirect(request.getContextPath() + "/khach-hang?id=" + khachHangMoiId);
+            String returnUrl = request.getParameter("returnUrl");
+            if (returnUrl != null && !returnUrl.isBlank()) {
+                response.sendRedirect(request.getContextPath() + returnUrl);
+            } else {
+                response.sendRedirect(request.getContextPath() + "/khach-hang?id=" + khachHangMoiId);
+            }
         }
     }
 
@@ -335,8 +371,12 @@ public class NguoiLienHeServlet extends HttpServlet {
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"success\":" + ok + ",\"message\":\"Đã xóa người liên hệ!\"}");
         } else {
+            request.getSession().setAttribute("thongBaoThanhCong", "Đã xóa người liên hệ!");
             request.getSession().setAttribute("flashSuccess", "Đã xóa người liên hệ!");
-            if (khIdStr != null && !khIdStr.trim().isEmpty()) {
+            String returnUrl = request.getParameter("returnUrl");
+            if (returnUrl != null && !returnUrl.isBlank()) {
+                response.sendRedirect(request.getContextPath() + returnUrl);
+            } else if (khIdStr != null && !khIdStr.trim().isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/khach-hang?id=" + khIdStr);
             } else {
                 response.sendRedirect(request.getContextPath() + "/khach-hang");
@@ -375,12 +415,18 @@ public class NguoiLienHeServlet extends HttpServlet {
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"success\":false,\"message\":\"" + escapeJson(message) + "\"}");
         } else {
+            request.getSession().setAttribute("thongBaoLoi", message);
             request.getSession().setAttribute("flashError", message);
-            String khId = request.getParameter("khachHangId");
-            if (khId != null && !khId.trim().isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/khach-hang?id=" + khId);
+            String returnUrl = request.getParameter("returnUrl");
+            if (returnUrl != null && !returnUrl.isBlank()) {
+                response.sendRedirect(request.getContextPath() + returnUrl);
             } else {
-                response.sendRedirect(request.getContextPath() + "/khach-hang");
+                String khId = request.getParameter("khachHangId");
+                if (khId != null && !khId.trim().isEmpty()) {
+                    response.sendRedirect(request.getContextPath() + "/khach-hang?id=" + khId);
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/khach-hang");
+                }
             }
         }
     }

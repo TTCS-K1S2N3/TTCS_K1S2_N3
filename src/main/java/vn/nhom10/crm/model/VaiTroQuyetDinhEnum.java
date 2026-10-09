@@ -36,6 +36,10 @@ public enum VaiTroQuyetDinhEnum {
         return tenHienThi;
     }
 
+    public String getTenTiengViet() {
+        return tenHienThi;
+    }
+
     public String getMoTa() {
         return moTa;
     }

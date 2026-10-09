@@ -2,7 +2,7 @@
 // Story S3-07: Chuyển đổi và áp dụng bộ lọc đã lưu
 window.chuyenBoLoc = function (boLocId) {
     if (!boLocId || boLocId === '') {
-        window.location.href = window.location.pathname;
+        window.location.href = window.location.pathname + '?reset=1';
         return;
     }
     const url = new URL(window.location.href);
@@ -1104,31 +1104,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Trích xuất danh sách khách hàng từ bảng DOM
     function extractCustomersFromTable() {
-        const rows = document.querySelectorAll('#tableKhachHang tbody tr[data-id]');
+        const rows = document.querySelectorAll('#tableKhachHang tbody tr[data-id], #tableKhachHang tbody tr[data-khach-hang-id]');
         const list = [];
         rows.forEach(function (tr) {
-            const id = tr.getAttribute('data-id');
-            const ma = tr.getAttribute('data-ma') || '';
-            const ten = tr.getAttribute('data-ten') || '';
-            const mst = tr.getAttribute('data-mst') || '';
-            const web = tr.getAttribute('data-web') || '';
-            const ownerId = tr.getAttribute('data-owner-id') || '';
+            const id = tr.getAttribute('data-id') || tr.getAttribute('data-khach-hang-id');
+            if (!id) return;
+            const btnEdit = tr.querySelector('.btn-edit-customer, .btnSuaKhachHang');
+            const ma = tr.getAttribute('data-ma') || (btnEdit ? btnEdit.getAttribute('data-ma') : '') || '';
+            const ten = tr.getAttribute('data-ten') || (btnEdit ? btnEdit.getAttribute('data-ten') : '') || '';
+            const mst = tr.getAttribute('data-mst') || (btnEdit ? btnEdit.getAttribute('data-mst') : '') || '';
+            const web = tr.getAttribute('data-web') || (btnEdit ? btnEdit.getAttribute('data-website') : '') || '';
+            const ownerId = tr.getAttribute('data-owner-id') || (btnEdit ? btnEdit.getAttribute('data-sohuu') : '') || '';
             const ownerName = tr.getAttribute('data-owner-name') || '';
             const teamName = tr.getAttribute('data-team-name') || '';
-            const giaTri = tr.getAttribute('data-gia-tri') || '';
-            const trangThai = tr.getAttribute('data-trang-thai') || '';
+            const giaTri = tr.getAttribute('data-gia-tri') || (btnEdit ? btnEdit.getAttribute('data-gia') : '') || '';
+            const trangThai = tr.getAttribute('data-trang-thai') || (btnEdit ? btnEdit.getAttribute('data-trangthai') : '') || '';
             const ngayTao = tr.getAttribute('data-ngay-tao') || '';
-            const moTa = tr.getAttribute('data-mo-ta') || '';
+            const moTa = tr.getAttribute('data-mo-ta') || (btnEdit ? btnEdit.getAttribute('data-mota') : '') || '';
 
             list.push({
-                id: id,
+                id: String(id),
                 ma: ma,
                 ten: ten,
                 mst: mst,
                 web: web,
                 mstClean: cleanTaxCode(mst),
                 webClean: cleanWebsite(web),
-                ownerId: ownerId,
+                ownerId: String(ownerId),
                 ownerName: ownerName,
                 teamName: teamName,
                 giaTri: giaTri,
@@ -1228,15 +1230,15 @@ document.addEventListener('DOMContentLoaded', function () {
         // Đánh dấu các dòng trên bảng Danh mục có trùng lặp
         const duplicateIds = new Set();
         detectedDuplicatePairs.forEach(function (pair) {
-            duplicateIds.add(pair.recordA.id);
-            duplicateIds.add(pair.recordB.id);
+            if (pair.recordA && pair.recordA.id) duplicateIds.add(String(pair.recordA.id));
+            if (pair.recordB && pair.recordB.id) duplicateIds.add(String(pair.recordB.id));
         });
 
         currentCustomerList.forEach(function (c) {
             if (c.trElement) {
                 const badge = c.trElement.querySelector('.dup-badge-inline');
                 const btnCompare = c.trElement.querySelector('.btn-row-compare-trigger');
-                if (duplicateIds.has(c.id)) {
+                if (duplicateIds.has(String(c.id))) {
                     if (badge) badge.style.display = 'inline-flex';
                     if (btnCompare) btnCompare.style.display = 'inline-flex';
                 } else {
@@ -1265,8 +1267,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Lọc theo từ khóa tìm kiếm
             if (keyword) {
-                const textA = (pair.recordA.ten + ' ' + pair.recordA.mst + ' ' + pair.recordA.ownerName).toLowerCase();
-                const textB = (pair.recordB.ten + ' ' + pair.recordB.mst + ' ' + pair.recordB.ownerName).toLowerCase();
+                const textA = ((pair.recordA ? (pair.recordA.ten || '') + ' ' + (pair.recordA.mst || '') + ' ' + (pair.recordA.ownerName || '') : '')).toLowerCase();
+                const textB = ((pair.recordB ? (pair.recordB.ten || '') + ' ' + (pair.recordB.mst || '') + ' ' + (pair.recordB.ownerName || '') : '')).toLowerCase();
                 if (!textA.includes(keyword) && !textB.includes(keyword)) {
                     return false;
                 }
@@ -1595,8 +1597,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function checkInlineDuplicates() {
         const valName = inputTenCongTy ? inputTenCongTy.value.trim() : '';
-        const valMst = inputMaSoThueThem ? cleanTaxCode(inputMaSoThueThem.value) : '';
-        const valWeb = inputWebsiteThem ? cleanWebsite(inputWebsiteThem.value) : '';
+        const valMst = inputMaSoThue ? cleanTaxCode(inputMaSoThue.value) : '';
+        const valWeb = inputWebsite ? cleanWebsite(inputWebsite.value) : '';
 
         // 1. Kiểm tra trùng Tên
         if (valName && valName.length >= 3) {
@@ -1648,11 +1650,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (inputTenCongTy) {
         inputTenCongTy.addEventListener('input', debounce(checkInlineDuplicates, 250));
     }
-    if (inputMaSoThueThem) {
-        inputMaSoThueThem.addEventListener('input', debounce(checkInlineDuplicates, 250));
+    if (inputMaSoThue) {
+        inputMaSoThue.addEventListener('input', debounce(checkInlineDuplicates, 250));
     }
-    if (inputWebsiteThem) {
-        inputWebsiteThem.addEventListener('input', debounce(checkInlineDuplicates, 250));
+    if (inputWebsite) {
+        inputWebsite.addEventListener('input', debounce(checkInlineDuplicates, 250));
     }
 
 
@@ -1727,7 +1729,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 2. Khởi chạy quét và hiển thị trùng lặp (Story S3-04)
     currentCustomerList = extractCustomersFromTable();
-    detectedDuplicatePairs = detectDuplicatePairs();
+    if (window.SERVER_DANH_SACH_CAP_TRUNG && Array.isArray(window.SERVER_DANH_SACH_CAP_TRUNG) && window.SERVER_DANH_SACH_CAP_TRUNG.length > 0) {
+        // Ưu tiên danh sách đã quét từ server theo thẩm quyền Data Scope (AC1)
+        detectedDuplicatePairs = window.SERVER_DANH_SACH_CAP_TRUNG;
+        detectedDuplicatePairs.forEach(function (pair) {
+            if (pair.recordA) {
+                pair.recordA.mstClean = pair.recordA.mstClean || cleanTaxCode(pair.recordA.mst);
+                pair.recordA.webClean = pair.recordA.webClean || cleanWebsite(pair.recordA.web);
+            }
+            if (pair.recordB) {
+                pair.recordB.mstClean = pair.recordB.mstClean || cleanTaxCode(pair.recordB.mst);
+                pair.recordB.webClean = pair.recordB.webClean || cleanWebsite(pair.recordB.web);
+            }
+        });
+    } else {
+        // Fallback: quét từ DOM bảng khách hàng nếu server không trả về danh sách
+        detectedDuplicatePairs = detectDuplicatePairs();
+    }
     updateUiDuplicateStatus();
 
     // 3. Mở đúng tab theo yêu cầu server hoặc URL
@@ -1901,14 +1919,35 @@ document.addEventListener('DOMContentLoaded', function () {
     if (btnXoaBoLocHienTai) {
         btnXoaBoLocHienTai.addEventListener('click', function (e) {
             e.preventDefault();
-            const boLocId = btnXoaBoLocHienTai.getAttribute('data-id');
-            const tenBoLoc = btnXoaBoLocHienTai.getAttribute('data-name') || 'này';
-            if (!boLocId) return;
+            const selectEl = document.getElementById('selectBoLocDaLuu');
+            const hiddenIdEl = document.querySelector('input[name="boLocId"]');
+            const boLocId = btnXoaBoLocHienTai.getAttribute('data-id')
+                || (hiddenIdEl && hiddenIdEl.value ? hiddenIdEl.value : null)
+                || (selectEl && selectEl.value ? selectEl.value : null);
+
+            let tenBoLoc = btnXoaBoLocHienTai.getAttribute('data-name');
+            if (!tenBoLoc && selectEl && selectEl.selectedIndex > 0) {
+                tenBoLoc = selectEl.options[selectEl.selectedIndex].text.replace(/\[Mặc định\]/g, '').trim();
+            }
+            if (!tenBoLoc) {
+                const activePill = document.querySelector('.saved-filter-active-pill');
+                if (activePill) {
+                    tenBoLoc = activePill.textContent.trim();
+                }
+            }
+            tenBoLoc = tenBoLoc || 'này';
+
+            if (!boLocId) {
+                console.warn('Không tìm thấy boLocId để xóa.');
+                alert('Vui lòng chọn một bộ lọc đã lưu để xóa.');
+                return;
+            }
 
             if (confirm('Bạn có chắc chắn muốn xóa bộ lọc "' + tenBoLoc + '" không? Hành động này không thể hoàn tác.')) {
                 const f = document.createElement('form');
                 f.method = 'POST';
-                f.action = window.location.pathname;
+                const formLoc = document.getElementById('formLocKhachHang');
+                f.action = (formLoc && formLoc.getAttribute('action')) ? formLoc.getAttribute('action') : (window.location.pathname);
 
                 const actInput = document.createElement('input');
                 actInput.type = 'hidden';
@@ -1932,12 +1971,22 @@ document.addEventListener('DOMContentLoaded', function () {
     if (btnDatMacDinhHienTai) {
         btnDatMacDinhHienTai.addEventListener('click', function (e) {
             e.preventDefault();
-            const boLocId = btnDatMacDinhHienTai.getAttribute('data-id');
-            if (!boLocId) return;
+            const selectEl = document.getElementById('selectBoLocDaLuu');
+            const hiddenIdEl = document.querySelector('input[name="boLocId"]');
+            const boLocId = btnDatMacDinhHienTai.getAttribute('data-id')
+                || (hiddenIdEl && hiddenIdEl.value ? hiddenIdEl.value : null)
+                || (selectEl && selectEl.value ? selectEl.value : null);
+
+            if (!boLocId) {
+                console.warn('Không tìm thấy boLocId để đặt làm mặc định.');
+                alert('Vui lòng chọn một bộ lọc đã lưu để đặt làm mặc định.');
+                return;
+            }
 
             const f = document.createElement('form');
             f.method = 'POST';
-            f.action = window.location.pathname;
+            const formLoc = document.getElementById('formLocKhachHang');
+            f.action = (formLoc && formLoc.getAttribute('action')) ? formLoc.getAttribute('action') : (window.location.pathname);
 
             const actInput = document.createElement('input');
             actInput.type = 'hidden';
