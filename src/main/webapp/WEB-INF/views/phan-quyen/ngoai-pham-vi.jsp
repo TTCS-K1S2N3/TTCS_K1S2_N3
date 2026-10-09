@@ -20,7 +20,9 @@
 <div class="error-screen-wrapper">
     <div class="error-card">
         <div class="error-card-header">
-            <div class="error-shield-icon">🛡️⛔</div>
+            <div class="error-shield-icon">
+                <span class="material-symbols-outlined" style="font-size: 48px; color: var(--danger-color, #ef4444);" aria-hidden="true">gpp_maybe</span>
+            </div>
             <h1 class="error-card-title">Từ Chối Quyền Truy Cập Dữ Liệu</h1>
             <div class="error-card-subtitle">Quy tắc phân quyền phạm vi sở hữu (Data Scope Policy)</div>
         </div>
@@ -43,12 +45,11 @@
 
             <div class="error-actions">
                 <a href="${pageContext.request.contextPath}/phan-quyen-du-lieu" class="btn-primary-action">
-                    <span>←</span>
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">arrow_back</span>
                     <span>Quay lại danh sách dữ liệu của bạn</span>
                 </a>
 
                 <a href="${pageContext.request.contextPath}/khach-hang" class="btn-secondary-action">
-                    <span>🏢</span>
                     <span>Về trang Khách hàng</span>
                 </a>
             </div>

@@ -1,0 +1,15 @@
+# ======================================================================
+# Cấu hình Database cục bộ mẫu cho môi trường DEV (không commit mật khẩu thật)
+# Hướng dẫn:
+# 1. Sao chép file này thành 'database-local.properties' (file này đã được gitignore).
+# 2. Điền thông tin kết nối và mật khẩu MySQL local của bạn.
+# 3. Chạy ứng dụng hoặc deploy lên Tomcat.
+# Ghi chú: Biến môi trường hệ thống (DB_URL, DB_USER, DB_PASSWORD, DB_DRIVER, AVATAR_UPLOAD_DIR)
+# luôn có độ ưu tiên cao nhất và ghi đè cấu hình trong file này.
+# ======================================================================
+
+db.driver=com.mysql.cj.jdbc.Driver
+db.url=jdbc:mysql://localhost:3306/crm_ban_hang?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh&characterEncoding=UTF-8
+db.user=root
+db.password=YOUR_LOCAL_MYSQL_PASSWORD
+avatar.upload.dir=uploads/avatars

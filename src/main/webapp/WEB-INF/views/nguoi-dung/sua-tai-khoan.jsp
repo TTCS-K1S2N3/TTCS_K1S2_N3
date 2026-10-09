@@ -31,25 +31,37 @@
     <main class="crm-main-content" id="crm-main-content">
         <div class="nguoi-dung-container">
 
+    <!-- Breadcrumb điều hướng chuẩn -->
+    <nav class="crm-breadcrumb" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div style="font-size: 13.5px; color: var(--slate-500, #64748b);">
+            <a href="${pageContext.request.contextPath}/dieu-huong" style="color: var(--primary, #2563eb); text-decoration: none;">Trang chủ</a>
+            <span style="margin: 0 6px;">/</span>
+            <a href="${pageContext.request.contextPath}/nguoi-dung" style="color: var(--primary, #2563eb); text-decoration: none;">Người dùng & Phân quyền</a>
+            <span style="margin: 0 6px;">/</span>
+            <span style="color: var(--slate-700, #334155); font-weight: 500;">Sửa tài khoản</span>
+        </div>
+        <a href="${pageContext.request.contextPath}/nguoi-dung" class="btn btn-outline btn-sm"><span class="material-symbols-outlined icon-sm" aria-hidden="true">arrow_back</span> Quay lại danh sách</a>
+    </nav>
+
     <!-- ===== HEADER ===== -->
     <div class="page-header">
-        <h1>&#9998; Sửa Tài khoản</h1>
+        <h1>Sửa Tài khoản</h1>
         <a href="${pageContext.request.contextPath}/nguoi-dung"
            class="btn btn-secondary">
-            &#8592; Quay lại danh sách
+            <span class="material-symbols-outlined icon-sm" aria-hidden="true">arrow_back</span> Quay lại danh sách
         </a>
     </div>
 
     <!-- ===== THÔNG BÁO LỖI TỔNG QUÁT ===== -->
     <c:if test="${not empty formError['_global']}">
         <div class="alert alert-error" role="alert">
-            <span class="alert-icon">&#9888;</span>
+            <span class="material-symbols-outlined alert-icon" aria-hidden="true">warning</span>
             <span><c:out value="${formError['_global']}"/></span>
         </div>
     </c:if>
     <c:if test="${not empty formError['email'] and formError['email'] == 'EMAIL_TRUNG'}">
         <div class="alert alert-error" role="alert" id="alert-email-trung">
-            <span class="alert-icon">&#9888;</span>
+            <span class="material-symbols-outlined alert-icon" aria-hidden="true">warning</span>
             <span>
                 Địa chỉ email <strong><c:out value="${nguoiDung.email}"/></strong>
                 đã được sử dụng bởi tài khoản khác trong hệ thống.
@@ -165,7 +177,7 @@
                                 </c:forEach>
                             </c:when>
                             <c:otherwise>
-                                <p class="form-help">&#9888; Chưa có dữ liệu vai trò.</p>
+                                <p class="form-help"><span class="material-symbols-outlined icon-sm" style="vertical-align: -2px;" aria-hidden="true">warning</span> Chưa có dữ liệu vai trò.</p>
                             </c:otherwise>
                         </c:choose>
                     </div>
@@ -203,11 +215,11 @@
 
             <div class="form-card-footer">
                 <a href="${pageContext.request.contextPath}/nguoi-dung"
-                   class="btn btn-secondary">
+                    class="btn btn-secondary">
                     Hủy
                 </a>
                 <button type="submit" id="btn-luu-sua-tai-khoan" class="btn btn-primary">
-                    &#10003; Lưu thay đổi
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">check</span> Lưu thay đổi
                 </button>
             </div>
 

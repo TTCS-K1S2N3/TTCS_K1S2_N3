@@ -1,8 +1,10 @@
 package vn.nhom10.crm.service;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import vn.nhom10.crm.config.DatabaseConfig;
 import vn.nhom10.crm.dao.NguoiDungDAO;
 import vn.nhom10.crm.dao.NhomKinhDoanhDAO;
 import vn.nhom10.crm.dao.VaiTroDAO;
@@ -12,14 +14,17 @@ import vn.nhom10.crm.model.NhomKinhDoanh;
 import vn.nhom10.crm.model.VaiTro;
 import vn.nhom10.crm.model.VaiTroEnum;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @DisplayName("Kiểm thử Nghiệp vụ Gán Vai Trò & Nhóm Kinh Doanh (Story S1-09)")
 class PhanQuyenServiceTest {
@@ -38,6 +43,17 @@ class PhanQuyenServiceTest {
         }
 
         @Override
+        public NguoiDung timTheoId(long id) {
+            return users.get((int) id);
+        }
+
+        @Override
+        public Set<VaiTro> layDanhSachVaiTroTheoNguoiDungId(long nguoiDungId) {
+            NguoiDung u = users.get((int) nguoiDungId);
+            return u != null ? u.getDanhSachVaiTro() : Collections.emptySet();
+        }
+
+        @Override
         public boolean capNhatVaiTroVaNhomTransaction(int nguoiDungId, List<Integer> danhSachVaiTroId, Integer nhomKinhDoanhId) throws SQLException {
             callCount++;
             if (throwException) {
@@ -47,6 +63,11 @@ class PhanQuyenServiceTest {
             this.lastUpdatedRoles = danhSachVaiTroId;
             this.lastUpdatedTeamId = nhomKinhDoanhId;
             return true;
+        }
+
+        @Override
+        public boolean capNhatVaiTroVaNhomTransaction(int nguoiDungId, List<Integer> danhSachVaiTroId, Integer nhomKinhDoanhId, java.sql.Connection conn) throws SQLException {
+            return capNhatVaiTroVaNhomTransaction(nguoiDungId, danhSachVaiTroId, nhomKinhDoanhId);
         }
     }
 
@@ -66,6 +87,11 @@ class PhanQuyenServiceTest {
         public NhomKinhDoanh timTheoId(int id) {
             return teams.get(id);
         }
+
+        @Override
+        public NhomKinhDoanh timTheoId(long id) {
+            return teams.get((int) id);
+        }
     }
 
     private FakeNguoiDungDAO fakeNguoiDungDAO;
@@ -79,13 +105,21 @@ class PhanQuyenServiceTest {
     private VaiTro vaiTroMarketing;
     private NhomKinhDoanh nhomMienBac;
 
+    private NhatKyThayDoiService mockNhatKyService;
+    private Connection mockConnection;
+
     @BeforeEach
-    void setUp() {
+    void setUp() throws SQLException {
         fakeNguoiDungDAO = new FakeNguoiDungDAO();
         fakeVaiTroDAO = new FakeVaiTroDAO();
         fakeNhomKinhDoanhDAO = new FakeNhomKinhDoanhDAO();
 
-        phanQuyenService = new PhanQuyenService(fakeNguoiDungDAO, fakeVaiTroDAO, fakeNhomKinhDoanhDAO);
+        mockNhatKyService = mock(NhatKyThayDoiService.class);
+        mockConnection = mock(Connection.class);
+        lenient().when(mockConnection.getAutoCommit()).thenReturn(true);
+        DatabaseConfig.setConnectionSupplier(() -> mockConnection);
+
+        phanQuyenService = new PhanQuyenService(fakeNguoiDungDAO, fakeVaiTroDAO, fakeNhomKinhDoanhDAO, mockNhatKyService);
 
         vaiTroAdmin = new VaiTro(1, "ADMIN", "Quản trị hệ thống", "Admin");
         vaiTroTeamLead = new VaiTro(3, "TEAM_LEAD", "Trưởng nhóm kinh doanh", "Team Lead");
@@ -99,6 +133,11 @@ class PhanQuyenServiceTest {
 
         nhomMienBac = new NhomKinhDoanh(2, "KD_MIEN_BAC", "Nhóm Kinh Doanh Miền Bắc", "Mô tả", 1);
         fakeNhomKinhDoanhDAO.teams.put(2, nhomMienBac);
+    }
+
+    @AfterEach
+    void tearDown() {
+        DatabaseConfig.resetConnectionSupplier();
     }
 
     @Test

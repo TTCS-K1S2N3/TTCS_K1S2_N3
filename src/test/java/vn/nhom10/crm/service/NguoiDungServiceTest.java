@@ -1,11 +1,13 @@
 package vn.nhom10.crm.service;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import vn.nhom10.crm.config.DatabaseConfig;
 import vn.nhom10.crm.dao.NguoiDungDAO;
 import vn.nhom10.crm.dao.NhomKinhDoanhDAO;
 import vn.nhom10.crm.dao.VaiTroDAO;
@@ -14,6 +16,8 @@ import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.NhomKinhDoanh;
 import vn.nhom10.crm.model.VaiTro;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -38,11 +42,23 @@ class NguoiDungServiceTest {
     @Mock
     private EmailService emailService;
 
+    @Mock
+    private NhatKyThayDoiService nhatKyThayDoiService;
+
+    private Connection mockConnection;
     private NguoiDungService nguoiDungService;
 
     @BeforeEach
-    void setUp() {
-        nguoiDungService = new NguoiDungService(nguoiDungDAO, vaiTroDAO, nhomKinhDoanhDAO, emailService);
+    void setUp() throws SQLException {
+        mockConnection = mock(Connection.class);
+        lenient().when(mockConnection.getAutoCommit()).thenReturn(true);
+        DatabaseConfig.setConnectionSupplier(() -> mockConnection);
+        nguoiDungService = new NguoiDungService(nguoiDungDAO, vaiTroDAO, nhomKinhDoanhDAO, emailService, nhatKyThayDoiService);
+    }
+
+    @AfterEach
+    void tearDown() {
+        DatabaseConfig.resetConnectionSupplier();
     }
 
     @Test
@@ -203,12 +219,12 @@ class NguoiDungServiceTest {
         when(vaiTroDAO.timTheoId(3)).thenReturn(new VaiTro(3, "TEAM_LEAD", "Trưởng nhóm kinh doanh", "Team Lead"));
         when(nhomKinhDoanhDAO.timTheoId(2)).thenReturn(new NhomKinhDoanh(2, "KD_BAC", "Nhóm Miền Bắc", "...", 1));
         when(nguoiDungDAO.kiemTraEmailTonTai(eq("kienteu123@gmail.com"), eq(10))).thenReturn(false);
-        when(nguoiDungDAO.capNhatNguoiDung(any(), any())).thenReturn(true);
+        when(nguoiDungDAO.capNhatNguoiDung(any(), any(), any())).thenReturn(true);
 
         KetQuaNguoiDungDTO ketQua = nguoiDungService.capNhatTaiKhoan(nd, dsVaiTroIds);
 
         assertTrue(ketQua.isThanhCong(), "Gán TEAM_LEAD với nhóm hợp lệ phải thành công");
-        verify(nguoiDungDAO).capNhatNguoiDung(eq(nd), eq(dsVaiTroIds));
+        verify(nguoiDungDAO).capNhatNguoiDung(eq(nd), eq(dsVaiTroIds), any());
     }
 
     @Test
@@ -230,7 +246,7 @@ class NguoiDungServiceTest {
         assertTrue(ketQua.getDanhSachLoi().containsKey("vaiTro"));
         assertTrue(ketQua.getDanhSachLoi().get("vaiTro").contains("Không thể tự thu hồi vai trò quản trị"));
 
-        verify(nguoiDungDAO, never()).capNhatNguoiDung(any(), any());
+        verify(nguoiDungDAO, never()).capNhatNguoiDung(any(), any(), any());
     }
 
     @Test
@@ -244,12 +260,12 @@ class NguoiDungServiceTest {
 
         when(vaiTroDAO.timTheoId(4)).thenReturn(new VaiTro(4, "SALES_REP", "Nhân viên kinh doanh", "Sales Rep"));
         when(nguoiDungDAO.kiemTraEmailTonTai(eq("other@crm.vn"), eq(8))).thenReturn(false);
-        when(nguoiDungDAO.capNhatNguoiDung(any(), any())).thenReturn(true);
+        when(nguoiDungDAO.capNhatNguoiDung(any(), any(), any())).thenReturn(true);
 
         // Admin 1 sửa User 8
         KetQuaNguoiDungDTO ketQua = nguoiDungService.capNhatTaiKhoan(other, Collections.singletonList(4), 1);
 
         assertTrue(ketQua.isThanhCong(), "Admin sửa user khác phải thành công");
-        verify(nguoiDungDAO).capNhatNguoiDung(eq(other), eq(Collections.singletonList(4)));
+        verify(nguoiDungDAO).capNhatNguoiDung(eq(other), eq(Collections.singletonList(4)), any());
     }
 }

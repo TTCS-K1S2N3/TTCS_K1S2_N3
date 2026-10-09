@@ -43,24 +43,45 @@
 
     <!-- ===== HEADER ===== -->
     <div class="page-header">
-        <h1>&#128100; Quản lý Tài khoản Người dùng</h1>
-        <a id="btn-tao-tai-khoan"
-           href="${pageContext.request.contextPath}/nguoi-dung/tao"
-           class="btn btn-primary">
-            &#43; Tạo tài khoản mới
-        </a>
+        <h1>Quản lý Tài khoản Người dùng</h1>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a id="btn-co-cau-to-chuc"
+               href="${pageContext.request.contextPath}/co-cau-to-chuc"
+               class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">account_tree</span>
+                Cơ cấu tổ chức
+            </a>
+            <a id="btn-nhat-ky-thay-doi"
+               href="${pageContext.request.contextPath}/nhat-ky-thay-doi"
+               class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">manage_history</span>
+                Nhật ký dữ liệu nhạy cảm
+            </a>
+            <a id="btn-import-excel"
+               href="${pageContext.request.contextPath}/nguoi-dung/import"
+               class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">upload_file</span>
+                Nhập từ Excel
+            </a>
+            <a id="btn-tao-tai-khoan"
+               href="${pageContext.request.contextPath}/nguoi-dung/tao"
+               class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">add</span>
+                Tạo tài khoản mới
+            </a>
+        </div>
     </div>
 
     <!-- ===== THÔNG BÁO ===== -->
     <c:if test="${not empty thongBaoThanhCong}">
         <div class="alert alert-success" role="alert">
-            <span class="alert-icon">&#10003;</span>
+            <span class="material-symbols-outlined alert-icon" aria-hidden="true">check_circle</span>
             <span><c:out value="${thongBaoThanhCong}"/></span>
         </div>
     </c:if>
     <c:if test="${not empty thongBaoLoi}">
         <div class="alert alert-error" role="alert">
-            <span class="alert-icon">&#9888;</span>
+            <span class="material-symbols-outlined alert-icon" aria-hidden="true">warning</span>
             <span><c:out value="${thongBaoLoi}"/></span>
         </div>
     </c:if>
@@ -127,11 +148,13 @@
 
             <!-- Nút hành động -->
             <div class="filter-actions">
-                <button type="submit" class="btn btn-primary btn-sm" id="btn-tim-kiem">
-                    &#128269; Tìm kiếm
+                <button type="submit" class="btn btn-primary btn-sm" id="btn-tim-kiem" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">search</span>
+                    Tìm kiếm
                 </button>
-                <button type="button" class="btn btn-secondary btn-sm" id="btn-clear-filter">
-                    &#10005; Xóa lọc
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-clear-filter" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="material-symbols-outlined icon-sm" aria-hidden="true">filter_alt_off</span>
+                    Xóa lọc
                 </button>
             </div>
         </form>
@@ -159,7 +182,7 @@
         <c:choose>
             <c:when test="${empty dsNguoiDung}">
                 <div class="empty-state">
-                    <div class="empty-icon">&#128100;</div>
+                    <div class="empty-icon"><span class="material-symbols-outlined icon-2xl" aria-hidden="true">person_off</span></div>
                     <p><strong>Không có tài khoản nào</strong></p>
                     <c:choose>
                         <c:when test="${not empty tuKhoaTim or not empty filterVaiTro or not empty filterTrangThai or not empty filterNhom}">
@@ -264,8 +287,9 @@
                                 <td>
                                     <a id="btn-sua-${nd.id}"
                                        href="${pageContext.request.contextPath}/nguoi-dung/sua?id=${nd.id}"
-                                       class="btn btn-secondary btn-sm">
-                                        &#9998; Sửa
+                                       class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 4px;">
+                                        <span class="material-symbols-outlined icon-sm" aria-hidden="true">edit</span>
+                                        Sửa
                                     </a>
                                 </td>
                             </tr>
@@ -294,10 +318,10 @@
                                 <c:when test="${trangHienTai > 1}">
                                     <a id="btn-trang-truoc"
                                        href="${pageContext.request.contextPath}/nguoi-dung?trang=${trangHienTai - 1}&tuKhoaTim=${tuKhoaTim}&filterVaiTro=${filterVaiTro}&filterTrangThai=${filterTrangThai}&filterNhom=${filterNhom}"
-                                       aria-label="Trang trước">&#8592;</a>
+                                       aria-label="Trang trước"><span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span></a>
                                 </c:when>
                                 <c:otherwise>
-                                    <span class="disabled" aria-disabled="true">&#8592;</span>
+                                    <span class="disabled" aria-disabled="true"><span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span></span>
                                 </c:otherwise>
                             </c:choose>
 
@@ -321,10 +345,10 @@
                                 <c:when test="${trangHienTai < tongSoTrang}">
                                     <a id="btn-trang-sau"
                                        href="${pageContext.request.contextPath}/nguoi-dung?trang=${trangHienTai + 1}&tuKhoaTim=${tuKhoaTim}&filterVaiTro=${filterVaiTro}&filterTrangThai=${filterTrangThai}&filterNhom=${filterNhom}"
-                                       aria-label="Trang sau">&#8594;</a>
+                                       aria-label="Trang sau"><span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_forward</span></a>
                                 </c:when>
                                 <c:otherwise>
-                                    <span class="disabled" aria-disabled="true">&#8594;</span>
+                                    <span class="disabled" aria-disabled="true"><span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_forward</span></span>
                                 </c:otherwise>
                             </c:choose>
 

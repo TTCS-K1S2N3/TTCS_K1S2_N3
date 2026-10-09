@@ -55,6 +55,12 @@ Không sử dụng file này để ghi tiến độ Story.
 - Angus Mail: 2.0.3 (theo `pom.xml`)
 - Mục đích: Gửi email khôi phục mật khẩu và thông báo qua giao thức SMTP.
 
+## Xử lý tài liệu và Excel
+
+- Apache POI (poi, poi-ooxml): 5.3.0 (theo `pom.xml`)
+- Log4j API / Core: 2.23.1 (theo `pom.xml`)
+- Mục đích: Đọc và xuất tệp mẫu Excel (.xlsx, .xls) phục vụ nhập danh sách người dùng hàng loạt.
+
 ## Kiểm thử
 
 - JUnit Jupiter: 5.11.4 (theo `pom.xml`)

@@ -134,8 +134,9 @@ public enum ModuleHeThong {
             "/danh-muc",
             "settings",
             11,
-            // Cho phép tất cả 7 vai trò
-            VaiTroEnum.values()
+            // Chỉ Director và Admin được xem/quản lý (Story S2-07)
+            VaiTroEnum.DIRECTOR,
+            VaiTroEnum.ADMIN
     ),
     NGUOI_DUNG(
             "NGUOI_DUNG",
@@ -153,16 +154,28 @@ public enum ModuleHeThong {
     private final String duongDanUrl;
     private final String bieuTuong;
     private final int thuTu;
+    private final boolean daTrienKhai;
     private final Set<VaiTroEnum> vaiTroDuocPhep;
 
-    ModuleHeThong(String maModule, String tenHienThi, String duongDanUrl, String bieuTuong, int thuTu, VaiTroEnum... vaiTros) {
+    ModuleHeThong(String maModule, String tenHienThi, String duongDanUrl, String bieuTuong, int thuTu, boolean daTrienKhai, VaiTroEnum... vaiTros) {
         this.maModule = maModule;
         this.tenHienThi = tenHienThi;
         this.duongDanUrl = duongDanUrl;
         this.bieuTuong = bieuTuong;
         this.thuTu = thuTu;
+        this.daTrienKhai = daTrienKhai;
         Set<VaiTroEnum> set = new HashSet<>(Arrays.asList(vaiTros));
         this.vaiTroDuocPhep = Collections.unmodifiableSet(set);
+    }
+
+    ModuleHeThong(String maModule, String tenHienThi, String duongDanUrl, String bieuTuong, int thuTu, VaiTroEnum... vaiTros) {
+        this(maModule, tenHienThi, duongDanUrl, bieuTuong, thuTu,
+                ("KHACH_HANG".equals(maModule) || "DANH_MUC".equals(maModule) || "NGUOI_DUNG".equals(maModule)),
+                vaiTros);
+    }
+
+    public boolean isDaTrienKhai() {
+        return daTrienKhai;
     }
 
     public String getMaModule() {

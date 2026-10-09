@@ -12,6 +12,12 @@ import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.PhamViDuLieu;
 import vn.nhom10.crm.service.PhanQuyenDuLieuService;
 
+import vn.nhom10.crm.dao.NguoiDungDAO;
+import vn.nhom10.crm.dto.ThongTinRuiRoDTO;
+import vn.nhom10.crm.model.MucUuTienYeuCauEnum;
+import vn.nhom10.crm.model.TrangThaiYeuCauEnum;
+import vn.nhom10.crm.service.YeuCauHoTroService;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -28,13 +34,21 @@ public class PhanQuyenDuLieuServlet extends HttpServlet {
 
     public static final String SESSION_USER_KEY = "nguoiDung";
     private final PhanQuyenDuLieuService phanQuyenService;
+    private final vn.nhom10.crm.service.CongTyMeConService congTyMeConService;
 
     public PhanQuyenDuLieuServlet() {
         this.phanQuyenService = new PhanQuyenDuLieuService();
+        this.congTyMeConService = new vn.nhom10.crm.service.CongTyMeConService();
     }
 
     public PhanQuyenDuLieuServlet(PhanQuyenDuLieuService phanQuyenService) {
         this.phanQuyenService = phanQuyenService;
+        this.congTyMeConService = new vn.nhom10.crm.service.CongTyMeConService();
+    }
+
+    public PhanQuyenDuLieuServlet(PhanQuyenDuLieuService phanQuyenService, vn.nhom10.crm.service.CongTyMeConService congTyMeConService) {
+        this.phanQuyenService = phanQuyenService;
+        this.congTyMeConService = congTyMeConService;
     }
 
     @Override
@@ -124,14 +138,15 @@ public class PhanQuyenDuLieuServlet extends HttpServlet {
                 currentUser, phamViHieuLuc, tuKhoa, loaiNghiepVu
         );
 
-        // 4. Kiểm tra nếu là yêu cầu Xuất Excel / CSV (AC2)
+        // 4. Kiểm tra nếu là yêu cầu Xuất Excel (AC2)
         String xuatExcel = request.getParameter("xuatExcel");
         if ("true".equalsIgnoreCase(xuatExcel)) {
-            response.setContentType("text/csv; charset=UTF-8");
-            response.setHeader("Content-Disposition", "attachment; filename=\"du-lieu-crm-" + phamViHieuLuc.getMa().toLowerCase() + ".csv\"");
-            String csvContent = phanQuyenService.xuatDuLieuCSV(danhSachDaLoc);
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"du-lieu-crm-" + phamViHieuLuc.getMa().toLowerCase() + ".xlsx\"");
+            byte[] excelBytes = phanQuyenService.xuatDuLieuExcel(danhSachDaLoc);
+            response.setContentLength(excelBytes.length);
             try (OutputStream os = response.getOutputStream()) {
-                os.write(csvContent.getBytes(StandardCharsets.UTF_8));
+                os.write(excelBytes);
                 os.flush();
             }
             return;
@@ -171,6 +186,13 @@ public class PhanQuyenDuLieuServlet extends HttpServlet {
         String loaiNghiepVu = request.getParameter("loai");
         BanGhiNghiepVuDTO banGhi = phanQuyenService.timBanGhiTheoId(id, loaiNghiepVu);
 
+        // Nếu ID không tồn tại: trả về HTTP 404 chuẩn
+        if (id == null || banGhi == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy bản ghi yêu cầu.");
+            return;
+        }
+
         // Kiểm tra quyền truy cập ở server-side
         PhanQuyenDuLieuService.KetQuaKiemTra ketQua = phanQuyenService.kiemTraQuyenTruyCap(currentUser, banGhi);
 
@@ -185,10 +207,44 @@ public class PhanQuyenDuLieuServlet extends HttpServlet {
         } else {
             // Có quyền truy cập -> hiển thị chi tiết (HTTP 200 OK)
             response.setStatus(HttpServletResponse.SC_OK);
+
+            // Nạp thông tin cờ rủi ro rời bỏ và yêu cầu hỗ trợ nếu là đối tượng Khách Hàng (Story S3-08 AC3)
+            if (banGhi.getLoaiNghiepVu() == BanGhiNghiepVuDTO.LoaiNghiepVu.KHACH_HANG) {
+                try {
+                    YeuCauHoTroService ychtService = new YeuCauHoTroService();
+                    ThongTinRuiRoDTO ruiRo = ychtService.layThongTinRuiRo(banGhi.getId());
+                    if (ruiRo != null) {
+                        banGhi.setCoRuiRo(ruiRo.isCoRuiRo());
+                        banGhi.setSoYeuCauChuaXuLy(ruiRo.getSoYeuCauChuaXuLy());
+                        request.setAttribute("thongTinRuiRo", ruiRo);
+                    }
+                    request.setAttribute("danhSachYeuCauHoTro", ychtService.layDanhSachTheoKhachHang(banGhi.getId()));
+                    request.setAttribute("danhSachNhanVien", new NguoiDungDAO().layTatCa());
+                    request.setAttribute("mucUuTienList", MucUuTienYeuCauEnum.values());
+                    request.setAttribute("trangThaiList", TrangThaiYeuCauEnum.values());
+                } catch (Exception e) {
+                    // Tránh lỗi nạp thông tin phụ làm sập trang xem chi tiết
+                }
+            }
+
             request.setAttribute("currentUser", currentUser);
             request.setAttribute("thongBaoThanhCong", ketQua.getThongBao());
             request.setAttribute("banGhi", banGhi);
-            request.getRequestDispatcher("/WEB-INF/views/phan-quyen/danh-sach-theo-pham-vi.jsp").forward(request, response);
+            request.setAttribute("banGhiChiTiet", banGhi);
+
+            if (banGhi.getLoaiNghiepVu() == BanGhiNghiepVuDTO.LoaiNghiepVu.KHACH_HANG) {
+                try {
+                    vn.nhom10.crm.dto.ThongKeNhomCongTyDTO thongKe = congTyMeConService.layThongKeNhomCongTy(id);
+                    request.setAttribute("thongKeNhomCongTy", thongKe);
+                    request.setAttribute("dsKhaDungLamCon", congTyMeConService.layDanhSachKhachHangKhaDungLamCongTyCon(id));
+                    request.setAttribute("dsKhaDungLamMe", congTyMeConService.layDanhSachKhachHangKhaDungLamCongTyMe(id));
+                } catch (Exception e) {
+                    java.util.logging.Logger.getLogger(PhanQuyenDuLieuServlet.class.getName())
+                            .log(java.util.logging.Level.WARNING, "Không thể tải số liệu nhóm công ty: " + e.getMessage());
+                }
+            }
+
+            request.getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp").forward(request, response);
         }
     }
 
@@ -250,6 +306,7 @@ public class PhanQuyenDuLieuServlet extends HttpServlet {
         request.setAttribute("currentUser", currentUser);
         request.setAttribute("thongBaoThanhCong", "Cập nhật dữ liệu thành công.");
         request.setAttribute("banGhi", banGhi);
-        request.getRequestDispatcher("/WEB-INF/views/phan-quyen/danh-sach-theo-pham-vi.jsp").forward(request, response);
+        request.setAttribute("banGhiChiTiet", banGhi);
+        request.getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp").forward(request, response);
     }
 }

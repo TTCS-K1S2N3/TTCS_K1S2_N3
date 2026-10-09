@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đổi Mật Khẩu | CRM Bán Hàng</title>
     <meta name="description" content="Đổi mật khẩu người dùng và thu hồi các phiên đăng nhập khác để bảo vệ an toàn danh mục khách hàng trong hệ thống CRM.">
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
+
     <!-- CSS Module -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/auth/doi-mat-khau.css">
 </head>
@@ -66,10 +66,7 @@
             <!-- Page Title Section -->
             <section class="page-intro">
                 <div class="intro-icon-wrapper" aria-hidden="true">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
+                    <span class="material-symbols-outlined icon-2xl">lock</span>
                 </div>
                 <div class="intro-text">
                     <h1 class="page-title" id="page-title">Đổi Mật Khẩu Đang Đăng Nhập</h1>
@@ -82,31 +79,24 @@
             <!-- Server Notifications (nếu có từ Controller) -->
             <div id="alert-server-error" class="alert alert-error ${empty thongBaoLoi ? 'd-none' : ''}" role="alert">
                 <div class="alert-icon" aria-hidden="true">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
+                    <span class="material-symbols-outlined icon-sm">error</span>
                 </div>
                 <div class="alert-content">
                     <strong class="alert-heading">Đổi mật khẩu không thành công</strong>
                     <p id="server-error-text" class="alert-message">${thongBaoLoi}</p>
                 </div>
-                <button type="button" class="btn-alert-close" aria-label="Đóng thông báo lỗi" onclick="this.closest('.alert').classList.add('d-none');">&times;</button>
+                <button type="button" class="btn-alert-close" aria-label="Đóng thông báo lỗi" onclick="this.closest('.alert').classList.add('d-none');"><span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span></button>
             </div>
 
             <div id="alert-server-success" class="alert alert-success ${empty thongBaoThanhCong ? 'd-none' : ''}" role="alert">
                 <div class="alert-icon" aria-hidden="true">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                    </svg>
+                    <span class="material-symbols-outlined icon-sm">check_circle</span>
                 </div>
                 <div class="alert-content">
                     <strong class="alert-heading">Đổi mật khẩu thành công!</strong>
                     <p id="server-success-text" class="alert-message">${thongBaoThanhCong}</p>
                 </div>
-                <button type="button" class="btn-alert-close" aria-label="Đóng thông báo thành công" onclick="this.closest('.alert').classList.add('d-none');">&times;</button>
+                <button type="button" class="btn-alert-close" aria-label="Đóng thông báo thành công" onclick="this.closest('.alert').classList.add('d-none');"><span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span></button>
             </div>
 
             <!-- Client-side Dynamic Feedback Alert -->
@@ -116,7 +106,7 @@
                     <strong class="alert-heading" id="feedback-heading">Thông báo</strong>
                     <p class="alert-message" id="feedback-message"></p>
                 </div>
-                <button type="button" class="btn-alert-close" aria-label="Đóng thông báo" id="btn-close-feedback">&times;</button>
+                <button type="button" class="btn-alert-close" aria-label="Đóng thông báo" id="btn-close-feedback"><span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span></button>
             </div>
 
             <!-- Main Layout Grid: Form Column & Security Guidelines Column -->
@@ -141,38 +131,29 @@
                                 </label>
                                 <div class="input-wrapper">
                                     <span class="input-icon-left" aria-hidden="true">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                                        </svg>
+                                        <span class="material-symbols-outlined icon-sm">lock</span>
                                     </span>
-                                    <input 
-                                        type="password" 
-                                        id="mat-khau-hien-tai" 
-                                        name="matKhauHienTai" 
-                                        class="form-control" 
-                                        placeholder="Nhập mật khẩu bạn đang dùng" 
-                                        autocomplete="current-password" 
-                                        required 
+                                    <input
+                                        type="password"
+                                        id="mat-khau-hien-tai"
+                                        name="matKhauHienTai"
+                                        class="form-control"
+                                        placeholder="Nhập mật khẩu bạn đang dùng"
+                                        autocomplete="current-password"
+                                        required
                                         aria-required="true"
                                         aria-describedby="err-mat-khau-hien-tai hint-mat-khau-hien-tai"
                                     />
-                                    <button 
-                                        type="button" 
-                                        id="btn-toggle-mat-khau-hien-tai" 
-                                        class="btn-toggle-pwd" 
-                                        aria-label="Hiện mật khẩu hiện tại" 
+                                    <button
+                                        type="button"
+                                        id="btn-toggle-mat-khau-hien-tai"
+                                        class="btn-toggle-pwd"
+                                        aria-label="Hiện mật khẩu hiện tại"
                                         data-target="mat-khau-hien-tai"
                                         tabindex="0"
                                     >
-                                        <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                            <circle cx="12" cy="12" r="3"></circle>
-                                        </svg>
-                                        <svg class="eye-closed d-none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                                            <line x1="1" y1="1" x2="23" y2="23"></line>
-                                        </svg>
+                                        <span class="material-symbols-outlined eye-open icon-sm" aria-hidden="true">visibility</span>
+                                        <span class="material-symbols-outlined eye-closed d-none icon-sm" aria-hidden="true">visibility_off</span>
                                     </button>
                                 </div>
                                 <span id="hint-mat-khau-hien-tai" class="field-hint">Bắt buộc phải nhập mật khẩu hiện tại để xác thực bạn là chủ tài khoản.</span>
@@ -188,38 +169,30 @@
                                 </label>
                                 <div class="input-wrapper">
                                     <span class="input-icon-left" aria-hidden="true">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
-                                        </svg>
+                                        <span class="material-symbols-outlined icon-sm">key</span>
                                     </span>
-                                    <input 
-                                        type="password" 
-                                        id="mat-khau-moi" 
-                                        name="matKhauMoi" 
-                                        class="form-control" 
-                                        placeholder="Tối thiểu 8 ký tự, gồm cả chữ và số" 
-                                        autocomplete="new-password" 
-                                        required 
+                                    <input
+                                        type="password"
+                                        id="mat-khau-moi"
+                                        name="matKhauMoi"
+                                        class="form-control"
+                                        placeholder="Tối thiểu 8 ký tự, gồm cả chữ và số"
+                                        autocomplete="new-password"
+                                        required
                                         minlength="8"
                                         aria-required="true"
                                         aria-describedby="err-mat-khau-moi checklist-mat-khau-moi"
                                     />
-                                    <button 
-                                        type="button" 
-                                        id="btn-toggle-mat-khau-moi" 
-                                        class="btn-toggle-pwd" 
-                                        aria-label="Hiện mật khẩu mới" 
+                                    <button
+                                        type="button"
+                                        id="btn-toggle-mat-khau-moi"
+                                        class="btn-toggle-pwd"
+                                        aria-label="Hiện mật khẩu mới"
                                         data-target="mat-khau-moi"
                                         tabindex="0"
                                     >
-                                        <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                            <circle cx="12" cy="12" r="3"></circle>
-                                        </svg>
-                                        <svg class="eye-closed d-none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                                            <line x1="1" y1="1" x2="23" y2="23"></line>
-                                        </svg>
+                                        <span class="material-symbols-outlined eye-open icon-sm" aria-hidden="true">visibility</span>
+                                        <span class="material-symbols-outlined eye-closed d-none icon-sm" aria-hidden="true">visibility_off</span>
                                     </button>
                                 </div>
                                 <div id="err-mat-khau-moi" class="field-error" aria-live="polite"></div>
@@ -243,19 +216,19 @@
                                     <span class="checklist-heading">Quy định mật khẩu mới:</span>
                                     <ul class="checklist-items">
                                         <li class="checklist-item" id="rule-min-length" data-rule="length">
-                                            <span class="rule-icon" aria-hidden="true">&#10005;</span>
+                                            <span class="rule-icon" aria-hidden="true"><span class="material-symbols-outlined icon-xs">close</span></span>
                                             <span class="rule-label">Tối thiểu <strong>8 ký tự</strong></span>
                                         </li>
                                         <li class="checklist-item" id="rule-has-letter" data-rule="letter">
-                                            <span class="rule-icon" aria-hidden="true">&#10005;</span>
+                                            <span class="rule-icon" aria-hidden="true"><span class="material-symbols-outlined icon-xs">close</span></span>
                                             <span class="rule-label">Chứa ít nhất <strong>1 chữ cái</strong> (a-z hoặc A-Z)</span>
                                         </li>
                                         <li class="checklist-item" id="rule-has-number" data-rule="number">
-                                            <span class="rule-icon" aria-hidden="true">&#10005;</span>
+                                            <span class="rule-icon" aria-hidden="true"><span class="material-symbols-outlined icon-xs">close</span></span>
                                             <span class="rule-label">Chứa ít nhất <strong>1 chữ số</strong> (0-9)</span>
                                         </li>
                                         <li class="checklist-item" id="rule-diff-current" data-rule="different">
-                                            <span class="rule-icon" aria-hidden="true">&#10005;</span>
+                                            <span class="rule-icon" aria-hidden="true"><span class="material-symbols-outlined icon-xs">close</span></span>
                                             <span class="rule-label">Không trùng với <strong>mật khẩu hiện tại</strong></span>
                                         </li>
                                     </ul>
@@ -269,37 +242,29 @@
                                 </label>
                                 <div class="input-wrapper">
                                     <span class="input-icon-left" aria-hidden="true">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="20 6 9 17 4 12"></polyline>
-                                        </svg>
+                                        <span class="material-symbols-outlined icon-sm">lock_clock</span>
                                     </span>
-                                    <input 
-                                        type="password" 
-                                        id="xac-nhan-mat-khau" 
-                                        name="xacNhanMatKhau" 
-                                        class="form-control" 
-                                        placeholder="Nhập lại mật khẩu mới vừa đặt" 
-                                        autocomplete="new-password" 
-                                        required 
+                                    <input
+                                        type="password"
+                                        id="xac-nhan-mat-khau"
+                                        name="xacNhanMatKhau"
+                                        class="form-control"
+                                        placeholder="Nhập lại mật khẩu mới vừa đặt"
+                                        autocomplete="new-password"
+                                        required
                                         aria-required="true"
                                         aria-describedby="err-xac-nhan-mat-khau match-status"
                                     />
-                                    <button 
-                                        type="button" 
-                                        id="btn-toggle-xac-nhan-mat-khau" 
-                                        class="btn-toggle-pwd" 
-                                        aria-label="Hiện xác nhận mật khẩu mới" 
+                                    <button
+                                        type="button"
+                                        id="btn-toggle-xac-nhan-mat-khau"
+                                        class="btn-toggle-pwd"
+                                        aria-label="Hiện xác nhận mật khẩu mới"
                                         data-target="xac-nhan-mat-khau"
                                         tabindex="0"
                                     >
-                                        <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                            <circle cx="12" cy="12" r="3"></circle>
-                                        </svg>
-                                        <svg class="eye-closed d-none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                                            <line x1="1" y1="1" x2="23" y2="23"></line>
-                                        </svg>
+                                        <span class="material-symbols-outlined eye-open icon-sm" aria-hidden="true">visibility</span>
+                                        <span class="material-symbols-outlined eye-closed d-none icon-sm" aria-hidden="true">visibility_off</span>
                                     </button>
                                 </div>
                                 <div id="match-status" class="match-status" aria-live="polite"></div>
@@ -312,12 +277,12 @@
                             <div class="session-revocation-card" id="card-thu-hoi-phien">
                                 <div class="switch-box">
                                     <label class="custom-switch" for="thu-hoi-phien-khac">
-                                        <input 
-                                            type="checkbox" 
-                                            id="thu-hoi-phien-khac" 
-                                            name="thuHoiPhienKhac" 
-                                            value="true" 
-                                            checked 
+                                        <input
+                                            type="checkbox"
+                                            id="thu-hoi-phien-khac"
+                                            name="thuHoiPhienKhac"
+                                            value="true"
+                                            checked
                                             class="switch-checkbox"
                                             aria-describedby="desc-thu-hoi-phien"
                                         />
@@ -339,11 +304,7 @@
                                 <!-- Session warning tip -->
                                 <div class="session-notice">
                                     <span class="notice-icon" aria-hidden="true">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <line x1="12" y1="16" x2="12" y2="12"></line>
-                                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                                        </svg>
+                                        <span class="material-symbols-outlined icon-xs">info</span>
                                     </span>
                                     <span class="notice-text">
                                         Nếu bạn nghi ngờ mật khẩu đã bị lộ hoặc vừa đăng nhập từ máy tính công cộng, tính năng này đảm bảo không ai khác có thể tiếp tục truy cập dữ liệu khách hàng của bạn.
@@ -353,25 +314,21 @@
 
                             <!-- ===== FORM ACTIONS ===== -->
                             <div class="form-actions">
-                                <button 
-                                    type="submit" 
-                                    id="btn-submit-doi-mat-khau" 
+                                <button
+                                    type="submit"
+                                    id="btn-submit-doi-mat-khau"
                                     class="btn btn-primary btn-submit"
                                 >
                                     <span class="btn-spinner d-none" id="btn-spinner" aria-hidden="true"></span>
                                     <span class="btn-icon" id="btn-icon" aria-hidden="true">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                                            <polyline points="7 3 7 8 15 8"></polyline>
-                                        </svg>
+                                        <span class="material-symbols-outlined icon-sm">save</span>
                                     </span>
                                     <span class="btn-text" id="btn-text">Đổi Mật Khẩu và Cập Nhật Bảo Mật</span>
                                 </button>
 
-                                <a 
-                                    href="${pageContext.request.contextPath}/" 
-                                    id="btn-huy-doi-mat-khau" 
+                                <a
+                                    href="${pageContext.request.contextPath}/"
+                                    id="btn-huy-doi-mat-khau"
                                     class="btn btn-secondary"
                                 >
                                     Hủy bỏ
@@ -389,9 +346,7 @@
                     <div class="sidebar-card card-tips">
                         <div class="sidebar-card-header">
                             <span class="sidebar-icon-wrapper" aria-hidden="true">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                                </svg>
+                                <span class="material-symbols-outlined icon-sm">shield</span>
                             </span>
                             <h3 class="sidebar-title">Bảo Vệ Danh Mục Khách Hàng</h3>
                         </div>
@@ -417,11 +372,7 @@
                     <div class="sidebar-card card-session-info">
                         <div class="sidebar-card-header">
                             <span class="sidebar-icon-wrapper icon-session" aria-hidden="true">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                                    <line x1="8" y1="21" x2="16" y2="21"></line>
-                                    <line x1="12" y1="17" x2="12" y2="21"></line>
-                                </svg>
+                                <span class="material-symbols-outlined icon-sm">devices</span>
                             </span>
                             <h3 class="sidebar-title">Phiên Đăng Nhập Của Bạn</h3>
                         </div>
@@ -447,17 +398,7 @@
                     <div class="sidebar-card card-best-practices">
                         <div class="sidebar-card-header">
                             <span class="sidebar-icon-wrapper icon-idea" aria-hidden="true">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="5"></circle>
-                                    <line x1="12" y1="1" x2="12" y2="3"></line>
-                                    <line x1="12" y1="21" x2="12" y2="23"></line>
-                                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                                    <line x1="1" y1="12" x2="3" y2="12"></line>
-                                    <line x1="21" y1="12" x2="23" y2="12"></line>
-                                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                                </svg>
+                                <span class="material-symbols-outlined icon-sm">lightbulb</span>
                             </span>
                             <h3 class="sidebar-title">Gợi Ý Mật Khẩu Mạnh</h3>
                         </div>

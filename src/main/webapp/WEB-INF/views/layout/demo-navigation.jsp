@@ -71,7 +71,7 @@
                 <div class="crm-ac-grid">
                     <div class="crm-ac-item pass">
                         <div class="crm-ac-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
                         </div>
                         <div class="crm-ac-info">
                             <strong>AC 1: Mục menu không thuộc quyền thì không hiển thị</strong>
@@ -80,7 +80,7 @@
                     </div>
                     <div class="crm-ac-item pass">
                         <div class="crm-ac-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
                         </div>
                         <div class="crm-ac-info">
                             <strong>AC 2: Hiển thị tên, vai trò và nhóm kinh doanh</strong>
@@ -89,7 +89,7 @@
                     </div>
                     <div class="crm-ac-item pass">
                         <div class="crm-ac-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
                         </div>
                         <div class="crm-ac-info">
                             <strong>AC 3: Dùng được thuận tiện trên màn hình 360px</strong>
@@ -215,12 +215,12 @@
                                 <td>
                                     <% if (coQuyen) { %>
                                         <span class="crm-badge-status badge-visible">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                            <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
                                             Hiển thị trên menu
                                         </span>
                                     <% } else { %>
                                         <span class="crm-badge-status badge-hidden">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                            <span class="material-symbols-outlined" aria-hidden="true">visibility_off</span>
                                             Ẩn (Không thuộc quyền)
                                         </span>
                                     <% } %>
@@ -262,7 +262,7 @@
                     <div class="crm-simulator-toolbar">
                         <span class="crm-dimensions-badge" id="simulator-dimensions-badge">360 × 640 px</span>
                         <button type="button" class="crm-btn-sim-action" id="btn-simulator-toggle-menu">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                            <span class="material-symbols-outlined" aria-hidden="true">menu</span>
                             Mở menu trên mô phỏng
                         </button>
                     </div>
