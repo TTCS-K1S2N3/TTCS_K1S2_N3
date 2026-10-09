@@ -12,6 +12,12 @@ import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.PhamViDuLieu;
 import vn.nhom10.crm.service.PhanQuyenDuLieuService;
 
+import vn.nhom10.crm.dao.NguoiDungDAO;
+import vn.nhom10.crm.dto.ThongTinRuiRoDTO;
+import vn.nhom10.crm.model.MucUuTienYeuCauEnum;
+import vn.nhom10.crm.model.TrangThaiYeuCauEnum;
+import vn.nhom10.crm.service.YeuCauHoTroService;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -28,13 +34,21 @@ public class PhanQuyenDuLieuServlet extends HttpServlet {
 
     public static final String SESSION_USER_KEY = "nguoiDung";
     private final PhanQuyenDuLieuService phanQuyenService;
+    private final vn.nhom10.crm.service.CongTyMeConService congTyMeConService;
 
     public PhanQuyenDuLieuServlet() {
         this.phanQuyenService = new PhanQuyenDuLieuService();
+        this.congTyMeConService = new vn.nhom10.crm.service.CongTyMeConService();
     }
 
     public PhanQuyenDuLieuServlet(PhanQuyenDuLieuService phanQuyenService) {
         this.phanQuyenService = phanQuyenService;
+        this.congTyMeConService = new vn.nhom10.crm.service.CongTyMeConService();
+    }
+
+    public PhanQuyenDuLieuServlet(PhanQuyenDuLieuService phanQuyenService, vn.nhom10.crm.service.CongTyMeConService congTyMeConService) {
+        this.phanQuyenService = phanQuyenService;
+        this.congTyMeConService = congTyMeConService;
     }
 
     @Override
@@ -193,10 +207,43 @@ public class PhanQuyenDuLieuServlet extends HttpServlet {
         } else {
             // Có quyền truy cập -> hiển thị chi tiết (HTTP 200 OK)
             response.setStatus(HttpServletResponse.SC_OK);
+
+            // Nạp thông tin cờ rủi ro rời bỏ và yêu cầu hỗ trợ nếu là đối tượng Khách Hàng (Story S3-08 AC3)
+            if (banGhi.getLoaiNghiepVu() == BanGhiNghiepVuDTO.LoaiNghiepVu.KHACH_HANG) {
+                try {
+                    YeuCauHoTroService ychtService = new YeuCauHoTroService();
+                    ThongTinRuiRoDTO ruiRo = ychtService.layThongTinRuiRo(banGhi.getId());
+                    if (ruiRo != null) {
+                        banGhi.setCoRuiRo(ruiRo.isCoRuiRo());
+                        banGhi.setSoYeuCauChuaXuLy(ruiRo.getSoYeuCauChuaXuLy());
+                        request.setAttribute("thongTinRuiRo", ruiRo);
+                    }
+                    request.setAttribute("danhSachYeuCauHoTro", ychtService.layDanhSachTheoKhachHang(banGhi.getId()));
+                    request.setAttribute("danhSachNhanVien", new NguoiDungDAO().layTatCa());
+                    request.setAttribute("mucUuTienList", MucUuTienYeuCauEnum.values());
+                    request.setAttribute("trangThaiList", TrangThaiYeuCauEnum.values());
+                } catch (Exception e) {
+                    // Tránh lỗi nạp thông tin phụ làm sập trang xem chi tiết
+                }
+            }
+
             request.setAttribute("currentUser", currentUser);
             request.setAttribute("thongBaoThanhCong", ketQua.getThongBao());
             request.setAttribute("banGhi", banGhi);
             request.setAttribute("banGhiChiTiet", banGhi);
+
+            if (banGhi.getLoaiNghiepVu() == BanGhiNghiepVuDTO.LoaiNghiepVu.KHACH_HANG) {
+                try {
+                    vn.nhom10.crm.dto.ThongKeNhomCongTyDTO thongKe = congTyMeConService.layThongKeNhomCongTy(id);
+                    request.setAttribute("thongKeNhomCongTy", thongKe);
+                    request.setAttribute("dsKhaDungLamCon", congTyMeConService.layDanhSachKhachHangKhaDungLamCongTyCon(id));
+                    request.setAttribute("dsKhaDungLamMe", congTyMeConService.layDanhSachKhachHangKhaDungLamCongTyMe(id));
+                } catch (Exception e) {
+                    java.util.logging.Logger.getLogger(PhanQuyenDuLieuServlet.class.getName())
+                            .log(java.util.logging.Level.WARNING, "Không thể tải số liệu nhóm công ty: " + e.getMessage());
+                }
+            }
+
             request.getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp").forward(request, response);
         }
     }

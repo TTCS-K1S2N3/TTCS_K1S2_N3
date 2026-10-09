@@ -60,6 +60,9 @@ public class MenuService {
         if (urlPath.startsWith("/nhat-ky-thay-doi") || urlPath.startsWith("/nguoi-dung/nhat-ky-thay-doi")) {
             return nguoiDung != null && nguoiDung.coVaiTro(VaiTroEnum.ADMIN);
         }
+        if (urlPath.startsWith("/yeu-cau-ho-tro") || urlPath.startsWith("/chi-tiet-ban-ghi")) {
+            return kiemTraQuyenTruyCap(nguoiDung, ModuleHeThong.KHACH_HANG);
+        }
         ModuleHeThong module = ModuleHeThong.tuDuongDan(urlPath);
         if (module == null) {
             // URL không thuộc phạm vi các module nghiệp vụ cần phân quyền
@@ -87,6 +90,10 @@ public class MenuService {
                 if (currentUri != null && !currentUri.isBlank()) {
                     active = currentUri.equals(mod.getDuongDanUrl())
                             || currentUri.startsWith(mod.getDuongDanUrl() + "/")
+                            || (mod == ModuleHeThong.KHACH_HANG && (
+                                    currentUri.startsWith("/yeu-cau-ho-tro")
+                                    || currentUri.startsWith("/chi-tiet-ban-ghi")
+                               ))
                             || (mod == ModuleHeThong.NGUOI_DUNG && (
                                     currentUri.startsWith("/nhat-ky-thay-doi")
                                     || currentUri.startsWith("/nguoi-dung/nhat-ky-thay-doi")
