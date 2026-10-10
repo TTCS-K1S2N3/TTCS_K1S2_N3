@@ -80,7 +80,7 @@ class DangNhapServiceTest {
     }
 
     @Test
-    @DisplayName("AC1: Đăng nhập đúng với vai trò MARKETING thì điều hướng tới /lead")
+    @DisplayName("AC1: Đăng nhập đúng với vai trò MARKETING - /lead chưa triển khai, điều hướng module khả dụng /khach-hang")
     void testDangNhapDung_RoleMarketing() {
         NguoiDung user = taoUserMau("marketing@crm.vn", VaiTroEnum.MARKETING);
         when(nguoiDungDAO.timTheoEmail("marketing@crm.vn")).thenReturn(user);
@@ -88,11 +88,12 @@ class DangNhapServiceTest {
         KetQuaDangNhapDTO result = dangNhapService.dangNhap("marketing@crm.vn", rawPassword);
 
         assertTrue(result.isThanhCong());
-        assertEquals("/lead", result.getTrangChuUrl());
+        // Dynamic landing: /lead chưa triển khai trong Sprint 1-3, điều hướng về module đã triển khai có quyền (/khach-hang)
+        assertEquals("/khach-hang", result.getTrangChuUrl());
     }
 
     @Test
-    @DisplayName("AC1: Đăng nhập đúng với vai trò ACCOUNTANT thì điều hướng tới /hop-dong")
+    @DisplayName("AC1: Đăng nhập đúng với vai trò ACCOUNTANT - /hop-dong chưa triển khai, điều hướng module khả dụng /khach-hang")
     void testDangNhapDung_RoleAccountant() {
         NguoiDung user = taoUserMau("accountant@crm.vn", VaiTroEnum.ACCOUNTANT);
         when(nguoiDungDAO.timTheoEmail("accountant@crm.vn")).thenReturn(user);
@@ -100,7 +101,21 @@ class DangNhapServiceTest {
         KetQuaDangNhapDTO result = dangNhapService.dangNhap("accountant@crm.vn", rawPassword);
 
         assertTrue(result.isThanhCong());
-        assertEquals("/hop-dong", result.getTrangChuUrl());
+        // Dynamic landing: /hop-dong chưa triển khai trong Sprint 1-3, điều hướng về module đã triển khai có quyền (/khach-hang)
+        assertEquals("/khach-hang", result.getTrangChuUrl());
+    }
+
+    @Test
+    @DisplayName("AC1: Đăng nhập đúng khi không có module nghiệp vụ nào khả dụng -> Fallback an toàn về /ho-so")
+    void testDangNhapDung_FallbackHoSoKhiKhongCoModule() {
+        // Tạo user không có vai trò nào (hoặc vai trò bị NONE toàn bộ module đã triển khai)
+        NguoiDung user = taoUserMau("no_role@crm.vn", null);
+        when(nguoiDungDAO.timTheoEmail("no_role@crm.vn")).thenReturn(user);
+
+        KetQuaDangNhapDTO result = dangNhapService.dangNhap("no_role@crm.vn", rawPassword);
+
+        assertTrue(result.isThanhCong());
+        assertEquals("/ho-so", result.getTrangChuUrl());
     }
 
     @Test
@@ -310,7 +325,7 @@ class DangNhapServiceTest {
         MenuService menuService = MenuService.getInstance();
         assertTrue(menuService.kiemTraQuyenTruyCapUrl(result.getNguoiDung(), "/khach-hang"),
                 "User S2-01 không được bị 403 trên /khach-hang sau khi đăng nhập");
-        assertEquals(10, menuService.layDanhSachMenuChoNguoiDung(result.getNguoiDung(), "/khach-hang").size(),
-                "User S2-01 SALES_REP phải thấy đủ 10/12 module khả dụng (ngoại trừ NGUOI_DUNG và DANH_MUC)");
+        assertEquals(11, menuService.layDanhSachMenuChoNguoiDung(result.getNguoiDung(), "/khach-hang").size(),
+                "User S2-01 SALES_REP thấy 11/12 module khả dụng (ngoại trừ NGUOI_DUNG do quyền NONE)");
     }
 }

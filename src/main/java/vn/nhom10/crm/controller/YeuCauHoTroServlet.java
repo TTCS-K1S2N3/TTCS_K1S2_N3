@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import vn.nhom10.crm.model.MucQuyen;
+import vn.nhom10.crm.service.PermissionService;
+
 /**
  * Servlet tiếp nhận và xử lý Yêu cầu hỗ trợ sau bán & Cảnh báo rủi ro rời bỏ (Story S3-08).
  * Mapping: /yeu-cau-ho-tro, /yeu-cau-ho-tro/*
@@ -35,6 +38,7 @@ public class YeuCauHoTroServlet extends HttpServlet {
     private YeuCauHoTroService yeuCauHoTroService;
     private KhachHangDAO khachHangDAO;
     private NguoiDungDAO nguoiDungDAO;
+    private PermissionService permissionService;
 
     @Override
     public void init() throws ServletException {
@@ -42,6 +46,7 @@ public class YeuCauHoTroServlet extends HttpServlet {
         this.yeuCauHoTroService = new YeuCauHoTroService();
         this.khachHangDAO = new KhachHangDAO();
         this.nguoiDungDAO = new NguoiDungDAO();
+        this.permissionService = new PermissionService();
     }
 
     public void setYeuCauHoTroService(YeuCauHoTroService service) {
@@ -56,6 +61,10 @@ public class YeuCauHoTroServlet extends HttpServlet {
         this.nguoiDungDAO = nguoiDungDAO;
     }
 
+    public void setPermissionService(PermissionService permissionService) {
+        this.permissionService = permissionService;
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -64,6 +73,19 @@ public class YeuCauHoTroServlet extends HttpServlet {
         NguoiDung currentUser = layNguoiDungHienTai(request);
         if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/dang-nhap?error=auth_required");
+            return;
+        }
+
+        if (permissionService != null && !permissionService.coQuyen(currentUser, "KHACH_HANG", MucQuyen.READ)) {
+            if (laYeuCauAjax(request)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"thanhCong\":false,\"thongBao\":\"Bạn không có quyền truy cập module Khách hàng.\"}");
+            } else {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                request.setAttribute("errorMessage", "Bạn không có quyền truy cập module Khách hàng.");
+                request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+            }
             return;
         }
 
@@ -93,6 +115,19 @@ public class YeuCauHoTroServlet extends HttpServlet {
         NguoiDung currentUser = layNguoiDungHienTai(request);
         if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/dang-nhap?error=auth_required");
+            return;
+        }
+
+        if (permissionService != null && !permissionService.coQuyen(currentUser, "KHACH_HANG", MucQuyen.WRITE)) {
+            if (laYeuCauAjax(request)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"thanhCong\":false,\"thongBao\":\"Bạn không có quyền thao tác trên khách hàng (yêu cầu quyền WRITE trở lên).\"}");
+            } else {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                request.setAttribute("errorMessage", "Bạn không có quyền thao tác trên khách hàng (yêu cầu quyền WRITE trở lên).");
+                request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+            }
             return;
         }
 

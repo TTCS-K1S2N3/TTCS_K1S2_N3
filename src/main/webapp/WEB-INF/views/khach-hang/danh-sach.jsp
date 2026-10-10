@@ -44,10 +44,12 @@
                     <span class="material-symbols-outlined" aria-hidden="true">call_merge</span>
                     <span>Kiểm Tra Trùng & Gộp</span>
                 </button>
+                <c:if test="${coQuyenThemKhach}">
                 <a href="${pageContext.request.contextPath}/khach-hang/import-excel" class="btn btn-outline" id="btnImportExcel" title="Nhập danh sách khách hàng từ file Excel (.xlsx, .xls)">
                     <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
                     <span>Nhập Excel</span>
                 </a>
+                </c:if>
                 <a href="${pageContext.request.contextPath}/yeu-cau-ho-tro" class="btn btn-outline" id="btnYeuCauHoTro" title="Quản lý yêu cầu hỗ trợ sau bán và khách hàng có rủi ro rời bỏ (Story S3-08)">
                     <span class="material-symbols-outlined" aria-hidden="true">support_agent</span>
                     <span>Yêu Cầu Hỗ Trợ & Cờ Rủi Ro</span>
@@ -56,8 +58,6 @@
                     <span class="material-symbols-outlined" aria-hidden="true">table_view</span>
                     <span>Xuất Excel</span>
                 </button>
-                <c:set var="userHienTai" value="${not empty nguoiDung ? nguoiDung : sessionScope.nguoiDung}" />
-                <c:set var="coQuyenThemKhach" value="${empty userHienTai or userHienTai.coVaiTro('ADMIN') or userHienTai.coVaiTro('DIRECTOR') or userHienTai.coVaiTro('TEAM_LEAD') or userHienTai.coVaiTro('SALES_REP')}" />
                 <c:if test="${coQuyenThemKhach}">
                     <button type="button" class="btn btn-primary" id="btnThemKhachHang">
                         <span class="material-symbols-outlined" aria-hidden="true">add</span>
@@ -107,6 +107,7 @@
                             </c:otherwise>
                         </c:choose>
 
+                        <c:if test="${coQuyenSuaKhach}">
                         <button type="button" class="btn btn-outline btn-sua-khach-hang" id="btnSuaTuDetail"
                             data-id="${not empty detailKH ? detailKH.id : detailBG.id}"
                             data-ten="<c:out value="${tenKH}" />"
@@ -123,6 +124,7 @@
                             <span class="material-symbols-outlined" aria-hidden="true">edit</span>
                             <span>Sửa hồ sơ</span>
                         </button>
+                        </c:if>
 
                         <button type="button" class="btn btn-outline" id="btnDongDetailCard" title="Đóng khung chi tiết">
                             <span class="material-symbols-outlined" aria-hidden="true">close</span>
@@ -721,6 +723,7 @@
                                                     <a href="${pageContext.request.contextPath}/khach-hang/360?id=${kh.id}" class="crm-btn-action" title="Hồ sơ 360° khách hàng (S3-03)" aria-label="Xem chi tiết hồ sơ 360 khách hàng ${kh.tenCongTy}">
                                                         <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
                                                     </a>
+                                                    <c:if test="${coQuyenSuaKhach}">
                                                     <button type="button" class="crm-btn-action btn-edit-customer btnSuaKhachHang btn-sua-khach-hang" title="Chỉnh sửa thông tin khách hàng"
                                                             data-id="${kh.id}"
                                                             data-ma="${kh.maKhachHang}"
@@ -740,6 +743,16 @@
                                                             data-mota="<c:out value="${kh.moTaChiTiet}" />">
                                                         <span class="material-symbols-outlined" aria-hidden="true">edit</span>
                                                     </button>
+                                                    </c:if>
+                                                    <c:if test="${coQuyenXoaKhach}">
+                                                    <form method="POST" action="${pageContext.request.contextPath}/khach-hang" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa khách hàng này?');">
+                                                        <input type="hidden" name="action" value="xoa">
+                                                        <input type="hidden" name="id" value="${kh.id}">
+                                                        <button type="submit" class="crm-btn-action btn-xoa-khach-hang" title="Xóa khách hàng" aria-label="Xóa khách hàng ${kh.tenCongTy}" style="color: var(--danger, #ef4444);">
+                                                            <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                                                        </button>
+                                                    </form>
+                                                    </c:if>
                                                 </div>
                                             </td>
                                         </tr>
@@ -1516,6 +1529,7 @@
 
 
 <!-- Modal Thêm Khách Hàng Mới (Story S3-01 & S1-05) -->
+        <c:if test="${coQuyenThemKhach}">
         <div class="modal-backdrop" id="modalThemKhachHang" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalThemKhachHangTieuDe">
             <div class="modal-card">
                 <div class="modal-header">
@@ -1658,8 +1672,10 @@
                 </form>
             </div>
         </div>
+        </c:if>
 
         <!-- Modal Sửa Khách Hàng (Story S3-01 & S1-05) -->
+        <c:if test="${coQuyenSuaKhach}">
         <div class="modal-backdrop" id="modalSuaKhachHang" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalSuaKhachHangTieuDe">
             <div class="modal-card">
                 <div class="modal-header">
@@ -1786,6 +1802,7 @@
                 </form>
             </div>
         </div>
+        </c:if>
 
 
         <!-- Toast Notifications Container -->

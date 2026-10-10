@@ -305,10 +305,25 @@ public class NguoiDungServlet extends HttpServlet {
             return true;
         }
 
-        // Nếu đã đăng nhập thì bắt buộc phải có vai trò ADMIN
-        if (!loggedInUser.coVaiTro("ADMIN") && !loggedInUser.coVaiTro("QUAN_TRI")) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập chức năng Quản trị người dùng.");
-            return false;
+        String path = request.getServletPath();
+        boolean laThaoTacSuaDoi = "POST".equalsIgnoreCase(request.getMethod())
+                || "/nguoi-dung/tao".equals(path)
+                || "/nguoi-dung/sua".equals(path);
+
+        if (laThaoTacSuaDoi) {
+            // Thao tác tạo/sửa người dùng bắt buộc vai trò Quản trị hệ thống (ADMIN)
+            if (!loggedInUser.coVaiTro("ADMIN") && !loggedInUser.coVaiTro("QUAN_TRI")) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền thực hiện thao tác quản trị người dùng.");
+                return false;
+            }
+        } else {
+            // Thao tác xem danh sách người dùng cho phép vai trò có quyền READ trên NGUOI_DUNG_NHAT_KY
+            boolean coQuyenXem = loggedInUser.coVaiTro("ADMIN")
+                    || vn.nhom10.crm.service.PermissionService.getInstance().coQuyen(loggedInUser, "NGUOI_DUNG_NHAT_KY", vn.nhom10.crm.model.MucQuyen.READ);
+            if (!coQuyenXem) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập chức năng Quản trị người dùng.");
+                return false;
+            }
         }
 
         return true;
