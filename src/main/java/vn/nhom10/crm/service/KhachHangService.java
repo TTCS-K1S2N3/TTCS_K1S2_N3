@@ -631,4 +631,14 @@ public class KhachHangService {
             return out.toByteArray();
         }
     }
+
+    /**
+     * Xóa hồ sơ khách hàng theo ID (yêu cầu quyền FULL).
+     */
+    public boolean xoaKhachHang(Long id, NguoiDung user) {
+        if (id == null) {
+            return false;
+        }
+        return khachHangDAO.xoaKhachHang(id);
+    }
 }

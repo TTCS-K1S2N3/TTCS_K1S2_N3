@@ -101,12 +101,14 @@
                             </span>
                         </div>
                     </div>
+                    <c:if test="${coQuyenSuaKhach}">
                     <div>
                         <button type="button" class="ycht-btn ycht-btn-danger" onclick="moModalGhiNhanYeuCau()" id="btnXuLyRuiRo">
                             <span class="material-symbols-outlined" aria-hidden="true">add_task</span>
                             <span>Ghi nhận hỗ trợ</span>
                         </button>
                     </div>
+                    </c:if>
                 </section>
             </c:when>
             <c:otherwise>
@@ -198,6 +200,7 @@
                     <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
                     <span>Danh sách khách hàng</span>
                 </a>
+                <c:if test="${coQuyenSuaKhach}">
                 <c:choose>
                     <c:when test="${not empty thongKeNhomCongTy.congTyMe.congTyMeId}">
                         <button type="button" class="btn btn-outline" onclick="moModalChonCongTyMe()" id="btnDoiCongTyMe">
@@ -220,6 +223,7 @@
                     <span class="material-symbols-outlined" aria-hidden="true">add_task</span>
                     <span>Ghi nhận hoạt động</span>
                 </button>
+                </c:if>
             </div>
         </div>
 
@@ -651,12 +655,14 @@
                                 </h2>
                                 <p style="margin: 4px 0 0; color: var(--slate-500); font-size: 13px;">Mỗi khách hàng có nhiều người liên hệ; đánh dấu vai trò quyết định mua, đầu mối chính và lịch sử chuyển công ty</p>
                             </div>
+                            <c:if test="${coQuyenSuaKhach}">
                             <div>
                                 <button type="button" class="btn btn-primary" id="btnMoModalThemNlh" onclick="moModalThemNlh()" style="display: inline-flex; align-items: center; gap: 6px;">
                                     <span class="material-symbols-outlined icon-xs" aria-hidden="true">person_add</span>
                                     <span>Thêm Người Liên Hệ</span>
                                 </button>
                             </div>
+                            </c:if>
                         </div>
 
                         <!-- Bảng danh sách người liên hệ -->
@@ -756,21 +762,36 @@
                                                     <td style="text-align: center;" class="cell-dau-moi-action">
                                                         <c:choose>
                                                             <c:when test="${nlh.laDauMoiChinh}">
-                                                                <button type="button" class="btn btn-sm btn-dau-moi-active" title="Đầu mối chính hiện tại" aria-label="Đầu mối chính cho <c:out value="${nlh.hoTen}" />" onclick="doiDauMoiChinh(${nlh.id}, ${not empty nlh.khachHangId ? nlh.khachHangId : (not empty khachHang ? khachHang.id : banGhi.id)}, false, this)">
-                                                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">star</span>
-                                                                    <span>Đầu mối</span>
-                                                                </button>
+                                                                <c:choose>
+                                                                    <c:when test="${coQuyenSuaKhach}">
+                                                                        <button type="button" class="btn btn-sm btn-dau-moi-active" title="Đầu mối chính hiện tại" aria-label="Đầu mối chính cho <c:out value="${nlh.hoTen}" />" onclick="doiDauMoiChinh(${nlh.id}, ${not empty nlh.khachHangId ? nlh.khachHangId : (not empty khachHang ? khachHang.id : banGhi.id)}, false, this)">
+                                                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">star</span>
+                                                                            <span>Đầu mối</span>
+                                                                        </button>
+                                                                    </c:when>
+                                                                    <c:otherwise>
+                                                                        <span class="badge" style="background:#fef3c7;color:#92400e;display:inline-flex;align-items:center;gap:4px;"><span class="material-symbols-outlined icon-xs" aria-hidden="true">star</span>Đầu mối</span>
+                                                                    </c:otherwise>
+                                                                </c:choose>
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <button type="button" class="btn btn-sm btn-outline btn-dau-moi-inactive" title="Đặt làm đầu mối chính của khách hàng" aria-label="Đặt <c:out value="${nlh.hoTen}" /> làm đầu mối chính" onclick="doiDauMoiChinh(${nlh.id}, ${not empty nlh.khachHangId ? nlh.khachHangId : (not empty khachHang ? khachHang.id : banGhi.id)}, true, this)">
-                                                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">star_outline</span>
-                                                                    <span>Đặt chính</span>
-                                                                </button>
+                                                                <c:choose>
+                                                                    <c:when test="${coQuyenSuaKhach}">
+                                                                        <button type="button" class="btn btn-sm btn-outline btn-dau-moi-inactive" title="Đặt làm đầu mối chính của khách hàng" aria-label="Đặt <c:out value="${nlh.hoTen}" /> làm đầu mối chính" onclick="doiDauMoiChinh(${nlh.id}, ${not empty nlh.khachHangId ? nlh.khachHangId : (not empty khachHang ? khachHang.id : banGhi.id)}, true, this)">
+                                                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">star_outline</span>
+                                                                            <span>Đặt chính</span>
+                                                                        </button>
+                                                                    </c:when>
+                                                                    <c:otherwise>
+                                                                        <span style="color:var(--slate-400);font-size:12px;">--</span>
+                                                                    </c:otherwise>
+                                                                </c:choose>
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </td>
                                                     <td style="text-align: center;">
                                                         <div class="btn-action-group">
+                                                            <c:if test="${coQuyenSuaKhach}">
                                                             <button type="button" class="btn-action" title="Chỉnh sửa thông tin" aria-label="Chỉnh sửa thông tin người liên hệ <c:out value="${nlh.hoTen}" />"
                                                                     data-id="${nlh.id}"
                                                                     data-ho-ten="<c:out value="${nlh.hoTen}" />"
@@ -789,6 +810,7 @@
                                                                     onclick="moModalChuyenCongTyTuElement(this)">
                                                                 <span class="material-symbols-outlined icon-sm" aria-hidden="true">swap_horiz</span>
                                                             </button>
+                                                            </c:if>
                                                             <button type="button" class="btn-action btn-action-history" title="Xem lịch sử làm việc (AC4)" aria-label="Xem lịch sử công tác của <c:out value="${nlh.hoTen}" />"
                                                                     data-id="${nlh.id}"
                                                                     data-ho-ten="<c:out value="${nlh.hoTen}" />"
@@ -807,10 +829,12 @@
                                                         <span class="material-symbols-outlined empty-state-icon" aria-hidden="true">contact_page</span>
                                                         <div class="empty-state-title">Chưa có người liên hệ nào</div>
                                                         <div class="empty-state-desc">Khách hàng này hiện chưa được khai báo người liên hệ. Hãy thêm người liên hệ để ghi nhận vai trò quyết định mua và đầu mối chính.</div>
+                                                        <c:if test="${coQuyenSuaKhach}">
                                                         <button type="button" class="btn btn-primary btn-sm" onclick="moModalThemNlh()" style="margin-top: 14px;">
                                                             <span class="material-symbols-outlined icon-xs" aria-hidden="true">person_add</span>
                                                             <span>Thêm Người Liên Hệ</span>
                                                         </button>
+                                                        </c:if>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -934,12 +958,14 @@
                         Toàn bộ các pháp nhân con được gắn vào công ty mẹ này. Doanh thu hợp đồng được tổng hợp tự động vào nhóm.
                     </p>
                 </div>
+                <c:if test="${coQuyenSuaKhach}">
                 <div>
                     <button type="button" class="btn btn-outline" onclick="moModalGanCongTyCon()" id="btnThemCongTyConBang">
                         <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 16px;">add</span>
                         <span>Gắn Thêm Công Ty Con</span>
                     </button>
                 </div>
+                </c:if>
             </div>
 
             <table class="data-table" id="bangCongTyCon">
@@ -986,6 +1012,7 @@
                                                 <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 16px;">visibility</span>
                                             </a>
                                             <!-- Nút gỡ bỏ khỏi công ty mẹ -->
+                                            <c:if test="${coQuyenSuaKhach}">
                                             <form method="POST" action="${pageContext.request.contextPath}/khach-hang" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn gỡ công ty \'${con.tenCongTy}\' khỏi nhóm công ty mẹ này?');">
                                                 <input type="hidden" name="action" value="go-cong-ty-con">
                                                 <input type="hidden" name="congTyConId" value="${con.id}">
@@ -994,6 +1021,7 @@
                                                     <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 16px;">link_off</span>
                                                 </button>
                                             </form>
+                                            </c:if>
                                         </div>
                                     </td>
                                 </tr>
@@ -1105,10 +1133,12 @@
                         <span class="material-symbols-outlined" aria-hidden="true">list_alt</span>
                         <span>Xem tất cả yêu cầu</span>
                     </a>
+                    <c:if test="${coQuyenSuaKhach}">
                     <button type="button" class="ycht-btn ycht-btn-primary ycht-btn-sm" onclick="moModalGhiNhanYeuCau()" id="btnGhiNhanYeuCauMoi">
                         <span class="material-symbols-outlined" aria-hidden="true">add</span>
                         <span>Ghi nhận yêu cầu hỗ trợ</span>
                     </button>
+                    </c:if>
                 </div>
             </div>
 
@@ -1222,20 +1252,27 @@
                                             <c:out value="${yc.taoLuc}" />
                                         </td>
                                         <td style="text-align: center;">
-                                            <!-- Form cập nhật trạng thái nhanh kích hoạt tự động đánh giá cờ rủi ro -->
-                                            <form action="${pageContext.request.contextPath}/yeu-cau-ho-tro" method="POST" class="ycht-inline-status-form">
-                                                <input type="hidden" name="action" value="cap-nhat-trang-thai">
-                                                <input type="hidden" name="id" value="${yc.id}">
-                                                <input type="hidden" name="redirectUrl" value="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${banGhi.id}">
-                                                <select name="trangThai" class="ycht-inline-status-select" onchange="this.form.submit()" aria-label="Cập nhật trạng thái yêu cầu">
-                                                    <option value="MOI" ${yc.trangThai == 'MOI' ? 'selected' : ''}>Mới tiếp nhận</option>
-                                                    <option value="DANG_XU_LY" ${yc.trangThai == 'DANG_XU_LY' ? 'selected' : ''}>Đang xử lý</option>
-                                                    <option value="CHO_KHACH_HANG" ${yc.trangThai == 'CHO_KHACH_HANG' ? 'selected' : ''}>Chờ khách</option>
-                                                    <option value="DA_XU_LY" ${yc.trangThai == 'DA_XU_LY' ? 'selected' : ''}>Đã xử lý</option>
-                                                    <option value="DONG" ${yc.trangThai == 'DONG' ? 'selected' : ''}>Đã đóng</option>
-                                                    <option value="HUY" ${yc.trangThai == 'HUY' ? 'selected' : ''}>Đã hủy</option>
-                                                </select>
-                                            </form>
+                                            <c:choose>
+                                                <c:when test="${coQuyenSuaKhach}">
+                                                    <!-- Form cập nhật trạng thái nhanh kích hoạt tự động đánh giá cờ rủi ro -->
+                                                    <form action="${pageContext.request.contextPath}/yeu-cau-ho-tro" method="POST" class="ycht-inline-status-form">
+                                                        <input type="hidden" name="action" value="cap-nhat-trang-thai">
+                                                        <input type="hidden" name="id" value="${yc.id}">
+                                                        <input type="hidden" name="redirectUrl" value="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${banGhi.id}">
+                                                        <select name="trangThai" class="ycht-inline-status-select" onchange="this.form.submit()" aria-label="Cập nhật trạng thái yêu cầu">
+                                                            <option value="MOI" ${yc.trangThai == 'MOI' ? 'selected' : ''}>Mới tiếp nhận</option>
+                                                            <option value="DANG_XU_LY" ${yc.trangThai == 'DANG_XU_LY' ? 'selected' : ''}>Đang xử lý</option>
+                                                            <option value="CHO_KHACH_HANG" ${yc.trangThai == 'CHO_KHACH_HANG' ? 'selected' : ''}>Chờ khách</option>
+                                                            <option value="DA_XU_LY" ${yc.trangThai == 'DA_XU_LY' ? 'selected' : ''}>Đã xử lý</option>
+                                                            <option value="DONG" ${yc.trangThai == 'DONG' ? 'selected' : ''}>Đã đóng</option>
+                                                            <option value="HUY" ${yc.trangThai == 'HUY' ? 'selected' : ''}>Đã hủy</option>
+                                                        </select>
+                                                    </form>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span style="font-size: 12.5px; color: var(--ycht-slate-500);"><c:out value="${yc.trangThaiEnum.tenHienThi}" /></span>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </td>
                                     </tr>
                                 </c:forEach>
@@ -1249,12 +1286,14 @@
                                             <p class="ycht-empty-desc">
                                                 Khách hàng hiện đang hoạt động bình thường và chưa có ticket hỗ trợ nào cần xử lý.
                                             </p>
+                                            <c:if test="${coQuyenSuaKhach}">
                                             <div style="margin-top: 14px;">
                                                 <button type="button" class="ycht-btn ycht-btn-primary ycht-btn-sm" onclick="moModalGhiNhanYeuCau()">
                                                     <span class="material-symbols-outlined" aria-hidden="true">add</span>
                                                     <span>Ghi nhận yêu cầu hỗ trợ mới</span>
                                                 </button>
                                             </div>
+                                            </c:if>
                                         </div>
                                     </td>
                                 </tr>
@@ -1265,6 +1304,7 @@
             </div>
         </section>
 
+        <c:if test="${coQuyenSuaKhach}">
         <!-- Modal Ghi Nhanh Hoạt Động (Story S3-03) -->
         <div class="modal-backdrop" id="modalThemHoatDong" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalThemHoatDongTieuDe">
             <div class="modal-card">
@@ -1691,6 +1731,7 @@
                 </form>
             </div>
         </div>
+        </c:if>
 
         <!-- ========================================== -->
         <!-- MODAL LỊCH SỬ CÔNG TY CỦA LIÊN HỆ (Story S3-02 AC4) -->

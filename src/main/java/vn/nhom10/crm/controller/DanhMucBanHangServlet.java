@@ -8,9 +8,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import vn.nhom10.crm.dto.MucDanhMucDTO;
 import vn.nhom10.crm.model.LoaiDanhMuc;
+import vn.nhom10.crm.model.MucQuyen;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.VaiTroEnum;
 import vn.nhom10.crm.service.DanhMucBanHangService;
+import vn.nhom10.crm.service.PermissionService;
 
 import java.io.IOException;
 import java.util.List;
@@ -29,9 +31,19 @@ public class DanhMucBanHangServlet extends HttpServlet {
 
     private DanhMucBanHangService service;
 
+    public DanhMucBanHangServlet() {
+        this(new DanhMucBanHangService());
+    }
+
+    public DanhMucBanHangServlet(DanhMucBanHangService service) {
+        this.service = service != null ? service : new DanhMucBanHangService();
+    }
+
     @Override
     public void init() throws ServletException {
-        this.service = new DanhMucBanHangService();
+        if (this.service == null) {
+            this.service = new DanhMucBanHangService();
+        }
     }
 
     public void setService(DanhMucBanHangService service) {
@@ -44,7 +56,7 @@ public class DanhMucBanHangServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
 
-        if (!kiemTraQuyenTruyCap(request, response)) {
+        if (!kiemTraQuyenTruyCap(request, response, MucQuyen.READ)) {
             return;
         }
 
@@ -60,9 +72,14 @@ public class DanhMucBanHangServlet extends HttpServlet {
             }
         }
         String tuKhoa = request.getParameter("tuKhoa");
-
-        List<MucDanhMucDTO> danhSachMuc = service.timKiem(loai, tuKhoa);
-        long[] thongKe = service.tinhThongKe(loai);
+        List<MucDanhMucDTO> danhSachMuc = service != null ? service.timKiem(loai, tuKhoa) : null;
+        if (danhSachMuc == null) {
+            danhSachMuc = java.util.Collections.emptyList();
+        }
+        long[] thongKe = service != null ? service.tinhThongKe(loai) : null;
+        if (thongKe == null) {
+            thongKe = new long[]{0L, 0L, 0L};
+        }
 
         HttpSession session = request.getSession(false);
         String thongBaoThanhCong = null;
@@ -102,7 +119,7 @@ public class DanhMucBanHangServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
 
-        if (!kiemTraQuyenTruyCap(request, response)) {
+        if (!kiemTraQuyenTruyCap(request, response, MucQuyen.WRITE)) {
             return;
         }
 
@@ -183,9 +200,9 @@ public class DanhMucBanHangServlet extends HttpServlet {
     }
 
     /**
-     * Phân quyền Server-side: Chỉ Giám đốc kinh doanh (DIRECTOR) và Quản trị hệ thống (ADMIN) mới có quyền truy cập.
+     * Phân quyền Server-side: Kiểm tra quyền hạn qua PermissionService (DB-backed).
      */
-    private boolean kiemTraQuyenTruyCap(HttpServletRequest request, HttpServletResponse response)
+    private boolean kiemTraQuyenTruyCap(HttpServletRequest request, HttpServletResponse response, MucQuyen mucQuyenYeuCau)
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         NguoiDung currentUser = (session != null) ? (NguoiDung) session.getAttribute("nguoiDung") : null;
@@ -201,14 +218,11 @@ public class DanhMucBanHangServlet extends HttpServlet {
             return false;
         }
 
-        boolean coQuyen = currentUser.coVaiTro(VaiTroEnum.DIRECTOR)
-                || currentUser.coVaiTro(VaiTroEnum.ADMIN)
-                || currentUser.coVaiTro("DIRECTOR")
-                || currentUser.coVaiTro("ADMIN");
+        boolean coQuyen = PermissionService.getInstance().coQuyen(currentUser, "DANH_MUC", mucQuyenYeuCau);
 
         if (!coQuyen) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            request.setAttribute("errorMessage", "Chỉ Giám đốc kinh doanh (Director) hoặc Quản trị hệ thống (Admin) mới có quyền truy cập và khai báo danh mục dùng chung của bán hàng.");
+            request.setAttribute("errorMessage", "Bạn không có quyền " + (mucQuyenYeuCau == MucQuyen.WRITE ? "thao tác thay đổi" : "truy cập") + " danh mục dùng chung của bán hàng.");
             request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
             return false;
         }
