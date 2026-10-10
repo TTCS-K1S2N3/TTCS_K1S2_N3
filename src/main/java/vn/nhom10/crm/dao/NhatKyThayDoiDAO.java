@@ -485,18 +485,23 @@ public class NhatKyThayDoiDAO {
         }
 
         if (nk.getLoaiDoiTuong() == LoaiDoiTuongNhayCam.VAI_TRO_NGUOI_DUNG) {
-            if (targetHoTen != null && !targetHoTen.isBlank()) {
-                nk.setTenDoiTuong(targetHoTen);
-            } else if (targetEmail != null && !targetEmail.isBlank()) {
-                nk.setTenDoiTuong(targetEmail);
-            } else if (dtId > 0) {
-                nk.setTenDoiTuong("Người dùng #" + dtId);
-            }
+            boolean laThayDoiMaTranVaiTro = (nk.getTruongThayDoi() != null &&
+                    (nk.getTruongThayDoi().contains("Ma trận") || nk.getTruongThayDoi().contains("vai_tro_module")));
 
-            if (targetEmail != null && !targetEmail.isBlank()) {
-                nk.setMaDoiTuong(targetEmail);
-            } else if (dtId > 0) {
-                nk.setMaDoiTuong("ND-" + dtId);
+            if (!laThayDoiMaTranVaiTro) {
+                if (targetHoTen != null && !targetHoTen.isBlank()) {
+                    nk.setTenDoiTuong(targetHoTen);
+                } else if (targetEmail != null && !targetEmail.isBlank()) {
+                    nk.setTenDoiTuong(targetEmail);
+                } else if (dtId > 0 && (nk.getTenDoiTuong() == null || nk.getTenDoiTuong().isBlank() || "-".equals(nk.getTenDoiTuong()))) {
+                    nk.setTenDoiTuong("Người dùng #" + dtId);
+                }
+
+                if (targetEmail != null && !targetEmail.isBlank()) {
+                    nk.setMaDoiTuong(targetEmail);
+                } else if (dtId > 0 && (nk.getMaDoiTuong() == null || nk.getMaDoiTuong().isBlank())) {
+                    nk.setMaDoiTuong("ND-" + dtId);
+                }
             }
         }
 

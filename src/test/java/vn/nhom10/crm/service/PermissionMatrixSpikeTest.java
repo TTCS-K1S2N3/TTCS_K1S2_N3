@@ -21,8 +21,11 @@ import vn.nhom10.crm.dao.VaiTroDAO;
 import vn.nhom10.crm.dao.VaiTroModuleDAO;
 import vn.nhom10.crm.dto.BanGhiNghiepVuDTO;
 import vn.nhom10.crm.dto.MucMenuDTO;
+import vn.nhom10.crm.dto.NhatKyThayDoiDTO;
+import vn.nhom10.crm.model.LoaiDoiTuongNhayCam;
 import vn.nhom10.crm.model.MucQuyen;
 import vn.nhom10.crm.model.NguoiDung;
+import vn.nhom10.crm.model.NhatKyThayDoi;
 import vn.nhom10.crm.model.NhomKinhDoanh;
 import vn.nhom10.crm.model.PhamViDuLieu;
 import vn.nhom10.crm.model.VaiTro;
@@ -31,6 +34,8 @@ import vn.nhom10.crm.model.VaiTroModule;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -92,6 +97,24 @@ public class PermissionMatrixSpikeTest {
                     "pham_vi_du_lieu VARCHAR(20) NULL, " +
                     "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
 
+            st.execute("CREATE TABLE IF NOT EXISTS nguoi_dung (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "ho_ten VARCHAR(150), " +
+                    "email VARCHAR(150))");
+
+            st.execute("CREATE TABLE IF NOT EXISTS nhat_ky_he_thong (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "nguoi_thuc_hien_id BIGINT NULL, " +
+                    "hanh_dong VARCHAR(80) NOT NULL, " +
+                    "loai_doi_tuong VARCHAR(80) NOT NULL, " +
+                    "doi_tuong_id BIGINT NULL, " +
+                    "gia_tri_truoc_json VARCHAR(4000) NULL, " +
+                    "gia_tri_sau_json VARCHAR(4000) NULL, " +
+                    "ly_do VARCHAR(1000) NULL, " +
+                    "dia_chi_ip VARCHAR(45) NULL, " +
+                    "thong_tin_thiet_bi VARCHAR(255) NULL, " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+
             // Nạp 7 vai trò
             st.execute("MERGE INTO vai_tro (id, ma_vai_tro, ten_vai_tro, mo_ta, pham_vi_toi_da) KEY(id) VALUES " +
                     "(1, 'ADMIN', 'Quản trị hệ thống', 'Quản trị toàn hệ thống', 'TOAN_BO'), " +
@@ -122,6 +145,7 @@ public class PermissionMatrixSpikeTest {
     private static void reseedMatrix() throws SQLException {
         try (Connection conn = DatabaseConfig.getConnection();
              Statement st = conn.createStatement()) {
+            st.execute("DELETE FROM nhat_ky_he_thong");
             st.execute("DELETE FROM vai_tro_module");
             st.execute("INSERT INTO vai_tro_module (vai_tro_id, module_id, muc_quyen, pham_vi_du_lieu) VALUES " +
                     // Admin (1)
@@ -184,6 +208,14 @@ public class PermissionMatrixSpikeTest {
                 pv = PhamViDuLieu.NHOM;
             }
             nd.themVaiTro(new VaiTro(vt, pv));
+        }
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement("MERGE INTO nguoi_dung (id, ho_ten, email) KEY(id) VALUES (?, ?, ?)")) {
+            ps.setLong(1, id);
+            ps.setString(2, hoTen);
+            ps.setString(3, email);
+            ps.executeUpdate();
+        } catch (SQLException ignored) {
         }
         return nd;
     }
@@ -623,6 +655,187 @@ public class PermissionMatrixSpikeTest {
         invokeDoPost(servlet, reqDelete, respDelete);
         verify(respDelete, never()).setStatus(HttpServletResponse.SC_FORBIDDEN);
         verify(khService).xoaKhachHang(eq(999L), eq(leader));
+    }
+
+    @Test
+    @DisplayName("Test 14: Cập nhật có thay đổi thực tế -> Ghi audit log chuẩn JSON, đúng actor và module thay đổi")
+    void test14_CapNhatCoThayDoiThucTe_GhiAuditLogVaDungActor() throws Exception {
+        NguoiDung authenticatedAdmin = taoUser(88, "Nguyễn Văn Admin", "admin.that@crm.vn", VaiTroEnum.ADMIN);
+
+        // Lấy ma trận hiện tại của SALES_REP
+        List<VaiTroModule> dsHienTai = vaiTroModuleDAO.layTheoMaVaiTro("SALES_REP");
+        assertFalse(dsHienTai.isEmpty(), "SALES_REP phải có ma trận quyền");
+
+        // Thay đổi module CO_HOI (id=4): từ WRITE, CA_NHAN -> READ, CA_NHAN
+        List<VaiTroModule> dsCapNhat = new ArrayList<>();
+        for (VaiTroModule vtm : dsHienTai) {
+            VaiTroModule clone = new VaiTroModule();
+            clone.setId(vtm.getId());
+            clone.setVaiTroId(vtm.getVaiTroId());
+            clone.setModuleId(vtm.getModuleId());
+            clone.setMaModule(vtm.getMaModule());
+            clone.setTenModule(vtm.getTenModule());
+            if ("CO_HOI".equals(vtm.getMaModule())) {
+                clone.setMucQuyen(MucQuyen.READ);
+                clone.setPhamViDuLieu(PhamViDuLieu.CA_NHAN);
+            } else {
+                clone.setMucQuyen(vtm.getMucQuyen());
+                clone.setPhamViDuLieu(vtm.getPhamViDuLieu());
+            }
+            dsCapNhat.add(clone);
+        }
+
+        boolean kq = permissionService.capNhatMatrixChoVaiTro("SALES_REP", dsCapNhat, authenticatedAdmin, "192.168.1.100", "CRM-Admin-Browser");
+        assertTrue(kq, "Cập nhật ma trận phân quyền phải thành công");
+
+        // Kiểm tra trong CSDL: bảng nhat_ky_he_thong phải có 1 bản ghi
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "SELECT * FROM nhat_ky_he_thong WHERE loai_doi_tuong = ? ORDER BY id DESC")) {
+            ps.setString(1, LoaiDoiTuongNhayCam.VAI_TRO_NGUOI_DUNG.getMa());
+            try (ResultSet rs = ps.executeQuery()) {
+                assertTrue(rs.next(), "Phải có bản ghi audit log được ghi vào nhat_ky_he_thong");
+
+                // Kiểm tra actor từ tài khoản xác thực
+                assertEquals(88L, rs.getLong("nguoi_thuc_hien_id"));
+                assertEquals("192.168.1.100", rs.getString("dia_chi_ip"));
+                assertEquals("CRM-Admin-Browser", rs.getString("thong_tin_thiet_bi"));
+
+                String jsonTruoc = rs.getString("gia_tri_truoc_json");
+                String jsonSau = rs.getString("gia_tri_sau_json");
+                assertNotNull(jsonTruoc);
+                assertNotNull(jsonSau);
+
+                // Kiểm tra nội dung JSON trước/sau phản ánh chính xác thay đổi trên CO_HOI
+                assertTrue(jsonTruoc.contains("CO_HOI"), "JSON trước phải chứa CO_HOI");
+                assertTrue(jsonTruoc.contains("WRITE"), "JSON trước của CO_HOI phải là WRITE");
+                assertTrue(jsonSau.contains("CO_HOI"), "JSON sau phải chứa CO_HOI");
+                assertTrue(jsonSau.contains("READ"), "JSON sau của CO_HOI phải là READ");
+
+                // Kiểm tra model NhatKyThayDoi giải mã đúng giá trị tóm tắt
+                NhatKyThayDoi nk = new NhatKyThayDoi();
+                nk.setGiaTriTruocJson(jsonTruoc);
+                nk.setGiaTriSauJson(jsonSau);
+                assertTrue(nk.getGiaTriTruoc().contains("CO_HOI [WRITE, CA_NHAN]"), "Tóm tắt trước phải hiển thị rõ module thay đổi");
+                assertTrue(nk.getGiaTriSau().contains("CO_HOI [READ, CA_NHAN]"), "Tóm tắt sau phải hiển thị rõ module thay đổi");
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("Test 15: Cập nhật không thay đổi dữ liệu -> Không ghi audit log")
+    void test15_CapNhatKhongThayDoi_KhongGhiAuditLog() throws Exception {
+        NguoiDung authenticatedAdmin = taoUser(88, "Nguyễn Văn Admin", "admin.that@crm.vn", VaiTroEnum.ADMIN);
+
+        // Lấy ma trận hiện tại của SALES_REP
+        List<VaiTroModule> dsHienTai = vaiTroModuleDAO.layTheoMaVaiTro("SALES_REP");
+
+        // Đảm bảo bảng log trống trước khi test
+        try (Connection conn = DatabaseConfig.getConnection();
+             Statement st = conn.createStatement()) {
+            st.execute("DELETE FROM nhat_ky_he_thong");
+        }
+
+        // Gửi cập nhật với cùng dữ liệu y hệt
+        boolean kq = permissionService.capNhatMatrixChoVaiTro("SALES_REP", dsHienTai, authenticatedAdmin, "127.0.0.1", "Chrome");
+        assertTrue(kq, "Cập nhật không thay đổi vẫn trả về thành công");
+
+        // Kiểm tra không có bản ghi nào trong nhat_ky_he_thong
+        try (Connection conn = DatabaseConfig.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM nhat_ky_he_thong")) {
+            assertTrue(rs.next());
+            assertEquals(0, rs.getInt(1), "Tuyệt đối không được ghi audit log khi không có thay đổi thực tế");
+        }
+    }
+
+    @Test
+    @DisplayName("Test 16: Rollback toàn bộ thay đổi quyền khi ghi audit log thất bại")
+    void test16_LoiKhiGhiAudit_RollbackThayDoiQuyen() throws Exception {
+        NguoiDung authenticatedAdmin = taoUser(88, "Nguyễn Văn Admin", "admin.that@crm.vn", VaiTroEnum.ADMIN);
+
+        // Giả lập NhatKyThayDoiService ném SQLException khi ghi audit
+        NhatKyThayDoiService mockAuditService = mock(NhatKyThayDoiService.class);
+        when(mockAuditService.ghiNhatKyThayDoi(any(Connection.class), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                .thenThrow(new SQLException("Lỗi cố ý: Mô phỏng CSDL gặp sự cố khi lưu audit log"));
+
+        PermissionService serviceWithFailingAudit = new PermissionService(vaiTroModuleDAO, vaiTroDAO, mockAuditService);
+
+        // Trạng thái gốc: TEAM_LEAD / BAO_GIA_HOP_DONG (id=6) = WRITE, NHOM
+        VaiTroModule goc = vaiTroModuleDAO.layQuyen("TEAM_LEAD", "BAO_GIA_HOP_DONG");
+        assertEquals(MucQuyen.WRITE, goc.getMucQuyen());
+
+        // Chuẩn bị thay đổi sang READ, NHOM
+        List<VaiTroModule> dsHienTai = vaiTroModuleDAO.layTheoMaVaiTro("TEAM_LEAD");
+        List<VaiTroModule> dsCapNhat = new ArrayList<>();
+        for (VaiTroModule vtm : dsHienTai) {
+            VaiTroModule clone = new VaiTroModule();
+            clone.setId(vtm.getId());
+            clone.setVaiTroId(vtm.getVaiTroId());
+            clone.setModuleId(vtm.getModuleId());
+            clone.setMaModule(vtm.getMaModule());
+            clone.setTenModule(vtm.getTenModule());
+            if ("BAO_GIA_HOP_DONG".equals(vtm.getMaModule())) {
+                clone.setMucQuyen(MucQuyen.READ);
+                clone.setPhamViDuLieu(PhamViDuLieu.NHOM);
+            } else {
+                clone.setMucQuyen(vtm.getMucQuyen());
+                clone.setPhamViDuLieu(vtm.getPhamViDuLieu());
+            }
+            dsCapNhat.add(clone);
+        }
+
+        // Thực hiện cập nhật
+        boolean kq = serviceWithFailingAudit.capNhatMatrixChoVaiTro("TEAM_LEAD", dsCapNhat, authenticatedAdmin, "127.0.0.1", "Chrome");
+        assertFalse(kq, "Cập nhật phải thất bại khi ghi audit log ném SQLException");
+
+        // Kiểm tra CSDL: Mức quyền của TEAM_LEAD / BAO_GIA_HOP_DONG PHẢI ĐƯỢC ROLLBACK VỀ NGUYÊN TRẠNG (WRITE)!
+        VaiTroModule sauLoi = vaiTroModuleDAO.layQuyen("TEAM_LEAD", "BAO_GIA_HOP_DONG");
+        assertEquals(MucQuyen.WRITE, sauLoi.getMucQuyen(), "Quyền trong CSDL phải được rollback về WRITE khi audit fail");
+    }
+
+    @Test
+    @DisplayName("Test 17: DTO và View Inspector hiển thị dữ liệu trước/sau của ma trận phân quyền")
+    void test17_HienThiDuLieuTruocSauTrongNhatKyThayDoi() throws Exception {
+        NguoiDung admin = taoUser(99, "Admin Audit", "admin.audit@crm.vn", VaiTroEnum.ADMIN);
+
+        // Đổi SALES_REP: module LEAD (id=3) từ WRITE, CA_NHAN sang READ, CA_NHAN
+        List<VaiTroModule> dsHienTai = vaiTroModuleDAO.layTheoMaVaiTro("SALES_REP");
+        List<VaiTroModule> dsCapNhat = new ArrayList<>();
+        for (VaiTroModule vtm : dsHienTai) {
+            VaiTroModule clone = new VaiTroModule();
+            clone.setId(vtm.getId());
+            clone.setVaiTroId(vtm.getVaiTroId());
+            clone.setModuleId(vtm.getModuleId());
+            clone.setMaModule(vtm.getMaModule());
+            clone.setTenModule(vtm.getTenModule());
+            if ("LEAD".equals(vtm.getMaModule())) {
+                clone.setMucQuyen(MucQuyen.READ);
+                clone.setPhamViDuLieu(PhamViDuLieu.CA_NHAN);
+            } else {
+                clone.setMucQuyen(vtm.getMucQuyen());
+                clone.setPhamViDuLieu(vtm.getPhamViDuLieu());
+            }
+            dsCapNhat.add(clone);
+        }
+
+        boolean kq = permissionService.capNhatMatrixChoVaiTro("SALES_REP", dsCapNhat, admin, "10.0.0.5", "TestAgent");
+        assertTrue(kq, "Cập nhật SALES_REP phải thành công");
+
+        // Lấy bản ghi qua NhatKyThayDoiDAO
+        vn.nhom10.crm.dao.NhatKyThayDoiDAO auditDAO = new vn.nhom10.crm.dao.NhatKyThayDoiDAO();
+        List<NhatKyThayDoi> dsLog = auditDAO.layDanhSach(new vn.nhom10.crm.dto.BoLocNhatKyDTO());
+        assertFalse(dsLog.isEmpty(), "Phải tìm thấy log vừa ghi");
+
+        NhatKyThayDoi log = dsLog.get(0);
+        NhatKyThayDoiDTO dto = log.toDTO();
+
+        assertEquals(LoaiDoiTuongNhayCam.VAI_TRO_NGUOI_DUNG, dto.getLoaiDoiTuong());
+        assertEquals("SALES_REP", dto.getMaDoiTuong());
+        assertTrue(dto.getTenDoiTuong().contains("Nhân viên kinh doanh"));
+        assertTrue(dto.getGiaTriTruoc().contains("LEAD [WRITE, CA_NHAN]"));
+        assertTrue(dto.getGiaTriSau().contains("LEAD [READ, CA_NHAN]"));
+        assertEquals("Admin Audit", dto.getTenNguoiThucHien());
     }
 
     private void invokeDoGet(HttpServlet servlet, HttpServletRequest req, HttpServletResponse resp) throws Exception {

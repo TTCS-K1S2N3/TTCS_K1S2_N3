@@ -53,9 +53,9 @@ public class VaiTroModuleDAO {
     }
 
     /**
-     * Lấy ma trận phân quyền của một vai trò theo ID vai trò.
+     * Lấy ma trận phân quyền của một vai trò theo ID vai trò với Connection được cung cấp (hỗ trợ transaction).
      */
-    public List<VaiTroModule> layTheoVaiTroId(int vaiTroId) {
+    public List<VaiTroModule> layTheoVaiTroId(Connection conn, int vaiTroId) throws SQLException {
         List<VaiTroModule> ds = new ArrayList<>();
         String sql = "SELECT vtm.id, vtm.vai_tro_id, vt.ma_vai_tro, vt.ten_vai_tro, vt.pham_vi_toi_da, " +
                      "       vtm.module_id, mh.ma_module, mh.ten_module, mh.mo_ta, mh.thu_tu_hien_thi, " +
@@ -66,20 +66,28 @@ public class VaiTroModuleDAO {
                      "WHERE vtm.vai_tro_id = ? " +
                      "ORDER BY mh.thu_tu_hien_thi ASC";
 
-        try (Connection conn = DatabaseConnection.layKetNoi()) {
-            damBaoSchemaTonTai(conn);
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setInt(1, vaiTroId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        ds.add(mapResultSet(rs));
-                    }
+        damBaoSchemaTonTai(conn);
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, vaiTroId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ds.add(mapResultSet(rs));
                 }
             }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi truy vấn quyền theo vaiTroId=" + vaiTroId + ": " + e.getMessage(), e);
         }
         return ds;
+    }
+
+    /**
+     * Lấy ma trận phân quyền của một vai trò theo ID vai trò.
+     */
+    public List<VaiTroModule> layTheoVaiTroId(int vaiTroId) {
+        try (Connection conn = DatabaseConnection.layKetNoi()) {
+            return layTheoVaiTroId(conn, vaiTroId);
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi truy vấn quyền theo vaiTroId=" + vaiTroId + ": " + e.getMessage(), e);
+            return new ArrayList<>();
+        }
     }
 
     /**

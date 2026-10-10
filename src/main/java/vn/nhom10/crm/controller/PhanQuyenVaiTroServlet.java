@@ -161,11 +161,10 @@ public class PhanQuyenVaiTroServlet extends HttpServlet {
             danhSachCapNhat.add(updatedRow);
         }
 
-        int actorId = (int) currentUser.getId();
         String ip = request.getRemoteAddr();
         String thietBi = request.getHeader("User-Agent");
 
-        boolean thanhCong = permissionService.capNhatMatrixChoVaiTro(maVaiTro, danhSachCapNhat, actorId, ip, thietBi);
+        boolean thanhCong = permissionService.capNhatMatrixChoVaiTro(maVaiTro, danhSachCapNhat, currentUser, ip, thietBi);
 
         if (thanhCong) {
             request.setAttribute("thongBaoThanhCong", "Cập nhật phân quyền thành công cho vai trò " + vaiTro.getTenVaiTro() + ".");
