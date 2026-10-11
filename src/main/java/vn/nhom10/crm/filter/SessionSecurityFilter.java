@@ -92,9 +92,6 @@ public class SessionSecurityFilter implements Filter {
                 || path.startsWith("/dang-xuat")
                 || path.startsWith("/quen-mat-khau")
                 || path.startsWith("/dat-lai-mat-khau")
-                || path.startsWith("/bieu-mau/nhung")
-                || path.startsWith("/bieu-mau/gui")
-                || path.startsWith("/bieu-mau/embed.js")
                 || path.startsWith("/loi")
                 || path.startsWith("/favicon.ico");
     }
