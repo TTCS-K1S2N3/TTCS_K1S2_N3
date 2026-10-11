@@ -1,0 +1,852 @@
+/* ==========================================================================
+   MODULE: BIỂU MẪU THU THẬP LEAD WEBSITE (EP-04 / STORY S4-01)
+   Quy chuẩn thiết kế: Hệ thống CRM Bán Hàng Nhóm 10
+   Tuân thủ quy tắc FE:
+   - Tối đa 3 nhóm màu: Primary (Blue), Neutral (Slate/Gray), Semantic (Green/Red/Amber)
+   - Material Symbols Outlined cho toàn bộ hệ thống icon
+   - Responsive hoàn chỉnh từ 360px đến Desktop >=1280px
+   - Thiết kế đồng bộ layout chung, touch target >= 44px
+   ========================================================================== */
+
+:root {
+    --bml-primary: #2563eb;
+    --bml-primary-hover: #1d4ed8;
+    --bml-primary-light: #eff6ff;
+    --bml-primary-border: #bfdbfe;
+
+    --bml-neutral-50: #f8fafc;
+    --bml-neutral-100: #f1f5f9;
+    --bml-neutral-200: #e2e8f0;
+    --bml-neutral-300: #cbd5e1;
+    --bml-neutral-400: #94a3b8;
+    --bml-neutral-500: #64748b;
+    --bml-neutral-600: #475569;
+    --bml-neutral-700: #334155;
+    --bml-neutral-800: #1e293b;
+    --bml-neutral-900: #0f172a;
+
+    --bml-success: #10b981;
+    --bml-success-light: #ecfdf5;
+    --bml-success-border: #a7f3d0;
+    --bml-success-text: #065f46;
+
+    --bml-danger: #ef4444;
+    --bml-danger-light: #fef2f2;
+    --bml-danger-border: #fecaca;
+    --bml-danger-text: #991b1b;
+
+    --bml-warning: #f59e0b;
+    --bml-warning-light: #fffbeb;
+    --bml-warning-border: #fde68a;
+    --bml-warning-text: #92400e;
+
+    --bml-radius-sm: 6px;
+    --bml-radius-md: 8px;
+    --bml-radius-lg: 12px;
+    --bml-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --bml-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --bml-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* ==========================================================================
+   1. BỐ CỤC CHUNG (CONTAINER & BREADCRUMB)
+   ========================================================================== */
+.bml-container {
+    padding: 24px 32px;
+    max-width: 1360px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.bml-breadcrumb {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.bml-breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--bml-neutral-500);
+}
+
+.bml-breadcrumb-link {
+    color: var(--bml-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
+}
+
+.bml-breadcrumb-link:hover {
+    color: var(--bml-primary-hover);
+    text-decoration: underline;
+}
+
+.bml-breadcrumb-sep {
+    color: var(--bml-neutral-300);
+    user-select: none;
+}
+
+.bml-breadcrumb-current {
+    color: var(--bml-neutral-700);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   2. HEADER CARD & STATS GRID
+   ========================================================================== */
+.bml-header-card {
+    background: #ffffff;
+    border: 1px solid var(--bml-neutral-200);
+    border-radius: var(--bml-radius-lg);
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    box-shadow: var(--bml-shadow-sm);
+}
+
+.bml-header-title h1 {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--bml-neutral-900);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+}
+
+.bml-header-title p {
+    font-size: 0.875rem;
+    color: var(--bml-neutral-500);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.bml-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Quick Stats Grid */
+.bml-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.bml-stat-card {
+    background: #ffffff;
+    border: 1px solid var(--bml-neutral-200);
+    border-radius: var(--bml-radius-md);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--bml-shadow-sm);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bml-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--bml-shadow-md);
+}
+
+.bml-stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--bml-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.bml-stat-icon.primary {
+    background-color: var(--bml-primary-light);
+    color: var(--bml-primary);
+}
+
+.bml-stat-icon.success {
+    background-color: var(--bml-success-light);
+    color: var(--bml-success);
+}
+
+.bml-stat-icon.warning {
+    background-color: var(--bml-warning-light);
+    color: var(--bml-warning);
+}
+
+.bml-stat-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.bml-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--bml-neutral-900);
+    line-height: 1.2;
+}
+
+.bml-stat-label {
+    font-size: 0.8125rem;
+    color: var(--bml-neutral-500);
+    margin-top: 2px;
+}
+
+/* ==========================================================================
+   3. NÚT BẤM (BUTTONS) - TUÂN THỦ 1 STYLE CHO TỪNG NHÓM
+   ========================================================================== */
+.bml-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 18px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: var(--bml-radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    min-height: 40px;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.bml-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+
+.bml-btn-primary {
+    background-color: var(--bml-primary);
+    color: #ffffff;
+    border-color: var(--bml-primary);
+}
+
+.bml-btn-primary:hover {
+    background-color: var(--bml-primary-hover);
+    border-color: var(--bml-primary-hover);
+}
+
+.bml-btn-outline {
+    background-color: #ffffff;
+    border-color: var(--bml-neutral-300);
+    color: var(--bml-neutral-700);
+}
+
+.bml-btn-outline:hover {
+    background-color: var(--bml-neutral-50);
+    border-color: var(--bml-neutral-400);
+    color: var(--bml-neutral-900);
+}
+
+.bml-btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8125rem;
+    min-height: 32px;
+}
+
+.bml-btn-icon-only {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: var(--bml-radius-sm);
+}
+
+/* ==========================================================================
+   4. BỘ LỌC VÀ TÌM KIẾM (TOOLBAR)
+   ========================================================================== */
+.bml-toolbar {
+    background: #ffffff;
+    border: 1px solid var(--bml-neutral-200);
+    border-radius: var(--bml-radius-md);
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    box-shadow: var(--bml-shadow-sm);
+}
+
+.bml-search-box {
+    position: relative;
+    flex: 1;
+    min-width: 260px;
+    max-width: 420px;
+}
+
+.bml-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--bml-neutral-400);
+    pointer-events: none;
+}
+
+.bml-search-input {
+    width: 100%;
+    padding: 8px 14px 8px 38px;
+    font-size: 0.875rem;
+    border: 1px solid var(--bml-neutral-300);
+    border-radius: var(--bml-radius-sm);
+    background-color: #ffffff;
+    color: var(--bml-neutral-900);
+    box-sizing: border-box;
+    font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.bml-search-input:focus {
+    outline: none;
+    border-color: var(--bml-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.bml-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.bml-filter-select {
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    border: 1px solid var(--bml-neutral-300);
+    border-radius: var(--bml-radius-sm);
+    background-color: #ffffff;
+    color: var(--bml-neutral-700);
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.15s;
+}
+
+.bml-filter-select:focus {
+    outline: none;
+    border-color: var(--bml-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* ==========================================================================
+   5. BẢNG DỮ LIỆU (TABLE & BADGES)
+   ========================================================================== */
+.bml-table-card {
+    background: #ffffff;
+    border: 1px solid var(--bml-neutral-200);
+    border-radius: var(--bml-radius-md);
+    box-shadow: var(--bml-shadow-sm);
+    overflow: hidden;
+}
+
+.bml-table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.bml-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.875rem;
+}
+
+.bml-table th {
+    background-color: var(--bml-neutral-50);
+    color: var(--bml-neutral-600);
+    font-weight: 600;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--bml-neutral-200);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.bml-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--bml-neutral-200);
+    color: var(--bml-neutral-800);
+    vertical-align: middle;
+}
+
+.bml-table tbody tr {
+    transition: background-color 0.1s ease;
+}
+
+.bml-table tbody tr:hover {
+    background-color: var(--bml-neutral-50);
+}
+
+.bml-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Badges */
+.bml-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.bml-badge-success {
+    background-color: var(--bml-success-light);
+    color: var(--bml-success-text);
+    border: 1px solid var(--bml-success-border);
+}
+
+.bml-badge-secondary {
+    background-color: var(--bml-neutral-100);
+    color: var(--bml-neutral-600);
+    border: 1px solid var(--bml-neutral-300);
+}
+
+.bml-badge-primary {
+    background-color: var(--bml-primary-light);
+    color: var(--bml-primary);
+    border: 1px solid var(--bml-primary-border);
+}
+
+/* Table Actions */
+.bml-table-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+/* Empty State */
+.bml-empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--bml-neutral-500);
+}
+
+.bml-empty-icon {
+    font-size: 48px;
+    color: var(--bml-neutral-400);
+    margin-bottom: 12px;
+}
+
+.bml-empty-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--bml-neutral-700);
+    margin-bottom: 6px;
+}
+
+.bml-empty-desc {
+    font-size: 0.875rem;
+    margin-bottom: 20px;
+    max-width: 460px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ==========================================================================
+   6. THÔNG BÁO FLASH & ALERT BANNER
+   ========================================================================== */
+.bml-alert {
+    padding: 12px 18px;
+    border-radius: var(--bml-radius-sm);
+    font-size: 0.875rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.bml-alert-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.bml-alert-success {
+    background-color: var(--bml-success-light);
+    color: var(--bml-success-text);
+    border: 1px solid var(--bml-success-border);
+}
+
+.bml-alert-danger {
+    background-color: var(--bml-danger-light);
+    color: var(--bml-danger-text);
+    border: 1px solid var(--bml-danger-border);
+}
+
+.bml-alert-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: currentColor;
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+}
+
+.bml-alert-close:hover {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   7. MODAL SINH MÃ NHÚNG (AC1)
+   ========================================================================== */
+.bml-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.bml-modal {
+    background: #ffffff;
+    border-radius: var(--bml-radius-lg);
+    max-width: 680px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--bml-shadow-lg);
+    overflow: hidden;
+    animation: bmlModalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes bmlModalIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.bml-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--bml-neutral-200);
+}
+
+.bml-modal-header h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--bml-neutral-900);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.bml-modal-close-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--bml-neutral-500);
+    padding: 6px;
+    border-radius: var(--bml-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.bml-modal-close-btn:hover {
+    background-color: var(--bml-neutral-100);
+    color: var(--bml-neutral-900);
+}
+
+.bml-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.bml-modal-desc {
+    font-size: 0.875rem;
+    color: var(--bml-neutral-600);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.bml-embed-section {
+    margin-bottom: 20px;
+    background-color: var(--bml-neutral-50);
+    border: 1px solid var(--bml-neutral-200);
+    border-radius: var(--bml-radius-md);
+    padding: 16px;
+}
+
+.bml-embed-section:last-child {
+    margin-bottom: 0;
+}
+
+.bml-embed-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.bml-embed-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--bml-neutral-800);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.bml-code-box {
+    background-color: #ffffff;
+    border: 1px solid var(--bml-neutral-300);
+    border-radius: var(--bml-radius-sm);
+    padding: 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--bml-neutral-800);
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 120px;
+    overflow-y: auto;
+    user-select: all;
+}
+
+.bml-modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--bml-neutral-200);
+    display: flex;
+    justify-content: flex-end;
+    background-color: var(--bml-neutral-50);
+}
+
+/* ==========================================================================
+   8. FORM TẠO BIỂU MẪU (bieu-mau-form.jsp)
+   ========================================================================== */
+.bmf-card {
+    background: #ffffff;
+    border: 1px solid var(--bml-neutral-200);
+    border-radius: var(--bml-radius-lg);
+    padding: 28px 32px;
+    box-shadow: var(--bml-shadow-sm);
+}
+
+.bmf-card-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--bml-neutral-200);
+}
+
+.bmf-card-header h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--bml-neutral-900);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bmf-card-header p {
+    font-size: 0.875rem;
+    color: var(--bml-neutral-500);
+    margin: 0;
+}
+
+.bmf-form-group {
+    margin-bottom: 20px;
+}
+
+.bmf-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--bml-neutral-700);
+    margin-bottom: 6px;
+}
+
+.bmf-label .required {
+    color: var(--bml-danger);
+}
+
+.bmf-input, .bmf-select {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 0.875rem;
+    color: var(--bml-neutral-900);
+    border: 1px solid var(--bml-neutral-300);
+    border-radius: var(--bml-radius-sm);
+    background-color: #ffffff;
+    box-sizing: border-box;
+    font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.bmf-input:focus, .bmf-select:focus {
+    outline: none;
+    border-color: var(--bml-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.bmf-hint {
+    font-size: 0.75rem;
+    color: var(--bml-neutral-500);
+    margin-top: 5px;
+}
+
+.bmf-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.bmf-switch-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--bml-neutral-800);
+}
+
+.bmf-switch-input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--bml-primary);
+    cursor: pointer;
+}
+
+.bmf-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--bml-neutral-200);
+}
+
+/* Toast Notification Feedback */
+.bml-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background-color: var(--bml-neutral-900);
+    color: #ffffff;
+    padding: 12px 20px;
+    border-radius: var(--bml-radius-md);
+    box-shadow: var(--bml-shadow-lg);
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 1100;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+.bml-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* ==========================================================================
+   9. RESPONSIVE DESIGN (BREAKPOINTS)
+   ========================================================================== */
+@media (max-width: 1024px) {
+    .bml-container {
+        padding: 20px 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .bml-container {
+        padding: 16px;
+    }
+
+    .bml-header-card {
+        padding: 18px 20px;
+    }
+
+    .bml-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .bml-search-box {
+        max-width: 100%;
+    }
+
+    .bmf-grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .bmf-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .bmf-actions .bml-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 390px) {
+    .bml-container {
+        padding: 12px;
+    }
+
+    .bml-header-title h1 {
+        font-size: 1.15rem;
+    }
+
+    .bml-table-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
