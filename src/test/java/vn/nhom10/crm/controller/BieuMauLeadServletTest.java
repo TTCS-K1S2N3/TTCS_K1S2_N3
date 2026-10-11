@@ -184,4 +184,16 @@ class BieuMauLeadServletTest {
         assertTrue(json.contains("token_12"));
         assertTrue(json.contains("iframe"));
     }
+
+    @Test
+    @DisplayName("Điều hướng: GET /lead được chuyển hướng an toàn về /bieu-mau")
+    void testDieuHuongTuLeadSangBieuMau() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userMarketing);
+        when(request.getServletPath()).thenReturn("/lead");
+
+        servlet.doGet(request, response);
+
+        verify(response).sendRedirect("/crm/bieu-mau");
+        verifyNoInteractions(service);
+    }
 }

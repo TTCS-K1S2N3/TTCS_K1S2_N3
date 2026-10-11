@@ -5,227 +5,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Quản lý biểu mẫu nhúng thu thập lead từ website - CRM Bán Hàng">
-    <title>Biểu Mẫu Thu Thập Lead - CRM Bán Hàng</title>
-    <!-- CSS dùng chung toàn hệ thống -->
+    <meta name="description" content="Quản lý biểu mẫu nhúng thu thập lead từ website - CRM Bán Hàng Nhóm 10">
+    <title>Biểu Mẫu Thu Thập Lead Website - CRM Bán Hàng</title>
+    <!-- CSS dùng chung toàn hệ thống (Navigation và App Tokens) -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <style>
-        .bml-container {
-            padding: 24px 32px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        .bml-breadcrumb {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        .bml-breadcrumb-nav {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            font-size: 0.875rem;
-        }
-        .bml-breadcrumb-nav a {
-            color: var(--color-primary, #1e40af);
-            text-decoration: none;
-        }
-        .bml-breadcrumb-sep {
-            color: #9ca3af;
-        }
-        .bml-header-card {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 20px 24px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-        .bml-header-title h1 {
-            font-size: 1.375rem;
-            font-weight: 700;
-            color: #111827;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 6px;
-        }
-        .bml-header-title p {
-            font-size: 0.875rem;
-            color: #6b7280;
-            margin: 0;
-        }
-        .bml-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            border-radius: 6px;
-            border: 1px solid transparent;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        .bml-btn-primary {
-            background-color: #1e40af;
-            color: #ffffff;
-        }
-        .bml-btn-primary:hover {
-            background-color: #1d4ed8;
-        }
-        .bml-btn-outline {
-            background-color: #ffffff;
-            border-color: #d1d5db;
-            color: #374151;
-        }
-        .bml-btn-outline:hover {
-            background-color: #f9fafb;
-            border-color: #9ca3af;
-        }
-        .bml-btn-sm {
-            padding: 4px 10px;
-            font-size: 0.8125rem;
-        }
-        .bml-table-card {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-        .bml-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 0.875rem;
-        }
-        .bml-table th {
-            background-color: #f9fafb;
-            color: #4b5563;
-            font-weight: 600;
-            padding: 12px 16px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .bml-table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid #f3f4f6;
-            vertical-align: middle;
-        }
-        .bml-table tr:hover td {
-            background-color: #f9fafb;
-        }
-        .bml-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            border-radius: 4px;
-        }
-        .bml-badge-success {
-            background-color: #dcfce7;
-            color: #15803d;
-        }
-        .bml-badge-secondary {
-            background-color: #f3f4f6;
-            color: #4b5563;
-        }
-        .bml-alert {
-            padding: 12px 16px;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            margin-bottom: 16px;
-        }
-        .bml-alert-success {
-            background-color: #dcfce7;
-            color: #15803d;
-            border: 1px solid #bbf7d0;
-        }
-
-        /* Modal hiển thị mã nhúng */
-        .bml-modal-backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .bml-modal {
-            background: #ffffff;
-            border-radius: 8px;
-            max-width: 650px;
-            width: 90%;
-            padding: 24px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-        .bml-modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-        .bml-modal-header h3 {
-            font-size: 1.125rem;
-            font-weight: 700;
-            margin: 0;
-        }
-        .bml-code-box {
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 12px;
-            font-family: monospace;
-            font-size: 0.8125rem;
-            white-space: pre-wrap;
-            word-break: break-all;
-            margin-bottom: 8px;
-            max-height: 140px;
-            overflow-y: auto;
-        }
-    </style>
+    <!-- CSS chuyên biệt module Biểu mẫu Lead (Story S4-01) -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/bieu-mau.css">
 </head>
 <body class="crm-body">
-    <!-- Navigation layout dùng chung -->
+    <!-- Navigation layout dùng chung S1-06 (đã bao gồm sidebar, thông tin user và Material Symbols) -->
     <jsp:include page="/WEB-INF/views/layout/navigation.jsp" />
 
     <main class="crm-main-content page-container" id="crm-main-content">
         <div class="bml-container">
-            <!-- Breadcrumb -->
+
+            <!-- 1. Breadcrumb điều hướng chuẩn -->
             <nav class="bml-breadcrumb" aria-label="Breadcrumb">
                 <ol class="bml-breadcrumb-nav">
-                    <li><a href="${pageContext.request.contextPath}/dieu-huong">Trang chủ</a></li>
-                    <span class="bml-breadcrumb-sep">/</span>
-                    <li><a href="${pageContext.request.contextPath}/lead">Lead & Phân bổ</a></li>
-                    <span class="bml-breadcrumb-sep">/</span>
-                    <li aria-current="page" style="color: #374151; font-weight: 500;">Biểu mẫu thu thập Lead</li>
+                    <li><a href="${pageContext.request.contextPath}/dieu-huong" class="bml-breadcrumb-link">Trang chủ</a></li>
+                    <span class="bml-breadcrumb-sep" aria-hidden="true">/</span>
+                    <li><a href="${pageContext.request.contextPath}/bieu-mau" class="bml-breadcrumb-link">Lead & Phân bổ</a></li>
+                    <span class="bml-breadcrumb-sep" aria-hidden="true">/</span>
+                    <li class="bml-breadcrumb-current" aria-current="page">Biểu mẫu thu thập Lead</li>
                 </ol>
+                <div>
+                    <a href="${pageContext.request.contextPath}/dieu-huong" class="bml-btn bml-btn-outline bml-btn-sm" id="btnQuayLaiTrangChu">
+                        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+                        <span>Trang chủ</span>
+                    </a>
+                </div>
             </nav>
 
-            <!-- Header Card -->
+            <!-- 2. Header Card & Hành động tạo mới -->
             <header class="bml-header-card">
                 <div class="bml-header-title">
                     <h1>
-                        <span class="material-symbols-outlined" style="color: #1e40af;" aria-hidden="true">dynamic_form</span>
+                        <span class="material-symbols-outlined" style="color: var(--bml-primary); font-size: 28px;" aria-hidden="true">dynamic_form</span>
                         <span>Biểu Mẫu Nhúng Thu Thập Lead Website</span>
                     </h1>
-                    <p>Sinh mã nhúng dán vào landing page/website bất kỳ, tự động thu thập lead mới và gắn đúng nguồn (Story S4-01).</p>
+                    <p>Sinh mã nhúng dán vào landing page hoặc website bất kỳ, tự động thu thập lead mới và gắn đúng nguồn (Story S4-01).</p>
                 </div>
-                <div>
+                <div class="bml-header-actions">
                     <a href="${pageContext.request.contextPath}/bieu-mau/tao" class="bml-btn bml-btn-primary" id="btnTaoBieuMau">
                         <span class="material-symbols-outlined" aria-hidden="true">add</span>
                         <span>Tạo biểu mẫu mới</span>
@@ -233,174 +54,314 @@
                 </div>
             </header>
 
-            <!-- Alert -->
+            <!-- 3. Thống kê tổng quan nhanh (Executive View) -->
+            <c:set var="tongSo" value="${dsBieuMau != null ? dsBieuMau.size() : 0}" />
+            <c:set var="dangHoatDong" value="0" />
+            <c:set var="coHoneypot" value="0" />
+            <c:forEach items="${dsBieuMau}" var="item">
+                <c:if test="${item.hoatDong}">
+                    <c:set var="dangHoatDong" value="${dangHoatDong + 1}" />
+                </c:if>
+                <c:if test="${item.batHoneypot}">
+                    <c:set var="coHoneypot" value="${coHoneypot + 1}" />
+                </c:if>
+            </c:forEach>
+            <section class="bml-stats-grid" aria-label="Thống kê biểu mẫu">
+                <div class="bml-stat-card">
+                    <div class="bml-stat-icon primary">
+                        <span class="material-symbols-outlined" aria-hidden="true">list_alt</span>
+                    </div>
+                    <div class="bml-stat-content">
+                        <span class="bml-stat-value">${tongSo}</span>
+                        <span class="bml-stat-label">Tổng biểu mẫu đã tạo</span>
+                    </div>
+                </div>
+                <div class="bml-stat-card">
+                    <div class="bml-stat-icon success">
+                        <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                    </div>
+                    <div class="bml-stat-content">
+                        <span class="bml-stat-value">${dangHoatDong}</span>
+                        <span class="bml-stat-label">Đang tiếp nhận Lead</span>
+                    </div>
+                </div>
+                <div class="bml-stat-card">
+                    <div class="bml-stat-icon warning">
+                        <span class="material-symbols-outlined" aria-hidden="true">pause_circle</span>
+                    </div>
+                    <div class="bml-stat-content">
+                        <span class="bml-stat-value">${tongSo - dangHoatDong}</span>
+                        <span class="bml-stat-label">Tạm dừng nhận thông tin</span>
+                    </div>
+                </div>
+                <div class="bml-stat-card">
+                    <div class="bml-stat-icon primary">
+                        <span class="material-symbols-outlined" aria-hidden="true">shield</span>
+                    </div>
+                    <div class="bml-stat-content">
+                        <span class="bml-stat-value">${coHoneypot}</span>
+                        <span class="bml-stat-label">Biểu mẫu bật Honeypot</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Thông báo hệ thống Flash Messages -->
             <c:if test="${not empty sessionScope.thongBaoThanhCong}">
-                <div class="bml-alert bml-alert-success">
-                    <c:out value="${sessionScope.thongBaoThanhCong}" />
+                <div class="bml-alert bml-alert-success" role="alert">
+                    <div class="bml-alert-content">
+                        <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                        <span><c:out value="${sessionScope.thongBaoThanhCong}" /></span>
+                    </div>
+                    <button type="button" class="bml-alert-close" onclick="this.parentElement.style.display='none';" aria-label="Đóng thông báo">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
                 </div>
                 <c:remove var="thongBaoThanhCong" scope="session" />
             </c:if>
 
-            <!-- Table Card -->
+            <c:if test="${not empty requestScope.thongBaoLoi}">
+                <div class="bml-alert bml-alert-danger" role="alert">
+                    <div class="bml-alert-content">
+                        <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                        <span><c:out value="${requestScope.thongBaoLoi}" /></span>
+                    </div>
+                    <button type="button" class="bml-alert-close" onclick="this.parentElement.style.display='none';" aria-label="Đóng thông báo">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
+                </div>
+            </c:if>
+
+            <!-- 5. Thanh công cụ tìm kiếm và lọc biểu mẫu nhanh -->
+            <div class="bml-toolbar">
+                <div class="bml-search-box">
+                    <span class="material-symbols-outlined bml-search-icon" aria-hidden="true">search</span>
+                    <input type="text" id="bmlSearchInput" class="bml-search-input"
+                           placeholder="Tìm kiếm theo mã hoặc tên biểu mẫu..."
+                           aria-label="Tìm kiếm biểu mẫu" />
+                </div>
+                <div class="bml-filter-group">
+                    <label for="bmlFilterStatus" style="font-size: 0.8125rem; font-weight: 600; color: var(--bml-neutral-600);">Trạng thái:</label>
+                    <select id="bmlFilterStatus" class="bml-filter-select">
+                        <option value="ALL">Tất cả trạng thái</option>
+                        <option value="ACTIVE">Đang hoạt động</option>
+                        <option value="INACTIVE">Tạm dừng</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 6. Bảng danh sách biểu mẫu nhúng -->
             <div class="bml-table-card">
-                <table class="bml-table">
-                    <thead>
-                        <tr>
-                            <th>Mã Biểu Mẫu</th>
-                            <th>Tên Biểu Mẫu</th>
-                            <th>Nguồn Lead</th>
-                            <th>Chiến Dịch</th>
-                            <th>Giới Hạn / Giờ</th>
-                            <th>Chống Spam</th>
-                            <th>Trạng Thái</th>
-                            <th style="text-align: right;">Thao Tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <c:choose>
-                            <c:when test="${empty dsBieuMau}">
-                                <tr>
-                                    <td colspan="8" style="text-align: center; padding: 40px; color: #6b7280;">
-                                        Chưa có biểu mẫu nào được tạo. Nhấn "Tạo biểu mẫu mới" để bắt đầu thu thập lead!
-                                    </td>
-                                </tr>
-                            </c:when>
-                            <c:otherwise>
-                                <c:forEach items="${dsBieuMau}" var="bm">
-                                    <tr>
-                                        <td>
-                                            <strong style="color: #1e40af;"><c:out value="${bm.maBieuMau}" /></strong>
-                                        </td>
-                                        <td>
-                                            <c:out value="${bm.tenBieuMau}" />
-                                        </td>
-                                        <td>
-                                            <span class="bml-badge bml-badge-secondary">
-                                                <c:out value="${bm.tenNguonLead != null ? bm.tenNguonLead : 'Chưa gắn'}" />
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <c:out value="${bm.tenChienDich != null ? bm.tenChienDich : '-'}" />
-                                        </td>
-                                        <td>
-                                            <c:out value="${bm.gioiHanGuiMoiGio}" /> lượt/IP
-                                        </td>
-                                        <td>
-                                            <c:choose>
-                                                <c:when test="${bm.batHoneypot}">
-                                                    <span style="color: #15803d; font-weight: 500;">✓ Honeypot</span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span style="color: #6b7280;">Tắt</span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
-                                        <td>
-                                            <c:choose>
-                                                <c:when test="${bm.hoatDong}">
-                                                    <span class="bml-badge bml-badge-success">Đang hoạt động</span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="bml-badge bml-badge-secondary">Tạm dừng</span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
-                                        <td style="text-align: right;">
-                                            <button type="button" class="bml-btn bml-btn-outline bml-btn-sm"
-                                                    onclick="hienThiMaNhung(${bm.id})" title="Lấy mã nhúng">
-                                                <span class="material-symbols-outlined" style="font-size: 16px;">code</span>
-                                                <span>Mã nhúng</span>
-                                            </button>
-                                            <a href="${pageContext.request.contextPath}/bieu-mau/nhung?token=${bm.tokenCongKhai}"
-                                               target="_blank" class="bml-btn bml-btn-outline bml-btn-sm" title="Xem thử form">
-                                                <span class="material-symbols-outlined" style="font-size: 16px;">open_in_new</span>
-                                                <span>Xem thử</span>
-                                            </a>
+                <div class="bml-table-responsive">
+                    <table class="bml-table" id="bmlTable">
+                        <thead>
+                            <tr>
+                                <th>Mã Biểu Mẫu</th>
+                                <th>Tên Biểu Mẫu</th>
+                                <th>Nguồn Lead (AC4)</th>
+                                <th>Chiến Dịch</th>
+                                <th>Giới Hạn IP (AC3)</th>
+                                <th>Chống Spam (AC3)</th>
+                                <th>Trạng Thái</th>
+                                <th style="text-align: right;">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:choose>
+                                <c:when test="${empty dsBieuMau}">
+                                    <tr id="bmlRowEmptyData">
+                                        <td colspan="8">
+                                            <div class="bml-empty-state">
+                                                <span class="material-symbols-outlined bml-empty-icon" aria-hidden="true">post_add</span>
+                                                <div class="bml-empty-title">Chưa có biểu mẫu thu thập lead nào</div>
+                                                <div class="bml-empty-desc">Tạo biểu mẫu đầu tiên để nhận mã nhúng, dán vào website và tự động thu thập thông tin khách hàng tiềm năng.</div>
+                                                <a href="${pageContext.request.contextPath}/bieu-mau/tao" class="bml-btn bml-btn-primary bml-btn-sm">
+                                                    <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                                                    <span>Tạo biểu mẫu mới</span>
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
-                                </c:forEach>
-                            </c:otherwise>
-                        </c:choose>
-                    </tbody>
-                </table>
+                                </c:when>
+                                <c:otherwise>
+                                    <c:forEach items="${dsBieuMau}" var="bm">
+                                        <tr data-ma="${bm.maBieuMau}" data-ten="${bm.tenBieuMau}" data-trang-thai="${bm.hoatDong ? 'ACTIVE' : 'INACTIVE'}">
+                                            <td>
+                                                <strong style="color: var(--bml-primary);"><c:out value="${bm.maBieuMau}" /></strong>
+                                            </td>
+                                            <td>
+                                                <div style="font-weight: 600; color: var(--bml-neutral-900);"><c:out value="${bm.tenBieuMau}" /></div>
+                                                <div style="font-size: 0.75rem; color: var(--bml-neutral-400); font-family: monospace;">Token: <c:out value="${bm.tokenCongKhai}" /></div>
+                                            </td>
+                                            <td>
+                                                <span class="bml-badge bml-badge-primary">
+                                                    <span class="material-symbols-outlined" style="font-size: 14px;" aria-hidden="true">share</span>
+                                                    <c:out value="${bm.tenNguonLead != null ? bm.tenNguonLead : 'Website Form'}" />
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${not empty bm.tenChienDich}">
+                                                        <c:out value="${bm.tenChienDich}" />
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span style="color: var(--bml-neutral-400);">-</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td>
+                                                <span style="font-weight: 500;"><c:out value="${bm.gioiHanGuiMoiGio}" /></span>
+                                                <span style="font-size: 0.75rem; color: var(--bml-neutral-500);">lượt/giờ/IP</span>
+                                            </td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${bm.batHoneypot}">
+                                                        <span class="bml-badge bml-badge-success" title="Chống bot spam bằng trường bẫy Honeypot ẩn">
+                                                            <span class="material-symbols-outlined" style="font-size: 14px;" aria-hidden="true">verified_user</span>
+                                                            <span>Bật Honeypot</span>
+                                                        </span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="bml-badge bml-badge-secondary">Tắt</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${bm.hoatDong}">
+                                                        <span class="bml-badge bml-badge-success">
+                                                            <span class="material-symbols-outlined" style="font-size: 14px;" aria-hidden="true">check</span>
+                                                            <span>Đang nhận Lead</span>
+                                                        </span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="bml-badge bml-badge-secondary">
+                                                            <span class="material-symbols-outlined" style="font-size: 14px;" aria-hidden="true">pause</span>
+                                                            <span>Tạm dừng</span>
+                                                        </span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td>
+                                                <div class="bml-table-actions">
+                                                    <!-- AC1: Nút Lấy mã nhúng -->
+                                                    <button type="button" class="bml-btn bml-btn-outline bml-btn-sm"
+                                                            onclick="hienThiMaNhung(${bm.id})" title="Lấy mã nhúng Iframe/Script để dán vào website">
+                                                        <span class="material-symbols-outlined" aria-hidden="true">code</span>
+                                                        <span>Mã nhúng</span>
+                                                    </button>
+
+                                                    <!-- Nút Xem thử biểu mẫu -->
+                                                    <a href="${pageContext.request.contextPath}/bieu-mau/nhung?token=${bm.tokenCongKhai}"
+                                                       target="_blank" rel="noopener noreferrer"
+                                                       class="bml-btn bml-btn-outline bml-btn-sm" title="Mở biểu mẫu nhúng ở tab mới để xem trước">
+                                                        <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+                                                        <span>Xem trước</span>
+                                                    </a>
+
+                                                    <!-- Nút Bật/Tắt trạng thái hoạt động -->
+                                                    <form action="${pageContext.request.contextPath}/bieu-mau/trang-thai" method="POST" style="display:inline; margin:0;">
+                                                        <input type="hidden" name="id" value="${bm.id}" />
+                                                        <input type="hidden" name="hoat_dong" value="${bm.hoatDong ? '0' : '1'}" />
+                                                        <button type="submit" class="bml-btn bml-btn-outline bml-btn-sm"
+                                                                title="${bm.hoatDong ? 'Tạm dừng biểu mẫu này' : 'Kích hoạt lại biểu mẫu'}">
+                                                            <span class="material-symbols-outlined" aria-hidden="true">${bm.hoatDong ? 'pause' : 'play_arrow'}</span>
+                                                            <span>${bm.hoatDong ? 'Tạm dừng' : 'Bật lại'}</span>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                    <tr id="bmlRowEmptySearch" style="display: none;">
+                                        <td colspan="8">
+                                            <div class="bml-empty-state">
+                                                <span class="material-symbols-outlined bml-empty-icon" aria-hidden="true">search_off</span>
+                                                <div class="bml-empty-title">Không tìm thấy biểu mẫu phù hợp</div>
+                                                <div class="bml-empty-desc">Không có biểu mẫu nào khớp với từ khóa tìm kiếm hoặc bộ lọc hiện tại.</div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </c:otherwise>
+                            </c:choose>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
         </div>
     </main>
 
-    <!-- Modal hiển thị mã nhúng -->
-    <div id="modalMaNhung" class="bml-modal-backdrop">
+    <!-- 7. Modal hiển thị mã nhúng website (AC1) -->
+    <div id="modalMaNhung" class="bml-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalMaNhungTitle">
         <div class="bml-modal">
             <div class="bml-modal-header">
-                <h3>Mã Nhúng Biểu Mẫu Website (AC1)</h3>
-                <button type="button" onclick="dongModalMaNhung()" style="border:none;background:none;cursor:pointer;font-size:20px;">✕</button>
+                <h3 id="modalMaNhungTitle">
+                    <span class="material-symbols-outlined" style="color: var(--bml-primary);" aria-hidden="true">integration_instructions</span>
+                    <span>Mã Nhúng Biểu Mẫu Website (AC1)</span>
+                </h3>
+                <button type="button" class="bml-modal-close-btn" onclick="dongModalMaNhung()" aria-label="Đóng cửa sổ mã nhúng">
+                    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                </button>
             </div>
-            <div>
-                <p style="font-size: 0.875rem; color: #4b5563; margin-bottom: 12px;">
-                    Sao chép một trong các mã bên dưới và dán vào bất kỳ website, blog hoặc landing page nào để hiển thị biểu mẫu thu thập lead:
+            <div class="bml-modal-body">
+                <p class="bml-modal-desc">
+                    Sao chép một trong các định dạng mã bên dưới và dán vào mã nguồn website, blog hoặc Landing Page bất kỳ (WordPress, Webflow, HTML tĩnh) để hiển thị biểu mẫu thu thập lead:
                 </p>
 
-                <!-- Iframe Code -->
-                <div style="margin-bottom: 16px;">
-                    <label style="font-size: 0.8125rem; font-weight: 600; color: #374151;">1. Mã nhúng Iframe (Khuyến nghị cho mọi website):</label>
+                <!-- 1. Iframe Embed Code (Khuyến nghị) -->
+                <div class="bml-embed-section">
+                    <div class="bml-embed-header">
+                        <span class="bml-embed-title">
+                            <span class="material-symbols-outlined" style="font-size: 16px; color: var(--bml-primary);" aria-hidden="true">featured_video</span>
+                            <span>1. Mã nhúng Iframe (Khuyến nghị an toàn & tương thích cao)</span>
+                        </span>
+                        <button type="button" class="bml-btn bml-btn-outline bml-btn-sm" onclick="saoChepMaNhung('codeIframe', 'Mã nhúng Iframe')">
+                            <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
+                            <span>Sao chép</span>
+                        </button>
+                    </div>
                     <div id="codeIframe" class="bml-code-box"></div>
-                    <button type="button" class="bml-btn bml-btn-outline bml-btn-sm" onclick="saoChep('codeIframe')">
-                        <span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span>
-                        <span>Sao chép mã Iframe</span>
-                    </button>
                 </div>
 
-                <!-- Script Code -->
-                <div style="margin-bottom: 16px;">
-                    <label style="font-size: 0.8125rem; font-weight: 600; color: #374151;">2. Mã nhúng Script JS:</label>
+                <!-- 2. Script Tag Embed Code -->
+                <div class="bml-embed-section">
+                    <div class="bml-embed-header">
+                        <span class="bml-embed-title">
+                            <span class="material-symbols-outlined" style="font-size: 16px; color: var(--bml-primary);" aria-hidden="true">javascript</span>
+                            <span>2. Mã nhúng JavaScript Widget</span>
+                        </span>
+                        <button type="button" class="bml-btn bml-btn-outline bml-btn-sm" onclick="saoChepMaNhung('codeScript', 'Mã nhúng Script')">
+                            <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
+                            <span>Sao chép</span>
+                        </button>
+                    </div>
                     <div id="codeScript" class="bml-code-box"></div>
-                    <button type="button" class="bml-btn bml-btn-outline bml-btn-sm" onclick="saoChep('codeScript')">
-                        <span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span>
-                        <span>Sao chép mã Script</span>
-                    </button>
                 </div>
 
-                <!-- Direct Link -->
-                <div>
-                    <label style="font-size: 0.8125rem; font-weight: 600; color: #374151;">3. Đường dẫn trực tiếp:</label>
+                <!-- 3. Direct Public Link -->
+                <div class="bml-embed-section">
+                    <div class="bml-embed-header">
+                        <span class="bml-embed-title">
+                            <span class="material-symbols-outlined" style="font-size: 16px; color: var(--bml-primary);" aria-hidden="true">link</span>
+                            <span>3. Đường dẫn trực tiếp (Gắn vào nút bấm hoặc chiến dịch Email/Zalo)</span>
+                        </span>
+                        <button type="button" class="bml-btn bml-btn-outline bml-btn-sm" onclick="saoChepMaNhung('codeUrl', 'Đường dẫn trực tiếp')">
+                            <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
+                            <span>Sao chép</span>
+                        </button>
+                    </div>
                     <div id="codeUrl" class="bml-code-box"></div>
-                    <button type="button" class="bml-btn bml-btn-outline bml-btn-sm" onclick="saoChep('codeUrl')">
-                        <span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span>
-                        <span>Sao chép đường dẫn</span>
-                    </button>
                 </div>
+            </div>
+            <div class="bml-modal-footer">
+                <button type="button" class="bml-btn bml-btn-outline" onclick="dongModalMaNhung()">Đóng</button>
             </div>
         </div>
     </div>
 
-    <script>
-        function hienThiMaNhung(id) {
-            fetch('${pageContext.request.contextPath}/bieu-mau/ma-nhung?id=' + id)
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    if (data.thanhCong) {
-                        document.getElementById('codeIframe').textContent = data.maIframe;
-                        document.getElementById('codeScript').textContent = data.maScript;
-                        document.getElementById('codeUrl').textContent = data.duongDanTrucTiep;
-                        document.getElementById('modalMaNhung').style.display = 'flex';
-                    } else {
-                        alert(data.thongBao || 'Lỗi lấy mã nhúng');
-                    }
-                })
-                .catch(function(err) {
-                    alert('Lỗi kết nối máy chủ');
-                });
-        }
-
-        function dongModalMaNhung() {
-            document.getElementById('modalMaNhung').style.display = 'none';
-        }
-
-        function saoChep(elementId) {
-            var text = document.getElementById(elementId).textContent;
-            navigator.clipboard.writeText(text).then(function() {
-                alert('Đã sao chép vào bộ nhớ tạm!');
-            });
-        }
-    </script>
+    <!-- Scripts điều hướng hệ thống và xử lý module -->
+    <script>window.__CRM_CONTEXT_PATH = '${pageContext.request.contextPath}';</script>
+    <script src="${pageContext.request.contextPath}/assets/js/navigation.js"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/lead/bieu-mau.js"></script>
 </body>
 </html>
