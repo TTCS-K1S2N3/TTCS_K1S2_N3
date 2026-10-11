@@ -9,12 +9,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import vn.nhom10.crm.dao.KhachHangDAO;
 import vn.nhom10.crm.dto.BanGhiNghiepVuDTO;
+import vn.nhom10.crm.dto.KetQuaGopKhachHangDTO;
+import vn.nhom10.crm.dto.NguoiDungDTO;
 import vn.nhom10.crm.model.KhachHang;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.PhamViDuLieu;
 import vn.nhom10.crm.model.VaiTro;
 import vn.nhom10.crm.model.VaiTroEnum;
 import vn.nhom10.crm.service.DanhMucBanHangService;
+import vn.nhom10.crm.service.GopKhachHangService;
 import vn.nhom10.crm.service.KhachHangService;
 import vn.nhom10.crm.service.PhanQuyenDuLieuService;
 
@@ -604,13 +607,21 @@ class KhachHangServletTest {
     @Test
     @DisplayName("S3-04 AC4: Chỉ Trưởng nhóm trở lên được thực hiện gộp - Trưởng nhóm Bắc gộp thành công")
     void testGopKhachHang_TruongNhomBac_ThanhCong() throws Exception {
+        GopKhachHangService mockGopKhachHangService = mock(GopKhachHangService.class);
+        when(mockGopKhachHangService.laTruongNhomTroLen(any(NguoiDung.class))).thenReturn(true);
+        when(mockGopKhachHangService.laTruongNhomTroLen(any(NguoiDungDTO.class))).thenReturn(true);
+        when(mockGopKhachHangService.thucHienGopKhachHang(anyLong(), anyLong(), anyString(), any(), any(), any()))
+                .thenReturn(KetQuaGopKhachHangDTO.thanhCong("Đã thực hiện gộp khách hàng #5 vào #1 thành công.", 5L, 1L));
+
+        KhachHangServlet servletGop = new KhachHangServlet(phanQuyenService, mockGopKhachHangService);
+
         when(session.getAttribute("nguoiDung")).thenReturn(userLeadBac);
         when(request.getParameter("action")).thenReturn("gop");
         when(request.getParameter("khachHangDichId")).thenReturn("1"); // FPT của A
         when(request.getParameter("khachHangNguonId")).thenReturn("5"); // Viettel của B
         when(request.getParameter("lyDoGop")).thenReturn("Hai nhân viên cùng chào công ty, gộp về hồ sơ chính");
 
-        servlet.doPost(request, response);
+        servletGop.doPost(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_OK);
         verify(request).setAttribute(eq("thongBaoThanhCong"), contains("Đã thực hiện gộp khách hàng"));
