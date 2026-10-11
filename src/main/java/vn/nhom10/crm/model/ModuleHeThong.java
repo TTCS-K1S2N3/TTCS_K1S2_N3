@@ -170,7 +170,7 @@ public enum ModuleHeThong {
 
     ModuleHeThong(String maModule, String tenHienThi, String duongDanUrl, String bieuTuong, int thuTu, VaiTroEnum... vaiTros) {
         this(maModule, tenHienThi, duongDanUrl, bieuTuong, thuTu,
-                ("KHACH_HANG".equals(maModule) || "DANH_MUC".equals(maModule) || "NGUOI_DUNG".equals(maModule) || "LEAD".equals(maModule)),
+                ("KHACH_HANG".equals(maModule) || "DANH_MUC".equals(maModule) || "NGUOI_DUNG".equals(maModule)),
                 vaiTros);
     }
 
