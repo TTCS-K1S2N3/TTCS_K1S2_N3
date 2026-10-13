@@ -118,7 +118,6 @@ public class MenuService {
                 || urlPath.startsWith("/chi-tiet-ban-ghi")) {
             return kiemTraQuyenTruyCap(nguoiDung, ModuleHeThong.KHACH_HANG);
         }
-
         // Module DANH_MUC
         if (urlPath.startsWith("/danh-muc")
                 || urlPath.startsWith("/danh-muc-ban-hang")
@@ -132,6 +131,15 @@ public class MenuService {
             return kiemTraQuyenTruyCap(nguoiDung, ModuleHeThong.DANH_MUC);
         }
 
+        // Module LEAD: Biểu mẫu nhúng công khai (Sprint 4)
+        if (urlPath.startsWith("/bieu-mau/nhung") || urlPath.startsWith("/bieu-mau/gui") || urlPath.startsWith("/bieu-mau/embed.js")) {
+            return true;
+        }
+
+        // Module LEAD: Quản lý biểu mẫu lead
+        if (urlPath.startsWith("/bieu-mau")) {
+            return kiemTraQuyenTruyCap(nguoiDung, ModuleHeThong.LEAD);
+        }
         ModuleHeThong module = ModuleHeThong.tuDuongDan(urlPath);
         if (module == null) {
             // URL không thuộc phạm vi các module nghiệp vụ cần phân quyền
@@ -159,6 +167,9 @@ public class MenuService {
                 if (currentUri != null && !currentUri.isBlank()) {
                     active = currentUri.equals(mod.getDuongDanUrl())
                             || currentUri.startsWith(mod.getDuongDanUrl() + "/")
+                            || (mod == ModuleHeThong.LEAD && (
+                                    currentUri.startsWith("/bieu-mau")
+                               ))
                             || (mod == ModuleHeThong.KHACH_HANG && (
                                     currentUri.startsWith("/yeu-cau-ho-tro")
                                     || currentUri.startsWith("/chi-tiet-ban-ghi")
