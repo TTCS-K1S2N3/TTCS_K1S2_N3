@@ -4841,16 +4841,7 @@ body {
     background-color: #fff1ee !important;
 }
 
-/* Checkbox vuông hiện đại 17px */
-.crm-table-checkbox {
-    width: 17px;
-    height: 17px;
-    accent-color: #2563eb;
-    cursor: pointer;
-    border-radius: 4px;
-    vertical-align: middle;
-    margin: 0;
-}
+
 
 /* Chấm trạng thái tròn 8px */
 .tbl-dot-header {

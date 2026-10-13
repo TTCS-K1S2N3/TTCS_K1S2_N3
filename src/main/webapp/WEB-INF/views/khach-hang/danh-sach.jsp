@@ -8,7 +8,7 @@
     <meta name="description" content="Danh mục khách hàng, tìm kiếm & lọc đa điều kiện, lưu bộ lọc, chăm sóc định kỳ & phát hiện trùng lặp - CRM Bán Hàng">
     <title>Danh Mục Khách Hàng - CRM Bán Hàng</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/khach-hang/khach-hang.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/khach-hang/khach-hang.css?v=20261013_ui">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
     <script>
         window.CONTEXT_PATH = "${pageContext.request.contextPath}";
@@ -279,9 +279,7 @@
 
                 <form id="formLocKhachHang" method="GET" action="${pageContext.request.contextPath}/khach-hang">
                     <input type="hidden" name="phamVi" value="${param.phamVi != null ? param.phamVi : (not empty phamViHienTai ? phamViHienTai.ma : '')}">
-                    <c:if test="${not empty boLocHienTai and not empty boLocHienTai.boLocId}">
-                        <input type="hidden" name="boLocId" value="${boLocHienTai.boLocId}">
-                    </c:if>
+                    <input type="hidden" name="loc" value="1">
 
                     <!-- HÀNG TÌM KIẾM CHÍNH (SINGLE COMPACT ROW TRÊN DESKTOP: TÌM KIẾM + BỘ LỌC + NÚT TÌM + ĐẶT LẠI) -->
                     <div class="search-main-row">
@@ -616,10 +614,7 @@
                     <table class="data-table customer-modern-table" id="tableKhachHang">
                         <thead>
                             <tr>
-                                <th style="width: 44px; text-align: center;">
-                                    <input type="checkbox" id="checkAllKhachHang" class="crm-table-checkbox" aria-label="Chọn tất cả khách hàng trên trang">
-                                </th>
-                                <th style="width: 36px; text-align: center;" title="Chấm trạng thái hoạt động">
+                                <th style="width: 38px; text-align: center;" title="Chấm trạng thái hoạt động">
                                     <span class="tbl-dot-header" aria-hidden="true">&bull;</span>
                                 </th>
                                 <th style="width: 105px;">Mã KH</th>
@@ -649,10 +644,7 @@
                                             data-ngay-tao="<c:out value="${kh.ngayTao}" />"
                                             data-mo-ta="<c:out value="${kh.moTaChiTiet}" />"
                                             ${kh.coRuiRo ? 'class="row-rui-ro"' : ''}>
-                                            <!-- 1. Checkbox chọn hàng -->
-                                            <td style="text-align: center;">
-                                                <input type="checkbox" class="crm-table-checkbox row-select-cb" value="${kh.id}" aria-label="Chọn khách hàng ${kh.tenCongTy}">
-                                            </td>
+
 
                                             <!-- 2. Chấm trạng thái -->
                                             <td style="text-align: center;">
@@ -821,13 +813,11 @@
                                     </c:forEach>
                                 </c:when>
 
-                                <%-- Fallback danh sách BanGhiNghiepVuDTO nếu dsKhachHangModel chưa nạp --%>
-                                <c:when test="${not empty danhSachKhachHang}">
+                                <%-- Fallback danh sách BanGhiNghiepVuDTO chỉ áp dụng cho luồng legacy khi không có điều kiện lọc --%>
+                                <c:when test="${(empty boLocHienTai or not boLocHienTai.coDieuKienLoc()) and not empty danhSachKhachHang}">
                                     <c:forEach var="kh" items="${danhSachKhachHang}">
                                         <tr>
-                                            <td style="text-align: center;">
-                                                <input type="checkbox" class="crm-table-checkbox row-select-cb" value="${kh.id}" aria-label="Chọn khách hàng">
-                                            </td>
+
                                             <td style="text-align: center;">
                                                 <span class="status-indicator-dot dot-teal" title="Trạng thái: Hoạt động"></span>
                                             </td>
@@ -862,7 +852,7 @@
                                 </c:when>
                                 <c:otherwise>
                                     <tr>
-                                        <td colspan="10" class="empty-state-cell">
+                                        <td colspan="9" class="empty-state-cell">
                                             <div class="empty-state-wrap">
                                                 <div class="empty-state-icon" aria-hidden="true">
                                                     <span class="material-symbols-outlined icon-lg">search_off</span>
@@ -890,18 +880,18 @@
                         </span>
                         <div style="display: flex; gap: 6px;">
                             <c:if test="${trangHienTai > 1}">
-                                <a href="${pageContext.request.contextPath}/khach-hang?trang=${trangHienTai - 1}&tuKhoa=${tuKhoaHienTai}&trangThai=${trangThaiHienTai}&nganhNgheId=${nganhNgheIdHienTai}&quyMoId=${quyMoIdHienTai}&khuVucId=${boLocHienTai.khuVucId}&nguoiSoHuuId=${boLocHienTai.nguoiSoHuuId}&tenCongTy=${boLocHienTai.tenCongTy}&maSoThue=${boLocHienTai.maSoThue}&soDienThoai=${boLocHienTai.soDienThoai}&boLocId=${boLocHienTai.boLocId}" class="btn btn-outline btn-sm">Trước</a>
+                                <a href="${pageContext.request.contextPath}/khach-hang?trang=${trangHienTai - 1}&tuKhoa=${tuKhoaHienTai}&trangThai=${trangThaiHienTai}&nganhNgheId=${nganhNgheIdHienTai}&quyMoId=${quyMoIdHienTai}&khuVucId=${boLocHienTai.khuVucId}&nguoiSoHuuId=${boLocHienTai.nguoiSoHuuId}&tenCongTy=${boLocHienTai.tenCongTy}&maSoThue=${boLocHienTai.maSoThue}&soDienThoai=${boLocHienTai.soDienThoai}${not empty boLocHienTai and not empty boLocHienTai.boLocId ? '&boLocId='.concat(boLocHienTai.boLocId) : '&loc=1'}" class="btn btn-outline btn-sm">Trước</a>
                             </c:if>
                             <c:forEach var="p" begin="1" end="${tongSoTrang}">
                                 <c:if test="${p == trangHienTai}">
                                     <span class="btn btn-primary btn-sm" style="font-weight: 700;">${p}</span>
                                 </c:if>
                                 <c:if test="${p != trangHienTai && (p == 1 || p == tongSoTrang || (p >= trangHienTai - 2 && p <= trangHienTai + 2))}">
-                                    <a href="${pageContext.request.contextPath}/khach-hang?trang=${p}&tuKhoa=${tuKhoaHienTai}&trangThai=${trangThaiHienTai}&nganhNgheId=${nganhNgheIdHienTai}&quyMoId=${quyMoIdHienTai}&khuVucId=${boLocHienTai.khuVucId}&nguoiSoHuuId=${boLocHienTai.nguoiSoHuuId}&tenCongTy=${boLocHienTai.tenCongTy}&maSoThue=${boLocHienTai.maSoThue}&soDienThoai=${boLocHienTai.soDienThoai}&boLocId=${boLocHienTai.boLocId}" class="btn btn-outline btn-sm">${p}</a>
+                                    <a href="${pageContext.request.contextPath}/khach-hang?trang=${p}&tuKhoa=${tuKhoaHienTai}&trangThai=${trangThaiHienTai}&nganhNgheId=${nganhNgheIdHienTai}&quyMoId=${quyMoIdHienTai}&khuVucId=${boLocHienTai.khuVucId}&nguoiSoHuuId=${boLocHienTai.nguoiSoHuuId}&tenCongTy=${boLocHienTai.tenCongTy}&maSoThue=${boLocHienTai.maSoThue}&soDienThoai=${boLocHienTai.soDienThoai}${not empty boLocHienTai and not empty boLocHienTai.boLocId ? '&boLocId='.concat(boLocHienTai.boLocId) : '&loc=1'}" class="btn btn-outline btn-sm">${p}</a>
                                 </c:if>
                             </c:forEach>
                             <c:if test="${trangHienTai < tongSoTrang}">
-                                <a href="${pageContext.request.contextPath}/khach-hang?trang=${trangHienTai + 1}&tuKhoa=${tuKhoaHienTai}&trangThai=${trangThaiHienTai}&nganhNgheId=${nganhNgheIdHienTai}&quyMoId=${quyMoIdHienTai}&khuVucId=${boLocHienTai.khuVucId}&nguoiSoHuuId=${boLocHienTai.nguoiSoHuuId}&tenCongTy=${boLocHienTai.tenCongTy}&maSoThue=${boLocHienTai.maSoThue}&soDienThoai=${boLocHienTai.soDienThoai}&boLocId=${boLocHienTai.boLocId}" class="btn btn-outline btn-sm">Sau</a>
+                                <a href="${pageContext.request.contextPath}/khach-hang?trang=${trangHienTai + 1}&tuKhoa=${tuKhoaHienTai}&trangThai=${trangThaiHienTai}&nganhNgheId=${nganhNgheIdHienTai}&quyMoId=${quyMoIdHienTai}&khuVucId=${boLocHienTai.khuVucId}&nguoiSoHuuId=${boLocHienTai.nguoiSoHuuId}&tenCongTy=${boLocHienTai.tenCongTy}&maSoThue=${boLocHienTai.maSoThue}&soDienThoai=${boLocHienTai.soDienThoai}${not empty boLocHienTai and not empty boLocHienTai.boLocId ? '&boLocId='.concat(boLocHienTai.boLocId) : '&loc=1'}" class="btn btn-outline btn-sm">Sau</a>
                             </c:if>
                         </div>
                     </div>
@@ -1030,10 +1020,7 @@
                     <table class="data-table customer-modern-table" id="tableChamSocDinhKy">
                         <thead>
                             <tr>
-                                <th style="width: 44px; text-align: center;">
-                                    <input type="checkbox" id="checkAllChamSoc" class="crm-table-checkbox" aria-label="Chọn tất cả khách hàng cần chăm sóc">
-                                </th>
-                                <th style="width: 36px; text-align: center;" title="Chấm trạng thái chăm sóc">
+                                <th style="width: 38px; text-align: center;" title="Chấm trạng thái chăm sóc">
                                     <span class="tbl-dot-header" aria-hidden="true">&bull;</span>
                                 </th>
                                 <th style="width: 105px;">Mã KH</th>
@@ -1070,10 +1057,7 @@
                                             data-gia-tri-raw="<c:out value='${kh.giaTri}' />"
                                             data-trang-thai="<c:out value='${kh.trangThai}' />"
                                             data-mo-ta="<c:out value='${kh.moTaChiTiet}' />">
-                                            <!-- 1. Checkbox -->
-                                            <td style="text-align: center;">
-                                                <input type="checkbox" class="crm-table-checkbox row-select-cb-cs" value="${kh.id}" aria-label="Chọn khách hàng ${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}">
-                                            </td>
+
 
                                             <!-- 2. Chấm trạng thái -->
                                             <td style="text-align: center;">
@@ -1171,7 +1155,7 @@
                                 </c:when>
                                 <c:otherwise>
                                     <tr>
-                                        <td colspan="9" style="text-align: center; padding: 36px; color: var(--slate-500);">
+                                        <td colspan="8" style="text-align: center; padding: 36px; color: var(--slate-500);">
                                             Không tìm thấy khách hàng nào trong hệ thống thuộc phạm vi dữ liệu của bạn.
                                         </td>
                                     </tr>
@@ -1949,6 +1933,6 @@
 
     <script src="${pageContext.request.contextPath}/assets/js/navigation.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/session-keep-alive.js"></script>
-    <script src="${pageContext.request.contextPath}/assets/js/khach-hang.js"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/khach-hang.js?v=20261013_ui"></script>
 </body>
 </html>

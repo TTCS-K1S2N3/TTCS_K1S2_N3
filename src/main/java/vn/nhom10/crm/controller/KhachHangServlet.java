@@ -484,7 +484,18 @@ public class KhachHangServlet extends HttpServlet {
             boLoc.setKhuVucId(khuVucId);
             boLoc.setNguoiSoHuuId(nguoiSoHuuId);
 
-            if (!boLoc.coDieuKienLoc() && reset == null) {
+            boolean coYeuCauLocThuCong = request.getParameter("loc") != null
+                    || request.getParameter("tenCongTy") != null
+                    || request.getParameter("maSoThue") != null
+                    || request.getParameter("soDienThoai") != null
+                    || request.getParameter("trangThai") != null
+                    || request.getParameter("nganhNgheId") != null
+                    || request.getParameter("quyMoId") != null
+                    || request.getParameter("khuVucId") != null
+                    || request.getParameter("nguoiSoHuuId") != null
+                    || (tuKhoa != null && !tuKhoa.trim().isEmpty());
+
+            if (!boLoc.coDieuKienLoc() && reset == null && !coYeuCauLocThuCong) {
                 BoLocDaLuu macDinh = boLocService.timBoLocMacDinh(user);
                 if (macDinh != null) {
                     boLoc = BoLocKhachHangDTO.tuJson(macDinh.getTieuChiJson());
@@ -507,13 +518,27 @@ public class KhachHangServlet extends HttpServlet {
         int kichThuocTrang = 20;
 
         // Tự động lọc danh sách khách hàng DTO (Story S1-05 Data Scope)
-        List<BanGhiNghiepVuDTO> danhSachKhachHang = phanQuyenService.layDanhSachDuLieu(
-                userDTO, phamViHieuLuc, boLoc.getTuKhoa(), "KHACH_HANG"
-        );
+        // Khi có điều kiện lọc (Story S3-07), tuyệt đối không dùng danh sách dự phòng chưa lọc
+        List<BanGhiNghiepVuDTO> danhSachKhachHang;
+        if (boLoc.coDieuKienLoc()) {
+            danhSachKhachHang = Collections.emptyList();
+        } else {
+            danhSachKhachHang = phanQuyenService.layDanhSachDuLieu(
+                    userDTO, phamViHieuLuc, boLoc.getTuKhoa(), "KHACH_HANG"
+            );
+        }
 
         // Truy vấn danh sách khách hàng Model theo bộ lọc (Story S3-07 AC1, AC2)
-        List<KhachHang> dsKhachHangModel = khachHangService.timKiemVaLoc(userDTO, boLoc);
-        int tongSoKhachHangModel = khachHangService.demSoLuong(userDTO, boLoc);
+        List<KhachHang> dsKhachHangModel = Collections.emptyList();
+        int tongSoKhachHangModel = 0;
+        try {
+            dsKhachHangModel = khachHangService.timKiemVaLoc(userDTO, boLoc);
+            tongSoKhachHangModel = khachHangService.demSoLuong(userDTO, boLoc);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Lỗi truy vấn danh sách khách hàng theo bộ lọc: " + e.getMessage(), e);
+            dsKhachHangModel = Collections.emptyList();
+            tongSoKhachHangModel = 0;
+        }
 
         if (dsKhachHangModel == null) {
             dsKhachHangModel = Collections.emptyList();
@@ -539,7 +564,9 @@ public class KhachHangServlet extends HttpServlet {
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setHeader("Content-Disposition", "attachment; filename=\"du-lieu-khach-hang-" + phamViHieuLuc.getMa().toLowerCase() + ".xlsx\"");
             byte[] excelBytes;
-            if (dsKhachHangModel != null && !dsKhachHangModel.isEmpty()) {
+            if (boLoc.coDieuKienLoc()) {
+                excelBytes = khachHangService.xuatDanhSachExcel(dsKhachHangModel != null ? dsKhachHangModel : Collections.emptyList());
+            } else if (dsKhachHangModel != null && !dsKhachHangModel.isEmpty()) {
                 excelBytes = khachHangService.xuatDanhSachExcel(dsKhachHangModel);
             } else {
                 excelBytes = phanQuyenService.xuatDuLieuExcel(danhSachKhachHang);
@@ -601,10 +628,19 @@ public class KhachHangServlet extends HttpServlet {
         request.setAttribute("danhSachPhamViChoPhep", userDTO.getDanhSachPhamViChoPhep());
 
         // Thiết lập attributes cho View & Phân trang (S1-05, S3-01, S3-04, S3-07, S3-09)
+        int tongSoHienThi;
+        if (boLoc.coDieuKienLoc()) {
+            tongSoHienThi = tongSoKhachHangModel;
+        } else if (tongSoKhachHangModel > 0 || (dsKhachHangModel != null && !dsKhachHangModel.isEmpty())) {
+            tongSoHienThi = tongSoKhachHangModel;
+        } else {
+            tongSoHienThi = (danhSachKhachHang != null ? danhSachKhachHang.size() : 0);
+        }
+
         request.setAttribute("danhSachKhachHang", danhSachKhachHang);
         request.setAttribute("danhSachKhachHangModel", dsKhachHangModel);
         request.setAttribute("dsKhachHangModel", dsKhachHangModel);
-        request.setAttribute("tongSoKhachHang", tongSoKhachHangModel > 0 ? tongSoKhachHangModel : (danhSachKhachHang != null ? danhSachKhachHang.size() : 0));
+        request.setAttribute("tongSoKhachHang", tongSoHienThi);
         request.setAttribute("tuKhoaHienTai", boLoc.getTuKhoa() != null ? boLoc.getTuKhoa() : "");
         request.setAttribute("trangThaiHienTai", boLoc.getTrangThai() != null ? boLoc.getTrangThai() : "");
         request.setAttribute("nganhNgheIdHienTai", boLoc.getNganhNgheId());
