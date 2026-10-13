@@ -9,10 +9,12 @@ import jakarta.servlet.http.HttpSession;
 import vn.nhom10.crm.dto.KetQuaSanPhamDTO;
 import vn.nhom10.crm.dto.PhanTrangDTO;
 import vn.nhom10.crm.model.LoaiSanPhamEnum;
+import vn.nhom10.crm.model.MucQuyen;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.SanPham;
 import vn.nhom10.crm.model.TrangThaiSanPhamEnum;
 import vn.nhom10.crm.model.VaiTroEnum;
+import vn.nhom10.crm.service.PermissionService;
 import vn.nhom10.crm.service.PhienService;
 import vn.nhom10.crm.service.SanPhamService;
 
@@ -38,15 +40,21 @@ public class SanPhamServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(SanPhamServlet.class.getName());
 
     private SanPhamService sanPhamService;
+    private PermissionService permissionService;
 
     @Override
     public void init() throws ServletException {
         super.init();
         this.sanPhamService = new SanPhamService();
+        this.permissionService = new PermissionService();
     }
 
     public void setSanPhamService(SanPhamService sanPhamService) {
         this.sanPhamService = sanPhamService;
+    }
+
+    public void setPermissionService(PermissionService permissionService) {
+        this.permissionService = permissionService;
     }
 
     @Override
@@ -61,6 +69,19 @@ public class SanPhamServlet extends HttpServlet {
                 return;
             }
             resp.sendRedirect(req.getContextPath() + "/dang-nhap");
+            return;
+        }
+
+        if (permissionService != null && !permissionService.coQuyen(nguoiDung, "DANH_MUC", MucQuyen.READ)) {
+            if ("/san-pham/kiem-tra-gia-san".equals(path)) {
+                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                resp.setContentType("application/json;charset=UTF-8");
+                resp.getWriter().print("{\"thanhCong\":false,\"thongDiep\":\"Bạn không có quyền truy cập module Danh mục.\"}");
+                return;
+            }
+            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            req.setAttribute("errorMessage", "Bạn không có quyền truy cập module Danh mục.");
+            req.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(req, resp);
             return;
         }
 
@@ -99,6 +120,19 @@ public class SanPhamServlet extends HttpServlet {
                 return;
             }
             resp.sendRedirect(req.getContextPath() + "/dang-nhap");
+            return;
+        }
+
+        if (permissionService != null && !permissionService.coQuyen(nguoiDung, "DANH_MUC", MucQuyen.READ)) {
+            if ("/san-pham/kiem-tra-gia-san".equals(path)) {
+                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                resp.setContentType("application/json;charset=UTF-8");
+                resp.getWriter().print("{\"thanhCong\":false,\"thongDiep\":\"Bạn không có quyền truy cập module Danh mục.\"}");
+                return;
+            }
+            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            req.setAttribute("errorMessage", "Bạn không có quyền truy cập module Danh mục.");
+            req.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(req, resp);
             return;
         }
 
@@ -161,7 +195,8 @@ public class SanPhamServlet extends HttpServlet {
                 tuKhoa, loai, trangThai, page, pageSize, nguoiDung);
 
         boolean coQuyenGiaVon = sanPhamService.coQuyenGiaVon(nguoiDung);
-        boolean coQuyenQuanLy = sanPhamService.coQuyenQuanLy(nguoiDung);
+        boolean coQuyenQuanLy = sanPhamService.coQuyenQuanLy(nguoiDung)
+                && (permissionService == null || permissionService.coQuyen(nguoiDung, "DANH_MUC", MucQuyen.WRITE));
 
         req.setAttribute("phanTrang", phanTrang);
         req.setAttribute("tuKhoa", tuKhoa != null ? tuKhoa : "");
@@ -194,7 +229,8 @@ public class SanPhamServlet extends HttpServlet {
      */
     private void hienThiFormTao(HttpServletRequest req, HttpServletResponse resp, NguoiDung nguoiDung)
             throws ServletException, IOException {
-        if (!sanPhamService.coQuyenQuanLy(nguoiDung)) {
+        if (!sanPhamService.coQuyenQuanLy(nguoiDung)
+                || (permissionService != null && !permissionService.coQuyen(nguoiDung, "DANH_MUC", MucQuyen.WRITE))) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền thêm mới sản phẩm bảng giá.");
             return;
         }
@@ -213,7 +249,8 @@ public class SanPhamServlet extends HttpServlet {
      */
     private void hienThiFormSua(HttpServletRequest req, HttpServletResponse resp, NguoiDung nguoiDung)
             throws ServletException, IOException {
-        if (!sanPhamService.coQuyenQuanLy(nguoiDung)) {
+        if (!sanPhamService.coQuyenQuanLy(nguoiDung)
+                || (permissionService != null && !permissionService.coQuyen(nguoiDung, "DANH_MUC", MucQuyen.WRITE))) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền sửa sản phẩm bảng giá.");
             return;
         }
@@ -249,8 +286,11 @@ public class SanPhamServlet extends HttpServlet {
      */
     private void xuLyTaoSanPham(HttpServletRequest req, HttpServletResponse resp, NguoiDung nguoiDung)
             throws ServletException, IOException {
-        if (!sanPhamService.coQuyenQuanLy(nguoiDung)) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Không có quyền thực hiện.");
+        if (!sanPhamService.coQuyenQuanLy(nguoiDung)
+                || (permissionService != null && !permissionService.coQuyen(nguoiDung, "DANH_MUC", MucQuyen.WRITE))) {
+            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            req.setAttribute("errorMessage", "Không có quyền thực hiện thêm mới sản phẩm.");
+            req.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(req, resp);
             return;
         }
 
@@ -294,8 +334,11 @@ public class SanPhamServlet extends HttpServlet {
      */
     private void xuLyCapNhatSanPham(HttpServletRequest req, HttpServletResponse resp, NguoiDung nguoiDung)
             throws ServletException, IOException {
-        if (!sanPhamService.coQuyenQuanLy(nguoiDung)) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Không có quyền thực hiện.");
+        if (!sanPhamService.coQuyenQuanLy(nguoiDung)
+                || (permissionService != null && !permissionService.coQuyen(nguoiDung, "DANH_MUC", MucQuyen.WRITE))) {
+            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            req.setAttribute("errorMessage", "Không có quyền thực hiện cập nhật sản phẩm.");
+            req.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(req, resp);
             return;
         }
 
@@ -345,9 +388,12 @@ public class SanPhamServlet extends HttpServlet {
      * Xử lý xóa sản phẩm (chỉ xóa được nếu chưa xuất hiện trong báo giá).
      */
     private void xuLyXoaSanPham(HttpServletRequest req, HttpServletResponse resp, NguoiDung nguoiDung)
-            throws IOException {
-        if (!sanPhamService.coQuyenQuanLy(nguoiDung)) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Không có quyền thực hiện.");
+            throws ServletException, IOException {
+        if (!sanPhamService.coQuyenQuanLy(nguoiDung)
+                || (permissionService != null && !permissionService.coQuyen(nguoiDung, "DANH_MUC", MucQuyen.FULL))) {
+            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            req.setAttribute("errorMessage", "Không có quyền thực hiện xóa sản phẩm (yêu cầu quyền FULL).");
+            req.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(req, resp);
             return;
         }
 
@@ -374,9 +420,12 @@ public class SanPhamServlet extends HttpServlet {
      * Xử lý chuyển đổi trạng thái sản phẩm (Đang kinh doanh / Ngừng kinh doanh).
      */
     private void xuLyChuyenTrangThai(HttpServletRequest req, HttpServletResponse resp, NguoiDung nguoiDung)
-            throws IOException {
-        if (!sanPhamService.coQuyenQuanLy(nguoiDung)) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Không có quyền thực hiện.");
+            throws ServletException, IOException {
+        if (!sanPhamService.coQuyenQuanLy(nguoiDung)
+                || (permissionService != null && !permissionService.coQuyen(nguoiDung, "DANH_MUC", MucQuyen.WRITE))) {
+            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            req.setAttribute("errorMessage", "Không có quyền thực hiện thay đổi trạng thái sản phẩm.");
+            req.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(req, resp);
             return;
         }
 

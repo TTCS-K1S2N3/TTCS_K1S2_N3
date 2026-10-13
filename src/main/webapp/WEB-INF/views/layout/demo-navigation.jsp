@@ -16,13 +16,6 @@
         currentUser = new NguoiDung();
     }
 
-    String currentRoleParam = request.getParameter("vaiTro");
-    String simRole = (currentRoleParam != null && !currentRoleParam.isBlank())
-            ? currentRoleParam
-            : (!currentUser.getDanhSachVaiTroEnum().isEmpty()
-                ? currentUser.getDanhSachVaiTroEnum().iterator().next().name()
-                : "SALES_REP");
-
     ModuleHeThong[] allModules = ModuleHeThong.values();
     Arrays.sort(allModules, Comparator.comparingInt(ModuleHeThong::getThuTu));
     MenuService menuService = MenuService.getInstance();
@@ -99,50 +92,7 @@
                 </div>
             </div>
 
-            <!-- Role Switcher Panel for Testing All Roles -->
-            <div class="crm-role-switcher-card">
-                <div class="crm-card-header-flex">
-                    <div>
-                        <h2 class="crm-section-title">Chuyển đổi vai trò kiểm thử hệ thống</h2>
-                        <p class="crm-switcher-help">Chọn một vai trò để kiểm tra sự thay đổi tức thì của menu điều hướng và hồ sơ người dùng:</p>
-                    </div>
-                    <span class="crm-badge crm-badge-live">Trực tiếp</span>
-                </div>
-                <div class="crm-role-buttons">
-                    <a href="?vaiTro=SALES_REP" class="crm-btn-role <%= currentUser.coVaiTro("SALES_REP") && !currentUser.coVaiTro("TEAM_LEAD") ? "active" : "" %>">
-                        <span class="role-title">Nhân viên kinh doanh</span>
-                        <span class="role-code">Sales Rep</span>
-                    </a>
-                    <a href="?vaiTro=TEAM_LEAD" class="crm-btn-role <%= currentUser.coVaiTro("TEAM_LEAD") && !currentUser.coVaiTro("SALES_REP") ? "active" : "" %>">
-                        <span class="role-title">Trưởng nhóm kinh doanh</span>
-                        <span class="role-code">Team Lead</span>
-                    </a>
-                    <a href="?vaiTro=DIRECTOR" class="crm-btn-role <%= currentUser.coVaiTro("DIRECTOR") ? "active" : "" %>">
-                        <span class="role-title">Giám đốc kinh doanh</span>
-                        <span class="role-code">Director</span>
-                    </a>
-                    <a href="?vaiTro=MARKETING" class="crm-btn-role <%= currentUser.coVaiTro("MARKETING") ? "active" : "" %>">
-                        <span class="role-title">Nhân viên Marketing</span>
-                        <span class="role-code">Marketing</span>
-                    </a>
-                    <a href="?vaiTro=CUST_SUCCESS" class="crm-btn-role <%= currentUser.coVaiTro("CUST_SUCCESS") ? "active" : "" %>">
-                        <span class="role-title">Chăm sóc khách hàng</span>
-                        <span class="role-code">Cust. Success</span>
-                    </a>
-                    <a href="?vaiTro=ACCOUNTANT" class="crm-btn-role <%= currentUser.coVaiTro("ACCOUNTANT") ? "active" : "" %>">
-                        <span class="role-title">Kế toán</span>
-                        <span class="role-code">Accountant</span>
-                    </a>
-                    <a href="?vaiTro=ADMIN" class="crm-btn-role <%= currentUser.coVaiTro("ADMIN") ? "active" : "" %>">
-                        <span class="role-title">Quản trị hệ thống</span>
-                        <span class="role-code">Admin</span>
-                    </a>
-                    <a href="?vaiTro=MULTI" class="crm-btn-role <%= currentUser.coVaiTro("TEAM_LEAD") && currentUser.coVaiTro("SALES_REP") ? "active" : "" %>">
-                        <span class="role-title">Người dùng Đa vai trò</span>
-                        <span class="role-code">Team Lead + Sales</span>
-                    </a>
-                </div>
-            </div>
+
 
             <!-- Current User State Summary -->
             <div class="crm-summary-card">
@@ -286,7 +236,7 @@
                 <div class="crm-simulator-wrapper">
                     <div class="crm-simulator-phone" id="simulator-phone">
                         <div class="crm-simulator-notch"></div>
-                        <iframe src="<%= request.getContextPath() %>/dieu-huong?vaiTro=<%= simRole %>" class="crm-simulator-iframe" title="Mô phỏng màn hình di động 360px"></iframe>
+                        <iframe src="<%= request.getContextPath() %>/dieu-huong" class="crm-simulator-iframe" title="Mô phỏng màn hình di động 360px"></iframe>
                     </div>
                 </div>
             </div>

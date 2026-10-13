@@ -93,20 +93,20 @@ class NhatKyThayDoiServletTest {
     }
 
     @Test
-    @DisplayName("RBAC: DIRECTOR truy cập bị từ chối 403 Forbidden")
-    void testDirectorBi403() throws ServletException, IOException {
+    @DisplayName("RBAC: DIRECTOR có quyền READ được truy cập nhật ký")
+    void testDirectorDuocPhepXem() throws ServletException, IOException {
         NguoiDung director = new NguoiDung();
         director.setId(201L);
         director.setHoTen("Nguyễn Giám Đốc");
         director.themVaiTro(VaiTroEnum.DIRECTOR);
+        director.setTrangThai(NguoiDung.TRANG_THAI_HOAT_DONG);
 
         when(session.getAttribute("nguoiDung")).thenReturn(director);
 
         servlet.doGet(request, response);
 
-        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
-        verify(request).setAttribute(eq("errorMessage"), contains("Chỉ Quản trị hệ thống (Admin)"));
-        verify(request).getRequestDispatcher("/WEB-INF/views/common/403.jsp");
+        verify(response, never()).setStatus(HttpServletResponse.SC_FORBIDDEN);
+        verify(request).getRequestDispatcher("/WEB-INF/views/nhat-ky-thay-doi/danh-sach.jsp");
         verify(dispatcher).forward(request, response);
     }
 

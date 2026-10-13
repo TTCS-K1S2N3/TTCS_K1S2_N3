@@ -84,14 +84,14 @@ class DanhMucBanHangServletTest {
     }
 
     @Test
-    @DisplayName("Quyền truy cập: Vai trò SALES_REP không có quyền truy cập bị 403 Forbidden")
-    void testDoGet_SalesUser_BiCam403() throws Exception {
+    @DisplayName("Quyền truy cập: Người dùng vai trò SALES_REP có quyền READ được truy cập GET")
+    void testDoGet_SalesUser_DuocPhepXem() throws Exception {
         when(session.getAttribute("nguoiDung")).thenReturn(salesUser);
 
         servlet.doGet(request, response);
 
-        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
-        verify(request).getRequestDispatcher("/WEB-INF/views/common/403.jsp");
+        verify(response, never()).setStatus(HttpServletResponse.SC_FORBIDDEN);
+        verify(request).getRequestDispatcher("/WEB-INF/views/danh-muc/quan-ly-danh-muc.jsp");
         verify(dispatcher).forward(request, response);
     }
 

@@ -28,6 +28,7 @@ import vn.nhom10.crm.model.HoatDong;
 import vn.nhom10.crm.model.KhachHang;
 import vn.nhom10.crm.model.KhuVucDiaLy;
 import vn.nhom10.crm.model.LoaiDanhMuc;
+import vn.nhom10.crm.model.MucQuyen;
 import vn.nhom10.crm.model.MucUuTienYeuCauEnum;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.NguoiLienHe;
@@ -44,6 +45,7 @@ import vn.nhom10.crm.service.GopKhachHangService;
 import vn.nhom10.crm.service.KhachHang360Service;
 import vn.nhom10.crm.service.KhachHangService;
 import vn.nhom10.crm.service.NguoiLienHeService;
+import vn.nhom10.crm.service.PermissionService;
 import vn.nhom10.crm.service.PhanQuyenDuLieuService;
 import vn.nhom10.crm.service.YeuCauHoTroService;
 import vn.nhom10.crm.util.LoiKhongTimThayException;
@@ -78,6 +80,7 @@ public class KhachHangServlet extends HttpServlet {
     private final GopKhachHangService gopKhachHangService;
     private final BoLocKhachHangService boLocService;
     private final KhuVucDiaLyDAO khuVucDAO;
+    private final PermissionService permissionService;
 
     public KhachHangServlet() {
         this(new PhanQuyenDuLieuService(), new CongTyMeConService(), new ChamSocKhachHangService(),
@@ -97,6 +100,11 @@ public class KhachHangServlet extends HttpServlet {
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, KhachHangService khachHangService) {
         this(phanQuyenService, new CongTyMeConService(), new ChamSocKhachHangService(),
                 new KhachHang360Service(), khachHangService, new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService(), new GopKhachHangService(), new BoLocKhachHangService());
+    }
+
+    public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, KhachHangService khachHangService, PermissionService permissionService) {
+        this(phanQuyenService, new CongTyMeConService(), new ChamSocKhachHangService(),
+                new KhachHang360Service(), khachHangService, new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService(), new GopKhachHangService(), new BoLocKhachHangService(), permissionService);
     }
 
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, KhachHangService khachHangService, BoLocKhachHangService boLocService) {
@@ -185,6 +193,20 @@ public class KhachHangServlet extends HttpServlet {
                             NguoiLienHeService nguoiLienHeService,
                             GopKhachHangService gopKhachHangService,
                             BoLocKhachHangService boLocService) {
+        this(phanQuyenService, congTyMeConService, chamSocService, khachHang360Service, khachHangService, danhMucBanHangService, nguoiDungDAO, nguoiLienHeService, gopKhachHangService, boLocService, PermissionService.getInstance());
+    }
+
+    public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService,
+                            CongTyMeConService congTyMeConService,
+                            ChamSocKhachHangService chamSocService,
+                            KhachHang360Service khachHang360Service,
+                            KhachHangService khachHangService,
+                            DanhMucBanHangService danhMucBanHangService,
+                            NguoiDungDAO nguoiDungDAO,
+                            NguoiLienHeService nguoiLienHeService,
+                            GopKhachHangService gopKhachHangService,
+                            BoLocKhachHangService boLocService,
+                            PermissionService permissionService) {
         this.phanQuyenService = (phanQuyenService != null) ? phanQuyenService : new PhanQuyenDuLieuService();
         this.congTyMeConService = (congTyMeConService != null) ? congTyMeConService : new CongTyMeConService();
         this.chamSocService = (chamSocService != null) ? chamSocService : new ChamSocKhachHangService();
@@ -196,6 +218,7 @@ public class KhachHangServlet extends HttpServlet {
         this.gopKhachHangService = (gopKhachHangService != null) ? gopKhachHangService : new GopKhachHangService();
         this.boLocService = (boLocService != null) ? boLocService : new BoLocKhachHangService();
         this.khuVucDAO = new KhuVucDiaLyDAO();
+        this.permissionService = (permissionService != null) ? permissionService : PermissionService.getInstance();
     }
 
 
@@ -213,6 +236,23 @@ public class KhachHangServlet extends HttpServlet {
 
         NguoiDung user = (NguoiDung) session.getAttribute("nguoiDung");
         NguoiDungDTO userDTO = NguoiDungDTO.tuNguoiDung(user);
+
+        // Phân quyền runtime: Kiểm tra quyền READ trên module KHACH_HANG (Permission Matrix)
+        if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.READ)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            request.setAttribute("currentUser", userDTO);
+            request.setAttribute("thongBaoLoi", "Bạn không có quyền truy cập module Khách hàng.");
+            request.setAttribute("errorMessage", "Bạn không có quyền truy cập module Khách hàng.");
+            request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+            return;
+        }
+
+        boolean coQuyenThemKhach = permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE);
+        boolean coQuyenSuaKhach = permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE);
+        boolean coQuyenXoaKhach = permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.FULL);
+        request.setAttribute("coQuyenThemKhach", coQuyenThemKhach);
+        request.setAttribute("coQuyenSuaKhach", coQuyenSuaKhach);
+        request.setAttribute("coQuyenXoaKhach", coQuyenXoaKhach);
 
         String servletPath = request.getServletPath();
         String action = request.getParameter("action");
@@ -364,6 +404,13 @@ public class KhachHangServlet extends HttpServlet {
             } catch (Exception e) {
                 LOGGER.log(Level.FINE, "Lỗi lấy ds khách chuyển: " + e.getMessage());
             }
+
+            // Tính toán quyền sửa/xóa đối với khách hàng này (kết hợp PermissionService + Data Scope)
+            boolean hopLeSuaScope = banGhi == null || (phanQuyenService.kiemTraQuyenSua(userDTO, banGhi) != null && phanQuyenService.kiemTraQuyenSua(userDTO, banGhi).isCoQuyen());
+            coQuyenSuaKhach = permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE) && hopLeSuaScope;
+            coQuyenXoaKhach = permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.FULL) && hopLeSuaScope;
+            request.setAttribute("coQuyenSuaKhach", coQuyenSuaKhach);
+            request.setAttribute("coQuyenXoaKhach", coQuyenXoaKhach);
 
             // Nếu người dùng yêu cầu trang chi tiết trực tiếp, forward về chi-tiet.jsp
             String viewParam = request.getParameter("view");
@@ -598,6 +645,16 @@ public class KhachHangServlet extends HttpServlet {
         NguoiDung user = (NguoiDung) session.getAttribute("nguoiDung");
         NguoiDungDTO userDTO = NguoiDungDTO.tuNguoiDung(user);
 
+        // Phân quyền runtime: Kiểm tra quyền tối thiểu READ trên module KHACH_HANG
+        if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.READ)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            request.setAttribute("currentUser", userDTO);
+            request.setAttribute("thongBaoLoi", "Bạn không có quyền truy cập module Khách hàng.");
+            request.setAttribute("errorMessage", "Bạn không có quyền truy cập module Khách hàng.");
+            request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+            return;
+        }
+
         String action = request.getParameter("action");
 
         // Thao tác AC3 Story S3-07: Lưu bộ lọc đã lưu
@@ -620,26 +677,97 @@ public class KhachHangServlet extends HttpServlet {
 
         String paramId = request.getParameter("id");
 
+        // 0. XỬ LÝ THAO TÁC XÓA KHÁCH HÀNG (Yêu cầu quyền FULL)
+        if ("xoa".equals(action) || "delete".equals(action)) {
+            if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.FULL)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                request.setAttribute("currentUser", userDTO);
+                request.setAttribute("thongBaoLoi", "Bạn không có quyền xóa khách hàng (yêu cầu quyền FULL).");
+                request.setAttribute("errorMessage", "Bạn không có quyền xóa khách hàng (yêu cầu quyền FULL).");
+                if ("application/json".equals(request.getHeader("Accept")) || "XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"success\":false,\"message\":\"Từ chối thao tác: Yêu cầu quyền FULL.\"}");
+                    return;
+                }
+                request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+                return;
+            }
+            Long idXoa = parseLong(paramId != null ? paramId : request.getParameter("khachHangId"));
+            if (idXoa != null) {
+                boolean daXoa = khachHangService.xoaKhachHang(idXoa, user);
+                if (daXoa) {
+                    request.setAttribute("thongBaoThanhCong", "Xóa khách hàng thành công.");
+                } else {
+                    request.setAttribute("thongBaoLoi", "Không thể xóa khách hàng.");
+                }
+            }
+            if ("application/json".equals(request.getHeader("Accept")) || "XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":true,\"message\":\"Xóa khách hàng thành công.\"}");
+                return;
+            }
+            doGet(request, response);
+            return;
+        }
+
         // 1. STORY S3-05: Gắn công ty con
         if ("gan-cong-ty-con".equals(action)) {
+            if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                request.setAttribute("currentUser", userDTO);
+                request.setAttribute("thongBaoLoi", "Bạn không có quyền thao tác trên khách hàng (yêu cầu quyền WRITE trở lên).");
+                request.setAttribute("errorMessage", "Bạn không có quyền thao tác trên khách hàng (yêu cầu quyền WRITE trở lên).");
+                request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+                return;
+            }
             xuLyGanCongTyCon(request, response, userDTO);
             return;
         }
 
         // 2. STORY S3-05: Gỡ công ty con
         if ("go-cong-ty-con".equals(action)) {
+            if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                request.setAttribute("currentUser", userDTO);
+                request.setAttribute("thongBaoLoi", "Bạn không có quyền thao tác trên khách hàng (yêu cầu quyền WRITE trở lên).");
+                request.setAttribute("errorMessage", "Bạn không có quyền thao tác trên khách hàng (yêu cầu quyền WRITE trở lên).");
+                request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+                return;
+            }
             xuLyGoCongTyCon(request, response, userDTO);
             return;
         }
 
         // 3. STORY S3-05: Cập nhật công ty mẹ
         if ("cap-nhat-cong-ty-me".equals(action)) {
+            if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                request.setAttribute("currentUser", userDTO);
+                request.setAttribute("thongBaoLoi", "Bạn không có quyền thao tác trên khách hàng (yêu cầu quyền WRITE trở lên).");
+                request.setAttribute("errorMessage", "Bạn không có quyền thao tác trên khách hàng (yêu cầu quyền WRITE trở lên).");
+                request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+                return;
+            }
             xuLyCapNhatCongTyMe(request, response, userDTO);
             return;
         }
 
         // 4. STORY S3-09: Đánh dấu đã liên hệ chăm sóc khách hàng
         if ("danhDauLienHe".equals(action)) {
+            if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"));
+                if (isAjax) {
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"success\":false,\"message\":\"Bạn không có quyền thao tác trên khách hàng (yêu cầu quyền WRITE trở lên).\"}");
+                } else {
+                    request.setAttribute("currentUser", userDTO);
+                    request.setAttribute("thongBaoLoi", "Bạn không có quyền thao tác trên khách hàng (yêu cầu quyền WRITE trở lên).");
+                    request.setAttribute("errorMessage", "Bạn không có quyền thao tác trên khách hàng (yêu cầu quyền WRITE trở lên).");
+                    request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+                }
+                return;
+            }
             xuLyDanhDauLienHe(request, response, userDTO);
             return;
         }
@@ -647,6 +775,11 @@ public class KhachHangServlet extends HttpServlet {
         // 5. STORY S3-03: Ghi nhận hoạt động nhanh trên trang 360 (Bảo vệ bằng Data Scope)
         if ("them-hoat-dong".equalsIgnoreCase(action)) {
             response.setContentType("application/json;charset=UTF-8");
+            if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("{\"success\":false,\"message\":\"Từ chối thao tác: Yêu cầu quyền WRITE trở lên.\"}");
+                return;
+            }
             String rawKhId = request.getParameter("khachHangId");
             if (rawKhId == null || rawKhId.isBlank()) {
                 rawKhId = request.getParameter("idKhachHang");
@@ -711,6 +844,19 @@ public class KhachHangServlet extends HttpServlet {
 
         // 6. XỬ LÝ THAO TÁC SỬA KHÁCH HÀNG (STORY S3-01 & S1-05)
         if ("sua".equals(action) || (paramId != null && !"danhDauLienHe".equals(action))) {
+            if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                request.setAttribute("currentUser", userDTO);
+                request.setAttribute("thongBaoLoi", "Bạn không có quyền chỉnh sửa khách hàng (yêu cầu quyền WRITE trở lên).");
+                request.setAttribute("errorMessage", "Bạn không có quyền chỉnh sửa khách hàng (yêu cầu quyền WRITE trở lên).");
+                if ("application/json".equals(request.getHeader("Accept")) || "XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"success\":false,\"message\":\"Từ chối thao tác: Yêu cầu quyền WRITE trở lên.\"}");
+                    return;
+                }
+                request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+                return;
+            }
             Long id = parseLong(paramId);
 
             BanGhiNghiepVuDTO banGhi = phanQuyenService.timBanGhiTheoId(id, "KHACH_HANG");
@@ -793,6 +939,19 @@ public class KhachHangServlet extends HttpServlet {
             request.setAttribute("thongBaoThanhCong", "Cập nhật dữ liệu khách hàng thành công.");
         } else if ("gop".equals(action)) {
             // Story S3-04: Cảnh báo và gộp khách hàng trùng lặp (AC3, AC4)
+            if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                request.setAttribute("currentUser", userDTO);
+                request.setAttribute("thongBaoLoi", "Bạn không có quyền gộp khách hàng (yêu cầu quyền WRITE trở lên).");
+                request.setAttribute("errorMessage", "Bạn không có quyền gộp khách hàng (yêu cầu quyền WRITE trở lên).");
+                if ("application/json".equals(request.getHeader("Accept")) || "XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"success\":false,\"message\":\"Từ chối thao tác: Yêu cầu quyền WRITE trở lên.\"}");
+                    return;
+                }
+                request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+                return;
+            }
             boolean laTruongNhomTroLen = gopKhachHangService.laTruongNhomTroLen(user);
             if (!laTruongNhomTroLen) {
                 // CHẶN GỘP NGOÀI PHẠM VỊ: Chỉ Trưởng nhóm trở lên được thực hiện gộp (AC4)
@@ -847,6 +1006,19 @@ public class KhachHangServlet extends HttpServlet {
             request.setAttribute("tabHienTai", "trung");
         } else if ("them".equals(action) || "create".equals(action) || paramId == null) {
             // 7. XỬ LÝ THAO TÁC THÊM MỚI KHÁCH HÀNG (STORY S3-01 & S3-04)
+            if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                request.setAttribute("currentUser", userDTO);
+                request.setAttribute("thongBaoLoi", "Bạn không có quyền thêm mới khách hàng (yêu cầu quyền WRITE trở lên).");
+                request.setAttribute("errorMessage", "Bạn không có quyền thêm mới khách hàng (yêu cầu quyền WRITE trở lên).");
+                if ("application/json".equals(request.getHeader("Accept")) || "XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"success\":false,\"message\":\"Từ chối thao tác: Yêu cầu quyền WRITE trở lên.\"}");
+                    return;
+                }
+                request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+                return;
+            }
             String tenCongTy = request.getParameter("tenCongTy");
             if (tenCongTy == null || tenCongTy.trim().isEmpty()) {
                 tenCongTy = request.getParameter("tieuDe");
@@ -1195,12 +1367,20 @@ public class KhachHangServlet extends HttpServlet {
 
     private void chuyenHuongChiTiet(HttpServletRequest request, HttpServletResponse response, Long id, NguoiDungDTO userDTO)
             throws ServletException, IOException {
+        BanGhiNghiepVuDTO banGhi = null;
         if (id != null) {
-            BanGhiNghiepVuDTO banGhi = phanQuyenService.timBanGhiTheoId(id, "KHACH_HANG");
+            banGhi = phanQuyenService.timBanGhiTheoId(id, "KHACH_HANG");
             request.setAttribute("banGhi", banGhi);
             request.setAttribute("banGhiChiTiet", banGhi);
             napDuLieuChiTietKhachHang(request, id, banGhi);
         }
+        HttpSession session = request.getSession(false);
+        NguoiDung u = session != null ? (NguoiDung) session.getAttribute("nguoiDung") : null;
+        boolean hopLeSuaScope = banGhi == null || (phanQuyenService.kiemTraQuyenSua(userDTO, banGhi) != null && phanQuyenService.kiemTraQuyenSua(userDTO, banGhi).isCoQuyen());
+        boolean coQuyenSuaKhach = u != null && permissionService.coQuyen(u, "KHACH_HANG", MucQuyen.WRITE) && hopLeSuaScope;
+        boolean coQuyenXoaKhach = u != null && permissionService.coQuyen(u, "KHACH_HANG", MucQuyen.FULL) && hopLeSuaScope;
+        request.setAttribute("coQuyenSuaKhach", coQuyenSuaKhach);
+        request.setAttribute("coQuyenXoaKhach", coQuyenXoaKhach);
         request.setAttribute("currentUser", userDTO);
         request.getRequestDispatcher("/WEB-INF/views/khach-hang/chi-tiet.jsp").forward(request, response);
     }

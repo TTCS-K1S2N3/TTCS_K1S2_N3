@@ -11,8 +11,10 @@ import jakarta.servlet.http.Part;
 import vn.nhom10.crm.dto.BaoCaoNhapKhachHangExcelDTO;
 import vn.nhom10.crm.dto.DongExcelKhachHangDTO;
 import vn.nhom10.crm.dto.NguoiDungDTO;
+import vn.nhom10.crm.model.MucQuyen;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.service.KhachHangImportService;
+import vn.nhom10.crm.service.PermissionService;
 import vn.nhom10.crm.service.PhanQuyenDuLieuService;
 import vn.nhom10.crm.util.ExcelKhachHangUtil;
 
@@ -47,25 +49,28 @@ public class KhachHangImportServlet extends HttpServlet {
 
     private final PhanQuyenDuLieuService phanQuyenService;
     private final KhachHangImportService importService;
+    private final PermissionService permissionService;
 
     public KhachHangImportServlet() {
-        this.phanQuyenService = new PhanQuyenDuLieuService();
-        this.importService = new KhachHangImportService();
+        this(new PhanQuyenDuLieuService(), new KhachHangImportService(), new PermissionService());
     }
 
     public KhachHangImportServlet(PhanQuyenDuLieuService phanQuyenService) {
-        this.phanQuyenService = phanQuyenService != null ? phanQuyenService : new PhanQuyenDuLieuService();
-        this.importService = new KhachHangImportService();
+        this(phanQuyenService, new KhachHangImportService(), new PermissionService());
     }
 
     public KhachHangImportServlet(KhachHangImportService importService) {
-        this.phanQuyenService = new PhanQuyenDuLieuService();
-        this.importService = importService != null ? importService : new KhachHangImportService();
+        this(new PhanQuyenDuLieuService(), importService, new PermissionService());
     }
 
     public KhachHangImportServlet(PhanQuyenDuLieuService phanQuyenService, KhachHangImportService importService) {
+        this(phanQuyenService, importService, new PermissionService());
+    }
+
+    public KhachHangImportServlet(PhanQuyenDuLieuService phanQuyenService, KhachHangImportService importService, PermissionService permissionService) {
         this.phanQuyenService = phanQuyenService != null ? phanQuyenService : new PhanQuyenDuLieuService();
         this.importService = importService != null ? importService : new KhachHangImportService();
+        this.permissionService = permissionService != null ? permissionService : new PermissionService();
     }
 
     @Override
@@ -89,11 +94,25 @@ public class KhachHangImportServlet extends HttpServlet {
 
         // AC 1: Tải tệp mẫu Excel
         if ("/khach-hang/tai-tep-mau".equals(path) || "tai-mau".equalsIgnoreCase(action)) {
+            if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.READ)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                request.setAttribute("errorMessage", "Bạn không có quyền tải tệp mẫu khách hàng.");
+                request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+                return;
+            }
             xuLyTaiTepMau(response);
             return;
         }
 
-        // Mặc định hiển thị giao diện nhập Excel cho khách hàng
+        // Mặc định hiển thị giao diện nhập Excel cho khách hàng - yêu cầu WRITE
+        if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            request.setAttribute("currentUser", userDTO);
+            request.setAttribute("errorMessage", "Bạn không có quyền nhập khách hàng (yêu cầu quyền WRITE trở lên).");
+            request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+            return;
+        }
+
         request.setAttribute("currentUser", userDTO);
         request.setAttribute("nguoiDung", user);
         request.getRequestDispatcher("/WEB-INF/views/khach-hang/import-excel.jsp").forward(request, response);
@@ -114,6 +133,15 @@ public class KhachHangImportServlet extends HttpServlet {
 
         NguoiDung user = (NguoiDung) session.getAttribute("nguoiDung");
         NguoiDungDTO userDTO = NguoiDungDTO.tuNguoiDung(user);
+
+        if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            request.setAttribute("currentUser", userDTO);
+            request.setAttribute("errorMessage", "Bạn không có quyền nhập khách hàng (yêu cầu quyền WRITE trở lên).");
+            request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+            return;
+        }
+
         request.setAttribute("currentUser", userDTO);
         request.setAttribute("nguoiDung", user);
 

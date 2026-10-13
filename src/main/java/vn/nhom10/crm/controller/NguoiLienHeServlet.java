@@ -7,10 +7,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import vn.nhom10.crm.model.LichSuLienHeCongTy;
+import vn.nhom10.crm.model.MucQuyen;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.NguoiLienHe;
 import vn.nhom10.crm.model.VaiTroQuyetDinhEnum;
 import vn.nhom10.crm.service.NguoiLienHeService;
+import vn.nhom10.crm.service.PermissionService;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -26,13 +28,19 @@ import java.util.Optional;
 public class NguoiLienHeServlet extends HttpServlet {
 
     private final NguoiLienHeService nguoiLienHeService;
+    private final PermissionService permissionService;
 
     public NguoiLienHeServlet() {
-        this(new NguoiLienHeService());
+        this(new NguoiLienHeService(), new PermissionService());
     }
 
     public NguoiLienHeServlet(NguoiLienHeService nguoiLienHeService) {
+        this(nguoiLienHeService, new PermissionService());
+    }
+
+    public NguoiLienHeServlet(NguoiLienHeService nguoiLienHeService, PermissionService permissionService) {
         this.nguoiLienHeService = nguoiLienHeService != null ? nguoiLienHeService : new NguoiLienHeService();
+        this.permissionService = permissionService != null ? permissionService : new PermissionService();
     }
 
     @Override
@@ -43,6 +51,11 @@ public class NguoiLienHeServlet extends HttpServlet {
 
         NguoiDung user = xacThucNguoiDung(request, response);
         if (user == null) return;
+
+        if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.READ)) {
+            phanHoiLoi(request, response, HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền xem thông tin người liên hệ.");
+            return;
+        }
 
         String action = request.getParameter("action");
         if (action == null) action = "list";
@@ -82,6 +95,18 @@ public class NguoiLienHeServlet extends HttpServlet {
         if (action == null || action.trim().isEmpty()) {
             phanHoiLoi(request, response, HttpServletResponse.SC_BAD_REQUEST, "Thiếu tham số action.");
             return;
+        }
+
+        if ("delete".equals(action)) {
+            if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.FULL)) {
+                phanHoiLoi(request, response, HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền xóa người liên hệ (yêu cầu quyền FULL).");
+                return;
+            }
+        } else {
+            if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE)) {
+                phanHoiLoi(request, response, HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền chỉnh sửa người liên hệ (yêu cầu quyền WRITE trở lên).");
+                return;
+            }
         }
 
         try {

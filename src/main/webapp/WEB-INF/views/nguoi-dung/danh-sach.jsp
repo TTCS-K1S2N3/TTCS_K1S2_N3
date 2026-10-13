@@ -51,6 +51,12 @@
                 <span class="material-symbols-outlined icon-sm" aria-hidden="true">account_tree</span>
                 Cơ cấu tổ chức
             </a>
+            <a id="btn-phan-quyen-vai-tro"
+               href="${pageContext.request.contextPath}/nguoi-dung/phan-quyen-vai-tro"
+               class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined icon-sm" aria-hidden="true">admin_panel_settings</span>
+                Vai trò & Phân quyền
+            </a>
             <a id="btn-nhat-ky-thay-doi"
                href="${pageContext.request.contextPath}/nhat-ky-thay-doi"
                class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;">

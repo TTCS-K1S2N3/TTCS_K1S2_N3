@@ -72,8 +72,8 @@
             <p class="error-desc">
                 ${requestScope.errorMessage != null ? requestScope.errorMessage : "Chức năng này không thuộc phạm vi quyền hạn của vai trò hiện tại của bạn trong hệ thống CRM."}
             </p>
-            <a href="${pageContext.request.contextPath}/dieu-huong" class="btn-back">
-                <span class="material-symbols-outlined icon-xs" style="margin-right: 6px;" aria-hidden="true">arrow_back</span> Quay lại trang điều hướng
+            <a href="${pageContext.request.contextPath}/trang-chu" class="btn-back">
+                <span class="material-symbols-outlined icon-xs" style="margin-right: 6px;" aria-hidden="true">arrow_back</span> Về trang chủ
             </a>
         </div>
     </div>

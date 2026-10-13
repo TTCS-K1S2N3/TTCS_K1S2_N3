@@ -1171,4 +1171,22 @@ public class KhachHangDAO {
         }
         return w;
     }
+
+    /**
+     * Xóa hồ sơ khách hàng theo ID. Yêu cầu quyền FULL trên module KHACH_HANG.
+     */
+    public boolean xoaKhachHang(Long id) {
+        if (id == null) {
+            return false;
+        }
+        String sql = "DELETE FROM khach_hang WHERE id = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, "Lỗi xóa khách hàng ID " + id + ": " + e.getMessage());
+            return false;
+        }
+    }
 }

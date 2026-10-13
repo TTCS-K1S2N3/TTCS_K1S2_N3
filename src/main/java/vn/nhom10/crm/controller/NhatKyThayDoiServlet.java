@@ -294,9 +294,11 @@ public class NhatKyThayDoiServlet extends HttpServlet {
         Object userObj = session.getAttribute("nguoiDung");
         if (userObj instanceof NguoiDung) {
             NguoiDung nd = (NguoiDung) userObj;
-            if (!nd.coVaiTro(VaiTroEnum.ADMIN)) {
+            boolean coQuyen = nd.coVaiTro(VaiTroEnum.ADMIN)
+                    || vn.nhom10.crm.service.PermissionService.getInstance().coQuyen(nd, "NGUOI_DUNG_NHAT_KY", vn.nhom10.crm.model.MucQuyen.READ);
+            if (!coQuyen) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                request.setAttribute("errorMessage", "Chỉ Quản trị hệ thống (Admin) mới có quyền xem nhật ký thay đổi dữ liệu nhạy cảm.");
+                request.setAttribute("errorMessage", "Chỉ Quản trị hệ thống (Admin) hoặc Giám đốc (Director) mới có quyền xem nhật ký thay đổi dữ liệu nhạy cảm.");
                 request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
                 return false;
             }
