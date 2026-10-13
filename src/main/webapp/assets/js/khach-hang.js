@@ -369,8 +369,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const textNgayCuoi = row.querySelector('.cell-ngay-tt-cuoi');
         const badgeTrangThai = row.querySelector('.cell-badge-trang-thai');
         const btnMark = row.querySelector('.btn-action-mark');
+        const statusDot = row.querySelector('.cell-status-dot-cs');
 
         if (daLienHe) {
+            if (statusDot) {
+                statusDot.className = 'status-indicator-dot dot-teal cell-status-dot-cs';
+                statusDot.title = 'Đã liên hệ hôm nay';
+            }
             if (overdueBadge) {
                 overdueBadge.className = 'overdue-badge badge-green cell-overdue-badge';
             }
@@ -381,8 +386,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 textNgayCuoi.textContent = 'Gần nhất: Vừa xong';
             }
             if (badgeTrangThai) {
-                badgeTrangThai.className = 'badge badge-success cell-badge-trang-thai';
-                badgeTrangThai.textContent = 'Đã chăm sóc';
+                badgeTrangThai.className = 'tbl-badge-status cell-badge-trang-thai status-khach-hang';
+                badgeTrangThai.textContent = 'Đã liên hệ';
             }
             if (btnMark) {
                 btnMark.className = 'btn-contact-mark is-contacted btn-action-mark';
@@ -391,6 +396,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         } else {
             const isRed = soNgay > 60;
+            if (statusDot) {
+                statusDot.className = 'status-indicator-dot ' + (isRed ? 'dot-red' : 'dot-amber') + ' cell-status-dot-cs';
+                statusDot.title = isRed ? 'Quá hạn > 60 ngày' : 'Cần liên hệ';
+            }
             if (overdueBadge) {
                 overdueBadge.className = `overdue-badge ${isRed ? 'badge-red' : 'badge-amber'} cell-overdue-badge`;
             }
@@ -404,8 +413,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 textNgayCuoi.textContent = `Lần cuối: ${dStr}`;
             }
             if (badgeTrangThai) {
-                badgeTrangThai.className = `badge ${isRed ? 'badge-danger' : 'badge-warning'} cell-badge-trang-thai`;
-                badgeTrangThai.textContent = isRed ? 'Quá hạn cao' : 'Cần liên hệ';
+                badgeTrangThai.className = 'tbl-badge-status cell-badge-trang-thai ' + (isRed ? 'status-ngung-hop-tac' : 'status-dang-giao-dich');
+                badgeTrangThai.textContent = isRed ? 'Quá hạn' : 'Cần liên hệ';
             }
             if (btnMark) {
                 btnMark.className = 'btn-contact-mark btn-action-mark';
@@ -2040,6 +2049,161 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         }
+    }
+
+    // =========================================================================
+    // Quản lý Bộ lọc nâng cao (Mở/Đóng đồng bộ, mặc định đóng)
+    // =========================================================================
+    const btnToggleAdvancedFilter = document.getElementById('btnToggleAdvancedFilter');
+    const advancedFilterPanel = document.getElementById('advancedFilterPanel');
+    const iconFilterArrow = document.getElementById('iconFilterArrow');
+    const btnDongFilterPanel = document.getElementById('btnDongFilterPanel');
+    const btnDongFilterPanelBottom = document.getElementById('btnDongFilterPanelBottom');
+
+    function toggleAdvancedFilter(forceOpen) {
+        if (!advancedFilterPanel) return;
+        const isOpen = advancedFilterPanel.classList.contains('is-open') ||
+            (advancedFilterPanel.style.display !== 'none' && advancedFilterPanel.style.display !== '');
+        const willOpen = typeof forceOpen === 'boolean' ? forceOpen : !isOpen;
+
+        if (willOpen) {
+            advancedFilterPanel.classList.add('is-open');
+            advancedFilterPanel.style.display = 'block';
+            advancedFilterPanel.setAttribute('aria-hidden', 'false');
+            if (btnToggleAdvancedFilter) {
+                btnToggleAdvancedFilter.setAttribute('aria-expanded', 'true');
+                btnToggleAdvancedFilter.classList.add('is-active');
+            }
+            if (iconFilterArrow) {
+                iconFilterArrow.textContent = 'expand_less';
+            }
+            // Tự động focus vào ô đầu tiên trong khung lọc
+            const firstInput = advancedFilterPanel.querySelector('input:not([type="hidden"]), select');
+            if (firstInput) {
+                setTimeout(function () { firstInput.focus(); }, 120);
+            }
+        } else {
+            advancedFilterPanel.classList.remove('is-open');
+            advancedFilterPanel.style.display = 'none';
+            advancedFilterPanel.setAttribute('aria-hidden', 'true');
+            if (btnToggleAdvancedFilter) {
+                btnToggleAdvancedFilter.setAttribute('aria-expanded', 'false');
+                const badge = document.getElementById('filterCountBadge');
+                if (!badge) {
+                    btnToggleAdvancedFilter.classList.remove('is-active');
+                }
+            }
+            if (iconFilterArrow) {
+                iconFilterArrow.textContent = 'expand_more';
+            }
+        }
+    }
+
+    window.toggleAdvancedFilter = toggleAdvancedFilter;
+
+    if (btnToggleAdvancedFilter) {
+        btnToggleAdvancedFilter.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleAdvancedFilter();
+        });
+    }
+
+    if (btnDongFilterPanel) {
+        btnDongFilterPanel.addEventListener('click', function (e) {
+            e.preventDefault();
+            toggleAdvancedFilter(false);
+            if (btnToggleAdvancedFilter) btnToggleAdvancedFilter.focus();
+        });
+    }
+
+    if (btnDongFilterPanelBottom) {
+        btnDongFilterPanelBottom.addEventListener('click', function (e) {
+            e.preventDefault();
+            toggleAdvancedFilter(false);
+            if (btnToggleAdvancedFilter) btnToggleAdvancedFilter.focus();
+        });
+    }
+
+    // =========================================================================
+    // Quản lý Checkbox chọn hàng cho hai bảng (Tất cả khách hàng & Chăm sóc định kỳ)
+    // =========================================================================
+    // 1. Bảng Tất cả khách hàng
+    const checkAllKhachHang = document.getElementById('checkAllKhachHang');
+    function capNhatCheckAllKhachHang() {
+        if (!checkAllKhachHang) return;
+        const rowCheckboxes = document.querySelectorAll('#tableKhachHang tbody .row-select-cb');
+        if (rowCheckboxes.length === 0) {
+            checkAllKhachHang.checked = false;
+            checkAllKhachHang.indeterminate = false;
+            return;
+        }
+        let total = 0;
+        let checkedCount = 0;
+        rowCheckboxes.forEach(function (cb) {
+            total++;
+            if (cb.checked) checkedCount++;
+        });
+        checkAllKhachHang.checked = checkedCount === total && total > 0;
+        checkAllKhachHang.indeterminate = checkedCount > 0 && checkedCount < total;
+    }
+
+    if (checkAllKhachHang) {
+        checkAllKhachHang.addEventListener('change', function () {
+            const isChecked = checkAllKhachHang.checked;
+            const rowCheckboxes = document.querySelectorAll('#tableKhachHang tbody .row-select-cb');
+            rowCheckboxes.forEach(function (cb) {
+                cb.checked = isChecked;
+            });
+        });
+    }
+
+    const tableKhachHang = document.getElementById('tableKhachHang');
+    if (tableKhachHang) {
+        tableKhachHang.addEventListener('change', function (e) {
+            if (e.target && e.target.classList.contains('row-select-cb')) {
+                capNhatCheckAllKhachHang();
+            }
+        });
+    }
+
+    // 2. Bảng Chăm sóc định kỳ
+    const checkAllChamSoc = document.getElementById('checkAllChamSoc');
+    function capNhatCheckAllChamSoc() {
+        if (!checkAllChamSoc) return;
+        const rowCheckboxes = document.querySelectorAll('#tableChamSocDinhKy tbody .row-select-cb-cs');
+        if (rowCheckboxes.length === 0) {
+            checkAllChamSoc.checked = false;
+            checkAllChamSoc.indeterminate = false;
+            return;
+        }
+        let total = 0;
+        let checkedCount = 0;
+        rowCheckboxes.forEach(function (cb) {
+            total++;
+            if (cb.checked) checkedCount++;
+        });
+        checkAllChamSoc.checked = checkedCount === total && total > 0;
+        checkAllChamSoc.indeterminate = checkedCount > 0 && checkedCount < total;
+    }
+
+    if (checkAllChamSoc) {
+        checkAllChamSoc.addEventListener('change', function () {
+            const isChecked = checkAllChamSoc.checked;
+            const rowCheckboxes = document.querySelectorAll('#tableChamSocDinhKy tbody .row-select-cb-cs');
+            rowCheckboxes.forEach(function (cb) {
+                cb.checked = isChecked;
+            });
+        });
+    }
+
+    const tableChamSocDinhKy = document.getElementById('tableChamSocDinhKy');
+    if (tableChamSocDinhKy) {
+        tableChamSocDinhKy.addEventListener('change', function (e) {
+            if (e.target && e.target.classList.contains('row-select-cb-cs')) {
+                capNhatCheckAllChamSoc();
+            }
+        });
     }
 
 });

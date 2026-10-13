@@ -260,348 +260,339 @@
                     <span>Xem & Gộp Trùng Ngay</span>
                 </button>
             </div>
-            <!-- Story S1-02: Khu vực soạn thảo ghi chú cuộc gặp (Duy trì phiên & Tự động lưu) -->
-            <div class="card" style="margin-bottom: 24px;">
-                <div class="card-title">
-                    <div class="card-title-left">
-                        <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary);">edit_note</span>
-                        <span>Ghi chú cuộc gặp khách hàng (Duy trì phiên & Tự động lưu)</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        <div class="session-indicator" id="session-indicator-box" title="Trạng thái phiên đăng nhập bảo mật">
-                            <span class="session-dot active" id="session-status-dot"></span>
-                            <span id="session-status-text">Phiên hoạt động</span>
-                            <span class="session-countdown" id="session-countdown-timer" title="Thời gian phiên còn lại">30:00</span>
-                        </div>
-                        <span class="badge-info">
-                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">check_circle</span>
-                            Auto Keep-Alive Active
-                        </span>
-                    </div>
-                </div>
+                <!-- ===================================================================
+                 BỘ LỌC & TÌM KIẾM TINH GỌN (1 HÀNG CHÍNH + BỘ LỌC NÂNG CAO THU GỌN)
+                 =================================================================== -->
+            <!-- ===================================================================
+                 BỘ LỌC & TÌM KIẾM TINH GỌN (1 HÀNG CHÍNH + BỘ LỌC NÂNG CAO THU GỌN)
+                 =================================================================== -->
+            <section class="filter-card compact-filter-card" id="filterCard" aria-label="Tìm kiếm và lọc khách hàng">
+                <c:set var="soDieuKienNangCao" value="0" />
+                <c:if test="${not empty boLocHienTai.tenCongTy or not empty param.tenCongTy}"><c:set var="soDieuKienNangCao" value="${soDieuKienNangCao + 1}" /></c:if>
+                <c:if test="${not empty boLocHienTai.maSoThue or not empty param.maSoThue}"><c:set var="soDieuKienNangCao" value="${soDieuKienNangCao + 1}" /></c:if>
+                <c:if test="${not empty boLocHienTai.soDienThoai or not empty param.soDienThoai}"><c:set var="soDieuKienNangCao" value="${soDieuKienNangCao + 1}" /></c:if>
+                <c:if test="${not empty boLocHienTai.trangThai or not empty param.trangThai}"><c:set var="soDieuKienNangCao" value="${soDieuKienNangCao + 1}" /></c:if>
+                <c:if test="${(not empty boLocHienTai.nganhNgheId and boLocHienTai.nganhNgheId > 0) or (not empty param.nganhNgheId and param.nganhNgheId > 0)}"><c:set var="soDieuKienNangCao" value="${soDieuKienNangCao + 1}" /></c:if>
+                <c:if test="${(not empty boLocHienTai.quyMoId and boLocHienTai.quyMoId > 0) or (not empty param.quyMoId and param.quyMoId > 0)}"><c:set var="soDieuKienNangCao" value="${soDieuKienNangCao + 1}" /></c:if>
+                <c:if test="${(not empty boLocHienTai.khuVucId and boLocHienTai.khuVucId > 0) or (not empty param.khuVucId and param.khuVucId > 0)}"><c:set var="soDieuKienNangCao" value="${soDieuKienNangCao + 1}" /></c:if>
+                <c:if test="${(not empty boLocHienTai.nguoiSoHuuId and boLocHienTai.nguoiSoHuuId > 0) or (not empty param.nguoiSoHuuId and param.nguoiSoHuuId > 0)}"><c:set var="soDieuKienNangCao" value="${soDieuKienNangCao + 1}" /></c:if>
 
-                <p style="color: var(--slate-500); font-size: 13.5px; margin-bottom: 14px;">
-                    Khi bạn đang ngồi tại quán cà phê soạn thảo ghi chú, hệ thống sẽ tự động gửi tín hiệu gia hạn phiên làm việc (AC1)
-                    và liên tục lưu bản nháp dự phòng để tránh mất nội dung khi kết nối mạng chập chờn.
-                </p>
-
-                <!-- Banner cảnh báo phát hiện bản nháp chưa lưu -->
-                <div class="draft-alert-banner" id="draft-alert-banner">
-                    <div>
-                        <strong><span class="material-symbols-outlined icon-sm" aria-hidden="true" style="vertical-align: text-bottom;">lightbulb</span> Phát hiện bản nháp trước đó:</strong>
-                        <span>Bạn có một ghi chú chưa xóa được lưu lúc <span id="draft-saved-time-text">gần đây</span>.</span>
-                    </div>
-                    <div class="draft-alert-actions">
-                        <button type="button" class="btn-draft-action btn-draft-restore" id="btn-restore-draft">Khôi phục ghi chú</button>
-                        <button type="button" class="btn-draft-action btn-draft-discard" id="btn-discard-draft">Hủy bản nháp</button>
-                    </div>
-                </div>
-
-                <div class="editor-wrapper">
-                    <textarea id="ghi-chu-cuoc-gap" class="note-editor"
-                              placeholder="Nhập nội dung trao đổi cuộc gặp với khách hàng tại đây (ví dụ: nhu cầu mua hàng, thời gian bàn giao dự kiến, phản hồi ngân sách, yêu cầu kỹ thuật)..."></textarea>
-                </div>
-
-                <div class="note-footer">
-                    <div class="note-stats-group">
-                        <span class="sync-status active" id="session-sync-status">
-                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">save</span>
-                            Phiên làm việc sẵn sàng
-                        </span>
-                        <span class="note-stat-item" id="note-last-saved" style="color: var(--slate-400);"></span>
-                        <span class="note-stat-item" id="note-word-count" style="color: var(--slate-600); font-weight: 600;">0 từ</span>
-                        <span class="note-stat-item" id="note-char-count" style="color: var(--slate-400);">0 ký tự</span>
-                    </div>
-                    <div class="note-actions-group">
-                        <button type="button" class="btn-secondary" id="btn-manual-save" title="Lưu nháp ngay vào bộ nhớ trình duyệt">
-                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">save</span>
-                            Lưu nháp
-                        </button>
-                        <button type="button" class="btn-secondary" id="btn-manual-sync" title="Gửi tín hiệu gia hạn phiên ngay">
-                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">sync</span>
-                            Gia hạn phiên
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-<section class="filter-card" id="filterCard" aria-label="Tìm kiếm và lọc khách hàng">
-
-                <!-- Thanh quản lý Bộ lọc đã lưu (AC3) -->
-                <div class="saved-filters-bar">
-                    <div class="saved-filters-group">
-                        <span class="saved-filter-label">
-                            <span class="material-symbols-outlined crm-icon-primary" aria-hidden="true">bookmark</span>
-                            <label for="selectBoLocDaLuu">Bộ lọc đã lưu:</label>
-                        </span>
-                        <select id="selectBoLocDaLuu" class="saved-filter-select" onchange="chuyenBoLoc(this.value)">
-                            <option value="">-- Chọn bộ lọc đã lưu --</option>
-                            <c:forEach var="bl" items="${dsBoLocDaLuu}">
-                                <option value="${bl.id}" ${not empty boLocHienTai and boLocHienTai.boLocId == bl.id ? 'selected' : ''}>
-                                    <c:out value="${bl.tenBoLoc}" /> ${bl.macDinh ? ' [Mặc định]' : ''}
-                                </option>
-                            </c:forEach>
-                        </select>
-
-                        <c:if test="${not empty boLocHienTai and not empty boLocHienTai.boLocId}">
-                            <span class="saved-filter-active-pill" title="Bộ lọc đang được áp dụng">
-                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">check</span>
-                                <c:out value="${boLocHienTai.tenBoLoc}" />
-                            </span>
-                            <c:if test="${not boLocHienTai.macDinh}">
-                                <button type="button" class="btn btn-outline btn-sm" id="btnDatMacDinhHienTai"
-                                        data-id="${boLocHienTai.boLocId}"
-                                        title="Đặt làm bộ lọc mặc định khi mở danh sách">
-                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">star</span> Đặt làm mặc định
-                                </button>
-                            </c:if>
-                            <button type="button" class="btn btn-danger-outline btn-sm" id="btnXoaBoLocHienTai"
-                                    data-id="${boLocHienTai.boLocId}"
-                                    data-name="<c:out value='${boLocHienTai.tenBoLoc}' />"
-                                    title="Xóa bộ lọc đã lưu này">
-                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">delete</span> Xóa bộ lọc
-                            </button>
-                        </c:if>
-                    </div>
-                    <div>
-                        <button type="button" class="btn btn-outline" id="btnMoModalLuuBoLoc">
-                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">bookmark_add</span>
-                            <span>Lưu bộ lọc hiện tại</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Form tìm kiếm & Lọc đa điều kiện (AC1, AC2) -->
                 <form id="formLocKhachHang" method="GET" action="${pageContext.request.contextPath}/khach-hang">
                     <input type="hidden" name="phamVi" value="${param.phamVi != null ? param.phamVi : (not empty phamViHienTai ? phamViHienTai.ma : '')}">
                     <c:if test="${not empty boLocHienTai and not empty boLocHienTai.boLocId}">
                         <input type="hidden" name="boLocId" value="${boLocHienTai.boLocId}">
                     </c:if>
 
-                    <!-- AC2: Tìm theo từ khóa tổng hợp -->
-                    <div class="quick-search-wrapper">
-                        <span class="material-symbols-outlined quick-search-icon" aria-hidden="true">search</span>
-                        <input type="text" id="tuKhoa" name="tuKhoa" class="quick-search-input"
-                               placeholder="Tìm kiếm nhanh theo tên công ty, mã số thuế hoặc số điện thoại người liên hệ..."
-                               value="<c:out value='${not empty boLocHienTai ? boLocHienTai.tuKhoa : param.tuKhoa}' />" autocomplete="off">
-                        <button type="button" id="btnClearTuKhoa" class="quick-search-clear" aria-label="Xóa từ khóa tìm kiếm" title="Xóa từ khóa">
-                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span>
+                    <!-- HÀNG TÌM KIẾM CHÍNH (SINGLE COMPACT ROW TRÊN DESKTOP: TÌM KIẾM + BỘ LỌC + NÚT TÌM + ĐẶT LẠI) -->
+                    <div class="search-main-row">
+                        <div class="quick-search-box">
+                            <span class="material-symbols-outlined quick-search-icon" aria-hidden="true">search</span>
+                            <input type="text" id="tuKhoa" name="tuKhoa" class="quick-search-input"
+                                   placeholder="Tìm tên, mã KH, SĐT, MST..."
+                                   value="<c:out value='${not empty boLocHienTai ? boLocHienTai.tuKhoa : param.tuKhoa}' />" autocomplete="off">
+                            <button type="button" id="btnClearTuKhoa" class="quick-search-clear" aria-label="Xóa từ khóa tìm kiếm" title="Xóa từ khóa">
+                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span>
+                            </button>
+                        </div>
+
+                        <button type="button" class="btn btn-outline btn-filter-toggle ${soDieuKienNangCao > 0 ? 'is-active' : ''}"
+                                id="btnToggleAdvancedFilter" aria-expanded="false" aria-controls="advancedFilterPanel" title="Mở bộ lọc nâng cao">
+                            <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+                            <span>Bộ lọc</span>
+                            <c:if test="${soDieuKienNangCao > 0}">
+                                <span class="filter-count-badge" id="filterCountBadge">${soDieuKienNangCao}</span>
+                            </c:if>
+                            <span class="material-symbols-outlined filter-arrow-icon" id="iconFilterArrow" aria-hidden="true">expand_more</span>
                         </button>
+
+                        <button type="submit" class="btn btn-primary btn-search-submit" title="Tìm kiếm">
+                            <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                            <span>Tìm kiếm</span>
+                        </button>
+
+                        <a href="${pageContext.request.contextPath}/khach-hang?reset=1" class="btn btn-outline btn-reset-filters" id="btnResetFilters" title="Xóa bộ lọc và quay về mặc định">
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">restart_alt</span>
+                            <span>Đặt lại</span>
+                        </a>
                     </div>
 
-                    <!-- Lưới các trường tìm kiếm chi tiết & phân loại (AC1, AC2) -->
-                    <div class="filter-grid">
-                        <!-- AC2: Tìm theo Tên công ty -->
-                        <div class="filter-field">
-                            <label class="filter-label" for="tenCongTyFilter">Tên khách hàng / Công ty</label>
-                            <input type="text" id="tenCongTyFilter" name="tenCongTy" class="filter-input"
-                                   placeholder="Ví dụ: FPT, Viettel..."
-                                   value="<c:out value='${not empty boLocHienTai ? boLocHienTai.tenCongTy : param.tenCongTy}' />" autocomplete="off">
+                    <!-- KHUNG / PANEL BỘ LỌC NÂNG CAO (MẶC ĐỊNH ĐÓNG, MỞ RA KHI BẤM NÚT 'BỘ LỌC') -->
+                    <div class="advanced-filter-panel" id="advancedFilterPanel" style="display: none;" aria-hidden="true">
+                        <div class="panel-header-mini">
+                            <div class="panel-title-mini">
+                                <span class="material-symbols-outlined icon-sm" aria-hidden="true" style="color: var(--primary);">tune</span>
+                                <strong>Bộ lọc nâng cao</strong>
+                                <span class="text-muted" style="font-size: 12.5px;">(Chọn các điều kiện lọc và bấm "Áp dụng")</span>
+                            </div>
+                            <button type="button" class="panel-close-mini" id="btnDongFilterPanel" title="Đóng bộ lọc" aria-label="Đóng bộ lọc">
+                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span>
+                            </button>
                         </div>
 
-                        <!-- AC2: Tìm theo Mã số thuế -->
-                        <div class="filter-field">
-                            <label class="filter-label" for="maSoThueFilter">Mã số thuế</label>
-                            <input type="text" id="maSoThueFilter" name="maSoThue" class="filter-input"
-                                   placeholder="Ví dụ: 0101234567"
-                                   value="<c:out value='${not empty boLocHienTai ? boLocHienTai.maSoThue : param.maSoThue}' />" autocomplete="off">
-                        </div>
-
-                        <!-- AC2: Tìm theo SĐT người liên hệ -->
-                        <div class="filter-field">
-                            <label class="filter-label" for="soDienThoaiFilter">SĐT người liên hệ</label>
-                            <input type="text" id="soDienThoaiFilter" name="soDienThoai" class="filter-input"
-                                   placeholder="Ví dụ: 0912..."
-                                   value="<c:out value='${not empty boLocHienTai ? boLocHienTai.soDienThoai : param.soDienThoai}' />" autocomplete="off">
-                        </div>
-
-                        <!-- AC1: Lọc theo Trạng thái -->
-                        <div class="filter-field">
-                            <label class="filter-label" for="trangThaiFilter">Trạng thái khách hàng</label>
-                            <select id="trangThaiFilter" name="trangThai" class="filter-select">
-                                <option value="">-- Tất cả trạng thái --</option>
-                                <c:choose>
-                                    <c:when test="${not empty dsTrangThai}">
-                                        <c:forEach var="tt" items="${dsTrangThai}">
-                                            <option value="${tt.ma}" ${(not empty boLocHienTai and (boLocHienTai.trangThai == tt.ma or boLocHienTai.trangThai == tt.tenHienThi)) or param.trangThai == tt.ma or param.trangThai == tt.tenHienThi ? 'selected' : ''}>
-                                                <c:out value="${tt.tenHienThi}" />
+                        <!-- Bộ lọc đã lưu nằm gọn trong panel lọc nâng cao -->
+                        <div class="panel-saved-filter-section">
+                            <div class="panel-saved-filter-inner">
+                                <div class="saved-filter-group-wrap">
+                                    <span class="material-symbols-outlined text-muted" aria-hidden="true" style="font-size: 18px;">bookmark</span>
+                                    <label for="selectBoLocDaLuu" style="font-size: 13px; font-weight: 600; color: #475569;">Bộ lọc đã lưu:</label>
+                                    <select id="selectBoLocDaLuu" class="saved-filter-select-sm" onchange="chuyenBoLoc(this.value)" title="Chọn bộ lọc đã lưu">
+                                        <option value="">-- Chọn bộ lọc đã lưu --</option>
+                                        <c:forEach var="bl" items="${dsBoLocDaLuu}">
+                                            <option value="${bl.id}" ${not empty boLocHienTai and boLocHienTai.boLocId == bl.id ? 'selected' : ''}>
+                                                <c:out value="${bl.tenBoLoc}" /> ${bl.macDinh ? ' [Mặc định]' : ''}
                                             </option>
                                         </c:forEach>
-                                    </c:when>
-                                    <c:when test="${not empty dsTrangThaiKhachHang}">
-                                        <c:forEach var="tt" items="${dsTrangThaiKhachHang}">
-                                            <option value="${tt.ma}" ${(not empty boLocHienTai and (boLocHienTai.trangThai == tt.ma or boLocHienTai.trangThai == tt.tenHienThi)) or param.trangThai == tt.ma or param.trangThai == tt.tenHienThi ? 'selected' : ''}>
-                                                <c:out value="${tt.tenHienThi}" />
-                                            </option>
-                                        </c:forEach>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <option value="TIEM_NANG" ${(not empty boLocHienTai and (boLocHienTai.trangThai == 'TIEM_NANG' or boLocHienTai.trangThai == 'Tiềm năng')) or param.trangThai == 'TIEM_NANG' or param.trangThai == 'Tiềm năng' ? 'selected' : ''}>Tiềm năng</option>
-                                        <option value="DANG_GIAO_DICH" ${(not empty boLocHienTai and (boLocHienTai.trangThai == 'DANG_GIAO_DICH' or boLocHienTai.trangThai == 'Đang giao dịch')) or param.trangThai == 'DANG_GIAO_DICH' or param.trangThai == 'Đang giao dịch' ? 'selected' : ''}>Đang giao dịch</option>
-                                        <option value="KHACH_HANG" ${(not empty boLocHienTai and (boLocHienTai.trangThai == 'KHACH_HANG' or boLocHienTai.trangThai == 'Khách hàng')) or param.trangThai == 'KHACH_HANG' or param.trangThai == 'Khách hàng' ? 'selected' : ''}>Khách hàng</option>
-                                        <option value="NGUNG_HOP_TAC" ${(not empty boLocHienTai and (boLocHienTai.trangThai == 'NGUNG_HOP_TAC' or boLocHienTai.trangThai == 'Ngừng hợp tác')) or param.trangThai == 'NGUNG_HOP_TAC' or param.trangThai == 'Ngừng hợp tác' ? 'selected' : ''}>Ngừng hợp tác</option>
-                                    </c:otherwise>
-                                </c:choose>
-                            </select>
+                                    </select>
+                                    <button type="button" class="btn btn-outline btn-xs" id="btnMoModalLuuBoLoc" title="Lưu tiêu chí lọc hiện tại">
+                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">bookmark_add</span>
+                                        <span>Lưu bộ lọc</span>
+                                    </button>
+                                </div>
+                                <c:if test="${not empty boLocHienTai and not empty boLocHienTai.boLocId}">
+                                    <div class="saved-filter-applied-bar-inline">
+                                        <span class="saved-filter-active-pill" title="Bộ lọc đang được áp dụng">
+                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">check</span>
+                                            Đang áp dụng: <strong><c:out value="${boLocHienTai.tenBoLoc}" /></strong>
+                                        </span>
+                                        <c:if test="${not boLocHienTai.macDinh}">
+                                            <button type="button" class="btn btn-outline btn-xs" id="btnDatMacDinhHienTai"
+                                                    data-id="${boLocHienTai.boLocId}"
+                                                    title="Đặt làm bộ lọc mặc định khi mở danh sách">
+                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">star</span> Đặt mặc định
+                                            </button>
+                                        </c:if>
+                                        <button type="button" class="btn btn-danger-outline btn-xs" id="btnXoaBoLocHienTai"
+                                                data-id="${boLocHienTai.boLocId}"
+                                                data-name="<c:out value='${boLocHienTai.tenBoLoc}' />"
+                                                title="Xóa bộ lọc đã lưu này">
+                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">delete</span> Xóa
+                                        </button>
+                                    </div>
+                                </c:if>
+                            </div>
                         </div>
 
-                        <!-- AC1: Lọc theo Ngành nghề -->
-                        <div class="filter-field">
-                            <label class="filter-label" for="nganhNgheIdFilter">Ngành nghề</label>
-                            <select id="nganhNgheIdFilter" name="nganhNgheId" class="filter-select">
-                                <option value="">-- Tất cả ngành nghề --</option>
-                                <c:forEach var="nn" items="${dsNganhNghe}">
-                                    <option value="${nn.id}" ${(not empty boLocHienTai and boLocHienTai.nganhNgheId == nn.id) or param.nganhNgheId == nn.id ? 'selected' : ''}>
-                                        <c:out value="${nn.tenMuc}" />
-                                    </option>
-                                </c:forEach>
-                            </select>
-                        </div>
-
-                        <!-- AC1: Lọc theo Quy mô -->
-                        <div class="filter-field">
-                            <label class="filter-label" for="quyMoIdFilter">Quy mô doanh nghiệp</label>
-                            <select id="quyMoIdFilter" name="quyMoId" class="filter-select">
-                                <option value="">-- Tất cả quy mô --</option>
-                                <c:forEach var="qm" items="${dsQuyMo}">
-                                    <option value="${qm.id}" ${(not empty boLocHienTai and boLocHienTai.quyMoId == qm.id) or param.quyMoId == qm.id ? 'selected' : ''}>
-                                        <c:out value="${qm.tenMuc}" />
-                                    </option>
-                                </c:forEach>
-                            </select>
-                        </div>
-
-                        <!-- AC1: Lọc theo Khu vực -->
-                        <div class="filter-field">
-                            <label class="filter-label" for="khuVucIdFilter">Khu vực địa lý</label>
-                            <select id="khuVucIdFilter" name="khuVucId" class="filter-select">
-                                <option value="">-- Tất cả khu vực --</option>
-                                <c:forEach var="kv" items="${dsKhuVuc}">
-                                    <option value="${kv.id}" ${(not empty boLocHienTai and boLocHienTai.khuVucId == kv.id) or param.khuVucId == kv.id ? 'selected' : ''}>
-                                        <c:out value="${kv.tenKhuVuc}" />
-                                    </option>
-                                </c:forEach>
-                            </select>
-                        </div>
-
-                        <!-- AC1: Lọc theo Người sở hữu (Nếu có quyền) -->
-                        <c:if test="${coQuyenChonOwner}">
+                        <!-- Lưới 8 trường tìm kiếm chi tiết & phân loại (3-4 cột trên desktop) -->
+                        <div class="filter-grid">
+                            <!-- 1. Tên công ty / Khách hàng -->
                             <div class="filter-field">
-                                <label class="filter-label" for="nguoiSoHuuIdFilter">Người sở hữu / Phụ trách</label>
-                                <select id="nguoiSoHuuIdFilter" name="nguoiSoHuuId" class="filter-select">
-                                    <option value="">-- Tất cả nhân viên --</option>
-                                    <c:forEach var="nv" items="${dsNguoiSoHuu}">
-                                        <option value="${nv.id}" ${(not empty boLocHienTai and boLocHienTai.nguoiSoHuuId == nv.id) or param.nguoiSoHuuId == nv.id ? 'selected' : ''}>
-                                            <c:out value="${nv.hoTen}" /> (${nv.email})
+                                <label class="filter-label" for="tenCongTyFilter">Tên khách hàng / Công ty</label>
+                                <input type="text" id="tenCongTyFilter" name="tenCongTy" class="filter-input"
+                                       placeholder="Ví dụ: FPT, Viettel..."
+                                       value="<c:out value='${not empty boLocHienTai ? boLocHienTai.tenCongTy : param.tenCongTy}' />" autocomplete="off">
+                            </div>
+
+                            <!-- 2. Mã số thuế -->
+                            <div class="filter-field">
+                                <label class="filter-label" for="maSoThueFilter">Mã số thuế</label>
+                                <input type="text" id="maSoThueFilter" name="maSoThue" class="filter-input"
+                                       placeholder="Ví dụ: 0101234567"
+                                       value="<c:out value='${not empty boLocHienTai ? boLocHienTai.maSoThue : param.maSoThue}' />" autocomplete="off">
+                            </div>
+
+                            <!-- 3. SĐT người liên hệ -->
+                            <div class="filter-field">
+                                <label class="filter-label" for="soDienThoaiFilter">SĐT người liên hệ</label>
+                                <input type="text" id="soDienThoaiFilter" name="soDienThoai" class="filter-input"
+                                       placeholder="Ví dụ: 0912..."
+                                       value="<c:out value='${not empty boLocHienTai ? boLocHienTai.soDienThoai : param.soDienThoai}' />" autocomplete="off">
+                            </div>
+
+                            <!-- 4. Trạng thái khách hàng -->
+                            <div class="filter-field">
+                                <label class="filter-label" for="trangThaiFilter">Trạng thái khách hàng</label>
+                                <select id="trangThaiFilter" name="trangThai" class="filter-select">
+                                    <option value="">-- Tất cả trạng thái --</option>
+                                    <c:choose>
+                                        <c:when test="${not empty dsTrangThai}">
+                                            <c:forEach var="tt" items="${dsTrangThai}">
+                                                <option value="${tt.ma}" ${(not empty boLocHienTai and (boLocHienTai.trangThai == tt.ma or boLocHienTai.trangThai == tt.tenHienThi)) or param.trangThai == tt.ma or param.trangThai == tt.tenHienThi ? 'selected' : ''}>
+                                                    <c:out value="${tt.tenHienThi}" />
+                                                </option>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:when test="${not empty dsTrangThaiKhachHang}">
+                                            <c:forEach var="tt" items="${dsTrangThaiKhachHang}">
+                                                <option value="${tt.ma}" ${(not empty boLocHienTai and (boLocHienTai.trangThai == tt.ma or boLocHienTai.trangThai == tt.tenHienThi)) or param.trangThai == tt.ma or param.trangThai == tt.tenHienThi ? 'selected' : ''}>
+                                                    <c:out value="${tt.tenHienThi}" />
+                                                </option>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <option value="TIEM_NANG" ${(not empty boLocHienTai and (boLocHienTai.trangThai == 'TIEM_NANG' or boLocHienTai.trangThai == 'Tiềm năng')) or param.trangThai == 'TIEM_NANG' or param.trangThai == 'Tiềm năng' ? 'selected' : ''}>Tiềm năng</option>
+                                            <option value="DANG_GIAO_DICH" ${(not empty boLocHienTai and (boLocHienTai.trangThai == 'DANG_GIAO_DICH' or boLocHienTai.trangThai == 'Đang giao dịch')) or param.trangThai == 'DANG_GIAO_DICH' or param.trangThai == 'Đang giao dịch' ? 'selected' : ''}>Đang giao dịch</option>
+                                            <option value="KHACH_HANG" ${(not empty boLocHienTai and (boLocHienTai.trangThai == 'KHACH_HANG' or boLocHienTai.trangThai == 'Khách hàng')) or param.trangThai == 'KHACH_HANG' or param.trangThai == 'Khách hàng' ? 'selected' : ''}>Khách hàng</option>
+                                            <option value="NGUNG_HOP_TAC" ${(not empty boLocHienTai and (boLocHienTai.trangThai == 'NGUNG_HOP_TAC' or boLocHienTai.trangThai == 'Ngừng hợp tác')) or param.trangThai == 'NGUNG_HOP_TAC' or param.trangThai == 'Ngừng hợp tác' ? 'selected' : ''}>Ngừng hợp tác</option>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </select>
+                            </div>
+
+                            <!-- 5. Ngành nghề -->
+                            <div class="filter-field">
+                                <label class="filter-label" for="nganhNgheIdFilter">Ngành nghề</label>
+                                <select id="nganhNgheIdFilter" name="nganhNgheId" class="filter-select">
+                                    <option value="">-- Tất cả ngành nghề --</option>
+                                    <c:forEach var="nn" items="${dsNganhNghe}">
+                                        <option value="${nn.id}" ${(not empty boLocHienTai and boLocHienTai.nganhNgheId == nn.id) or param.nganhNgheId == nn.id ? 'selected' : ''}>
+                                            <c:out value="${nn.tenMuc}" />
                                         </option>
                                     </c:forEach>
                                 </select>
                             </div>
-                        </c:if>
-                    </div>
 
-                    <!-- Thanh thao tác Lọc & Hiển thị các tiêu chí đang áp dụng -->
-                    <div class="filter-actions">
-                        <div class="filter-actions-left">
-                            <c:if test="${not empty boLocHienTai and boLocHienTai.coDieuKienLoc()}">
-                                <div class="active-filter-chips" id="activeFilterChips">
-                                    <span style="font-size: 12px; font-weight: 700; color: var(--slate-600); text-transform: uppercase;">Đang lọc:</span>
-                                    <c:if test="${not empty boLocHienTai.tuKhoa}">
-                                        <span class="filter-chip">
-                                            Từ khóa: "<c:out value='${boLocHienTai.tuKhoa}' />"
-                                            <button type="button" class="filter-chip-remove" data-field="tuKhoa" aria-label="Xóa điều kiện từ khóa" title="Xóa từ khóa">&times;</button>
-                                        </span>
-                                    </c:if>
-                                    <c:if test="${not empty boLocHienTai.tenCongTy}">
-                                        <span class="filter-chip">
-                                            Tên: "<c:out value='${boLocHienTai.tenCongTy}' />"
-                                            <button type="button" class="filter-chip-remove" data-field="tenCongTy" aria-label="Xóa điều kiện tên công ty" title="Xóa tên công ty">&times;</button>
-                                        </span>
-                                    </c:if>
-                                    <c:if test="${not empty boLocHienTai.maSoThue}">
-                                        <span class="filter-chip">
-                                            MST: <c:out value='${boLocHienTai.maSoThue}' />
-                                            <button type="button" class="filter-chip-remove" data-field="maSoThue" aria-label="Xóa điều kiện mã số thuế" title="Xóa mã số thuế">&times;</button>
-                                        </span>
-                                    </c:if>
-                                    <c:if test="${not empty boLocHienTai.soDienThoai}">
-                                        <span class="filter-chip">
-                                            SĐT: <c:out value='${boLocHienTai.soDienThoai}' />
-                                            <button type="button" class="filter-chip-remove" data-field="soDienThoai" aria-label="Xóa điều kiện số điện thoại" title="Xóa SĐT">&times;</button>
-                                        </span>
-                                    </c:if>
-                                    <c:if test="${not empty boLocHienTai.trangThai}">
-                                        <span class="filter-chip">
-                                            Trạng thái: 
-                                            <c:choose>
-                                                <c:when test="${boLocHienTai.trangThai == 'TIEM_NANG' or boLocHienTai.trangThai == 'Tiềm năng'}">Tiềm năng</c:when>
-                                                <c:when test="${boLocHienTai.trangThai == 'DANG_GIAO_DICH' or boLocHienTai.trangThai == 'Đang giao dịch'}">Đang giao dịch</c:when>
-                                                <c:when test="${boLocHienTai.trangThai == 'KHACH_HANG' or boLocHienTai.trangThai == 'Khách hàng'}">Khách hàng</c:when>
-                                                <c:when test="${boLocHienTai.trangThai == 'NGUNG_HOP_TAC' or boLocHienTai.trangThai == 'Ngừng hợp tác'}">Ngừng hợp tác</c:when>
-                                                <c:otherwise><c:out value='${boLocHienTai.trangThai}' /></c:otherwise>
-                                            </c:choose>
-                                            <button type="button" class="filter-chip-remove" data-field="trangThai" aria-label="Xóa điều kiện trạng thái" title="Xóa trạng thái">&times;</button>
-                                        </span>
-                                    </c:if>
-                                    <c:if test="${not empty boLocHienTai.nganhNgheId and boLocHienTai.nganhNgheId > 0}">
-                                        <c:forEach var="nn" items="${dsNganhNghe}">
-                                            <c:if test="${nn.id == boLocHienTai.nganhNgheId}">
-                                                <span class="filter-chip">
-                                                    Ngành: <c:out value='${nn.tenMuc}' />
-                                                    <button type="button" class="filter-chip-remove" data-field="nganhNgheId" aria-label="Xóa điều kiện ngành nghề" title="Xóa ngành nghề">&times;</button>
-                                                </span>
-                                            </c:if>
-                                        </c:forEach>
-                                    </c:if>
-                                    <c:if test="${not empty boLocHienTai.quyMoId and boLocHienTai.quyMoId > 0}">
-                                        <c:forEach var="qm" items="${dsQuyMo}">
-                                            <c:if test="${qm.id == boLocHienTai.quyMoId}">
-                                                <span class="filter-chip">
-                                                    Quy mô: <c:out value='${qm.tenMuc}' />
-                                                    <button type="button" class="filter-chip-remove" data-field="quyMoId" aria-label="Xóa điều kiện quy mô" title="Xóa quy mô">&times;</button>
-                                                </span>
-                                            </c:if>
-                                        </c:forEach>
-                                    </c:if>
-                                    <c:if test="${not empty boLocHienTai.khuVucId and boLocHienTai.khuVucId > 0}">
-                                        <c:forEach var="kv" items="${dsKhuVuc}">
-                                            <c:if test="${kv.id == boLocHienTai.khuVucId}">
-                                                <span class="filter-chip">
-                                                    Khu vực: <c:out value='${kv.tenKhuVuc}' />
-                                                    <button type="button" class="filter-chip-remove" data-field="khuVucId" aria-label="Xóa điều kiện khu vực" title="Xóa khu vực">&times;</button>
-                                                </span>
-                                            </c:if>
-                                        </c:forEach>
-                                    </c:if>
-                                    <c:if test="${not empty boLocHienTai.nguoiSoHuuId and boLocHienTai.nguoiSoHuuId > 0}">
+                            <!-- 6. Quy mô doanh nghiệp -->
+                            <div class="filter-field">
+                                <label class="filter-label" for="quyMoIdFilter">Quy mô doanh nghiệp</label>
+                                <select id="quyMoIdFilter" name="quyMoId" class="filter-select">
+                                    <option value="">-- Tất cả quy mô --</option>
+                                    <c:forEach var="qm" items="${dsQuyMo}">
+                                        <option value="${qm.id}" ${(not empty boLocHienTai and boLocHienTai.quyMoId == qm.id) or param.quyMoId == qm.id ? 'selected' : ''}>
+                                            <c:out value="${qm.tenMuc}" />
+                                        </option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+
+                            <!-- 7. Khu vực địa lý -->
+                            <div class="filter-field">
+                                <label class="filter-label" for="khuVucIdFilter">Khu vực địa lý</label>
+                                <select id="khuVucIdFilter" name="khuVucId" class="filter-select">
+                                    <option value="">-- Tất cả khu vực --</option>
+                                    <c:forEach var="kv" items="${dsKhuVuc}">
+                                        <option value="${kv.id}" ${(not empty boLocHienTai and boLocHienTai.khuVucId == kv.id) or param.khuVucId == kv.id ? 'selected' : ''}>
+                                            <c:out value="${kv.tenKhuVuc}" />
+                                        </option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+
+                            <!-- 8. Người sở hữu / Phụ trách -->
+                            <c:if test="${coQuyenChonOwner}">
+                                <div class="filter-field">
+                                    <label class="filter-label" for="nguoiSoHuuIdFilter">Người sở hữu / Phụ trách</label>
+                                    <select id="nguoiSoHuuIdFilter" name="nguoiSoHuuId" class="filter-select">
+                                        <option value="">-- Tất cả nhân viên --</option>
                                         <c:forEach var="nv" items="${dsNguoiSoHuu}">
-                                            <c:if test="${nv.id == boLocHienTai.nguoiSoHuuId}">
-                                                <span class="filter-chip">
-                                                    Phụ trách: <c:out value='${nv.hoTen}' />
-                                                    <button type="button" class="filter-chip-remove" data-field="nguoiSoHuuId" aria-label="Xóa điều kiện người phụ trách" title="Xóa người phụ trách">&times;</button>
-                                                </span>
-                                            </c:if>
+                                            <option value="${nv.id}" ${(not empty boLocHienTai and boLocHienTai.nguoiSoHuuId == nv.id) or param.nguoiSoHuuId == nv.id ? 'selected' : ''}>
+                                                <c:out value="${nv.hoTen}" /> (${nv.email})
+                                            </option>
                                         </c:forEach>
-                                    </c:if>
+                                    </select>
                                 </div>
                             </c:if>
                         </div>
-                        <div class="filter-actions-right">
-                            <a href="${pageContext.request.contextPath}/khach-hang?reset=1" class="btn btn-outline" title="Xóa tất cả điều kiện và quay về mặc định">
-                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">restart_alt</span>
-                                <span>Đặt lại bộ lọc</span>
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">search</span>
-                                <span>Tìm kiếm & Lọc</span>
+
+                        <!-- Thao tác panel lọc (Áp dụng, Đặt lại, Đóng) -->
+                        <div class="panel-filter-actions">
+                            <button type="button" class="btn btn-outline btn-sm" id="btnDongFilterPanelBottom">
+                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">close</span>
+                                <span>Đóng</span>
                             </button>
+                            <div style="display: flex; gap: 8px;">
+                                <a href="${pageContext.request.contextPath}/khach-hang?reset=1" class="btn btn-outline btn-sm" title="Xóa tất cả điều kiện">
+                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">restart_alt</span>
+                                    <span>Đặt lại</span>
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">filter_alt</span>
+                                    <span>Áp dụng</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- THANH HIỂN THỊ CÁC TIÊU CHÍ ĐANG ÁP DỤNG (CHIPS) -->
+                    <c:if test="${not empty boLocHienTai and boLocHienTai.coDieuKienLoc()}">
+                        <div class="active-filter-chips-bar" id="activeFilterChips">
+                            <span class="active-chips-label">Đang lọc:</span>
+                            <c:if test="${not empty boLocHienTai.tuKhoa}">
+                                <span class="filter-chip">
+                                    Từ khóa: "<c:out value='${boLocHienTai.tuKhoa}' />"
+                                    <button type="button" class="filter-chip-remove" data-field="tuKhoa" aria-label="Xóa điều kiện từ khóa" title="Xóa từ khóa">&times;</button>
+                                </span>
+                            </c:if>
+                            <c:if test="${not empty boLocHienTai.tenCongTy}">
+                                <span class="filter-chip">
+                                    Tên: "<c:out value='${boLocHienTai.tenCongTy}' />"
+                                    <button type="button" class="filter-chip-remove" data-field="tenCongTy" aria-label="Xóa điều kiện tên công ty" title="Xóa tên">&times;</button>
+                                </span>
+                            </c:if>
+                            <c:if test="${not empty boLocHienTai.maSoThue}">
+                                <span class="filter-chip">
+                                    MST: <c:out value='${boLocHienTai.maSoThue}' />
+                                    <button type="button" class="filter-chip-remove" data-field="maSoThue" aria-label="Xóa điều kiện mã số thuế" title="Xóa MST">&times;</button>
+                                </span>
+                            </c:if>
+                            <c:if test="${not empty boLocHienTai.soDienThoai}">
+                                <span class="filter-chip">
+                                    SĐT: <c:out value='${boLocHienTai.soDienThoai}' />
+                                    <button type="button" class="filter-chip-remove" data-field="soDienThoai" aria-label="Xóa điều kiện số điện thoại" title="Xóa SĐT">&times;</button>
+                                </span>
+                            </c:if>
+                            <c:if test="${not empty boLocHienTai.trangThai}">
+                                <span class="filter-chip">
+                                    Trạng thái:
+                                    <c:choose>
+                                        <c:when test="${boLocHienTai.trangThai == 'TIEM_NANG' or boLocHienTai.trangThai == 'Tiềm năng'}">Tiềm năng</c:when>
+                                        <c:when test="${boLocHienTai.trangThai == 'DANG_GIAO_DICH' or boLocHienTai.trangThai == 'Đang giao dịch'}">Đang giao dịch</c:when>
+                                        <c:when test="${boLocHienTai.trangThai == 'KHACH_HANG' or boLocHienTai.trangThai == 'Khách hàng'}">Khách hàng</c:when>
+                                        <c:when test="${boLocHienTai.trangThai == 'NGUNG_HOP_TAC' or boLocHienTai.trangThai == 'Ngừng hợp tác'}">Ngừng hợp tác</c:when>
+                                        <c:otherwise><c:out value='${boLocHienTai.trangThai}' /></c:otherwise>
+                                    </c:choose>
+                                    <button type="button" class="filter-chip-remove" data-field="trangThai" aria-label="Xóa điều kiện trạng thái" title="Xóa trạng thái">&times;</button>
+                                </span>
+                            </c:if>
+                            <c:if test="${not empty boLocHienTai.nganhNgheId and boLocHienTai.nganhNgheId > 0}">
+                                <c:forEach var="nn" items="${dsNganhNghe}">
+                                    <c:if test="${nn.id == boLocHienTai.nganhNgheId}">
+                                        <span class="filter-chip">
+                                            Ngành: <c:out value='${nn.tenMuc}' />
+                                            <button type="button" class="filter-chip-remove" data-field="nganhNgheId" aria-label="Xóa điều kiện ngành nghề" title="Xóa ngành">&times;</button>
+                                        </span>
+                                    </c:if>
+                                </c:forEach>
+                            </c:if>
+                            <c:if test="${not empty boLocHienTai.quyMoId and boLocHienTai.quyMoId > 0}">
+                                <c:forEach var="qm" items="${dsQuyMo}">
+                                    <c:if test="${qm.id == boLocHienTai.quyMoId}">
+                                        <span class="filter-chip">
+                                            Quy mô: <c:out value='${qm.tenMuc}' />
+                                            <button type="button" class="filter-chip-remove" data-field="quyMoId" aria-label="Xóa điều kiện quy mô" title="Xóa quy mô">&times;</button>
+                                        </span>
+                                    </c:if>
+                                </c:forEach>
+                            </c:if>
+                            <c:if test="${not empty boLocHienTai.khuVucId and boLocHienTai.khuVucId > 0}">
+                                <c:forEach var="kv" items="${dsKhuVuc}">
+                                    <c:if test="${kv.id == boLocHienTai.khuVucId}">
+                                        <span class="filter-chip">
+                                            Khu vực: <c:out value='${kv.tenKhuVuc}' />
+                                            <button type="button" class="filter-chip-remove" data-field="khuVucId" aria-label="Xóa điều kiện khu vực" title="Xóa khu vực">&times;</button>
+                                        </span>
+                                    </c:if>
+                                </c:forEach>
+                            </c:if>
+                            <c:if test="${not empty boLocHienTai.nguoiSoHuuId and boLocHienTai.nguoiSoHuuId > 0}">
+                                <c:forEach var="nv" items="${dsNguoiSoHuu}">
+                                    <c:if test="${nv.id == boLocHienTai.nguoiSoHuuId}">
+                                        <span class="filter-chip">
+                                            Phụ trách: <c:out value='${nv.hoTen}' />
+                                            <button type="button" class="filter-chip-remove" data-field="nguoiSoHuuId" aria-label="Xóa điều kiện người phụ trách" title="Xóa phụ trách">&times;</button>
+                                        </span>
+                                    </c:if>
+                                </c:forEach>
+                            </c:if>
+                        </div>
+                    </c:if>
                 </form>
             </section>
 
-            <!-- Bảng danh sách khách hàng (Story S1-05, S3-01, S3-07) -->
-            <div class="table-card">
+            <!-- ===================================================================
+                 BẢNG DANH SÁCH KHÁCH HÀNG (PHONG CÁCH CRM THƯƠNG MẠI HIỆN ĐẠI)
+                 Thứ tự cột: Checkbox | Chấm TT | Mã KH | Khách hàng | Người phụ trách | Lĩnh vực | Quy mô | Trạng thái | Khu vực/Nhóm | Thao tác
+                 =================================================================== -->
+            <div class="table-card" id="customerTableCard">
                 <div class="table-header-bar">
                     <div class="table-meta-info">
                         <span class="table-meta-item">
@@ -614,26 +605,31 @@
                         </c:if>
                     </div>
                     <div class="table-header-links">
-                        <a href="${pageContext.request.contextPath}/khach-hang" class="table-header-link">
+                        <a href="${pageContext.request.contextPath}/khach-hang" class="table-header-link" title="Tải lại danh sách">
                             <span class="material-symbols-outlined icon-xs" aria-hidden="true">refresh</span>
-                            Làm mới
+                            <span>Làm mới</span>
                         </a>
                     </div>
                 </div>
 
                 <div class="table-responsive">
-                    <table class="data-table" id="tableKhachHang">
+                    <table class="data-table customer-modern-table" id="tableKhachHang">
                         <thead>
                             <tr>
-                                <th style="width: 100px;">Mã KH</th>
-                                <th style="min-width: 220px;">Tên Khách Hàng / Doanh Nghiệp</th>
-                                <th style="width: 120px;">Mã Số Thuế</th>
-                                <th style="min-width: 200px;">Đầu Mối Liên Hệ & SĐT Gọi Nhanh</th>
-                                <th style="width: 160px;">Ngành Nghề / Quy Mô</th>
-                                <th style="width: 120px;">Khu Vực</th>
-                                <th style="min-width: 160px;">Người Phụ Trách</th>
-                                <th style="width: 130px;">Trạng Thái</th>
-                                <th style="width: 120px; text-align: center;">Thao Tác</th>
+                                <th style="width: 44px; text-align: center;">
+                                    <input type="checkbox" id="checkAllKhachHang" class="crm-table-checkbox" aria-label="Chọn tất cả khách hàng trên trang">
+                                </th>
+                                <th style="width: 36px; text-align: center;" title="Chấm trạng thái hoạt động">
+                                    <span class="tbl-dot-header" aria-hidden="true">&bull;</span>
+                                </th>
+                                <th style="width: 105px;">Mã KH</th>
+                                <th style="min-width: 240px;">Khách hàng / Doanh nghiệp</th>
+                                <th style="min-width: 180px;">Người phụ trách</th>
+                                <th style="width: 135px;">Lĩnh vực</th>
+                                <th style="width: 115px;">Quy mô</th>
+                                <th style="width: 130px; text-align: center;">Trạng thái</th>
+                                <th style="width: 135px;">Khu vực / Nhóm</th>
+                                <th style="width: 115px; text-align: center;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -653,78 +649,144 @@
                                             data-ngay-tao="<c:out value="${kh.ngayTao}" />"
                                             data-mo-ta="<c:out value="${kh.moTaChiTiet}" />"
                                             ${kh.coRuiRo ? 'class="row-rui-ro"' : ''}>
-                                            <td class="font-mono">
-                                                <a href="${pageContext.request.contextPath}/khach-hang/360?id=${kh.id}" style="color: var(--primary); font-weight: 600;">
-                                                    <c:out value="${not empty kh.maKhachHang ? kh.maKhachHang : ('KH-' += kh.id)}" />
-                                                </a>
+                                            <!-- 1. Checkbox chọn hàng -->
+                                            <td style="text-align: center;">
+                                                <input type="checkbox" class="crm-table-checkbox row-select-cb" value="${kh.id}" aria-label="Chọn khách hàng ${kh.tenCongTy}">
                                             </td>
-                                            <td>
-                                                <div class="customer-name" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                                    <a href="${pageContext.request.contextPath}/khach-hang/360?id=${kh.id}" style="color: inherit; text-decoration: none; font-weight: 600;">
-                                                        <c:out value="${kh.tenCongTy}" />
-                                                    </a>
-                                                    <c:if test="${kh.coRuiRo}">
-                                                        <span class="badge badge-danger" title="Khách hàng có cờ rủi ro rời bỏ hoặc ticket tồn đọng">
-                                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">warning</span>
-                                                            Rủi ro
-                                                        </span>
-                                                    </c:if>
-                                                </div>
-                                                <c:if test="${not empty kh.congTyMeId}">
-                                                    <div style="font-size: 12px; color: var(--slate-500); margin-top: 2px;">
-                                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true" style="vertical-align: middle;">account_tree</span>
-                                                        Công ty mẹ: <c:out value="${kh.tenCongTyMe}" />
-                                                    </div>
-                                                </c:if>
-                                                <c:if test="${not empty kh.website}">
-                                                    <div class="customer-sub" style="margin-top: 2px;">
-                                                        <a href="https://${kh.website}" target="_blank" rel="noopener noreferrer"><c:out value="${kh.website}" /></a>
-                                                    </div>
-                                                </c:if>
-                                            </td>
-                                            <td class="font-mono">
-                                                <c:out value="${not empty kh.maSoThue ? kh.maSoThue : '-'}" />
-                                            </td>
-                                            <td>
-                                                <%-- SĐT gọi nhanh phục vụ Sales Rep dựng danh sách cần gọi trong tuần (S3-07) --%>
+
+                                            <!-- 2. Chấm trạng thái -->
+                                            <td style="text-align: center;">
                                                 <c:choose>
-                                                    <c:when test="${not empty kh.soDienThoaiLienHe}">
-                                                        <div class="contact-person-name">
-                                                            <c:out value="${not empty kh.tenNguoiLienHeChinh ? kh.tenNguoiLienHeChinh : 'Người liên hệ'}" />
-                                                        </div>
-                                                        <div style="margin-top: 4px;">
-                                                            <a href="tel:${kh.soDienThoaiLienHe}" class="phone-call-badge" title="Bấm để gọi ngay cho khách hàng">
-                                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">call</span>
-                                                                <c:out value="${kh.soDienThoaiLienHe}" />
-                                                            </a>
-                                                        </div>
+                                                    <c:when test="${kh.trangThai == 'KHACH_HANG' or kh.trangThaiHienThi == 'Khách hàng'}">
+                                                        <span class="status-indicator-dot dot-teal" title="Trạng thái: Khách hàng (Đã ký kết)"></span>
+                                                    </c:when>
+                                                    <c:when test="${kh.trangThai == 'DANG_GIAO_DICH' or kh.trangThai == 'DANG_TIEP_CAN' or kh.trangThaiHienThi == 'Đang giao dịch'}">
+                                                        <span class="status-indicator-dot dot-amber" title="Trạng thái: Đang giao dịch"></span>
+                                                    </c:when>
+                                                    <c:when test="${kh.trangThai == 'TIEM_NANG' or kh.trangThaiHienThi == 'Tiềm năng'}">
+                                                        <span class="status-indicator-dot dot-blue" title="Trạng thái: Tiềm năng"></span>
+                                                    </c:when>
+                                                    <c:when test="${kh.trangThai == 'NGUNG_HOP_TAC' or kh.trangThaiHienThi == 'Ngừng hợp tác'}">
+                                                        <span class="status-indicator-dot dot-gray" title="Trạng thái: Ngừng hợp tác"></span>
                                                     </c:when>
                                                     <c:otherwise>
-                                                        <span style="color: var(--slate-400); font-size: 13px;">Chưa có SĐT</span>
+                                                        <span class="status-indicator-dot dot-default" title="Trạng thái: <c:out value="${kh.trangThaiHienThi}" />"></span>
                                                     </c:otherwise>
                                                 </c:choose>
                                             </td>
-                                            <td>
-                                                <div style="font-weight: 500;"><c:out value="${not empty kh.tenNganhNghe ? kh.tenNganhNghe : '-'}" /></div>
-                                                <div style="font-size: 12px; color: var(--slate-400);"><c:out value="${not empty kh.tenQuyMo ? kh.tenQuyMo : ''}" /></div>
+
+                                            <!-- 3. Mã KH -->
+                                            <td class="font-mono">
+                                                <a href="${pageContext.request.contextPath}/khach-hang/360?id=${kh.id}" class="tbl-code-link" title="Xem hồ sơ 360° khách hàng">
+                                                    <c:out value="${not empty kh.maKhachHang ? kh.maKhachHang : ('KH-' += kh.id)}" />
+                                                </a>
                                             </td>
-                                            <td><c:out value="${not empty kh.tenKhuVuc ? kh.tenKhuVuc : '-'}" /></td>
+
+                                            <!-- 4. Khách hàng / Doanh nghiệp (Tách 3 dòng rõ ràng) -->
                                             <td>
-                                                <div style="font-weight: 600; color: var(--slate-800);"><c:out value="${kh.tenNguoiSoHuu}" /></div>
-                                                <div style="font-size: 12px; color: var(--slate-400);"><c:out value="${kh.tenNhomKinhDoanh}" /></div>
+                                                <div class="tbl-customer-cell">
+                                                    <!-- Dòng 1: Tên công ty / khách hàng, font đậm -->
+                                                    <div class="tbl-customer-row-1">
+                                                        <a href="${pageContext.request.contextPath}/khach-hang/360?id=${kh.id}" class="tbl-company-name">
+                                                            <c:out value="${kh.tenCongTy}" />
+                                                        </a>
+                                                        <c:if test="${kh.coRuiRo}">
+                                                            <span class="tbl-risk-chip" title="Khách hàng có cờ rủi ro rời bỏ hoặc ticket tồn đọng">
+                                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">warning</span>
+                                                                <span>Rủi ro</span>
+                                                            </span>
+                                                        </c:if>
+                                                    </div>
+                                                    <!-- Dòng 2: Website hoặc liên kết phụ -->
+                                                    <c:if test="${not empty kh.website}">
+                                                        <div class="tbl-customer-row-2">
+                                                            <a href="${kh.website.startsWith('http') ? kh.website : 'https://' += kh.website}" target="_blank" rel="noopener noreferrer" class="tbl-web-quick" title="Mở website: ${kh.website}">
+                                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">language</span>
+                                                                <span><c:out value="${kh.website}" /></span>
+                                                            </a>
+                                                        </div>
+                                                    </c:if>
+                                                    <!-- Dòng 3: MST / SĐT / Người liên hệ nếu có -->
+                                                    <div class="tbl-customer-row-3">
+                                                        <c:if test="${not empty kh.maSoThue}">
+                                                            <span class="tbl-mst-chip" title="Mã số thuế">MST: <c:out value="${kh.maSoThue}" /></span>
+                                                        </c:if>
+                                                        <c:if test="${not empty kh.soDienThoaiLienHe}">
+                                                            <a href="tel:${kh.soDienThoaiLienHe}" class="tbl-phone-quick" title="Bấm để gọi ngay">
+                                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">call</span>
+                                                                <span><c:out value="${kh.soDienThoaiLienHe}" /></span>
+                                                            </a>
+                                                        </c:if>
+                                                        <c:if test="${not empty kh.tenNguoiLienHeChinh}">
+                                                            <span class="tbl-contact-person" title="Người liên hệ chính">&bull; <c:out value="${kh.tenNguoiLienHeChinh}" /></span>
+                                                        </c:if>
+                                                    </div>
+                                                </div>
                                             </td>
+
+                                            <!-- 5. Người phụ trách -->
                                             <td>
-                                                <span class="badge ${kh.trangThai == 'TIEM_NANG' ? 'badge-info' : (kh.trangThai == 'DANG_GIAO_DICH' or kh.trangThai == 'DANG_TIEP_CAN' ? 'badge-warning' : (kh.trangThai == 'KHACH_HANG' ? 'badge-success' : 'badge-danger'))}">
-                                                    <c:out value="${kh.trangThaiHienThi}" />
-                                                </span>
+                                                <div class="tbl-owner-cell">
+                                                    <div class="tbl-owner-avatar" aria-hidden="true">
+                                                        <c:out value="${not empty kh.tenNguoiSoHuu ? kh.tenNguoiSoHuu.substring(0, 1).toUpperCase() : 'U'}" />
+                                                    </div>
+                                                    <div class="tbl-owner-meta">
+                                                        <div class="tbl-owner-name"><c:out value="${not empty kh.tenNguoiSoHuu ? kh.tenNguoiSoHuu : '—'}" /></div>
+                                                        <div class="tbl-owner-team"><c:out value="${not empty kh.tenNhomKinhDoanh ? kh.tenNhomKinhDoanh : 'Phòng kinh doanh'}" /></div>
+                                                    </div>
+                                                </div>
                                             </td>
+
+                                            <!-- 6. Lĩnh vực (Ngành nghề) -->
+                                            <td>
+                                                <span class="tbl-sector-text"><c:out value="${not empty kh.tenNganhNghe ? kh.tenNganhNghe : '—'}" /></span>
+                                            </td>
+
+                                            <!-- 7. Quy mô -->
+                                            <td>
+                                                <span class="tbl-scale-badge"><c:out value="${not empty kh.tenQuyMo ? kh.tenQuyMo : '—'}" /></span>
+                                            </td>
+
+                                            <!-- 8. Trạng thái -->
                                             <td style="text-align: center;">
-                                                <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
-                                                    <a href="${pageContext.request.contextPath}/khach-hang/360?id=${kh.id}" class="crm-btn-action" title="Hồ sơ 360° khách hàng (S3-03)" aria-label="Xem chi tiết hồ sơ 360 khách hàng ${kh.tenCongTy}">
+                                                <c:choose>
+                                                    <c:when test="${kh.trangThai == 'TIEM_NANG' or kh.trangThaiHienThi == 'Tiềm năng'}">
+                                                        <span class="tbl-badge-status status-tiem-nang">Tiềm năng</span>
+                                                    </c:when>
+                                                    <c:when test="${kh.trangThai == 'DANG_GIAO_DICH' or kh.trangThai == 'DANG_TIEP_CAN' or kh.trangThaiHienThi == 'Đang giao dịch'}">
+                                                        <span class="tbl-badge-status status-dang-giao-dich">Đang giao dịch</span>
+                                                    </c:when>
+                                                    <c:when test="${kh.trangThai == 'KHACH_HANG' or kh.trangThaiHienThi == 'Khách hàng'}">
+                                                        <span class="tbl-badge-status status-khach-hang">Khách hàng</span>
+                                                    </c:when>
+                                                    <c:when test="${kh.trangThai == 'NGUNG_HOP_TAC' or kh.trangThaiHienThi == 'Ngừng hợp tác'}">
+                                                        <span class="tbl-badge-status status-ngung-hop-tac">Ngừng hợp tác</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="tbl-badge-status status-default"><c:out value="${kh.trangThaiHienThi}" /></span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+
+                                            <!-- 9. Khu vực / Nhóm (2 dòng rõ ràng kèm icon vị trí) -->
+                                            <td>
+                                                <div class="tbl-region-cell">
+                                                    <div class="tbl-region-name">
+                                                        <span class="material-symbols-outlined tbl-loc-icon" aria-hidden="true">location_on</span>
+                                                        <span><c:out value="${not empty kh.tenKhuVuc ? kh.tenKhuVuc : 'Toàn quốc'}" /></span>
+                                                    </div>
+                                                    <div class="tbl-region-team"><c:out value="${not empty kh.tenNhomKinhDoanh ? kh.tenNhomKinhDoanh : 'Phòng kinh doanh'}" /></div>
+                                                </div>
+                                            </td>
+
+                                            <!-- 10. Thao tác -->
+                                            <td style="text-align: center;">
+                                                <div class="tbl-actions-flex">
+                                                    <a href="${pageContext.request.contextPath}/khach-hang/360?id=${kh.id}" class="tbl-btn-action btn-view" title="Xem hồ sơ 360° khách hàng" aria-label="Xem chi tiết hồ sơ 360 ${kh.tenCongTy}">
                                                         <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
                                                     </a>
                                                     <c:if test="${coQuyenSuaKhach}">
-                                                    <button type="button" class="crm-btn-action btn-edit-customer btnSuaKhachHang btn-sua-khach-hang" title="Chỉnh sửa thông tin khách hàng"
+                                                    <button type="button" class="tbl-btn-action btn-edit btn-edit-customer btnSuaKhachHang btn-sua-khach-hang" title="Chỉnh sửa thông tin khách hàng"
                                                             data-id="${kh.id}"
                                                             data-ma="${kh.maKhachHang}"
                                                             data-makh="${kh.maKhachHang}"
@@ -748,7 +810,7 @@
                                                     <form method="POST" action="${pageContext.request.contextPath}/khach-hang" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa khách hàng này?');">
                                                         <input type="hidden" name="action" value="xoa">
                                                         <input type="hidden" name="id" value="${kh.id}">
-                                                        <button type="submit" class="crm-btn-action btn-xoa-khach-hang" title="Xóa khách hàng" aria-label="Xóa khách hàng ${kh.tenCongTy}" style="color: var(--danger, #ef4444);">
+                                                        <button type="submit" class="tbl-btn-action btn-delete btn-xoa-khach-hang" title="Xóa khách hàng" aria-label="Xóa khách hàng ${kh.tenCongTy}">
                                                             <span class="material-symbols-outlined" aria-hidden="true">delete</span>
                                                         </button>
                                                     </form>
@@ -758,23 +820,40 @@
                                         </tr>
                                     </c:forEach>
                                 </c:when>
+
                                 <%-- Fallback danh sách BanGhiNghiepVuDTO nếu dsKhachHangModel chưa nạp --%>
                                 <c:when test="${not empty danhSachKhachHang}">
                                     <c:forEach var="kh" items="${danhSachKhachHang}">
                                         <tr>
-                                            <td class="font-mono"><c:out value="${kh.maBanGhi}" /></td>
+                                            <td style="text-align: center;">
+                                                <input type="checkbox" class="crm-table-checkbox row-select-cb" value="${kh.id}" aria-label="Chọn khách hàng">
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <span class="status-indicator-dot dot-teal" title="Trạng thái: Hoạt động"></span>
+                                            </td>
+                                            <td class="font-mono">
+                                                <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" class="tbl-code-link">
+                                                    <c:out value="${kh.maBanGhi}" />
+                                                </a>
+                                            </td>
                                             <td>
-                                                <div class="customer-name"><c:out value="${kh.tieuDe}" /></div>
+                                                <div class="tbl-company-name"><c:out value="${kh.tieuDe}" /></div>
                                                 <div class="customer-sub"><c:out value="${kh.moTaChiTiet}" /></div>
                                             </td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td><c:out value="${kh.giaTri}" /></td>
-                                            <td>-</td>
-                                            <td><c:out value="${kh.tenNguoiPhuTrach}" /></td>
-                                            <td><span class="badge badge-success"><c:out value="${kh.trangThai}" /></span></td>
+                                            <td>
+                                                <div class="tbl-owner-cell">
+                                                    <div class="tbl-owner-avatar">U</div>
+                                                    <div class="tbl-owner-meta">
+                                                        <div class="tbl-owner-name"><c:out value="${kh.tenNguoiPhuTrach}" /></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>—</td>
+                                            <td><span class="tbl-scale-badge">—</span></td>
+                                            <td style="text-align: center;"><span class="tbl-badge-status status-khach-hang"><c:out value="${kh.trangThai}" /></span></td>
+                                            <td>—</td>
                                             <td style="text-align: center;">
-                                                <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" class="crm-btn-action" title="Xem chi tiết khách hàng" aria-label="Xem chi tiết khách hàng">
+                                                <a href="${pageContext.request.contextPath}/chi-tiet-ban-ghi?id=${kh.id}" class="tbl-btn-action btn-view" title="Xem chi tiết">
                                                     <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
                                                 </a>
                                             </td>
@@ -783,7 +862,7 @@
                                 </c:when>
                                 <c:otherwise>
                                     <tr>
-                                        <td colspan="9" class="empty-state-cell">
+                                        <td colspan="10" class="empty-state-cell">
                                             <div class="empty-state-wrap">
                                                 <div class="empty-state-icon" aria-hidden="true">
                                                     <span class="material-symbols-outlined icon-lg">search_off</span>
@@ -830,12 +909,10 @@
             </div>
         </div>
 
-<!-- ===================================================================
+        <!-- ===================================================================
              TAB 2: CHĂM SÓC ĐỊNH KỲ (Story S3-09)
-             Acceptance Criteria:
-             • AC1: Danh sách khách chưa có tương tác nào trong N ngày, N cấu hình được
-             • AC2: Sắp xếp theo giá trị hợp đồng giảm dần
-             • AC3: Đánh dấu đã liên hệ ngay trên danh sách
+             Bảng đồng bộ phong cách CRM thương mại với Tab Tất cả khách hàng:
+             Checkbox | Chấm trạng thái | Mã KH | Khách hàng | Giá trị HĐ | Tương tác gần nhất | Người phụ trách | Trạng thái chăm sóc | Thao tác
              =================================================================== -->
         <div class="crm-tab-pane ${tabHienTai eq 'cham-soc' ? 'active' : ''}" id="paneChamSoc" role="tabpanel" aria-labelledby="tabBtnChamSoc">
             <!-- 4 Thẻ tóm tắt số liệu chăm sóc khách hàng -->
@@ -931,131 +1008,178 @@
                 </div>
             </div>
 
-            <!-- Bảng danh sách khách hàng cần chăm sóc định kỳ (AC2: Sắp xếp theo giá trị hợp đồng giảm dần) -->
-            <div class="table-container">
-                <div style="padding: 12px 16px; background: #f8fafc; border-bottom: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                    <span style="font-size: 13px; color: var(--slate-600);">
-                        Tiêu chí: Chưa tương tác <strong>&ge; <span id="textSoNgayTieuChi">30</span> ngày</strong>
-                        &bull; Thứ tự hiển thị: <strong style="color: var(--primary);">Giá trị hợp đồng giảm dần (AC2)</strong>
-                        &bull; Đang hiển thị: <strong id="countHienThi">0</strong> / <strong id="countTongSo">0</strong> khách hàng
-                    </span>
-                    <span style="font-size: 12.5px; color: var(--slate-500); display: inline-flex; align-items: center; gap: 4px;">
-                        <span class="material-symbols-outlined icon-xs" aria-hidden="true" style="color: var(--primary);">swap_vert</span>
-                        Click vào cột Giá trị hợp đồng để chuyển đổi thứ tự
-                    </span>
+            <!-- Bảng danh sách khách hàng cần chăm sóc định kỳ (Đồng bộ chuẩn CRM thương mại) -->
+            <div class="table-card" id="chamSocTableCard">
+                <div class="table-header-bar">
+                    <div class="table-meta-info">
+                        <span class="table-meta-item">
+                            Tiêu chí: Chưa tương tác <strong>&ge; <span id="textSoNgayTieuChi">30</span> ngày</strong>
+                            &bull; Thứ tự: <strong style="color: var(--primary);">Giá trị hợp đồng giảm dần (AC2)</strong>
+                            &bull; Đang hiển thị: <strong id="countHienThi" style="color: var(--primary);">0</strong> / <strong id="countTongSo">0</strong> khách hàng
+                        </span>
+                    </div>
+                    <div class="table-header-links">
+                        <span style="font-size: 12.5px; color: var(--slate-500); display: inline-flex; align-items: center; gap: 4px;">
+                            <span class="material-symbols-outlined icon-xs" aria-hidden="true" style="color: var(--primary);">swap_vert</span>
+                            <span>Click cột Giá trị HĐ để đảo chiều sắp xếp</span>
+                        </span>
+                    </div>
                 </div>
 
-                <table class="data-table" id="tableChamSocDinhKy">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px; text-align: center;">STT</th>
-                            <th style="width: 90px;">Mã KH</th>
-                            <th>Khách Hàng / Doanh Nghiệp</th>
-                            <th class="th-sort-active" id="thGiaTriHopDong" style="cursor: pointer; width: 170px;" title="Nhấn để đảo chiều sắp xếp theo giá trị hợp đồng">
-                                <span class="th-sort-wrap">
-                                    <span>Giá Trị Hợp Đồng</span>
-                                    <span class="material-symbols-outlined icon-xs" id="iconSortGiaTri" aria-hidden="true">arrow_downward</span>
-                                </span>
-                            </th>
-                            <th style="width: 170px;">Tương Tác Gần Nhất</th>
-                            <th style="width: 160px;">Người Phụ Trách</th>
-                            <th style="width: 130px; text-align: center;">Trạng Thái</th>
-                            <th style="width: 160px; text-align: center;">Thao Tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbodyChamSocDinhKy">
-                        <!-- Danh sách khách hàng trích xuất từ dữ liệu thực tế của servlet -->
-                        <c:set var="dsHienThiChamSoc" value="${not empty danhSachChamSoc ? danhSachChamSoc : danhSachKhachHang}" />
-                        <c:choose>
-                            <c:when test="${not empty dsHienThiChamSoc}">
-                                <c:forEach var="kh" items="${dsHienThiChamSoc}" varStatus="status">
-                                    <tr class="row-khach-hang"
-                                        data-kh-id="${kh.id}"
-                                        data-ma-kh="<c:out value='${not empty kh.maKhachHang ? kh.maKhachHang : kh.maBanGhi}' />"
-                                        data-ten-kh="<c:out value='${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}' />"
-                                        data-nguoi-phu-trach="<c:out value='${kh.tenNguoiPhuTrach}' />"
-                                        data-ten-nhom="<c:out value='${kh.tenNhom}' />"
-                                        data-ngay-tao="<c:out value='${kh.ngayTao}' />"
-                                        data-gia-tri-hd="${not empty kh.tongGiaTriHopDong ? kh.tongGiaTriHopDong : ''}"
-                                        data-ma-hd="<c:out value='${not empty kh.soHopDong ? kh.soHopDong : \"\"}' />"
-                                        data-so-ngay-chua-tt="${kh.soNgayChuaTuongTac}"
-                                        data-da-lien-he="${kh.daLienHeHomNay ? 'true' : 'false'}"
-                                        data-gia-tri-raw="<c:out value='${kh.giaTri}' />"
-                                        data-trang-thai="<c:out value='${kh.trangThai}' />"
-                                        data-mo-ta="<c:out value='${kh.moTaChiTiet}' />">
-                                        <td style="text-align: center;" class="cell-stt">${status.index + 1}</td>
-                                        <td class="font-mono"><c:out value="${not empty kh.maKhachHang ? kh.maKhachHang : kh.maBanGhi}" /></td>
-                                        <td>
-                                            <div class="customer-name">
-                                                <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${kh.id}" style="color: inherit; text-decoration: none;">
-                                                    <c:out value="${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}" />
+                <div class="table-responsive">
+                    <table class="data-table customer-modern-table" id="tableChamSocDinhKy">
+                        <thead>
+                            <tr>
+                                <th style="width: 44px; text-align: center;">
+                                    <input type="checkbox" id="checkAllChamSoc" class="crm-table-checkbox" aria-label="Chọn tất cả khách hàng cần chăm sóc">
+                                </th>
+                                <th style="width: 36px; text-align: center;" title="Chấm trạng thái chăm sóc">
+                                    <span class="tbl-dot-header" aria-hidden="true">&bull;</span>
+                                </th>
+                                <th style="width: 105px;">Mã KH</th>
+                                <th style="min-width: 220px;">Khách hàng</th>
+                                <th class="th-sort-active" id="thGiaTriHopDong" style="cursor: pointer; width: 170px; text-align: right;" title="Nhấn để đảo chiều sắp xếp theo giá trị hợp đồng">
+                                    <span class="th-sort-wrap" style="justify-content: flex-end;">
+                                        <span>Giá Trị HĐ</span>
+                                        <span class="material-symbols-outlined icon-xs" id="iconSortGiaTri" aria-hidden="true">arrow_downward</span>
+                                    </span>
+                                </th>
+                                <th style="width: 180px;">Tương Tác Gần Nhất</th>
+                                <th style="width: 165px;">Người Phụ Trách</th>
+                                <th style="width: 145px; text-align: center;">Trạng Thái Chăm Sóc</th>
+                                <th style="width: 155px; text-align: center;">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyChamSocDinhKy">
+                            <!-- Danh sách khách hàng trích xuất từ servlet -->
+                            <c:set var="dsHienThiChamSoc" value="${not empty danhSachChamSoc ? danhSachChamSoc : danhSachKhachHang}" />
+                            <c:choose>
+                                <c:when test="${not empty dsHienThiChamSoc}">
+                                    <c:forEach var="kh" items="${dsHienThiChamSoc}" varStatus="status">
+                                        <tr class="row-khach-hang"
+                                            data-kh-id="${kh.id}"
+                                            data-ma-kh="<c:out value='${not empty kh.maKhachHang ? kh.maKhachHang : kh.maBanGhi}' />"
+                                            data-ten-kh="<c:out value='${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}' />"
+                                            data-nguoi-phu-trach="<c:out value='${kh.tenNguoiPhuTrach}' />"
+                                            data-ten-nhom="<c:out value='${kh.tenNhom}' />"
+                                            data-ngay-tao="<c:out value='${kh.ngayTao}' />"
+                                            data-gia-tri-hd="${not empty kh.tongGiaTriHopDong ? kh.tongGiaTriHopDong : ''}"
+                                            data-ma-hd="<c:out value='${not empty kh.soHopDong ? kh.soHopDong : \"\"}' />"
+                                            data-so-ngay-chua-tt="${kh.soNgayChuaTuongTac}"
+                                            data-da-lien-he="${kh.daLienHeHomNay ? 'true' : 'false'}"
+                                            data-gia-tri-raw="<c:out value='${kh.giaTri}' />"
+                                            data-trang-thai="<c:out value='${kh.trangThai}' />"
+                                            data-mo-ta="<c:out value='${kh.moTaChiTiet}' />">
+                                            <!-- 1. Checkbox -->
+                                            <td style="text-align: center;">
+                                                <input type="checkbox" class="crm-table-checkbox row-select-cb-cs" value="${kh.id}" aria-label="Chọn khách hàng ${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}">
+                                            </td>
+
+                                            <!-- 2. Chấm trạng thái -->
+                                            <td style="text-align: center;">
+                                                <span class="status-indicator-dot ${kh.daLienHeHomNay ? 'dot-teal' : (kh.soNgayChuaTuongTac gt 60 ? 'dot-red' : 'dot-amber')} cell-status-dot-cs"
+                                                      title="${kh.daLienHeHomNay ? 'Đã liên hệ hôm nay' : (kh.soNgayChuaTuongTac gt 60 ? 'Quá hạn > 60 ngày' : 'Cần liên hệ')}"></span>
+                                            </td>
+
+                                            <!-- 3. Mã KH -->
+                                            <td class="font-mono">
+                                                <a href="${pageContext.request.contextPath}/khach-hang/360?id=${kh.id}" class="tbl-code-link" title="Xem hồ sơ 360° khách hàng">
+                                                    <c:out value="${not empty kh.maKhachHang ? kh.maKhachHang : kh.maBanGhi}" />
                                                 </a>
-                                            </div>
-                                            <div class="customer-sub"><c:out value="${kh.moTaChiTiet}" /></div>
-                                        </td>
-                                        <td>
-                                            <div class="col-contract-highlight cell-gia-tri-hd">${not empty kh.tongGiaTriHopDongDinhDang ? kh.tongGiaTriHopDongDinhDang : '--- đ'}</div>
-                                            <span class="contract-code-tag cell-ma-hd"><c:out value="${not empty kh.soHopDong ? kh.soHopDong : 'HĐ-CHUA-KY'}" /></span>
-                                        </td>
-                                        <td>
-                                            <div class="cell-overdue-wrap">
-                                                <c:set var="isOverdue60" value="${kh.soNgayChuaTuongTac gt 60}" />
-                                                <span class="overdue-badge ${kh.daLienHeHomNay ? 'badge-green' : (isOverdue60 ? 'badge-red' : 'badge-amber')} cell-overdue-badge">
-                                                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">${kh.daLienHeHomNay ? 'check_circle' : 'schedule'}</span>
-                                                    <span class="text-so-ngay-chua-tt">${kh.daLienHeHomNay ? 'Đã liên hệ hôm nay' : (kh.soNgayChuaTuongTac gt 0 ? kh.soNgayChuaTuongTac.toString().concat(' ngày chưa liên hệ') : '-- ngày')}</span>
+                                            </td>
+
+                                            <!-- 4. Khách hàng -->
+                                            <td>
+                                                <div class="tbl-company-name">
+                                                    <a href="${pageContext.request.contextPath}/khach-hang/360?id=${kh.id}">
+                                                        <c:out value="${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}" />
+                                                    </a>
+                                                </div>
+                                                <div class="tbl-company-sub">
+                                                    <c:out value="${not empty kh.moTaChiTiet ? kh.moTaChiTiet : 'Khách hàng có hợp đồng đang hoạt động'}" />
+                                                </div>
+                                            </td>
+
+                                            <!-- 5. Giá trị hợp đồng (căn phải) -->
+                                            <td style="text-align: right;">
+                                                <div class="col-contract-highlight cell-gia-tri-hd">${not empty kh.tongGiaTriHopDongDinhDang ? kh.tongGiaTriHopDongDinhDang : '--- đ'}</div>
+                                                <span class="contract-code-tag cell-ma-hd"><c:out value="${not empty kh.soHopDong ? kh.soHopDong : 'HĐ-CHUA-KY'}" /></span>
+                                            </td>
+
+                                            <!-- 6. Tương tác gần nhất -->
+                                            <td>
+                                                <div class="cell-overdue-wrap">
+                                                    <c:set var="isOverdue60" value="${kh.soNgayChuaTuongTac gt 60}" />
+                                                    <span class="overdue-badge ${kh.daLienHeHomNay ? 'badge-green' : (isOverdue60 ? 'badge-red' : 'badge-amber')} cell-overdue-badge">
+                                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">${kh.daLienHeHomNay ? 'check_circle' : 'schedule'}</span>
+                                                        <span class="text-so-ngay-chua-tt">${kh.daLienHeHomNay ? 'Đã liên hệ hôm nay' : (kh.soNgayChuaTuongTac gt 0 ? kh.soNgayChuaTuongTac.toString().concat(' ngày chưa liên hệ') : '-- ngày')}</span>
+                                                    </span>
+                                                    <span class="overdue-date-text cell-ngay-tt-cuoi">${not empty kh.lanTuongTacCuoiDinhDang ? kh.lanTuongTacCuoiDinhDang : 'Chưa có tương tác'}</span>
+                                                </div>
+                                            </td>
+
+                                            <!-- 7. Người phụ trách -->
+                                            <td>
+                                                <div class="tbl-owner-cell">
+                                                    <div class="tbl-owner-avatar" aria-hidden="true">
+                                                        <c:out value="${not empty kh.tenNguoiPhuTrach ? kh.tenNguoiPhuTrach.substring(0, 1).toUpperCase() : 'U'}" />
+                                                    </div>
+                                                    <div class="tbl-owner-meta">
+                                                        <div class="tbl-owner-name"><c:out value="${not empty kh.tenNguoiPhuTrach ? kh.tenNguoiPhuTrach : '—'}" /></div>
+                                                        <div class="tbl-owner-team"><c:out value="${not empty kh.tenNhom ? kh.tenNhom : 'Phòng kinh doanh'}" /></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <!-- 8. Trạng thái chăm sóc -->
+                                            <td style="text-align: center;">
+                                                <span class="tbl-badge-status cell-badge-trang-thai ${kh.daLienHeHomNay ? 'status-khach-hang' : (kh.soNgayChuaTuongTac gt 60 ? 'status-ngung-hop-tac' : 'status-dang-giao-dich')}">
+                                                    ${kh.daLienHeHomNay ? 'Đã liên hệ' : (kh.soNgayChuaTuongTac gt 60 ? 'Quá hạn' : 'Cần liên hệ')}
                                                 </span>
-                                                <span class="overdue-date-text cell-ngay-tt-cuoi">${not empty kh.lanTuongTacCuoiDinhDang ? kh.lanTuongTacCuoiDinhDang : 'Chưa có tương tác'}</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div><c:out value="${kh.tenNguoiPhuTrach}" /></div>
-                                            <div style="font-size: 12px; color: var(--slate-500);"><c:out value="${kh.tenNhom}" /></div>
-                                        </td>
-                                        <td style="text-align: center;">
-                                            <span class="badge cell-badge-trang-thai ${kh.daLienHeHomNay ? 'badge-success' : (kh.soNgayChuaTuongTac gt 60 ? 'badge-danger' : 'badge-warning')}">
-                                                ${kh.daLienHeHomNay ? 'Đã chăm sóc' : (kh.soNgayChuaTuongTac gt 60 ? 'Quá hạn cao' : 'Cần liên hệ')}
-                                            </span>
-                                        </td>
-                                        <td style="text-align: center;">
-                                            <div class="actions-cell-flex">
-                                                <c:set var="coQuyenChamSoc" value="${empty userHienTai or userHienTai.coVaiTro('ADMIN') or userHienTai.coVaiTro('DIRECTOR') or userHienTai.coVaiTro('TEAM_LEAD') or userHienTai.coVaiTro('SALES_REP') or userHienTai.coVaiTro('CUST_SUCCESS')}" />
-                                                <c:choose>
-                                                    <c:when test="${coQuyenChamSoc}">
-                                                        <button type="button" class="btn-contact-mark btn-action-mark ${kh.daLienHeHomNay ? 'is-contacted' : ''}"
-                                                                data-kh-id="${kh.id}"
-                                                                data-ten-kh="<c:out value='${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}' />"
-                                                                ${kh.daLienHeHomNay ? 'disabled' : ''}
-                                                                title="Đánh dấu đã liên hệ khách hàng này ngay trên danh sách"
-                                                                aria-label="Đánh dấu đã liên hệ với ${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}">
-                                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">${kh.daLienHeHomNay ? 'check' : 'phone_in_talk'}</span>
-                                                            <span>Đã liên hệ</span>
-                                                        </button>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <button type="button" class="btn-contact-mark" disabled title="Tài khoản kế toán chỉ có quyền xem dữ liệu" style="opacity: 0.6; cursor: not-allowed;">
-                                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">visibility</span>
-                                                            <span>Chỉ xem</span>
-                                                        </button>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                                <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${kh.id}" class="btn-action" title="Xem chi tiết hồ sơ khách hàng" aria-label="Xem chi tiết ${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}">
-                                                    <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
-                                                </a>
-                                            </div>
+                                            </td>
+
+                                            <!-- 9. Thao tác -->
+                                            <td style="text-align: center;">
+                                                <div class="tbl-actions-flex">
+                                                    <c:set var="coQuyenChamSoc" value="${empty userHienTai or userHienTai.coVaiTro('ADMIN') or userHienTai.coVaiTro('DIRECTOR') or userHienTai.coVaiTro('TEAM_LEAD') or userHienTai.coVaiTro('SALES_REP') or userHienTai.coVaiTro('CUST_SUCCESS')}" />
+                                                    <c:choose>
+                                                        <c:when test="${coQuyenChamSoc}">
+                                                            <button type="button" class="btn-contact-mark btn-action-mark ${kh.daLienHeHomNay ? 'is-contacted' : ''}"
+                                                                    data-kh-id="${kh.id}"
+                                                                    data-ten-kh="<c:out value='${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}' />"
+                                                                    ${kh.daLienHeHomNay ? 'disabled' : ''}
+                                                                    title="Đánh dấu đã liên hệ khách hàng này ngay trên danh sách"
+                                                                    aria-label="Đánh dấu đã liên hệ với ${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}">
+                                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">${kh.daLienHeHomNay ? 'check' : 'phone_in_talk'}</span>
+                                                                <span>Đã liên hệ</span>
+                                                            </button>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <button type="button" class="btn-contact-mark" disabled title="Tài khoản chỉ có quyền xem dữ liệu" style="opacity: 0.6; cursor: not-allowed;">
+                                                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">visibility</span>
+                                                                <span>Chỉ xem</span>
+                                                            </button>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                    <a href="${pageContext.request.contextPath}/khach-hang/360?id=${kh.id}" class="tbl-btn-action btn-view" title="Xem hồ sơ 360° khách hàng" aria-label="Xem chi tiết ${not empty kh.tenCongTy ? kh.tenCongTy : kh.tieuDe}">
+                                                        <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                </c:when>
+                                <c:otherwise>
+                                    <tr>
+                                        <td colspan="9" style="text-align: center; padding: 36px; color: var(--slate-500);">
+                                            Không tìm thấy khách hàng nào trong hệ thống thuộc phạm vi dữ liệu của bạn.
                                         </td>
                                     </tr>
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                <tr>
-                                    <td colspan="8" style="text-align: center; padding: 36px; color: var(--slate-500);">
-                                        Không tìm thấy khách hàng nào trong hệ thống thuộc phạm vi dữ liệu của bạn.
-                                    </td>
-                                </tr>
-                            </c:otherwise>
-                        </c:choose>
-                    </tbody>
-                </table>
+                                </c:otherwise>
+                            </c:choose>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -1168,7 +1292,7 @@
 
 
         <!-- TAB 2: Trung Tâm Cảnh Báo Trùng Lặp & Gộp Khách Hàng (Story S3-04) -->
-        <div class="crm-tab-pane tab-pane ${tabHienTai eq 'trung' ? 'active' : ''}" id="paneTrungLap" role="tabpanel" aria-labelledby="tabBtnTrungLap" style="${tabHienTai eq 'trung' ? 'display: block;' : 'display: none;'}">
+        <div class="crm-tab-pane tab-pane ${tabHienTai eq 'trung' ? 'active' : ''}" id="paneTrungLap" role="tabpanel" aria-labelledby="tabBtnTrungLap">
             <!-- Thẻ giới thiệu quy trình phát hiện và gộp -->
             <div class="card" style="margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
@@ -1813,7 +1937,7 @@
         ${not empty danhSachCapTrungJson ? danhSachCapTrungJson : '[]'}
     </script>
     <script>
-        window.LA_TRUONG_NHOM = ${laTruongNhomTroLen ? 'true' : 'false'};
+        window.LA_TRUONG_NHOM = "${laTruongNhomTroLen ? 'true' : 'false'}" === "true";
         window.TAB_HIEN_TAI = "${not empty tabHienTai ? tabHienTai : 'tat-ca'}";
         try {
             var rawTrung = document.getElementById('serverDataTrungLap').textContent;
