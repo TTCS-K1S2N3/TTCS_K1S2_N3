@@ -187,42 +187,72 @@
                                 <label class="lead-label">
                                     <span>Chọn kênh tiếp nhận <span class="required-dot">*</span></span>
                                 </label>
-                                <c:set var="chonNguon" value="${formData != null && formData.nguonLeadId != null ? formData.nguonLeadId : (not empty param.nguon_lead_id ? param.nguon_lead_id : 1)}" />
+                                <c:set var="chonNguon" value="${formData != null && formData.nguonLeadId != null ? formData.nguonLeadId : (not empty param.nguon_lead_id ? param.nguon_lead_id : (not empty dsNguonLead ? dsNguonLead[0].id : 1))}" />
                                 <div class="lead-source-chips" role="radiogroup" aria-label="Nguồn tiếp nhận Lead">
-                                    <div class="lead-source-chip ${chonNguon == 1 ? 'selected' : ''}" data-value="1" role="radio" aria-checked="${chonNguon == 1}" tabindex="0">
-                                        <span class="material-symbols-outlined">festival</span>
-                                        <span>Sự kiện / Hội thảo</span>
-                                    </div>
-                                    <div class="lead-source-chip ${chonNguon == 2 ? 'selected' : ''}" data-value="2" role="radio" aria-checked="${chonNguon == 2}" tabindex="0">
-                                        <span class="material-symbols-outlined">contact_page</span>
-                                        <span>Danh thiếp đối tác</span>
-                                    </div>
-                                    <div class="lead-source-chip ${chonNguon == 3 ? 'selected' : ''}" data-value="3" role="radio" aria-checked="${chonNguon == 3}" tabindex="0">
-                                        <span class="material-symbols-outlined">handshake</span>
-                                        <span>Khách giới thiệu</span>
-                                    </div>
-                                    <div class="lead-source-chip ${chonNguon == 4 ? 'selected' : ''}" data-value="4" role="radio" aria-checked="${chonNguon == 4}" tabindex="0">
-                                        <span class="material-symbols-outlined">globe</span>
-                                        <span>Website / Biểu mẫu</span>
-                                    </div>
-                                    <div class="lead-source-chip ${chonNguon == 5 ? 'selected' : ''}" data-value="5" role="radio" aria-checked="${chonNguon == 5}" tabindex="0">
-                                        <span class="material-symbols-outlined">support_agent</span>
-                                        <span>Gọi điện thoại</span>
-                                    </div>
-                                    <div class="lead-source-chip ${chonNguon == 6 ? 'selected' : ''}" data-value="6" role="radio" aria-checked="${chonNguon == 6}" tabindex="0">
-                                        <span class="material-symbols-outlined">more_horiz</span>
-                                        <span>Nguồn khác</span>
-                                    </div>
+                                    <c:choose>
+                                        <c:when test="${not empty dsNguonLead}">
+                                            <c:forEach items="${dsNguonLead}" var="nguon" varStatus="loop">
+                                                <div class="lead-source-chip ${(chonNguon == nguon.id || (chonNguon == null && loop.first)) ? 'selected' : ''}" data-value="${nguon.id}" role="radio" aria-checked="${chonNguon == nguon.id}" tabindex="0">
+                                                    <span class="material-symbols-outlined">
+                                                        <c:choose>
+                                                            <c:when test="${nguon.maMuc == 'SU_KIEN'}">festival</c:when>
+                                                            <c:when test="${nguon.maMuc == 'DANH_THIEP'}">contact_page</c:when>
+                                                            <c:when test="${nguon.maMuc == 'GIOI_THIEU'}">handshake</c:when>
+                                                            <c:when test="${nguon.maMuc == 'WEBSITE'}">globe</c:when>
+                                                            <c:when test="${nguon.maMuc == 'DIEN_THOAI'}">support_agent</c:when>
+                                                            <c:otherwise>category</c:otherwise>
+                                                        </c:choose>
+                                                    </span>
+                                                    <span><c:out value="${nguon.tenMuc}" /></span>
+                                                </div>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div class="lead-source-chip ${chonNguon == 1 ? 'selected' : ''}" data-value="1" role="radio" aria-checked="${chonNguon == 1}" tabindex="0">
+                                                <span class="material-symbols-outlined">festival</span>
+                                                <span>Sự kiện / Hội thảo</span>
+                                            </div>
+                                            <div class="lead-source-chip ${chonNguon == 2 ? 'selected' : ''}" data-value="2" role="radio" aria-checked="${chonNguon == 2}" tabindex="0">
+                                                <span class="material-symbols-outlined">contact_page</span>
+                                                <span>Danh thiếp đối tác</span>
+                                            </div>
+                                            <div class="lead-source-chip ${chonNguon == 3 ? 'selected' : ''}" data-value="3" role="radio" aria-checked="${chonNguon == 3}" tabindex="0">
+                                                <span class="material-symbols-outlined">handshake</span>
+                                                <span>Khách giới thiệu</span>
+                                            </div>
+                                            <div class="lead-source-chip ${chonNguon == 4 ? 'selected' : ''}" data-value="4" role="radio" aria-checked="${chonNguon == 4}" tabindex="0">
+                                                <span class="material-symbols-outlined">globe</span>
+                                                <span>Website / Biểu mẫu</span>
+                                            </div>
+                                            <div class="lead-source-chip ${chonNguon == 5 ? 'selected' : ''}" data-value="5" role="radio" aria-checked="${chonNguon == 5}" tabindex="0">
+                                                <span class="material-symbols-outlined">support_agent</span>
+                                                <span>Gọi điện thoại</span>
+                                            </div>
+                                            <div class="lead-source-chip ${chonNguon == 6 ? 'selected' : ''}" data-value="6" role="radio" aria-checked="${chonNguon == 6}" tabindex="0">
+                                                <span class="material-symbols-outlined">more_horiz</span>
+                                                <span>Nguồn khác</span>
+                                            </div>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
 
                                 <!-- Select ẩn đồng bộ với form POST -->
                                 <select id="nguon_lead_id" name="nguon_lead_id" class="lead-select" style="display:none;" required>
-                                    <option value="1" ${chonNguon == 1 ? 'selected' : ''}>Sự kiện / Hội thảo</option>
-                                    <option value="2" ${chonNguon == 2 ? 'selected' : ''}>Danh thiếp đối tác</option>
-                                    <option value="3" ${chonNguon == 3 ? 'selected' : ''}>Khách giới thiệu</option>
-                                    <option value="4" ${chonNguon == 4 ? 'selected' : ''}>Website / Biểu mẫu</option>
-                                    <option value="5" ${chonNguon == 5 ? 'selected' : ''}>Gọi điện thoại</option>
-                                    <option value="6" ${chonNguon == 6 ? 'selected' : ''}>Nguồn khác</option>
+                                    <c:choose>
+                                        <c:when test="${not empty dsNguonLead}">
+                                            <c:forEach items="${dsNguonLead}" var="nguon" varStatus="loop">
+                                                <option value="${nguon.id}" ${(chonNguon == nguon.id || (chonNguon == null && loop.first)) ? 'selected' : ''}><c:out value="${nguon.tenMuc}" /></option>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <option value="1" ${chonNguon == 1 ? 'selected' : ''}>Sự kiện / Hội thảo</option>
+                                            <option value="2" ${chonNguon == 2 ? 'selected' : ''}>Danh thiếp đối tác</option>
+                                            <option value="3" ${chonNguon == 3 ? 'selected' : ''}>Khách giới thiệu</option>
+                                            <option value="4" ${chonNguon == 4 ? 'selected' : ''}>Website / Biểu mẫu</option>
+                                            <option value="5" ${chonNguon == 5 ? 'selected' : ''}>Gọi điện thoại</option>
+                                            <option value="6" ${chonNguon == 6 ? 'selected' : ''}>Nguồn khác</option>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </select>
                                 <c:if test="${not empty errors.nguonLeadId}">
                                     <div class="lead-error-msg"><c:out value="${errors.nguonLeadId}" /></div>
