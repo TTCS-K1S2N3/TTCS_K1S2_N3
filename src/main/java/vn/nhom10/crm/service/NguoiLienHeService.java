@@ -1,15 +1,20 @@
 package vn.nhom10.crm.service;
 
+import vn.nhom10.crm.dao.KhachHang360DAO;
 import vn.nhom10.crm.dao.KhachHangDAO;
 import vn.nhom10.crm.dao.NguoiLienHeDAO;
+import vn.nhom10.crm.model.HoatDong;
 import vn.nhom10.crm.model.KhachHang;
 import vn.nhom10.crm.model.LichSuLienHeCongTy;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.NguoiLienHe;
 import vn.nhom10.crm.model.VaiTroQuyetDinhEnum;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
@@ -22,21 +27,28 @@ import java.util.regex.Pattern;
  */
 public class NguoiLienHeService {
 
+    private static final Logger LOGGER = Logger.getLogger(NguoiLienHeService.class.getName());
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+?[0-9]{9,15}$");
 
     private final NguoiLienHeDAO nguoiLienHeDAO;
     private final KhachHangDAO khachHangDAO;
     private final KhachHangService khachHangService;
+    private final KhachHang360DAO khachHang360DAO;
 
     public NguoiLienHeService() {
-        this(new NguoiLienHeDAO(), new KhachHangDAO(), new KhachHangService());
+        this(new NguoiLienHeDAO(), new KhachHangDAO(), new KhachHangService(), new KhachHang360DAO());
     }
 
     public NguoiLienHeService(NguoiLienHeDAO nguoiLienHeDAO, KhachHangDAO khachHangDAO, KhachHangService khachHangService) {
+        this(nguoiLienHeDAO, khachHangDAO, khachHangService, new KhachHang360DAO());
+    }
+
+    public NguoiLienHeService(NguoiLienHeDAO nguoiLienHeDAO, KhachHangDAO khachHangDAO, KhachHangService khachHangService, KhachHang360DAO khachHang360DAO) {
         this.nguoiLienHeDAO = nguoiLienHeDAO != null ? nguoiLienHeDAO : new NguoiLienHeDAO();
         this.khachHangDAO = khachHangDAO != null ? khachHangDAO : new KhachHangDAO();
         this.khachHangService = khachHangService != null ? khachHangService : new KhachHangService();
+        this.khachHang360DAO = khachHang360DAO != null ? khachHang360DAO : new KhachHang360DAO();
     }
 
     /**
@@ -95,6 +107,13 @@ public class NguoiLienHeService {
 
         long newId = nguoiLienHeDAO.themNguoiLienHe(nlh);
         nlh.setId(newId);
+
+        // Ghi nhật ký vào dòng thời gian hoạt động của khách hàng
+        ghiHoatDongNlh(nlh.getKhachHangId(), currentUser, "Thêm người liên hệ",
+                "Thêm người liên hệ mới: " + nlh.getHoTen() +
+                (nlh.getChucDanh() != null && !nlh.getChucDanh().isBlank() ? " (" + nlh.getChucDanh().trim() + ")" : "") +
+                (nlh.isLaDauMoiChinh() ? " [Đầu mối chính]" : ""));
+
         return nlh;
     }
 
@@ -119,7 +138,13 @@ public class NguoiLienHeService {
         nlh.setKhachHangId(existing.getKhachHangId());
         validateThongTinNguoiLienHe(nlh);
 
-        return nguoiLienHeDAO.capNhatThongTin(nlh);
+        boolean updated = nguoiLienHeDAO.capNhatThongTin(nlh);
+        if (updated) {
+            ghiHoatDongNlh(existing.getKhachHangId(), currentUser, "Cập nhật người liên hệ",
+                    "Cập nhật thông tin người liên hệ: " + nlh.getHoTen() +
+                    (nlh.getChucDanh() != null && !nlh.getChucDanh().isBlank() ? " (" + nlh.getChucDanh().trim() + ")" : ""));
+        }
+        return updated;
     }
 
     /**
@@ -140,7 +165,12 @@ public class NguoiLienHeService {
         KhachHang kh = layKhachHangHoacBaoLoi(khachHangId);
         kiemTraQuyenSuaKhachHang(currentUser, kh);
 
-        return nguoiLienHeDAO.datLamDauMoiChinh(nlhId, khachHangId);
+        boolean ok = nguoiLienHeDAO.datLamDauMoiChinh(nlhId, khachHangId);
+        if (ok) {
+            ghiHoatDongNlh(khachHangId, currentUser, "Thay đổi đầu mối chính",
+                    "Chỉ định người liên hệ '" + nlh.getHoTen() + "' làm đầu mối chính của khách hàng.");
+        }
+        return ok;
     }
 
     /**
@@ -213,7 +243,16 @@ public class NguoiLienHeService {
             throw new IllegalArgumentException("Chức danh mới không được vượt quá 150 ký tự.");
         }
 
-        return nguoiLienHeDAO.chuyenCongTy(nlhId, khachHangMoiId, chucDanhMoi, vaiTroMoi, ghiChu);
+        boolean ok = nguoiLienHeDAO.chuyenCongTy(nlhId, khachHangMoiId, chucDanhMoi, vaiTroMoi, ghiChu);
+        if (ok) {
+            ghiHoatDongNlh(khachHangCuId, currentUser, "Chuyển người liên hệ",
+                    "Người liên hệ '" + nlh.getHoTen() + "' đã được chuyển sang công ty: " + khMoi.getTenCongTy() +
+                    (ghiChu != null && !ghiChu.isBlank() ? " (Lý do: " + ghiChu.trim() + ")" : ""));
+            ghiHoatDongNlh(khachHangMoiId, currentUser, "Tiếp nhận người liên hệ",
+                    "Tiếp nhận người liên hệ '" + nlh.getHoTen() + "' từ công ty: " + khCu.getTenCongTy() +
+                    (chucDanhMoi != null && !chucDanhMoi.isBlank() ? " với chức danh: " + chucDanhMoi.trim() : ""));
+        }
+        return ok;
     }
 
     /**
@@ -242,7 +281,32 @@ public class NguoiLienHeService {
         KhachHang kh = layKhachHangHoacBaoLoi(nlh.getKhachHangId());
         kiemTraQuyenSuaKhachHang(currentUser, kh);
 
-        return nguoiLienHeDAO.xoaNguoiLienHe(nlhId);
+        boolean ok = nguoiLienHeDAO.xoaNguoiLienHe(nlhId);
+        if (ok) {
+            ghiHoatDongNlh(nlh.getKhachHangId(), currentUser, "Xóa người liên hệ",
+                    "Đã xóa người liên hệ: " + nlh.getHoTen());
+        }
+        return ok;
+    }
+
+    private void ghiHoatDongNlh(long khachHangId, NguoiDung user, String tieuDe, String noiDung) {
+        if (khachHang360DAO == null) return;
+        try {
+            HoatDong hd = new HoatDong();
+            hd.setMaHoatDong("HD_NLH_" + System.currentTimeMillis() + "_" + khachHangId);
+            hd.setKhachHangId(khachHangId);
+            hd.setNguoiPhuTrachId(user != null ? user.getId() : 1L);
+            hd.setNhomKinhDoanhId(user != null && user.getNhomKinhDoanhId() != null ? Long.valueOf(user.getNhomKinhDoanhId()) : null);
+            hd.setLoaiHoatDong("CHINH_SUA");
+            hd.setTieuDe(tieuDe);
+            hd.setNoiDung(noiDung);
+            hd.setThoiGianBatDau(new Timestamp(System.currentTimeMillis()));
+            hd.setTrangThai("HOAN_THANH");
+            hd.setLaGhiNhanNhanh(false);
+            khachHang360DAO.themHoatDong(hd);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Không thể ghi log hoạt động người liên hệ: " + e.getMessage());
+        }
     }
 
     /**
