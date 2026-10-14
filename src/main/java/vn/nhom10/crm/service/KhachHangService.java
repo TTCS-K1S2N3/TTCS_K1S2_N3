@@ -2,19 +2,28 @@ package vn.nhom10.crm.service;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import vn.nhom10.crm.dao.KhachHang360DAO;
 import vn.nhom10.crm.dao.KhachHangDAO;
+import vn.nhom10.crm.dao.NhatKyThayDoiDAO;
 import vn.nhom10.crm.dao.NhomKinhDoanhDAO;
 import vn.nhom10.crm.dto.BoLocKhachHangDTO;
 import vn.nhom10.crm.dto.NguoiDungDTO;
+import vn.nhom10.crm.model.HanhDongThayDoi;
+import vn.nhom10.crm.model.HoatDong;
 import vn.nhom10.crm.model.KhachHang;
+import vn.nhom10.crm.model.LoaiDoiTuongNhayCam;
 import vn.nhom10.crm.model.NguoiDung;
+import vn.nhom10.crm.model.NhatKyThayDoi;
 import vn.nhom10.crm.model.PhamViDuLieu;
 import vn.nhom10.crm.model.TrangThaiKhachHangEnum;
 import vn.nhom10.crm.model.VaiTroEnum;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Level;
@@ -35,19 +44,28 @@ public class KhachHangService {
     private final KhachHangDAO khachHangDAO;
     private final CoCauToChucService coCauToChucService;
     private final NhomKinhDoanhDAO nhomKinhDoanhDAO;
+    private final KhachHang360DAO khachHang360DAO;
+    private final NhatKyThayDoiDAO nhatKyThayDoiDAO;
 
     public KhachHangService() {
-        this(new KhachHangDAO(), new CoCauToChucService(), new NhomKinhDoanhDAO());
+        this(new KhachHangDAO(), new CoCauToChucService(), new NhomKinhDoanhDAO(), new KhachHang360DAO(), new NhatKyThayDoiDAO());
     }
 
     public KhachHangService(KhachHangDAO khachHangDAO) {
-        this(khachHangDAO, new CoCauToChucService(), new NhomKinhDoanhDAO());
+        this(khachHangDAO, new CoCauToChucService(), new NhomKinhDoanhDAO(), new KhachHang360DAO(), new NhatKyThayDoiDAO());
     }
 
     public KhachHangService(KhachHangDAO khachHangDAO, CoCauToChucService coCauToChucService, NhomKinhDoanhDAO nhomKinhDoanhDAO) {
+        this(khachHangDAO, coCauToChucService, nhomKinhDoanhDAO, new KhachHang360DAO(), new NhatKyThayDoiDAO());
+    }
+
+    public KhachHangService(KhachHangDAO khachHangDAO, CoCauToChucService coCauToChucService, NhomKinhDoanhDAO nhomKinhDoanhDAO,
+                            KhachHang360DAO khachHang360DAO, NhatKyThayDoiDAO nhatKyThayDoiDAO) {
         this.khachHangDAO = khachHangDAO != null ? khachHangDAO : new KhachHangDAO();
         this.coCauToChucService = coCauToChucService != null ? coCauToChucService : new CoCauToChucService();
         this.nhomKinhDoanhDAO = nhomKinhDoanhDAO != null ? nhomKinhDoanhDAO : new NhomKinhDoanhDAO();
+        this.khachHang360DAO = khachHang360DAO != null ? khachHang360DAO : new KhachHang360DAO();
+        this.nhatKyThayDoiDAO = nhatKyThayDoiDAO != null ? nhatKyThayDoiDAO : new NhatKyThayDoiDAO();
     }
 
     /**
@@ -311,7 +329,121 @@ public class KhachHangService {
             throw new SQLException("Không thể cập nhật hồ sơ khách hàng.");
         }
 
+        // Ghi nhận lịch sử chỉnh sửa vào CSDL (bảng hoat_dong & nhat_ky_he_thong) nếu có trường thay đổi thực sự
+        ghiNhatKyThayDoi(nguoiThucHien, khachHangCu, khachHangMoi);
+
         return khachHangDAO.timTheoId(khachHangMoi.getId());
+    }
+
+    private void ghiNhatKyThayDoi(NguoiDung nguoiThucHien, KhachHang cu, KhachHang moi) {
+        if (cu == null || moi == null || nguoiThucHien == null) return;
+        List<String> thayDoi = new ArrayList<>();
+
+        if (khacNhau(cu.getTenCongTy(), moi.getTenCongTy())) {
+            thayDoi.add("Tên công ty: '" + giaTriHoacTrong(cu.getTenCongTy()) + "' → '" + giaTriHoacTrong(moi.getTenCongTy()) + "'");
+        }
+
+        String ttCu = cu.getTrangThai();
+        String ttMoi = moi.getTrangThai();
+        boolean trangThaiThayDoi = khacNhau(ttCu, ttMoi);
+        if (trangThaiThayDoi) {
+            String tenTtCu = TrangThaiKhachHangEnum.chuanHoaTen(ttCu);
+            String tenTtMoi = TrangThaiKhachHangEnum.chuanHoaTen(ttMoi);
+            thayDoi.add("Trạng thái: " + tenTtCu + " → " + tenTtMoi);
+        }
+
+        boolean nguoiPhuTrachThayDoi = false;
+        if (moi.getNguoiSoHuuId() != null && khacNhau(cu.getNguoiSoHuuId(), moi.getNguoiSoHuuId())) {
+            nguoiPhuTrachThayDoi = true;
+            thayDoi.add("Người phụ trách: ID " + cu.getNguoiSoHuuId() + " → ID " + moi.getNguoiSoHuuId());
+        }
+
+        if (khacNhau(cu.getMaSoThue(), moi.getMaSoThue())) {
+            thayDoi.add("Mã số thuế: '" + giaTriHoacTrong(cu.getMaSoThue()) + "' → '" + giaTriHoacTrong(moi.getMaSoThue()) + "'");
+        }
+
+        if (khacNhau(cu.getWebsite(), moi.getWebsite())) {
+            thayDoi.add("Website: '" + giaTriHoacTrong(cu.getWebsite()) + "' → '" + giaTriHoacTrong(moi.getWebsite()) + "'");
+        }
+
+        if (khacNhau(cu.getDiaChi(), moi.getDiaChi())) {
+            thayDoi.add("Địa chỉ: '" + giaTriHoacTrong(cu.getDiaChi()) + "' → '" + giaTriHoacTrong(moi.getDiaChi()) + "'");
+        }
+
+        if (khacNhauSo(cu.getDoanhThuUocTinh(), moi.getDoanhThuUocTinh())) {
+            thayDoi.add("Doanh thu ước tính: " + (cu.getDoanhThuUocTinh() != null ? cu.getDoanhThuUocTinh() : "0") + " → " + (moi.getDoanhThuUocTinh() != null ? moi.getDoanhThuUocTinh() : "0") + " đ");
+        }
+
+        if (khacNhau(cu.getMoTaChiTiet(), moi.getMoTaChiTiet())) {
+            thayDoi.add("Ghi chú / Mô tả chi tiết: đã cập nhật");
+        }
+
+        // Không ghi log nếu dữ liệu không hề thay đổi
+        if (thayDoi.isEmpty()) {
+            return;
+        }
+
+        String tieuDe;
+        if (thayDoi.size() == 1 && trangThaiThayDoi) {
+            tieuDe = "Thay đổi trạng thái";
+        } else if (thayDoi.size() == 1 && nguoiPhuTrachThayDoi) {
+            tieuDe = "Thay đổi người phụ trách";
+        } else {
+            tieuDe = "Cập nhật hồ sơ";
+        }
+
+        String noiDung = String.join("\n• ", thayDoi);
+        if (thayDoi.size() > 1) {
+            noiDung = "• " + noiDung;
+        }
+
+        HoatDong hd = new HoatDong();
+        hd.setMaHoatDong("HD_AUDIT_" + System.currentTimeMillis() + "_" + cu.getId());
+        hd.setKhachHangId(cu.getId());
+        hd.setLoaiHoatDong("CHINH_SUA");
+        hd.setTieuDe(tieuDe);
+        hd.setNoiDung(noiDung);
+        hd.setNguoiPhuTrachId(nguoiThucHien.getId());
+        hd.setNhomKinhDoanhId(nguoiThucHien.getNhomKinhDoanhId() != null ? Long.valueOf(nguoiThucHien.getNhomKinhDoanhId()) : null);
+        hd.setThoiGianBatDau(new Timestamp(System.currentTimeMillis()));
+        hd.setTrangThai("HOAN_THANH");
+        hd.setLaGhiNhanNhanh(false);
+
+        try {
+            khachHang360DAO.themHoatDong(hd);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Không thể ghi nhật ký hoạt động chỉnh sửa khách hàng: " + e.getMessage(), e);
+        }
+
+        try {
+            NhatKyThayDoi nk = new NhatKyThayDoi();
+            nk.setNguoiThucHienId(nguoiThucHien.getId());
+            nk.setHanhDong(HanhDongThayDoi.CAP_NHAT);
+            nk.setLoaiDoiTuong(LoaiDoiTuongNhayCam.QUYEN_SO_HUU);
+            nk.setDoiTuongId(cu.getId());
+            nk.setLyDoThayDoi(tieuDe + ": " + noiDung);
+            nk.setThoiDiem(LocalDateTime.now());
+            nhatKyThayDoiDAO.ghiNhatKy(nk);
+        } catch (Exception e) {
+            LOGGER.log(Level.FINE, "Không thể ghi audit log nhat_ky_he_thong: " + e.getMessage());
+        }
+    }
+
+    private static boolean khacNhau(Object a, Object b) {
+        String s1 = a != null ? a.toString().trim() : "";
+        String s2 = b != null ? b.toString().trim() : "";
+        return !s1.equals(s2);
+    }
+
+    private static boolean khacNhauSo(BigDecimal a, BigDecimal b) {
+        if (a == null && b == null) return false;
+        if (a == null) return b.compareTo(BigDecimal.ZERO) != 0;
+        if (b == null) return a.compareTo(BigDecimal.ZERO) != 0;
+        return a.compareTo(b) != 0;
+    }
+
+    private static String giaTriHoacTrong(String s) {
+        return s != null ? s.trim() : "";
     }
 
     /**

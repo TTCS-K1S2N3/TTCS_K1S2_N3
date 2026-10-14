@@ -7,6 +7,9 @@ import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
+import vn.nhom10.crm.dto.BanGhiNghiepVuDTO;
 import vn.nhom10.crm.dto.BoLocKhachHangDTO;
 import vn.nhom10.crm.dto.NguoiDungDTO;
 import vn.nhom10.crm.model.*;
@@ -14,9 +17,13 @@ import vn.nhom10.crm.service.BoLocKhachHangService;
 import vn.nhom10.crm.service.KhachHangService;
 import vn.nhom10.crm.service.PhanQuyenDuLieuService;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -246,6 +253,48 @@ class KhachHangServletS307Test {
     }
 
     @Test
+    @DisplayName("AC3: GET /khach-hang tùy chỉnh tiêu chí (không boLocId) không tự nạp bộ lọc mặc định và boLocId là null")
+    void testGet_TuyChinhTieuChi_KhongNapMacDinh() throws Exception {
+        BoLocDaLuu macDinh = new BoLocDaLuu(99L, 101L, BoLocDaLuu.LOAI_KHACH_HANG, "Mặc định HN", "{\"khuVucId\":1}", true);
+        when(boLocService.timBoLocMacDinh(userA)).thenReturn(macDinh);
+
+        // Giả lập người dùng chỉ lọc khu vực Đà Nẵng (khuVucId=2), không gửi boLocId
+        when(request.getParameter("khuVucId")).thenReturn("2");
+        when(request.getParameter("loc")).thenReturn("1");
+
+        servlet.doGet(request, response);
+
+        verify(request).setAttribute(eq("boLocHienTai"), argThat(val -> {
+            BoLocKhachHangDTO dto = (BoLocKhachHangDTO) val;
+            assertNull(dto.getBoLocId(), "boLocId phải là null khi ở chế độ tùy chỉnh");
+            assertEquals(2L, dto.getKhuVucId());
+            assertFalse(dto.isMacDinh());
+            return true;
+        }));
+    }
+
+    @Test
+    @DisplayName("AC3: GET /khach-hang khi xóa hết chip (loc=1 nhưng tiêu chí rỗng) không tự phục hồi bộ lọc mặc định")
+    void testGet_XoaHetChip_KhongPhucHoiMacDinh() throws Exception {
+        BoLocDaLuu macDinh = new BoLocDaLuu(99L, 101L, BoLocDaLuu.LOAI_KHACH_HANG, "Mặc định HN", "{\"khuVucId\":1}", true);
+        when(boLocService.timBoLocMacDinh(userA)).thenReturn(macDinh);
+
+        // Giả lập submit sau khi xóa chip cuối cùng (loc=1, các trường để trống)
+        when(request.getParameter("loc")).thenReturn("1");
+        when(request.getParameter("khuVucId")).thenReturn("");
+
+        servlet.doGet(request, response);
+
+        verify(request).setAttribute(eq("boLocHienTai"), argThat(val -> {
+            BoLocKhachHangDTO dto = (BoLocKhachHangDTO) val;
+            assertNull(dto.getBoLocId());
+            assertFalse(dto.coDieuKienLoc());
+            assertFalse(dto.isMacDinh());
+            return true;
+        }));
+    }
+
+    @Test
     @DisplayName("AC3: POST action=dat-mac-dinh thiết lập bộ lọc mặc định")
     void testPost_DatMacDinh() throws Exception {
         when(request.getParameter("action")).thenReturn("dat-mac-dinh");
@@ -256,5 +305,108 @@ class KhachHangServletS307Test {
 
         verify(boLocService).datMacDinh(8L, userA);
         verify(response).sendRedirect(contains("/crm/khach-hang?boLocId=8"));
+    }
+
+    @Test
+    @DisplayName("SỬA LỖI: Bộ lọc trả về 0 kết quả thì tongSoKhachHang=0, không dùng danh sách dự phòng phanQuyenService")
+    void testGet_BoLocKhongCoKetQua_TongSoBang0_KhongDungDanhSachDuPhong() throws Exception {
+        // Giả lập phanQuyenService trả về danh sách 22 khách hàng chưa lọc
+        List<BanGhiNghiepVuDTO> danhSach22Khach = new ArrayList<>();
+        for (int i = 1; i <= 22; i++) {
+            BanGhiNghiepVuDTO bg = new BanGhiNghiepVuDTO();
+            bg.setId((long) i);
+            bg.setMaBanGhi("KH-" + i);
+            bg.setTieuDe("Công ty " + i);
+            danhSach22Khach.add(bg);
+        }
+        when(phanQuyenService.layDanhSachDuLieu(any(NguoiDungDTO.class), any(), any(), eq("KHACH_HANG")))
+                .thenReturn(danhSach22Khach);
+
+        // Giả lập người dùng lọc: Ngành nghề = 2 (Logistics), Quy mô = 1 (Dưới 50 người)
+        when(request.getParameter("nganhNgheId")).thenReturn("2");
+        when(request.getParameter("quyMoId")).thenReturn("1");
+        when(request.getParameter("loc")).thenReturn("1");
+
+        // Service lọc trả về 0 kết quả (rỗng)
+        when(khachHangService.timKiemVaLoc(any(NguoiDungDTO.class), any(BoLocKhachHangDTO.class)))
+                .thenReturn(Collections.emptyList());
+        when(khachHangService.demSoLuong(any(NguoiDungDTO.class), any(BoLocKhachHangDTO.class)))
+                .thenReturn(0);
+
+        servlet.doGet(request, response);
+
+        // Xác nhận tongSoKhachHang = 0 (tuyệt đối không bị fallback sang 22)
+        verify(request).setAttribute(eq("tongSoKhachHang"), eq(0));
+        // Xác nhận danhSachKhachHang trong request rỗng (không chứa 22 khách hàng dự phòng)
+        verify(request).setAttribute(eq("danhSachKhachHang"), eq(Collections.emptyList()));
+        verify(request).setAttribute(eq("dsKhachHangModel"), eq(Collections.emptyList()));
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("SỬA LỖI: Áp dụng bộ lọc đã lưu trả về 0 kết quả thì tongSoKhachHang=0, không dùng danh sách dự phòng")
+    void testGet_BoLocDaLuuKhongCoKetQua_TongSoBang0_KhongDungDanhSachDuPhong() throws Exception {
+        // Bộ lọc đã lưu gồm ngành nghề Logistics (2) và quy mô Dưới 50 người (1)
+        BoLocDaLuu boLocLogistics = new BoLocDaLuu(10L, 101L, BoLocDaLuu.LOAI_KHACH_HANG, "Logistics & Dưới 50", "{\"nganhNgheId\":2,\"quyMoId\":1}", false);
+        when(boLocService.timBoLocTheoId(10L, userA)).thenReturn(boLocLogistics);
+
+        when(request.getParameter("boLocId")).thenReturn("10");
+
+        when(khachHangService.timKiemVaLoc(any(NguoiDungDTO.class), any(BoLocKhachHangDTO.class)))
+                .thenReturn(Collections.emptyList());
+        when(khachHangService.demSoLuong(any(NguoiDungDTO.class), any(BoLocKhachHangDTO.class)))
+                .thenReturn(0);
+
+        servlet.doGet(request, response);
+
+        verify(request).setAttribute(eq("tongSoKhachHang"), eq(0));
+        verify(request).setAttribute(eq("danhSachKhachHang"), eq(Collections.emptyList()));
+        verify(request).setAttribute(eq("dsKhachHangModel"), eq(Collections.emptyList()));
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("SỬA LỖI: Xuất Excel khi có bộ lọc nhưng không có kết quả thì xuất file rỗng, không dùng danh sách dự phòng")
+    void testXuatExcel_BoLocKhongCoKetQua_KhongDungDanhSachDuPhong() throws Exception {
+        when(request.getParameter("tuKhoa")).thenReturn("xyzkhongco999999");
+        when(request.getParameter("xuatExcel")).thenReturn("true");
+
+        when(khachHangService.timKiemVaLoc(any(NguoiDungDTO.class), any(BoLocKhachHangDTO.class)))
+                .thenReturn(Collections.emptyList());
+        when(khachHangService.xuatDanhSachExcel(anyList()))
+                .thenReturn(new byte[]{1, 2, 3});
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ServletOutputStream sos = new ServletOutputStream() {
+            @Override
+            public boolean isReady() { return true; }
+            @Override
+            public void setWriteListener(WriteListener writeListener) {}
+            @Override
+            public void write(int b) throws IOException { baos.write(b); }
+        };
+        when(response.getOutputStream()).thenReturn(sos);
+
+        servlet.doGet(request, response);
+
+        // Xác nhận gọi khachHangService.xuatDanhSachExcel với danh sách rỗng
+        verify(khachHangService).xuatDanhSachExcel(argThat(List::isEmpty));
+        // Tuyệt đối không gọi phanQuyenService.xuatDuLieuExcel
+        verify(phanQuyenService, never()).xuatDuLieuExcel(any());
+    }
+
+    @Test
+    @DisplayName("SỬA LỖI: Lỗi database khi tìm kiếm lọc thì tongSoKhachHang=0, không lộ danh sách dự phòng chưa lọc")
+    void testGet_TruyVanDatabaseLoi_KhongHienThiDanhSachDuPhongChuaLoc() throws Exception {
+        when(request.getParameter("nganhNgheId")).thenReturn("2");
+        when(khachHangService.timKiemVaLoc(any(NguoiDungDTO.class), any(BoLocKhachHangDTO.class)))
+                .thenThrow(new RuntimeException("Lỗi kết nối cơ sở dữ liệu"));
+
+        servlet.doGet(request, response);
+
+        verify(request).setAttribute(eq("tongSoKhachHang"), eq(0));
+        verify(request).setAttribute(eq("danhSachKhachHang"), eq(Collections.emptyList()));
+        verify(request).setAttribute(eq("dsKhachHangModel"), eq(Collections.emptyList()));
+        verify(dispatcher).forward(request, response);
     }
 }

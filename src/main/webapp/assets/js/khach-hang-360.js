@@ -72,25 +72,92 @@ document.addEventListener('DOMContentLoaded', function () {
             ten: 'Ghi chú',
             icon: 'edit_note',
             badgeClass: 'badge-note'
+        },
+        CHINH_SUA: {
+            ten: 'Nhật ký thay đổi',
+            icon: 'manage_history',
+            badgeClass: 'badge-history'
+        },
+        CAP_NHAT: {
+            ten: 'Cập nhật',
+            icon: 'update',
+            badgeClass: 'badge-update'
+        },
+        TEP_TIN: {
+            ten: 'Đính kèm tài liệu',
+            icon: 'attach_file',
+            badgeClass: 'badge-file'
+        },
+        DINH_KEM: {
+            ten: 'Đính kèm tài liệu',
+            icon: 'attach_file',
+            badgeClass: 'badge-file'
+        },
+        HOP_DONG: {
+            ten: 'Ký kết hợp đồng',
+            icon: 'description',
+            badgeClass: 'badge-contract'
         }
     };
 
-    // Tải danh sách hoạt động thực tế từ server
+    // Chuẩn hóa bộ parser ngày giờ để tránh lỗi NaN/NaN/NaN NaN:NaN
+    function parseNgayGio(val) {
+        if (!val) return new Date();
+        if (val instanceof Date && !isNaN(val.getTime())) return val;
+        if (typeof val === 'number') return new Date(val);
+        const str = String(val).trim();
+        if (/^\d{10,13}$/.test(str)) {
+            const num = parseInt(str, 10);
+            return new Date(str.length === 10 ? num * 1000 : num);
+        }
+        // Khớp định dạng dd/MM/yyyy HH:mm hoặc dd/MM/yyyy HH:mm:ss
+        const vnMatch = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/);
+        if (vnMatch) {
+            const day = parseInt(vnMatch[1], 10);
+            const month = parseInt(vnMatch[2], 10) - 1;
+            const year = parseInt(vnMatch[3], 10);
+            const hour = vnMatch[4] ? parseInt(vnMatch[4], 10) : 0;
+            const min = vnMatch[5] ? parseInt(vnMatch[5], 10) : 0;
+            const sec = vnMatch[6] ? parseInt(vnMatch[6], 10) : 0;
+            const d = new Date(year, month, day, hour, min, sec);
+            if (!isNaN(d.getTime())) return d;
+        }
+        const parsed = new Date(str);
+        if (!isNaN(parsed.getTime())) return parsed;
+        return new Date();
+    }
+
+    function dinhDangNgayGio(d) {
+        if (!d) return 'Vừa xong';
+        const dateObj = (d instanceof Date) ? d : parseNgayGio(d);
+        if (isNaN(dateObj.getTime())) {
+            return 'Vừa xong';
+        }
+        const dd = String(dateObj.getDate()).padStart(2, '0');
+        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const yyyy = dateObj.getFullYear();
+        const hh = String(dateObj.getHours()).padStart(2, '0');
+        const min = String(dateObj.getMinutes()).padStart(2, '0');
+        return dd + '/' + mm + '/' + yyyy + ' ' + hh + ':' + min;
+    }
+
+    // Tải danh sách hoạt động thực tế từ server (Story Review 20261013: Không sinh hoạt động giả)
     function loadServerHoatDong() {
         const jsonEl = document.getElementById('initialActivitiesJson');
         if (jsonEl && jsonEl.textContent && jsonEl.textContent.trim()) {
             try {
                 const parsed = JSON.parse(jsonEl.textContent.trim());
-                if (Array.isArray(parsed) && parsed.length > 0) {
+                if (Array.isArray(parsed)) {
                     return parsed.map(function (item) {
+                        const dateObj = item.thoiGianEpoch ? new Date(item.thoiGianEpoch) : parseNgayGio(item.thoiGianDinhDang || item.thoiGian);
                         return {
                             id: item.id,
-                            loai: item.loai || 'CUOC_GOI',
+                            loai: item.loai || item.loaiHoatDong || 'CUOC_GOI',
                             tieuDe: item.tieuDe || '',
-                            thoiGian: item.thoiGian ? new Date(item.thoiGian) : new Date(),
-                            nguoiThucHien: item.nguoiThucHien || 'Nhân viên kinh doanh',
+                            thoiGian: dateObj,
+                            nguoiThucHien: item.tenNguoiThucHien || item.nguoiThucHien || 'Nhân viên kinh doanh',
                             nguoiLienHe: item.nguoiLienHe || 'Khách hàng',
-                            noiDung: item.noiDung || ''
+                            noiDung: item.noiDung || item.moTa || ''
                         };
                     });
                 }
@@ -98,13 +165,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.warn('Lỗi đọc JSON hoạt động khởi tạo:', e);
             }
         }
-        return sinh500HoatDong();
+        return [];
     }
 
-    // Tạo dự phòng 500 hoạt động tương tác nếu database chưa có đủ 500 bản ghi để test benchmark AC3
+    // Tách công cụ benchmark 500 hoạt động phục vụ đo kiểm hiệu năng AC3 độc lập
     function sinh500HoatDong() {
         const danhSach = [];
-        const loaiList = ['CUOC_GOI', 'CUOC_HOP', 'EMAIL', 'GHI_CHU'];
+        const loaiList = ['CUOC_GOI', 'CUOC_HOP', 'EMAIL', 'GHI_CHU', 'CHINH_SUA'];
         const nguoiThucHien = ['Nguyễn Văn A (Sales)', 'Lê Thị Trưởng Nhóm', 'Phạm Minh Đức (Kỹ thuật)', 'Đặng Thu Trang (CSKH)'];
         const nguoiLienHe = ['Nguyễn Đức Mạnh (Giám đốc CNTT)', 'Trần Mai Linh (Trưởng phòng Mua sắm)', 'Phạm Hoàng Nam (Lead Architect)', 'Vũ Thị Thu Hà (Key User)'];
 
@@ -117,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'Gặp mặt trực tiếp tại trụ sở trao đổi phụ lục điều khoản thanh toán',
             'Gửi dự thảo hợp đồng cung cấp phần mềm CRM phiên bản hoàn chỉnh',
             'Họp kỹ thuật rà soát điều kiện nghiệm thu giai đoạn thử nghiệm',
-            'Xác nhận lịch hẹn trao đổi kỹ thuật cùng Trưởng nhóm dự án',
+            'Cập nhật thông tin hồ sơ khách hàng doanh nghiệp',
             'Ghi nhận lưu ý đặc biệt về thời gian phản hồi SLA của khách hàng'
         ];
 
@@ -152,6 +219,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         return danhSach;
     }
+    window.sinh500HoatDong = sinh500HoatDong;
 
     let danhSach500HoatDong = loadServerHoatDong();
 
@@ -169,15 +237,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentLimit = 25;
     let currentFilterType = 'ALL';
     let currentSearchTerm = '';
-
-    function dinhDangNgayGio(d) {
-        const dd = String(d.getDate()).padStart(2, '0');
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const yyyy = d.getFullYear();
-        const hh = String(d.getHours()).padStart(2, '0');
-        const min = String(d.getMinutes()).padStart(2, '0');
-        return dd + '/' + mm + '/' + yyyy + ' ' + hh + ':' + min;
-    }
 
     function renderTimeline(soLuongToiDa, isBenchmark) {
         if (!timelineContainer) return;
@@ -209,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (listToRender.length === 0) {
             const emptyDiv = document.createElement('div');
             emptyDiv.className = 'timeline-empty';
-            emptyDiv.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">history</span><p>Không có hoạt động nào phù hợp với bộ lọc hiện tại.</p>';
+            emptyDiv.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">history</span><p>Chưa có hoạt động nào được ghi nhận cho khách hàng này.</p>';
             fragment.appendChild(emptyDiv);
         } else {
             listToRender.forEach(function (act) {
@@ -324,6 +383,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (btnRunBenchmark) {
         btnRunBenchmark.addEventListener('click', function () {
+            if (danhSach500HoatDong.length < 500) {
+                danhSach500HoatDong = sinh500HoatDong();
+            }
             currentLimit = 500;
             currentFilterType = 'ALL';
             currentSearchTerm = '';
@@ -456,17 +518,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 body: formData.toString()
             })
             .then(function (res) {
-                return res.json().catch(function () { return { success: true }; });
+                if (!res.ok) {
+                    return res.json().catch(function () { return {}; }).then(function (errData) {
+                        throw new Error(errData.message || 'Lỗi máy chủ (' + res.status + ') khi ghi nhận hoạt động.');
+                    });
+                }
+                return res.json();
             })
             .then(function (result) {
+                if (!result || result.success === false) {
+                    throw new Error(result && result.message ? result.message : 'Không thể lưu hoạt động.');
+                }
+
+                const hd = result.hoatDong || {};
                 const newAct = {
-                    id: (result && result.id) ? result.id : Date.now(),
-                    loai: loai,
-                    tieuDe: tieuDe,
-                    thoiGian: new Date(),
-                    nguoiThucHien: 'Tôi (Nhân viên kinh doanh)',
-                    nguoiLienHe: 'Người liên hệ chính',
-                    noiDung: noiDung || 'Đã ghi nhận tương tác'
+                    id: hd.id || result.id || Date.now(),
+                    loai: hd.loai || hd.loaiHoatDong || loai,
+                    tieuDe: hd.tieuDe || tieuDe,
+                    thoiGian: hd.thoiGianEpoch ? new Date(hd.thoiGianEpoch) : parseNgayGio(hd.thoiGianDinhDang || hd.thoiGian),
+                    nguoiThucHien: hd.tenNguoiThucHien || hd.nguoiThucHien || 'Tôi (Nhân viên kinh doanh)',
+                    nguoiLienHe: hd.nguoiLienHe || 'Khách hàng',
+                    noiDung: hd.noiDung || hd.moTa || noiDung
                 };
 
                 danhSach500HoatDong.unshift(newAct);
@@ -484,21 +556,7 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(function (err) {
                 console.error('Lỗi lưu hoạt động:', err);
-                // Fallback nếu offline hoặc lỗi mạng
-                const fallbackAct = {
-                    id: Date.now(),
-                    loai: loai,
-                    tieuDe: tieuDe,
-                    thoiGian: new Date(),
-                    nguoiThucHien: 'Tôi (Nhân viên kinh doanh)',
-                    nguoiLienHe: 'Người liên hệ chính',
-                    noiDung: noiDung || 'Đã ghi nhận tương tác'
-                };
-                danhSach500HoatDong.unshift(fallbackAct);
-                renderTimeline(currentLimit, false);
-                dongModalHoatDong();
-                formThemHoatDong.reset();
-                switchTab('timeline');
+                alert(err.message || 'Không thể lưu hoạt động do sự cố kết nối. Dữ liệu đã được giữ nguyên để bạn thử lại.');
             })
             .finally(function () {
                 if (btnLuu) {
@@ -521,4 +579,611 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // 7. Auto-dismiss Alerts & Toast Manager (Story Review 20261013)
+    function dongThongBao(elementOrBtn) {
+        if (!elementOrBtn) return;
+        const alertEl = (elementOrBtn.classList && elementOrBtn.classList.contains('alert'))
+            ? elementOrBtn
+            : elementOrBtn.closest('.alert');
+        if (!alertEl) return;
+        alertEl.classList.add('alert-dismissing');
+        setTimeout(function () {
+            if (alertEl.parentNode) {
+                alertEl.parentNode.removeChild(alertEl);
+            }
+        }, 350);
+    }
+    window.dongThongBao = dongThongBao;
+
+    function setupAutoDismissAlerts() {
+        const notifArea = document.getElementById('crmNotificationArea');
+        if (!notifArea) return;
+        const alerts = notifArea.querySelectorAll('.alert');
+        alerts.forEach(function (alertEl) {
+            const isSuccess = alertEl.classList.contains('alert-success');
+            const isWarning = alertEl.classList.contains('alert-warning');
+            const isInfo = alertEl.classList.contains('alert-info');
+
+            // Success: 4s
+            if (isSuccess) {
+                setTimeout(function () {
+                    dongThongBao(alertEl);
+                }, 4000);
+            } else if (isWarning || isInfo) {
+                // Warning / Info: 6s
+                setTimeout(function () {
+                    dongThongBao(alertEl);
+                }, 6000);
+            }
+            // Error / Danger: Không tự động ẩn, người dùng chủ động đóng bằng nút X
+        });
+    }
+    setupAutoDismissAlerts();
+
+    // 8. Modal Chỉnh Sửa Hồ Sơ Khách Hàng (Story S3-01)
+    function moModalSuaKhachHang() {
+        const modal = document.getElementById('modalSuaKhachHang');
+        if (!modal) return;
+        modal.classList.add('show');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function dongModalSuaKhachHang() {
+        const modal = document.getElementById('modalSuaKhachHang');
+        if (!modal) return;
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    window.moModalSuaKhachHang = moModalSuaKhachHang;
+    window.dongModalSuaKhachHang = dongModalSuaKhachHang;
+
+    const modalSuaKhachHang = document.getElementById('modalSuaKhachHang');
+    if (modalSuaKhachHang) {
+        modalSuaKhachHang.addEventListener('click', function (e) {
+            if (e.target === modalSuaKhachHang) {
+                dongModalSuaKhachHang();
+            }
+        });
+    }
+
+    // 9. MODAL TẢI TÀI LIỆU LÊN (Story S3-03 AC1 & Task 1.1)
+    function moModalTaiTaiLieu() {
+        const modal = document.getElementById('modalTaiTaiLieu');
+        if (!modal) return;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        const inputTep = document.getElementById('inputChonTep');
+        if (inputTep) inputTep.value = '';
+        huyChonTep();
+    }
+
+    function dongModalTaiTaiLieu() {
+        const modal = document.getElementById('modalTaiTaiLieu');
+        if (!modal) return;
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        const errEl = document.getElementById('errTepTin');
+        if (errEl) errEl.style.display = 'none';
+    }
+
+    function xuLyChonTep(input) {
+        if (!input || !input.files || input.files.length === 0) {
+            huyChonTep();
+            return;
+        }
+        const file = input.files[0];
+        const errEl = document.getElementById('errTepTin');
+        if (errEl) errEl.style.display = 'none';
+
+        // Kiểm tra dung lượng tối đa 10 MB
+        if (file.size > 10 * 1024 * 1024) {
+            if (errEl) {
+                errEl.innerText = 'Dung lượng tệp vượt quá giới hạn 10 MB (' + formatFileSize(file.size) + '). Vui lòng chọn tệp nhỏ hơn.';
+                errEl.style.display = 'block';
+            }
+            input.value = '';
+            huyChonTep();
+            return;
+        }
+
+        // Kiểm tra phần mở rộng hợp lệ
+        const validExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'];
+        const parts = file.name.split('.');
+        const ext = parts.length > 1 ? parts[parts.length - 1].toLowerCase() : '';
+        if (!validExtensions.includes(ext)) {
+            if (errEl) {
+                errEl.innerText = 'Định dạng tệp ".' + ext + '" không được hỗ trợ. Vui lòng chọn tệp PDF, DOC, DOCX, XLS, XLSX, PNG, JPG hoặc JPEG.';
+                errEl.style.display = 'block';
+            }
+            input.value = '';
+            huyChonTep();
+            return;
+        }
+
+        // Cập nhật tên tài liệu mặc định nếu chưa điền
+        const inputTen = document.getElementById('inputTenTaiLieu');
+        if (inputTen && (!inputTen.value || inputTen.value.trim() === '')) {
+            inputTen.value = file.name;
+        }
+
+        // Hiển thị card tệp đã chọn
+        const dropZone = document.getElementById('dropZoneTep');
+        const selectedInfo = document.getElementById('fileSelectedInfo');
+        const selectedName = document.getElementById('fileSelectedName');
+        const selectedSize = document.getElementById('fileSelectedSize');
+        const selectedIcon = document.getElementById('fileSelectedIcon');
+
+        if (selectedName) selectedName.innerText = file.name;
+        if (selectedSize) selectedSize.innerText = formatFileSize(file.size);
+
+        if (selectedIcon) {
+            if (ext === 'pdf') selectedIcon.innerText = 'picture_as_pdf';
+            else if (ext === 'xls' || ext === 'xlsx') selectedIcon.innerText = 'table_view';
+            else if (ext === 'doc' || ext === 'docx') selectedIcon.innerText = 'description';
+            else if (['png', 'jpg', 'jpeg'].includes(ext)) selectedIcon.innerText = 'image';
+            else selectedIcon.innerText = 'attachment';
+        }
+
+        if (dropZone) dropZone.style.display = 'none';
+        if (selectedInfo) selectedInfo.style.display = 'flex';
+    }
+
+    function huyChonTep() {
+        const input = document.getElementById('inputChonTep');
+        if (input) input.value = '';
+        const dropZone = document.getElementById('dropZoneTep');
+        const selectedInfo = document.getElementById('fileSelectedInfo');
+        if (dropZone) dropZone.style.display = 'block';
+        if (selectedInfo) selectedInfo.style.display = 'none';
+    }
+
+    function formatFileSize(bytes) {
+        if (!bytes || bytes <= 0) return '0 KB';
+        if (bytes < 1024 * 1024) {
+            return Math.round(bytes / 1024) + ' KB';
+        }
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function submitFormUploadTep(event) {
+        if (event) event.preventDefault();
+        const form = document.getElementById('formTaiTaiLieu');
+        if (!form) return false;
+
+        const inputTep = document.getElementById('inputChonTep');
+        const errEl = document.getElementById('errTepTin');
+        if (!inputTep || !inputTep.files || inputTep.files.length === 0) {
+            if (errEl) {
+                errEl.innerText = 'Vui lòng chọn tệp tài liệu trước khi tải lên.';
+                errEl.style.display = 'block';
+            }
+            return false;
+        }
+
+        const btnSubmit = document.getElementById('btnSubmitUploadTep');
+        if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<span class="material-symbols-outlined" style="animation: spin 1s linear infinite;">refresh</span> <span>Đang tải lên...</span>';
+        }
+
+        const formData = new FormData(form);
+        const contextPath = window.APP_CONTEXT_PATH || '';
+
+        fetch(contextPath + '/khach-hang/tep-dinh-kem', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(function(res) {
+            return res.json().then(function(data) {
+                return { ok: res.ok, status: res.status, data: data };
+            }).catch(function() {
+                return { ok: res.ok, status: res.status, data: { message: 'Lỗi giải mã phản hồi từ server.' } };
+            });
+        })
+        .then(function(result) {
+            if (result.ok && result.data && result.data.success) {
+                dongModalTaiTaiLieu();
+                if (typeof window.hienThiThongBaoToast === 'function') {
+                    window.hienThiThongBaoToast(result.data.message || 'Tải tài liệu lên thành công!', 'success');
+                }
+                setTimeout(function() {
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('tab', 'attachments');
+                    window.location.href = currentUrl.toString();
+                }, 600);
+            } else {
+                const msg = (result.data && result.data.message) ? result.data.message : 'Tải tài liệu thất bại.';
+                if (errEl) {
+                    errEl.innerText = msg;
+                    errEl.style.display = 'block';
+                } else if (typeof window.hienThiThongBaoToast === 'function') {
+                    window.hienThiThongBaoToast(msg, 'error');
+                } else {
+                    alert(msg);
+                }
+            }
+        })
+        .catch(function(err) {
+            console.error('Lỗi tải tệp lên:', err);
+            if (errEl) {
+                errEl.innerText = 'Không thể kết nối máy chủ khi tải tệp. Vui lòng thử lại.';
+                errEl.style.display = 'block';
+            }
+        })
+        .finally(function() {
+            if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<span class="material-symbols-outlined">upload</span> <span>Tải lên</span>';
+            }
+        });
+
+        return false;
+    }
+
+    function xacNhanXoaTep(id, tenTep) {
+        if (!id) return;
+        const tenHienThi = tenTep ? '"' + tenTep + '"' : 'tài liệu này';
+        if (!confirm('Bạn có chắc chắn muốn xóa ' + tenHienThi + ' không?\nTệp tin vật lý và dữ liệu liên quan sẽ bị xóa vĩnh viễn.')) {
+            return;
+        }
+
+        const contextPath = window.APP_CONTEXT_PATH || '';
+        const params = new URLSearchParams();
+        params.append('action', 'xoa');
+        params.append('id', id);
+
+        fetch(contextPath + '/khach-hang/tep-dinh-kem', {
+            method: 'POST',
+            body: params,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(function(res) {
+            return res.json().then(function(data) {
+                return { ok: res.ok, status: res.status, data: data };
+            });
+        })
+        .then(function(result) {
+            if (result.ok && result.data && result.data.success) {
+                const row = document.getElementById('row-tep-' + id);
+                if (row) {
+                    row.remove();
+                }
+                if (typeof window.hienThiThongBaoToast === 'function') {
+                    window.hienThiThongBaoToast(result.data.message || 'Xóa tài liệu thành công!', 'success');
+                }
+                const tbody = document.getElementById('tbodyTepDinhKem');
+                if (tbody && tbody.querySelectorAll('tr').length === 0) {
+                    setTimeout(function() { window.location.reload(); }, 600);
+                }
+            } else {
+                const msg = (result.data && result.data.message) ? result.data.message : 'Xóa tài liệu thất bại.';
+                if (typeof window.hienThiThongBaoToast === 'function') {
+                    window.hienThiThongBaoToast(msg, 'error');
+                } else {
+                    alert(msg);
+                }
+            }
+        })
+        .catch(function(err) {
+            console.error('Lỗi khi xóa tài liệu:', err);
+            alert('Lỗi hệ thống khi xóa tài liệu.');
+        });
+    }
+
+    // 10. MODAL THÊM HỢP ĐỒNG PHÁP LÝ (Story S3-03 & Task 3)
+    function chonBaoGiaLienKet(sel) {
+        if (!sel) return;
+        const opt = sel.options[sel.selectedIndex];
+        const errBaoGia = document.getElementById('errHdBaoGiaId');
+        if (errBaoGia) errBaoGia.style.display = 'none';
+
+        const errModal = document.getElementById('errModalHopDong');
+        if (errModal) errModal.style.display = 'none';
+
+        if (!opt || !opt.value) {
+            return;
+        }
+
+        const giaTri = opt.getAttribute('data-giatri');
+        if (giaTri) {
+            const inputGiaTri = document.getElementById('hdGiaTri');
+            if (inputGiaTri) {
+                const num = Number(giaTri);
+                inputGiaTri.value = isNaN(num) ? giaTri : num.toLocaleString('vi-VN');
+                const errGiaTri = document.getElementById('errHdGiaTri');
+                if (errGiaTri) errGiaTri.style.display = 'none';
+            }
+        }
+
+        const dieuKhoan = opt.getAttribute('data-dieukhoan');
+        if (dieuKhoan) {
+            const inputDieuKhoan = document.getElementById('hdDieuKhoan');
+            if (inputDieuKhoan) {
+                inputDieuKhoan.value = dieuKhoan;
+            }
+        }
+    }
+
+    function taiDanhSachBaoGiaHopLe(khId) {
+        const select = document.getElementById('hdBaoGiaId');
+        const alertKhongCo = document.getElementById('alertKhongCoBaoGia');
+        const btnSubmit = document.getElementById('btnSubmitThemHopDong');
+        if (!select || !khId) return;
+
+        const contextPath = window.APP_CONTEXT_PATH || '';
+        fetch(contextPath + '/khach-hang?action=ds-bao-gia-hop-le&khachHangId=' + encodeURIComponent(khId), {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(function(res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        })
+        .then(function(ds) {
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">-- Chọn báo giá hợp lệ --</option>';
+            if (Array.isArray(ds) && ds.length > 0) {
+                ds.forEach(function(bg) {
+                    const opt = document.createElement('option');
+                    opt.value = bg.id;
+                    opt.setAttribute('data-giatri', bg.giaTriBaoGia || '0');
+                    opt.setAttribute('data-dieukhoan', bg.dieuKhoanThanhToan || '');
+                    opt.setAttribute('data-cohoi', bg.tenCoHoi || '');
+                    opt.textContent = (bg.maBaoGia || '') + ' - ' + (bg.tieuDe || '') + ' (' + (bg.giaTriDinhDang || '0 ₫') + ')';
+                    if (currentVal && String(currentVal) === String(bg.id)) {
+                        opt.selected = true;
+                    }
+                    select.appendChild(opt);
+                });
+                if (alertKhongCo) alertKhongCo.style.display = 'none';
+                if (btnSubmit) btnSubmit.disabled = false;
+            } else {
+                if (alertKhongCo) alertKhongCo.style.display = 'block';
+                if (btnSubmit) btnSubmit.disabled = true;
+            }
+        })
+        .catch(function(err) {
+            console.error('Không thể tải danh sách báo giá hợp lệ:', err);
+        });
+    }
+
+    function moModalThemHopDong() {
+        const modal = document.getElementById('modalThemHopDong');
+        if (!modal) return;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        const khId = window.CURRENT_CUSTOMER_ID || '';
+        const selectBg = document.getElementById('hdBaoGiaId');
+        if (selectBg) {
+            selectBg.value = '';
+        }
+
+        const inputNgayKy = document.getElementById('hdNgayKy');
+        if (inputNgayKy && !inputNgayKy.value) {
+            const today = new Date().toISOString().split('T')[0];
+            inputNgayKy.value = today;
+            const inputHieuLuc = document.getElementById('hdNgayHieuLuc');
+            if (inputHieuLuc && !inputHieuLuc.value) {
+                inputHieuLuc.value = today;
+            }
+        }
+
+        const errSoHd = document.getElementById('errHdSoHopDong');
+        if (errSoHd) errSoHd.style.display = 'none';
+        const errGiaTri = document.getElementById('errHdGiaTri');
+        if (errGiaTri) errGiaTri.style.display = 'none';
+        const errBaoGia = document.getElementById('errHdBaoGiaId');
+        if (errBaoGia) errBaoGia.style.display = 'none';
+        const errModal = document.getElementById('errModalHopDong');
+        if (errModal) errModal.style.display = 'none';
+
+        // Tải danh sách báo giá mới nhất từ máy chủ
+        taiDanhSachBaoGiaHopLe(khId);
+
+        const inputSoHd = document.getElementById('hdSoHopDong');
+        if (inputSoHd) inputSoHd.focus();
+    }
+
+    function dongModalThemHopDong() {
+        const modal = document.getElementById('modalThemHopDong');
+        if (!modal) return;
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        const errModal = document.getElementById('errModalHopDong');
+        if (errModal) errModal.style.display = 'none';
+    }
+
+    function dinhDangTienTeInput(input) {
+        if (!input) return;
+        let val = input.value.replace(/[^0-9]/g, '');
+        if (val === '') {
+            input.value = '';
+            return;
+        }
+        input.value = Number(val).toLocaleString('vi-VN');
+    }
+
+    function submitFormThemHopDong(event) {
+        if (event) event.preventDefault();
+        const form = document.getElementById('formThemHopDong');
+        if (!form) return false;
+
+        const baoGiaId = document.getElementById('hdBaoGiaId') ? document.getElementById('hdBaoGiaId').value.trim() : '';
+        const soHd = document.getElementById('hdSoHopDong').value.trim();
+        const giaTriRaw = document.getElementById('hdGiaTri').value.replace(/[^0-9]/g, '').trim();
+
+        let valid = true;
+        const errBaoGia = document.getElementById('errHdBaoGiaId');
+        if (!baoGiaId) {
+            if (errBaoGia) errBaoGia.style.display = 'block';
+            valid = false;
+        } else if (errBaoGia) {
+            errBaoGia.style.display = 'none';
+        }
+
+        const errSoHd = document.getElementById('errHdSoHopDong');
+        if (!soHd) {
+            if (errSoHd) errSoHd.style.display = 'block';
+            valid = false;
+        } else if (errSoHd) {
+            errSoHd.style.display = 'none';
+        }
+
+        const errGiaTri = document.getElementById('errHdGiaTri');
+        if (!giaTriRaw || isNaN(giaTriRaw) || Number(giaTriRaw) < 0) {
+            if (errGiaTri) errGiaTri.style.display = 'block';
+            valid = false;
+        } else if (errGiaTri) {
+            errGiaTri.style.display = 'none';
+        }
+
+        const errModal = document.getElementById('errModalHopDong');
+        const errModalText = document.getElementById('errModalHopDongText');
+        if (!valid) {
+            if (errModal && errModalText) {
+                errModalText.innerText = 'Vui lòng điền đầy đủ và chính xác các thông tin bắt buộc.';
+                errModal.style.display = 'block';
+            }
+            return false;
+        } else if (errModal) {
+            errModal.style.display = 'none';
+        }
+
+        const btnSubmit = document.getElementById('btnSubmitThemHopDong');
+        if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<span class="material-symbols-outlined" style="animation: spin 1s linear infinite;">refresh</span> <span>Đang lưu...</span>';
+        }
+
+        const formData = new FormData(form);
+        const params = new URLSearchParams();
+        for (const [key, value] of formData.entries()) {
+            if (key === 'giaTriHopDong') {
+                params.append(key, giaTriRaw);
+            } else {
+                params.append(key, value);
+            }
+        }
+
+        const contextPath = window.APP_CONTEXT_PATH || '';
+
+        fetch(contextPath + '/khach-hang', {
+            method: 'POST',
+            body: params,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(function(res) {
+            return res.json().then(function(data) {
+                return { ok: res.ok, status: res.status, data: data };
+            }).catch(function() {
+                return { ok: res.ok, status: res.status, data: { message: 'Lỗi phản hồi từ máy chủ.' } };
+            });
+        })
+        .then(function(result) {
+            if (result.ok && result.data && result.data.success) {
+                dongModalThemHopDong();
+                if (typeof window.hienThiThongBaoToast === 'function') {
+                    window.hienThiThongBaoToast(result.data.message || 'Thêm hợp đồng mới thành công!', 'success');
+                }
+                setTimeout(function() {
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('tab', 'attachments');
+                    window.location.href = currentUrl.toString();
+                }, 600);
+            } else {
+                const msg = (result.data && result.data.message) ? result.data.message : 'Không thể lưu hợp đồng.';
+                if (errModal && errModalText) {
+                    errModalText.innerText = msg;
+                    errModal.style.display = 'block';
+                } else if (typeof window.hienThiThongBaoToast === 'function') {
+                    window.hienThiThongBaoToast(msg, 'error');
+                } else {
+                    alert(msg);
+                }
+            }
+        })
+        .catch(function(err) {
+            console.error('Lỗi lưu hợp đồng:', err);
+            if (errModal && errModalText) {
+                errModalText.innerText = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại đường truyền.';
+                errModal.style.display = 'block';
+            } else {
+                alert('Không thể kết nối máy chủ để lưu hợp đồng.');
+            }
+        })
+        .finally(function() {
+            if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<span class="material-symbols-outlined">check_circle</span> <span>Lưu Hợp Đồng</span>';
+            }
+        });
+
+        return false;
+    }
+
+    window.moModalTaiTaiLieu = moModalTaiTaiLieu;
+    window.dongModalTaiTaiLieu = dongModalTaiTaiLieu;
+    window.xuLyChonTep = xuLyChonTep;
+    window.huyChonTep = huyChonTep;
+    window.submitFormUploadTep = submitFormUploadTep;
+    window.xacNhanXoaTep = xacNhanXoaTep;
+
+    window.chonBaoGiaLienKet = chonBaoGiaLienKet;
+    window.taiDanhSachBaoGiaHopLe = taiDanhSachBaoGiaHopLe;
+    window.moModalThemHopDong = moModalThemHopDong;
+    window.dongModalThemHopDong = dongModalThemHopDong;
+    window.dinhDangTienTeInput = dinhDangTienTeInput;
+    window.submitFormThemHopDong = submitFormThemHopDong;
+
+    // Đăng ký sự kiện click nền để đóng modal
+    ['modalTaiTaiLieu', 'modalThemHopDong'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('click', function (e) {
+                if (e.target === el) {
+                    if (id === 'modalTaiTaiLieu') dongModalTaiTaiLieu();
+                    if (id === 'modalThemHopDong') dongModalThemHopDong();
+                }
+            });
+        }
+    });
+
+    // Đóng modal bằng phím ESC
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' || e.keyCode === 27) {
+            if (modalSuaKhachHang && modalSuaKhachHang.style.display !== 'none') {
+                dongModalSuaKhachHang();
+            }
+            if (modalThemHoatDong && modalThemHoatDong.style.display !== 'none') {
+                dongModalHoatDong();
+            }
+            const modalUpload = document.getElementById('modalTaiTaiLieu');
+            if (modalUpload && modalUpload.style.display !== 'none') {
+                dongModalTaiTaiLieu();
+            }
+            const modalHd = document.getElementById('modalThemHopDong');
+            if (modalHd && modalHd.style.display !== 'none') {
+                dongModalThemHopDong();
+            }
+        }
+    });
 });

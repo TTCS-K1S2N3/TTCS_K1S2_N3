@@ -6,6 +6,7 @@ import vn.nhom10.crm.dto.KhachHang360DTO;
 import vn.nhom10.crm.dto.NguoiDungDTO;
 import vn.nhom10.crm.model.HoatDong;
 import vn.nhom10.crm.model.KhachHang;
+import vn.nhom10.crm.model.TepDinhKem;
 import vn.nhom10.crm.util.LoiKhongTimThayException;
 import vn.nhom10.crm.util.LoiPhanQuyenException;
 
@@ -196,5 +197,88 @@ public class KhachHang360Service {
         }
 
         return hd;
+    }
+
+    /**
+     * Ghi nhận một bản ghi nhật ký thay đổi / lịch sử chỉnh sửa dữ liệu vào CSDL.
+     * Lưu vào bảng `hoat_dong` với loại hoạt động là CHINH_SUA để hiển thị nhất quán trên Timeline 360°.
+     */
+    public HoatDong ghiLichSuThayDoi(Long khachHangId,
+                                     Long userId,
+                                     Long nhomId,
+                                     String tieuDe,
+                                     String noiDung) {
+        if (khachHangId == null || khachHangId <= 0 || tieuDe == null || tieuDe.trim().isEmpty()) {
+            return null;
+        }
+
+        HoatDong hd = new HoatDong();
+        hd.setMaHoatDong("HD_AUDIT_" + System.currentTimeMillis() + "_" + khachHangId);
+        hd.setKhachHangId(khachHangId);
+        hd.setNguoiPhuTrachId(userId != null ? userId : 1L);
+        hd.setNhomKinhDoanhId(nhomId);
+        hd.setLoaiHoatDong("CHINH_SUA");
+        hd.setTieuDe(tieuDe.trim());
+        hd.setNoiDung(noiDung != null ? noiDung.trim() : "");
+        hd.setThoiGianBatDau(new Timestamp(System.currentTimeMillis()));
+        hd.setTrangThai("HOAN_THANH");
+        hd.setLaGhiNhanNhanh(false);
+
+        try {
+            Long newId = dao.themHoatDong(hd);
+            if (newId != null) {
+                hd.setId(newId);
+                return hd;
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, "Lỗi khi ghi nhận lịch sử thay đổi khách hàng vào DB: " + e.getMessage(), e);
+        }
+
+        return hd;
+    }
+
+    /**
+     * Thêm mới tệp đính kèm vào hệ thống.
+     */
+    public Long themTepDinhKem(TepDinhKem tdk) {
+        if (tdk == null || tdk.getKhachHangId() == null) {
+            throw new IllegalArgumentException("Thông tin tệp đính kèm không hợp lệ.");
+        }
+        try {
+            return dao.themMoiTepDinhKem(tdk);
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi lưu tệp đính kèm vào CSDL: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi hệ thống khi lưu tệp đính kèm vào cơ sở dữ liệu.", e);
+        }
+    }
+
+    /**
+     * Lấy thông tin tệp đính kèm theo ID.
+     */
+    public TepDinhKem layTepDinhKemTheoId(Long id) {
+        if (id == null || id <= 0) {
+            return null;
+        }
+        try {
+            return dao.timTepDinhKemTheoId(id);
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, "Lỗi khi truy vấn tệp đính kèm ID " + id + ": " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Xóa tệp đính kèm theo ID.
+     */
+    public boolean xoaTepDinhKem(Long id) {
+        if (id == null || id <= 0) {
+            return false;
+        }
+        try {
+            return dao.xoaTepDinhKem(id);
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi xóa tệp đính kèm ID " + id + ": " + e.getMessage(), e);
+            return false;
+        }
     }
 }
