@@ -1,0 +1,927 @@
+/* ==========================================================================
+   MODULE: LEAD & PHÂN BỔ (EP-04 / STORY S4-02)
+   Chức năng: Tạo Lead thủ công từ Sự kiện/Danh thiếp & Nhập hàng loạt từ Excel
+   Quy chuẩn thiết kế: Hệ thống CRM Bán Hàng Nhóm 10
+   Tuân thủ:
+   - Màu sắc: Primary (Blue #2563eb), Neutral (Slate/Gray), Semantic (Green, Red, Amber)
+   - Icon: Material Symbols Outlined đồng bộ
+   - Responsive: Tối ưu từ điện thoại 360px đến Desktop >= 1280px
+   - A11y & UX: Touch target >= 44px, focus rings rõ ràng, ARIA roles đầy đủ
+   ========================================================================== */
+
+:root {
+    --lead-primary: #2563eb;
+    --lead-primary-hover: #1d4ed8;
+    --lead-primary-light: #eff6ff;
+    --lead-primary-border: #bfdbfe;
+
+    --lead-neutral-50: #f8fafc;
+    --lead-neutral-100: #f1f5f9;
+    --lead-neutral-200: #e2e8f0;
+    --lead-neutral-300: #cbd5e1;
+    --lead-neutral-400: #94a3b8;
+    --lead-neutral-500: #64748b;
+    --lead-neutral-600: #475569;
+    --lead-neutral-700: #334155;
+    --lead-neutral-800: #1e293b;
+    --lead-neutral-900: #0f172a;
+
+    --lead-success: #10b981;
+    --lead-success-hover: #059669;
+    --lead-success-light: #ecfdf5;
+    --lead-success-border: #a7f3d0;
+    --lead-success-text: #065f46;
+
+    --lead-danger: #ef4444;
+    --lead-danger-hover: #dc2626;
+    --lead-danger-light: #fef2f2;
+    --lead-danger-border: #fecaca;
+    --lead-danger-text: #991b1b;
+
+    --lead-warning: #f59e0b;
+    --lead-warning-light: #fffbeb;
+    --lead-warning-border: #fde68a;
+    --lead-warning-text: #92400e;
+
+    --lead-radius-sm: 6px;
+    --lead-radius-md: 8px;
+    --lead-radius-lg: 12px;
+    --lead-radius-xl: 16px;
+
+    --lead-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --lead-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --lead-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* ==========================================================================
+   1. BỐ CỤC CHUNG & BREADCRUMB
+   ========================================================================== */
+.lead-container {
+    padding: 24px 32px;
+    max-width: 1360px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.lead-breadcrumb {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.lead-breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    color: var(--lead-neutral-500);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.lead-breadcrumb-link {
+    color: var(--lead-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
+}
+
+.lead-breadcrumb-link:hover {
+    color: var(--lead-primary-hover);
+    text-decoration: underline;
+}
+
+.lead-breadcrumb-sep {
+    color: var(--lead-neutral-400);
+    user-select: none;
+}
+
+.lead-breadcrumb-current {
+    color: var(--lead-neutral-700);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   2. HEADER CARD & ACTION BUTTONS
+   ========================================================================== */
+.lead-header-card {
+    background: #ffffff;
+    border-radius: var(--lead-radius-lg);
+    border: 1px solid var(--lead-neutral-200);
+    box-shadow: var(--lead-shadow-sm);
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.lead-header-title h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--lead-neutral-900);
+    margin: 0 0 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lead-header-title p {
+    font-size: 14px;
+    color: var(--lead-neutral-500);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.lead-header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--lead-primary-light);
+    color: var(--lead-primary);
+    border: 1px solid var(--lead-primary-border);
+}
+
+.lead-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Nút bấm (Buttons) */
+.lead-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: var(--lead-radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    user-select: none;
+    box-sizing: border-box;
+}
+
+.lead-btn:focus-visible {
+    outline: 2px solid var(--lead-primary);
+    outline-offset: 2px;
+}
+
+.lead-btn-primary {
+    background: var(--lead-primary);
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+}
+
+.lead-btn-primary:hover:not(:disabled) {
+    background: var(--lead-primary-hover);
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+}
+
+.lead-btn-success {
+    background: var(--lead-success);
+    color: #ffffff;
+}
+
+.lead-btn-success:hover:not(:disabled) {
+    background: var(--lead-success-hover);
+}
+
+.lead-btn-outline {
+    background: #ffffff;
+    color: var(--lead-neutral-700);
+    border-color: var(--lead-neutral-300);
+}
+
+.lead-btn-outline:hover:not(:disabled) {
+    background: var(--lead-neutral-50);
+    border-color: var(--lead-neutral-400);
+    color: var(--lead-neutral-900);
+}
+
+.lead-btn-sm {
+    min-height: 36px;
+    padding: 6px 14px;
+    font-size: 13px;
+}
+
+.lead-btn-lg {
+    min-height: 46px;
+    padding: 10px 24px;
+    font-size: 15px;
+}
+
+.lead-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   3. FORM THỦ CÔNG (TẠO LEAD SỰ KIỆN / DANH THIẾP - AC1, AC3)
+   ========================================================================== */
+.lead-form-card {
+    background: #ffffff;
+    border-radius: var(--lead-radius-lg);
+    border: 1px solid var(--lead-neutral-200);
+    box-shadow: var(--lead-shadow-sm);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+}
+
+.lead-form-section {
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--lead-neutral-100);
+}
+
+.lead-form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.lead-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--lead-neutral-800);
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lead-section-title .material-symbols-outlined {
+    font-size: 20px;
+    color: var(--lead-primary);
+}
+
+.lead-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.lead-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.lead-form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+}
+
+.lead-label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--lead-neutral-700);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lead-label .required {
+    color: var(--lead-danger);
+    font-weight: 700;
+}
+
+.lead-label .badge-ac {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--lead-warning-light);
+    color: var(--lead-warning-text);
+    border: 1px solid var(--lead-warning-border);
+}
+
+.lead-input,
+.lead-select,
+.lead-textarea {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 14px;
+    font-size: 14px;
+    color: var(--lead-neutral-800);
+    background: #ffffff;
+    border: 1px solid var(--lead-neutral-300);
+    border-radius: var(--lead-radius-md);
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.lead-textarea {
+    min-height: 90px;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.lead-input:focus,
+.lead-select:focus,
+.lead-textarea:focus {
+    outline: none;
+    border-color: var(--lead-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.lead-input.is-invalid,
+.lead-select.is-invalid,
+.lead-textarea.is-invalid {
+    border-color: var(--lead-danger);
+    background-color: #fffaf0;
+}
+
+.lead-input.is-invalid:focus,
+.lead-select.is-invalid:focus,
+.lead-textarea.is-invalid:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.lead-hint {
+    font-size: 12px;
+    color: var(--lead-neutral-500);
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+.lead-error-msg {
+    font-size: 12.5px;
+    color: var(--lead-danger-text);
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+}
+
+/* Callout Box quy tắc AC3 */
+.lead-ac3-callout {
+    background: var(--lead-warning-light);
+    border: 1px solid var(--lead-warning-border);
+    border-radius: var(--lead-radius-md);
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.lead-ac3-callout .material-symbols-outlined {
+    font-size: 22px;
+    color: var(--lead-warning);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.lead-ac3-callout-text h4 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--lead-warning-text);
+}
+
+.lead-ac3-callout-text p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--lead-neutral-700);
+    line-height: 1.45;
+}
+
+/* Form Action Footer */
+.lead-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--lead-neutral-200);
+}
+
+/* ==========================================================================
+   4. STEPPER WIZARD (IMPORT EXCEL - AC2, AC3)
+   ========================================================================== */
+.lead-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    border-radius: var(--lead-radius-lg);
+    border: 1px solid var(--lead-neutral-200);
+    padding: 16px 28px;
+    margin-bottom: 24px;
+    position: relative;
+    box-shadow: var(--lead-shadow-sm);
+}
+
+.lead-step-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    position: relative;
+}
+
+.lead-step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 2px;
+    background: var(--lead-neutral-200);
+}
+
+.lead-step-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--lead-neutral-100);
+    color: var(--lead-neutral-600);
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 2px solid var(--lead-neutral-300);
+    transition: all 0.2s ease;
+}
+
+.lead-step-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.lead-step-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--lead-neutral-600);
+}
+
+.lead-step-desc {
+    font-size: 12px;
+    color: var(--lead-neutral-400);
+}
+
+.lead-step-item.active .lead-step-circle {
+    background: var(--lead-primary);
+    color: #ffffff;
+    border-color: var(--lead-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.lead-step-item.active .lead-step-title {
+    color: var(--lead-primary);
+}
+
+.lead-step-item.completed .lead-step-circle {
+    background: var(--lead-success);
+    color: #ffffff;
+    border-color: var(--lead-success);
+}
+
+.lead-step-item.completed .lead-step-title {
+    color: var(--lead-success-text);
+}
+
+/* ==========================================================================
+   5. KHU VỰC TẢI LÊN (DROPZONE EXCEL)
+   ========================================================================== */
+.lead-dropzone {
+    border: 2px dashed var(--lead-neutral-300);
+    border-radius: var(--lead-radius-lg);
+    background: var(--lead-neutral-50);
+    padding: 36px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+    position: relative;
+    user-select: none;
+}
+
+.lead-dropzone:hover,
+.lead-dropzone.dragover {
+    border-color: var(--lead-primary);
+    background: var(--lead-primary-light);
+}
+
+.lead-dropzone-icon {
+    margin-bottom: 12px;
+}
+
+.lead-dropzone-icon .material-symbols-outlined {
+    font-size: 48px;
+    color: var(--lead-primary);
+}
+
+.lead-dropzone-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--lead-neutral-800);
+    margin-bottom: 6px;
+}
+
+.lead-dropzone-desc {
+    font-size: 13px;
+    color: var(--lead-neutral-500);
+}
+
+.lead-file-input {
+    display: none;
+}
+
+.lead-selected-file {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 10px 16px;
+    background: #ffffff;
+    border: 1px solid var(--lead-primary-border);
+    border-radius: var(--lead-radius-md);
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: var(--lead-shadow-sm);
+}
+
+.lead-file-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--lead-neutral-800);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lead-file-size {
+    font-size: 12px;
+    color: var(--lead-neutral-500);
+}
+
+.lead-btn-clear-file {
+    background: none;
+    border: none;
+    color: var(--lead-neutral-400);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.lead-btn-clear-file:hover {
+    color: var(--lead-danger);
+    background: var(--lead-danger-light);
+}
+
+/* ==========================================================================
+   6. BẢN XEM TRƯỚC VÀ BÁO LỖI THEO TỪNG DÒNG (AC2, AC3)
+   ========================================================================== */
+.lead-stats-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.lead-stat-card {
+    background: #ffffff;
+    border-radius: var(--lead-radius-md);
+    border: 1px solid var(--lead-neutral-200);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--lead-shadow-sm);
+}
+
+.lead-stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.lead-stat-icon.total {
+    background: var(--lead-primary-light);
+    color: var(--lead-primary);
+}
+
+.lead-stat-icon.valid {
+    background: var(--lead-success-light);
+    color: var(--lead-success);
+}
+
+.lead-stat-icon.error {
+    background: var(--lead-danger-light);
+    color: var(--lead-danger);
+}
+
+.lead-stat-number {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--lead-neutral-900);
+    display: block;
+    line-height: 1.2;
+}
+
+.lead-stat-label {
+    font-size: 13px;
+    color: var(--lead-neutral-500);
+    font-weight: 500;
+}
+
+/* Thanh lọc xem trước (Filter Tabs) */
+.lead-filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.lead-tab-group {
+    display: inline-flex;
+    background: var(--lead-neutral-100);
+    padding: 4px;
+    border-radius: var(--lead-radius-md);
+    border: 1px solid var(--lead-neutral-200);
+}
+
+.lead-tab-btn {
+    border: none;
+    background: transparent;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--lead-neutral-600);
+    border-radius: var(--lead-radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.lead-tab-btn.active {
+    background: #ffffff;
+    color: var(--lead-neutral-900);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Bảng xem trước cuộn (Preview Table) */
+.lead-table-container {
+    overflow-x: auto;
+    border: 1px solid var(--lead-neutral-200);
+    border-radius: var(--lead-radius-md);
+    background: #ffffff;
+    margin-bottom: 20px;
+    max-height: 480px;
+    overflow-y: auto;
+}
+
+.lead-preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    text-align: left;
+}
+
+.lead-preview-table th {
+    background: var(--lead-neutral-50);
+    color: var(--lead-neutral-700);
+    font-weight: 700;
+    padding: 12px 14px;
+    border-bottom: 2px solid var(--lead-neutral-200);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+.lead-preview-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--lead-neutral-200);
+    color: var(--lead-neutral-800);
+    vertical-align: middle;
+}
+
+.lead-preview-table tr.row-valid {
+    background: #ffffff;
+}
+
+.lead-preview-table tr.row-error {
+    background: #fff8f8;
+}
+
+.lead-preview-table tr:hover {
+    background: var(--lead-neutral-50);
+}
+
+.lead-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.lead-badge-valid {
+    background: var(--lead-success-light);
+    color: var(--lead-success-text);
+    border: 1px solid var(--lead-success-border);
+}
+
+.lead-badge-error {
+    background: var(--lead-danger-light);
+    color: var(--lead-danger-text);
+    border: 1px solid var(--lead-danger-border);
+}
+
+.lead-badge-source {
+    background: var(--lead-primary-light);
+    color: var(--lead-primary);
+    border: 1px solid var(--lead-primary-border);
+}
+
+.lead-row-error-list {
+    margin: 0;
+    padding-left: 16px;
+    font-size: 12px;
+    color: var(--lead-danger-text);
+    line-height: 1.45;
+}
+
+.lead-row-error-list li {
+    margin-bottom: 2px;
+}
+
+/* ==========================================================================
+   7. HỘP QUY TẮC CỘT & TỆP MẪU EXCEL (AC2)
+   ========================================================================== */
+.lead-rules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 18px;
+}
+
+.lead-rule-card {
+    background: var(--lead-neutral-50);
+    border: 1px solid var(--lead-neutral-200);
+    border-radius: var(--lead-radius-md);
+    padding: 14px 16px;
+}
+
+.lead-rule-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--lead-neutral-800);
+    margin-bottom: 6px;
+}
+
+.lead-rule-desc {
+    font-size: 12.5px;
+    color: var(--lead-neutral-600);
+    line-height: 1.45;
+}
+
+/* ==========================================================================
+   8. ALERTS & NOTIFICATIONS
+   ========================================================================== */
+.lead-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: var(--lead-radius-md);
+    margin-bottom: 20px;
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+.lead-alert-danger {
+    background: var(--lead-danger-light);
+    border: 1px solid var(--lead-danger-border);
+    color: var(--lead-danger-text);
+}
+
+.lead-alert-success {
+    background: var(--lead-success-light);
+    border: 1px solid var(--lead-success-border);
+    color: var(--lead-success-text);
+}
+
+.lead-alert .material-symbols-outlined {
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+/* ==========================================================================
+   9. RESPONSIVE MOBILE & TABLET (360px - 1024px)
+   ========================================================================== */
+@media (max-width: 1024px) {
+    .lead-grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .lead-rules-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .lead-container {
+        padding: 16px 14px;
+    }
+
+    .lead-header-card {
+        padding: 18px 16px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .lead-header-actions {
+        width: 100%;
+    }
+
+    .lead-header-actions .lead-btn {
+        flex: 1;
+        width: 100%;
+    }
+
+    .lead-grid-2,
+    .lead-grid-3,
+    .lead-rules-grid,
+    .lead-stats-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .lead-form-card {
+        padding: 20px 16px;
+    }
+
+    .lead-stepper {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px;
+    }
+
+    .lead-step-item:not(:last-child)::after {
+        display: none;
+    }
+
+    .lead-form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .lead-form-actions .lead-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .lead-header-title h1 {
+        font-size: 19px;
+    }
+
+    .lead-dropzone {
+        padding: 24px 12px;
+    }
+}
