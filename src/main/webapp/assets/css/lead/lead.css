@@ -1,20 +1,23 @@
 /* ==========================================================================
    MODULE: LEAD & PHÂN BỔ (EP-04 / STORY S4-02)
-   Chức năng: Tạo Lead thủ công từ Sự kiện/Danh thiếp & Nhập hàng loạt từ Excel
-   Quy chuẩn thiết kế: Hệ thống CRM Bán Hàng Nhóm 10
-   Tuân thủ:
-   - Màu sắc: Primary (Blue #2563eb), Neutral (Slate/Gray), Semantic (Green, Red, Amber)
-   - Icon: Material Symbols Outlined đồng bộ
-   - Responsive: Tối ưu từ điện thoại 360px đến Desktop >= 1280px
-   - A11y & UX: Touch target >= 44px, focus rings rõ ràng, ARIA roles đầy đủ
+   Thiết kế chuẩn Modern SaaS (HubSpot / Linear / Salesforce Design System)
+   - Tối giản chữ thừa, phân cấp thị giác rõ ràng, khoảng thở (whitespace) thoáng đãng
+   - Live Card Preview (Thẻ danh thiếp thông minh cập nhật thời gian thực)
+   - Touch target >= 44px, Soft focus glow, Pill badges tinh tế
+   - Tối ưu Responsive từ Mobile 360px đến Desktop 1440px
    ========================================================================== */
 
 :root {
+    /* Brand Primary (Royal Blue / Indigo) */
     --lead-primary: #2563eb;
     --lead-primary-hover: #1d4ed8;
     --lead-primary-light: #eff6ff;
     --lead-primary-border: #bfdbfe;
+    --lead-primary-glow: rgba(37, 99, 235, 0.15);
 
+    /* Neutrals (Slate Clean Palette) */
+    --lead-bg: #f8fafc;
+    --lead-card-bg: #ffffff;
     --lead-neutral-50: #f8fafc;
     --lead-neutral-100: #f1f5f9;
     --lead-neutral-200: #e2e8f0;
@@ -26,14 +29,13 @@
     --lead-neutral-800: #1e293b;
     --lead-neutral-900: #0f172a;
 
+    /* Semantics (Pastel & Crisp) */
     --lead-success: #10b981;
-    --lead-success-hover: #059669;
     --lead-success-light: #ecfdf5;
     --lead-success-border: #a7f3d0;
     --lead-success-text: #065f46;
 
     --lead-danger: #ef4444;
-    --lead-danger-hover: #dc2626;
     --lead-danger-light: #fef2f2;
     --lead-danger-border: #fecaca;
     --lead-danger-text: #991b1b;
@@ -43,25 +45,30 @@
     --lead-warning-border: #fde68a;
     --lead-warning-text: #92400e;
 
-    --lead-radius-sm: 6px;
-    --lead-radius-md: 8px;
-    --lead-radius-lg: 12px;
-    --lead-radius-xl: 16px;
+    /* Radii & Shadows */
+    --lead-radius-xs: 4px;
+    --lead-radius-sm: 8px;
+    --lead-radius-md: 12px;
+    --lead-radius-lg: 16px;
+    --lead-radius-xl: 20px;
 
-    --lead-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-    --lead-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-    --lead-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --lead-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --lead-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+    --lead-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+    --lead-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+    --lead-shadow-card: 0 0 0 1px rgba(226, 232, 240, 0.8), 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 /* ==========================================================================
    1. BỐ CỤC CHUNG & BREADCRUMB
    ========================================================================== */
 .lead-container {
-    padding: 24px 32px;
-    max-width: 1360px;
+    padding: 24px 32px 48px;
+    max-width: 1320px;
     margin: 0 auto;
     width: 100%;
     box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .lead-breadcrumb {
@@ -77,106 +84,100 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13.5px;
-    color: var(--lead-neutral-500);
+    font-size: 13px;
+    color: var(--lead-neutral-400);
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
 .lead-breadcrumb-link {
-    color: var(--lead-primary);
+    color: var(--lead-neutral-600);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.15s ease;
 }
 
 .lead-breadcrumb-link:hover {
-    color: var(--lead-primary-hover);
-    text-decoration: underline;
+    color: var(--lead-primary);
 }
 
 .lead-breadcrumb-sep {
-    color: var(--lead-neutral-400);
+    color: var(--lead-neutral-300);
     user-select: none;
 }
 
 .lead-breadcrumb-current {
-    color: var(--lead-neutral-700);
+    color: var(--lead-neutral-900);
     font-weight: 600;
 }
 
 /* ==========================================================================
-   2. HEADER CARD & ACTION BUTTONS
+   2. HEADER BAR (PAGE TITLE & ACTIONS)
    ========================================================================== */
-.lead-header-card {
-    background: #ffffff;
-    border-radius: var(--lead-radius-lg);
-    border: 1px solid var(--lead-neutral-200);
-    box-shadow: var(--lead-shadow-sm);
-    padding: 24px 28px;
-    margin-bottom: 24px;
+.lead-page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 20px;
+    margin-bottom: 24px;
     flex-wrap: wrap;
+    gap: 16px;
 }
 
-.lead-header-title h1 {
-    font-size: 22px;
+.lead-title-wrap h1 {
+    font-size: 24px;
     font-weight: 700;
     color: var(--lead-neutral-900);
-    margin: 0 0 6px 0;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.lead-header-title p {
+.lead-title-wrap p {
     font-size: 14px;
     color: var(--lead-neutral-500);
     margin: 0;
-    line-height: 1.5;
 }
 
-.lead-header-badge {
+.lead-header-pill {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    padding: 3px 9px;
+    padding: 3px 10px;
     border-radius: 999px;
     font-size: 12px;
     font-weight: 600;
-    background: var(--lead-primary-light);
-    color: var(--lead-primary);
-    border: 1px solid var(--lead-primary-border);
+    background: #f1f5f9;
+    color: var(--lead-neutral-700);
+    border: 1px solid var(--lead-neutral-200);
 }
 
 .lead-header-actions {
     display: flex;
     align-items: center;
     gap: 10px;
-    flex-wrap: wrap;
 }
 
-/* Nút bấm (Buttons) */
+/* Nút bấm (Sleek Modern Buttons) */
 .lead-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 42px;
-    padding: 8px 18px;
-    font-size: 14px;
+    min-height: 40px;
+    padding: 8px 16px;
+    font-size: 13.5px;
     font-weight: 600;
-    border-radius: var(--lead-radius-md);
+    border-radius: var(--lead-radius-sm);
     border: 1px solid transparent;
     cursor: pointer;
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     user-select: none;
     box-sizing: border-box;
+    font-family: inherit;
 }
 
 .lead-btn:focus-visible {
@@ -192,16 +193,12 @@
 
 .lead-btn-primary:hover:not(:disabled) {
     background: var(--lead-primary-hover);
-    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+    transform: translateY(-1px);
 }
 
-.lead-btn-success {
-    background: var(--lead-success);
-    color: #ffffff;
-}
-
-.lead-btn-success:hover:not(:disabled) {
-    background: var(--lead-success-hover);
+.lead-btn-primary:active:not(:disabled) {
+    transform: translateY(0);
 }
 
 .lead-btn-outline {
@@ -216,73 +213,94 @@
     color: var(--lead-neutral-900);
 }
 
-.lead-btn-sm {
-    min-height: 36px;
-    padding: 6px 14px;
-    font-size: 13px;
+.lead-btn-ghost {
+    background: transparent;
+    color: var(--lead-neutral-600);
 }
 
-.lead-btn-lg {
-    min-height: 46px;
-    padding: 10px 24px;
-    font-size: 15px;
+.lead-btn-ghost:hover:not(:disabled) {
+    background: var(--lead-neutral-100);
+    color: var(--lead-neutral-900);
+}
+
+.lead-btn-sm {
+    min-height: 34px;
+    padding: 5px 12px;
+    font-size: 13px;
+    border-radius: var(--lead-radius-xs);
 }
 
 .lead-btn:disabled {
-    opacity: 0.6;
+    opacity: 0.55;
     cursor: not-allowed;
     pointer-events: none;
 }
 
 /* ==========================================================================
-   3. FORM THỦ CÔNG (TẠO LEAD SỰ KIỆN / DANH THIẾP - AC1, AC3)
+   3. BỐ CỤC 2 CỘT HIỆN ĐẠI (SPLIT FORM & LIVE CARD PREVIEW)
    ========================================================================== */
-.lead-form-card {
-    background: #ffffff;
-    border-radius: var(--lead-radius-lg);
-    border: 1px solid var(--lead-neutral-200);
-    box-shadow: var(--lead-shadow-sm);
-    padding: 28px 32px;
-    margin-bottom: 24px;
+.lead-split-layout {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 24px;
+    align-items: start;
 }
 
+.lead-main-card {
+    background: #ffffff;
+    border-radius: var(--lead-radius-md);
+    box-shadow: var(--lead-shadow-card);
+    padding: 28px;
+    box-sizing: border-box;
+}
+
+.lead-side-card {
+    position: sticky;
+    top: 76px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Section Header in Form */
 .lead-form-section {
     margin-bottom: 28px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid var(--lead-neutral-100);
 }
 
 .lead-form-section:last-child {
-    border-bottom: none;
     margin-bottom: 0;
-    padding-bottom: 0;
+}
+
+.lead-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--lead-neutral-100);
 }
 
 .lead-section-title {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
-    color: var(--lead-neutral-800);
-    margin: 0 0 16px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--lead-neutral-500);
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
 .lead-section-title .material-symbols-outlined {
-    font-size: 20px;
+    font-size: 18px;
     color: var(--lead-primary);
 }
 
+/* Form Grids & Inputs */
 .lead-grid-2 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-}
-
-.lead-grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    gap: 18px;
 }
 
 .lead-form-group {
@@ -294,48 +312,72 @@
 .lead-label {
     font-size: 13.5px;
     font-weight: 600;
-    color: var(--lead-neutral-700);
+    color: var(--lead-neutral-800);
     margin-bottom: 6px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: space-between;
 }
 
-.lead-label .required {
+.lead-label .required-dot {
     color: var(--lead-danger);
-    font-weight: 700;
+    margin-left: 2px;
 }
 
-.lead-label .badge-ac {
+.lead-label-badge {
     font-size: 11px;
     font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: var(--lead-warning-light);
-    color: var(--lead-warning-text);
-    border: 1px solid var(--lead-warning-border);
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.lead-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.lead-input-icon {
+    position: absolute;
+    left: 14px;
+    color: var(--lead-neutral-400);
+    font-size: 19px;
+    pointer-events: none;
+    transition: color 0.15s ease;
 }
 
 .lead-input,
 .lead-select,
 .lead-textarea {
     width: 100%;
-    min-height: 42px;
-    padding: 8px 14px;
+    min-height: 44px;
+    padding: 10px 14px;
     font-size: 14px;
-    color: var(--lead-neutral-800);
+    color: var(--lead-neutral-900);
     background: #ffffff;
     border: 1px solid var(--lead-neutral-300);
-    border-radius: var(--lead-radius-md);
+    border-radius: var(--lead-radius-sm);
     box-sizing: border-box;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     font-family: inherit;
 }
 
-.lead-textarea {
-    min-height: 90px;
-    line-height: 1.5;
-    resize: vertical;
+.lead-input-wrap .lead-input {
+    padding-left: 42px;
+}
+
+.lead-input::placeholder,
+.lead-textarea::placeholder {
+    color: var(--lead-neutral-400);
+    font-size: 13.5px;
+}
+
+.lead-input:hover,
+.lead-select:hover,
+.lead-textarea:hover {
+    border-color: var(--lead-neutral-400);
 }
 
 .lead-input:focus,
@@ -343,14 +385,24 @@
 .lead-textarea:focus {
     outline: none;
     border-color: var(--lead-primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    box-shadow: 0 0 0 3px var(--lead-primary-glow);
+}
+
+.lead-input-wrap:focus-within .lead-input-icon {
+    color: var(--lead-primary);
+}
+
+.lead-textarea {
+    min-height: 84px;
+    line-height: 1.5;
+    resize: vertical;
 }
 
 .lead-input.is-invalid,
 .lead-select.is-invalid,
 .lead-textarea.is-invalid {
     border-color: var(--lead-danger);
-    background-color: #fffaf0;
+    background: #fffcfc;
 }
 
 .lead-input.is-invalid:focus,
@@ -359,569 +411,505 @@
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
 }
 
-.lead-hint {
-    font-size: 12px;
-    color: var(--lead-neutral-500);
-    margin-top: 4px;
-    line-height: 1.4;
-}
-
 .lead-error-msg {
-    font-size: 12.5px;
+    font-size: 12px;
     color: var(--lead-danger-text);
-    margin-top: 4px;
+    margin-top: 5px;
     display: flex;
     align-items: center;
     gap: 4px;
     font-weight: 500;
 }
 
-/* Callout Box quy tắc AC3 */
-.lead-ac3-callout {
-    background: var(--lead-warning-light);
-    border: 1px solid var(--lead-warning-border);
-    border-radius: var(--lead-radius-md);
-    padding: 14px 18px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-}
-
-.lead-ac3-callout .material-symbols-outlined {
-    font-size: 22px;
-    color: var(--lead-warning);
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-
-.lead-ac3-callout-text h4 {
-    margin: 0 0 4px 0;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--lead-warning-text);
-}
-
-.lead-ac3-callout-text p {
-    margin: 0;
-    font-size: 13px;
-    color: var(--lead-neutral-700);
-    line-height: 1.45;
-}
-
-/* Form Action Footer */
-.lead-form-actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 28px;
-    padding-top: 20px;
-    border-top: 1px solid var(--lead-neutral-200);
-}
-
 /* ==========================================================================
-   4. STEPPER WIZARD (IMPORT EXCEL - AC2, AC3)
+   4. CHIPS CHỌN NHANH NGUỒN LEAD (AC3)
    ========================================================================== */
-.lead-stepper {
+.lead-source-chips {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.lead-source-chip {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    background: #ffffff;
-    border-radius: var(--lead-radius-lg);
+    gap: 8px;
+    padding: 10px 12px;
     border: 1px solid var(--lead-neutral-200);
-    padding: 16px 28px;
-    margin-bottom: 24px;
-    position: relative;
-    box-shadow: var(--lead-shadow-sm);
-}
-
-.lead-step-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-    position: relative;
-}
-
-.lead-step-item:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px;
-    height: 2px;
-    background: var(--lead-neutral-200);
-}
-
-.lead-step-circle {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--lead-neutral-100);
-    color: var(--lead-neutral-600);
-    font-weight: 700;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    border: 2px solid var(--lead-neutral-300);
-    transition: all 0.2s ease;
-}
-
-.lead-step-text {
-    display: flex;
-    flex-direction: column;
-}
-
-.lead-step-title {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--lead-neutral-600);
-}
-
-.lead-step-desc {
-    font-size: 12px;
-    color: var(--lead-neutral-400);
-}
-
-.lead-step-item.active .lead-step-circle {
-    background: var(--lead-primary);
-    color: #ffffff;
-    border-color: var(--lead-primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
-}
-
-.lead-step-item.active .lead-step-title {
-    color: var(--lead-primary);
-}
-
-.lead-step-item.completed .lead-step-circle {
-    background: var(--lead-success);
-    color: #ffffff;
-    border-color: var(--lead-success);
-}
-
-.lead-step-item.completed .lead-step-title {
-    color: var(--lead-success-text);
-}
-
-/* ==========================================================================
-   5. KHU VỰC TẢI LÊN (DROPZONE EXCEL)
-   ========================================================================== */
-.lead-dropzone {
-    border: 2px dashed var(--lead-neutral-300);
-    border-radius: var(--lead-radius-lg);
+    border-radius: var(--lead-radius-sm);
     background: var(--lead-neutral-50);
-    padding: 36px 24px;
-    text-align: center;
+    color: var(--lead-neutral-700);
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
-    outline: none;
-    position: relative;
+    transition: all 0.15s ease;
     user-select: none;
 }
 
-.lead-dropzone:hover,
-.lead-dropzone.dragover {
-    border-color: var(--lead-primary);
-    background: var(--lead-primary-light);
-}
-
-.lead-dropzone-icon {
-    margin-bottom: 12px;
-}
-
-.lead-dropzone-icon .material-symbols-outlined {
-    font-size: 48px;
-    color: var(--lead-primary);
-}
-
-.lead-dropzone-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--lead-neutral-800);
-    margin-bottom: 6px;
-}
-
-.lead-dropzone-desc {
-    font-size: 13px;
+.lead-source-chip .material-symbols-outlined {
+    font-size: 18px;
     color: var(--lead-neutral-500);
 }
 
-.lead-file-input {
-    display: none;
+.lead-source-chip:hover {
+    border-color: var(--lead-neutral-300);
+    background: #ffffff;
+    color: var(--lead-neutral-900);
 }
 
-.lead-selected-file {
+.lead-source-chip.selected {
+    background: #eff6ff;
+    border-color: var(--lead-primary);
+    color: var(--lead-primary);
+    font-weight: 600;
+    box-shadow: 0 0 0 1px var(--lead-primary);
+}
+
+.lead-source-chip.selected .material-symbols-outlined {
+    color: var(--lead-primary);
+}
+
+/* ==========================================================================
+   5. LIVE BUSINESS CARD PREVIEW (THẺ DANH THIẾP THÔNG MINH)
+   ========================================================================== */
+.lead-preview-card-wrap {
+    background: #ffffff;
+    border-radius: var(--lead-radius-md);
+    box-shadow: var(--lead-shadow-card);
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.lead-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.lead-preview-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--lead-neutral-400);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lead-preview-live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--lead-success-text);
+    font-weight: 600;
+    background: var(--lead-success-light);
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+.lead-preview-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--lead-success);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* Thẻ Danh thiếp mô phỏng */
+.lead-biz-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-radius: var(--lead-radius-md);
+    padding: 22px;
+    color: #ffffff;
+    box-shadow: 0 12px 24px -6px rgba(15, 23, 42, 0.25);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.lead-biz-card::after {
+    content: '';
+    position: absolute;
+    right: -40px;
+    bottom: -40px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.25) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.lead-biz-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.lead-biz-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    margin-top: 16px;
-    padding: 10px 16px;
-    background: #ffffff;
-    border: 1px solid var(--lead-primary-border);
-    border-radius: var(--lead-radius-md);
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
-    box-shadow: var(--lead-shadow-sm);
+    font-size: 17px;
+    font-weight: 700;
+    color: #ffffff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
 }
 
-.lead-file-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--lead-neutral-800);
+.lead-biz-info h3 {
+    margin: 0 0 2px 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.3;
+}
+
+.lead-biz-info .lead-biz-company {
+    font-size: 12.5px;
+    color: #94a3b8;
+}
+
+.lead-biz-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 12.5px;
+    color: #cbd5e1;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 14px;
+    margin-top: 10px;
+}
+
+.lead-biz-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.lead-file-size {
-    font-size: 12px;
-    color: var(--lead-neutral-500);
-}
-
-.lead-btn-clear-file {
-    background: none;
-    border: none;
-    color: var(--lead-neutral-400);
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-}
-
-.lead-btn-clear-file:hover {
-    color: var(--lead-danger);
-    background: var(--lead-danger-light);
-}
-
-/* ==========================================================================
-   6. BẢN XEM TRƯỚC VÀ BÁO LỖI THEO TỪNG DÒNG (AC2, AC3)
-   ========================================================================== */
-.lead-stats-summary {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-bottom: 20px;
-}
-
-.lead-stat-card {
-    background: #ffffff;
-    border-radius: var(--lead-radius-md);
-    border: 1px solid var(--lead-neutral-200);
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    box-shadow: var(--lead-shadow-sm);
-}
-
-.lead-stat-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.lead-biz-row .material-symbols-outlined {
+    font-size: 16px;
+    color: #60a5fa;
     flex-shrink: 0;
 }
 
-.lead-stat-icon.total {
-    background: var(--lead-primary-light);
-    color: var(--lead-primary);
+.lead-biz-badge {
+    margin-top: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    font-weight: 600;
+    background: rgba(37, 99, 235, 0.3);
+    color: #93c5fd;
+    border: 1px solid rgba(147, 197, 253, 0.3);
+    padding: 3px 10px;
+    border-radius: 999px;
 }
 
-.lead-stat-icon.valid {
-    background: var(--lead-success-light);
-    color: var(--lead-success);
-}
-
-.lead-stat-icon.error {
-    background: var(--lead-danger-light);
-    color: var(--lead-danger);
-}
-
-.lead-stat-number {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--lead-neutral-900);
-    display: block;
-    line-height: 1.2;
-}
-
-.lead-stat-label {
-    font-size: 13px;
-    color: var(--lead-neutral-500);
-    font-weight: 500;
-}
-
-/* Thanh lọc xem trước (Filter Tabs) */
-.lead-filter-bar {
+/* ==========================================================================
+   6. STEPPER WIZARD (IMPORT EXCEL - STRIPE / VERCEL MINIMALIST)
+   ========================================================================== */
+.lead-stepper-modern {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-    gap: 12px;
-    flex-wrap: wrap;
+    justify-content: center;
+    gap: 36px;
+    margin-bottom: 28px;
 }
 
-.lead-tab-group {
+.lead-step-node {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--lead-neutral-400);
+}
+
+.lead-step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--lead-neutral-200);
+    color: var(--lead-neutral-600);
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.lead-step-name {
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.lead-step-node.active .lead-step-num {
+    background: var(--lead-primary);
+    color: #ffffff;
+    box-shadow: 0 0 0 3px var(--lead-primary-glow);
+}
+
+.lead-step-node.active .lead-step-name {
+    color: var(--lead-neutral-900);
+}
+
+.lead-step-node.completed .lead-step-num {
+    background: var(--lead-success);
+    color: #ffffff;
+}
+
+.lead-step-node.completed .lead-step-name {
+    color: var(--lead-neutral-700);
+}
+
+.lead-step-divider {
+    width: 48px;
+    height: 1px;
+    background: var(--lead-neutral-200);
+}
+
+/* ==========================================================================
+   7. MINIMALIST DROPZONE (EXCEL UPLOAD)
+   ========================================================================== */
+.lead-dropzone-modern {
+    border: 1.5px dashed var(--lead-neutral-300);
+    border-radius: var(--lead-radius-md);
+    background: #fafcff;
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.lead-dropzone-modern:hover,
+.lead-dropzone-modern.dragover {
+    border-color: var(--lead-primary);
+    background: #f0f7ff;
+    box-shadow: 0 0 0 4px var(--lead-primary-glow);
+}
+
+.lead-dropzone-icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: var(--lead-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    transition: transform 0.2s ease;
+}
+
+.lead-dropzone-modern:hover .lead-dropzone-icon-wrap {
+    transform: translateY(-2px);
+}
+
+.lead-dropzone-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--lead-neutral-800);
+    margin-bottom: 4px;
+}
+
+.lead-dropzone-desc {
+    font-size: 13px;
+    color: var(--lead-neutral-400);
+}
+
+/* ==========================================================================
+   8. THẺ THỐNG KÊ & BẢNG XEM TRƯỚC (PREVIEW TABLE)
+   ========================================================================== */
+.lead-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.lead-stat-box {
+    background: #ffffff;
+    border-radius: var(--lead-radius-sm);
+    border: 1px solid var(--lead-neutral-200);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.lead-stat-num {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--lead-neutral-900);
+    line-height: 1.1;
+}
+
+.lead-stat-lbl {
+    font-size: 12.5px;
+    color: var(--lead-neutral-500);
+    margin-top: 2px;
+}
+
+/* Segmented Filter Control */
+.lead-segmented-tabs {
     display: inline-flex;
     background: var(--lead-neutral-100);
-    padding: 4px;
-    border-radius: var(--lead-radius-md);
-    border: 1px solid var(--lead-neutral-200);
+    padding: 3px;
+    border-radius: var(--lead-radius-sm);
+    gap: 2px;
 }
 
-.lead-tab-btn {
+.lead-seg-btn {
     border: none;
     background: transparent;
     padding: 6px 14px;
     font-size: 13px;
     font-weight: 600;
     color: var(--lead-neutral-600);
-    border-radius: var(--lead-radius-sm);
+    border-radius: var(--lead-radius-xs);
     cursor: pointer;
     transition: all 0.15s ease;
+    font-family: inherit;
 }
 
-.lead-tab-btn.active {
+.lead-seg-btn.active {
     background: #ffffff;
     color: var(--lead-neutral-900);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-/* Bảng xem trước cuộn (Preview Table) */
-.lead-table-container {
-    overflow-x: auto;
+/* Bảng xem trước dữ liệu */
+.lead-preview-wrap {
     border: 1px solid var(--lead-neutral-200);
-    border-radius: var(--lead-radius-md);
+    border-radius: var(--lead-radius-sm);
+    overflow: hidden;
     background: #ffffff;
     margin-bottom: 20px;
-    max-height: 480px;
-    overflow-y: auto;
 }
 
-.lead-preview-table {
+.lead-table-modern {
     width: 100%;
     border-collapse: collapse;
     font-size: 13.5px;
     text-align: left;
 }
 
-.lead-preview-table th {
-    background: var(--lead-neutral-50);
-    color: var(--lead-neutral-700);
-    font-weight: 700;
-    padding: 12px 14px;
-    border-bottom: 2px solid var(--lead-neutral-200);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    white-space: nowrap;
-}
-
-.lead-preview-table td {
+.lead-table-modern th {
+    background: #f8fafc;
+    color: var(--lead-neutral-600);
+    font-weight: 600;
     padding: 12px 14px;
     border-bottom: 1px solid var(--lead-neutral-200);
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.lead-table-modern td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--lead-neutral-100);
     color: var(--lead-neutral-800);
     vertical-align: middle;
 }
 
-.lead-preview-table tr.row-valid {
-    background: #ffffff;
+.lead-table-modern tr:last-child td {
+    border-bottom: none;
 }
 
-.lead-preview-table tr.row-error {
+.lead-table-modern tr:hover {
+    background: #fafcff;
+}
+
+.lead-table-modern tr.row-error {
     background: #fff8f8;
 }
 
-.lead-preview-table tr:hover {
-    background: var(--lead-neutral-50);
-}
-
-.lead-badge {
+.lead-pill-badge {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 8px;
+    padding: 3px 9px;
     border-radius: 999px;
     font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
 }
 
-.lead-badge-valid {
-    background: var(--lead-success-light);
-    color: var(--lead-success-text);
-    border: 1px solid var(--lead-success-border);
+.lead-pill-valid {
+    background: #ecfdf5;
+    color: #065f46;
 }
 
-.lead-badge-error {
-    background: var(--lead-danger-light);
-    color: var(--lead-danger-text);
-    border: 1px solid var(--lead-danger-border);
+.lead-pill-error {
+    background: #fef2f2;
+    color: #991b1b;
 }
 
-.lead-badge-source {
-    background: var(--lead-primary-light);
-    color: var(--lead-primary);
-    border: 1px solid var(--lead-primary-border);
-}
-
-.lead-row-error-list {
-    margin: 0;
-    padding-left: 16px;
-    font-size: 12px;
-    color: var(--lead-danger-text);
-    line-height: 1.45;
-}
-
-.lead-row-error-list li {
-    margin-bottom: 2px;
+.lead-pill-source {
+    background: #eff6ff;
+    color: #1e40af;
 }
 
 /* ==========================================================================
-   7. HỘP QUY TẮC CỘT & TỆP MẪU EXCEL (AC2)
-   ========================================================================== */
-.lead-rules-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-top: 18px;
-}
-
-.lead-rule-card {
-    background: var(--lead-neutral-50);
-    border: 1px solid var(--lead-neutral-200);
-    border-radius: var(--lead-radius-md);
-    padding: 14px 16px;
-}
-
-.lead-rule-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--lead-neutral-800);
-    margin-bottom: 6px;
-}
-
-.lead-rule-desc {
-    font-size: 12.5px;
-    color: var(--lead-neutral-600);
-    line-height: 1.45;
-}
-
-/* ==========================================================================
-   8. ALERTS & NOTIFICATIONS
-   ========================================================================== */
-.lead-alert {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 14px 18px;
-    border-radius: var(--lead-radius-md);
-    margin-bottom: 20px;
-    font-size: 13.5px;
-    line-height: 1.5;
-}
-
-.lead-alert-danger {
-    background: var(--lead-danger-light);
-    border: 1px solid var(--lead-danger-border);
-    color: var(--lead-danger-text);
-}
-
-.lead-alert-success {
-    background: var(--lead-success-light);
-    border: 1px solid var(--lead-success-border);
-    color: var(--lead-success-text);
-}
-
-.lead-alert .material-symbols-outlined {
-    font-size: 22px;
-    flex-shrink: 0;
-}
-
-/* ==========================================================================
-   9. RESPONSIVE MOBILE & TABLET (360px - 1024px)
+   9. RESPONSIVE DESIGN (360px - 1024px)
    ========================================================================== */
 @media (max-width: 1024px) {
-    .lead-grid-3 {
-        grid-template-columns: repeat(2, 1fr);
+    .lead-split-layout {
+        grid-template-columns: 1fr;
     }
-    .lead-rules-grid {
-        grid-template-columns: repeat(2, 1fr);
+    .lead-side-card {
+        position: static;
+        order: -1; /* Thẻ preview lên trên khi ở tablet */
     }
 }
 
 @media (max-width: 768px) {
     .lead-container {
-        padding: 16px 14px;
+        padding: 16px 14px 32px;
     }
-
-    .lead-header-card {
-        padding: 18px 16px;
+    .lead-main-card {
+        padding: 20px 16px;
+    }
+    .lead-grid-2,
+    .lead-source-chips,
+    .lead-stats-row {
+        grid-template-columns: 1fr;
+    }
+    .lead-stepper-modern {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+    .lead-step-divider {
+        display: none;
+    }
+    .lead-page-header {
         flex-direction: column;
         align-items: flex-start;
     }
-
     .lead-header-actions {
         width: 100%;
     }
-
     .lead-header-actions .lead-btn {
         flex: 1;
-        width: 100%;
-    }
-
-    .lead-grid-2,
-    .lead-grid-3,
-    .lead-rules-grid,
-    .lead-stats-summary {
-        grid-template-columns: 1fr;
-    }
-
-    .lead-form-card {
-        padding: 20px 16px;
-    }
-
-    .lead-stepper {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 14px;
-        padding: 16px;
-    }
-
-    .lead-step-item:not(:last-child)::after {
-        display: none;
-    }
-
-    .lead-form-actions {
-        flex-direction: column-reverse;
-    }
-
-    .lead-form-actions .lead-btn {
-        width: 100%;
-    }
-}
-
-@media (max-width: 480px) {
-    .lead-header-title h1 {
-        font-size: 19px;
-    }
-
-    .lead-dropzone {
-        padding: 24px 12px;
     }
 }
