@@ -1,0 +1,878 @@
+/**
+ * CSS Chuyên biệt Module Cấu hình Chấm điểm Lead (Story S4-05)
+ * Dành cho Giám đốc kinh doanh & Quản trị viên
+ * Tiêu chuẩn: Responsive 360px+, Material Symbols Outlined, Visual Range Bar, Modern SaaS UI
+ */
+
+:root {
+    --cd-primary: #3b82f6;
+    --cd-primary-hover: #2563eb;
+    --cd-primary-light: #eff6ff;
+    --cd-success: #10b981;
+    --cd-warning: #f59e0b;
+    --cd-danger: #ef4444;
+    --cd-hot: #ef4444;
+    --cd-hot-bg: #fef2f2;
+    --cd-warm: #f59e0b;
+    --cd-warm-bg: #fffbeb;
+    --cd-cold: #0284c7;
+    --cd-cold-bg: #f0f9ff;
+    --cd-text-main: #0f172a;
+    --cd-text-muted: #64748b;
+    --cd-border: #e2e8f0;
+    --cd-card-bg: #ffffff;
+    --cd-bg: #f8fafc;
+    --cd-radius-sm: 8px;
+    --cd-radius-md: 12px;
+    --cd-radius-lg: 16px;
+    --cd-shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --cd-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+    --cd-shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
+}
+
+/* Container chính */
+.cd-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Breadcrumb */
+.cd-breadcrumb {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.cd-breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--cd-text-muted);
+}
+
+.cd-breadcrumb-link {
+    color: var(--cd-primary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.cd-breadcrumb-link:hover {
+    color: var(--cd-primary-hover);
+    text-decoration: underline;
+}
+
+.cd-breadcrumb-sep {
+    color: #cbd5e1;
+}
+
+.cd-breadcrumb-current {
+    font-weight: 600;
+    color: var(--cd-text-main);
+}
+
+/* Header Card */
+.cd-header-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #ffffff;
+    border-radius: var(--cd-radius-lg);
+    padding: 28px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    box-shadow: var(--cd-shadow-md);
+    position: relative;
+    overflow: hidden;
+}
+
+.cd-header-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.cd-header-title h1 {
+    margin: 0 0 8px 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cd-header-title p {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 0.9375rem;
+    max-width: 700px;
+    line-height: 1.5;
+}
+
+.cd-version-tag {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.8125rem;
+    color: #e2e8f0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+/* Alert Banners */
+.cd-alert {
+    padding: 14px 18px;
+    border-radius: var(--cd-radius-md);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.9375rem;
+    line-height: 1.45;
+}
+
+.cd-alert-success {
+    background-color: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+}
+
+.cd-alert-danger {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+.cd-alert-info {
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+}
+
+.cd-alert-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+/* Layout Grid 2 Cột: Cột chính cấu hình và Cột phụ Live Simulator */
+.cd-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    align-items: start;
+}
+
+/* Thẻ Section */
+.cd-card {
+    background: var(--cd-card-bg);
+    border: 1px solid var(--cd-border);
+    border-radius: var(--cd-radius-lg);
+    box-shadow: var(--cd-shadow-sm);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.cd-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--cd-border);
+}
+
+.cd-card-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--cd-text-main);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cd-card-desc {
+    margin: 4px 0 0 0;
+    font-size: 0.875rem;
+    color: var(--cd-text-muted);
+}
+
+/* SECTION 1: CẤU HÌNH NGƯỠNG PHÂN LOẠI (AC3) */
+.cd-thresholds-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.cd-threshold-box {
+    border-radius: var(--cd-radius-md);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.cd-threshold-box.hot {
+    background-color: var(--cd-hot-bg);
+    border-color: #fca5a5;
+}
+
+.cd-threshold-box.warm {
+    background-color: var(--cd-warm-bg);
+    border-color: #fde68a;
+}
+
+.cd-threshold-box.cold {
+    background-color: var(--cd-cold-bg);
+    border-color: #bae6fd;
+}
+
+.cd-threshold-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cd-threshold-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.8125rem;
+}
+
+.cd-threshold-badge.hot {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+.cd-threshold-badge.warm {
+    background: #d97706;
+    color: #ffffff;
+}
+
+.cd-threshold-badge.cold {
+    background: #0284c7;
+    color: #ffffff;
+}
+
+.cd-threshold-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cd-threshold-input {
+    width: 76px;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: var(--cd-radius-sm);
+    font-size: 1.125rem;
+    font-weight: 700;
+    text-align: center;
+    background: #ffffff;
+    color: var(--cd-text-main);
+    transition: border-color 0.15s ease;
+}
+
+.cd-threshold-input:focus {
+    outline: none;
+    border-color: var(--cd-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.cd-threshold-explain {
+    font-size: 0.8125rem;
+    color: var(--cd-text-muted);
+    line-height: 1.4;
+}
+
+/* Thanh dải trực quan Visual Range Bar */
+.cd-range-bar-container {
+    background: #f1f5f9;
+    border-radius: var(--cd-radius-md);
+    padding: 20px;
+    margin-top: 8px;
+}
+
+.cd-range-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--cd-text-muted);
+    margin-bottom: 8px;
+}
+
+.cd-range-track {
+    height: 18px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.cd-range-segment {
+    height: 100%;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.cd-range-segment.cold {
+    background: linear-gradient(90deg, #38bdf8 0%, #0284c7 100%);
+}
+
+.cd-range-segment.warm {
+    background: linear-gradient(90deg, #fbbf24 0%, #d97706 100%);
+}
+
+.cd-range-segment.hot {
+    background: linear-gradient(90deg, #f87171 0%, #dc2626 100%);
+}
+
+.cd-range-ticks {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+/* SECTION 2: CẤU HÌNH TIÊU CHÍ CHẤM ĐIỂM (AC1) */
+.cd-criteria-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.cd-criterion-card {
+    border: 1px solid var(--cd-border);
+    border-radius: var(--cd-radius-md);
+    background: #ffffff;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cd-criterion-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: var(--cd-shadow-sm);
+}
+
+.cd-criterion-card.disabled {
+    opacity: 0.55;
+    background: #f8fafc;
+}
+
+.cd-criterion-main-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.cd-criterion-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    min-width: 260px;
+}
+
+.cd-criterion-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--cd-radius-md);
+    background: var(--cd-primary-light);
+    color: var(--cd-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.cd-criterion-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--cd-text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cd-criterion-desc {
+    font-size: 0.8125rem;
+    color: var(--cd-text-muted);
+    margin-top: 2px;
+}
+
+.cd-criterion-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Custom Switch Toggle */
+.cd-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.cd-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.cd-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: 0.2s;
+    border-radius: 24px;
+}
+
+.cd-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.2s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.cd-switch input:checked + .cd-slider {
+    background-color: var(--cd-primary);
+}
+
+.cd-switch input:checked + .cd-slider:before {
+    transform: translateX(20px);
+}
+
+.cd-points-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f8fafc;
+    border: 1px solid var(--cd-border);
+    border-radius: var(--cd-radius-sm);
+    padding: 4px 10px;
+}
+
+.cd-points-input {
+    width: 50px;
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: right;
+    color: var(--cd-primary);
+    outline: none;
+}
+
+.cd-points-label {
+    font-size: 0.8125rem;
+    color: var(--cd-text-muted);
+    font-weight: 500;
+}
+
+/* Bảng phân rã chi tiết tùy chọn con */
+.cd-criterion-subtable {
+    border-top: 1px dashed var(--cd-border);
+    padding-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cd-subtable-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--cd-text-muted);
+}
+
+.cd-subtable-rows {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 8px;
+}
+
+.cd-subtable-item {
+    background: #f8fafc;
+    border-radius: var(--cd-radius-sm);
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8125rem;
+}
+
+.cd-subtable-item-name {
+    color: var(--cd-text-main);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 8px;
+}
+
+.cd-subtable-item-points {
+    font-weight: 700;
+    color: var(--cd-primary);
+    white-space: nowrap;
+}
+
+/* SECTION 3: NGUYÊN TẮC HỆ THỐNG AC4 */
+.cd-notice-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid var(--cd-primary);
+    border-radius: var(--cd-radius-md);
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.cd-notice-icon {
+    color: var(--cd-primary);
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.cd-notice-content h3 {
+    margin: 0 0 4px 0;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--cd-text-main);
+}
+
+.cd-notice-content p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--cd-text-muted);
+    line-height: 1.5;
+}
+
+/* CỘT PHẢI: LIVE SIMULATOR & TỔNG ĐIỂM THỜI GIAN THỰC (AC2) */
+.cd-simulator-card {
+    background: #ffffff;
+    border: 1px solid var(--cd-border);
+    border-radius: var(--cd-radius-lg);
+    box-shadow: var(--cd-shadow-md);
+    padding: 24px;
+    position: sticky;
+    top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.cd-simulator-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--cd-border);
+}
+
+.cd-simulator-header h2 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--cd-text-main);
+}
+
+/* Score Result Box */
+.cd-sim-result-box {
+    border-radius: var(--cd-radius-md);
+    padding: 24px;
+    text-align: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cd-sim-result-box.hot {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border-color: #fca5a5;
+}
+
+.cd-sim-result-box.warm {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border-color: #fde68a;
+}
+
+.cd-sim-result-box.cold {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-color: #bae6fd;
+}
+
+.cd-sim-score-number {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--cd-text-main);
+}
+
+.cd-sim-score-total {
+    font-size: 1.125rem;
+    color: var(--cd-text-muted);
+    font-weight: 500;
+}
+
+.cd-sim-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    margin-top: 4px;
+}
+
+.cd-sim-badge.hot {
+    background: #dc2626;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
+}
+
+.cd-sim-badge.warm {
+    background: #d97706;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.3);
+}
+
+.cd-sim-badge.cold {
+    background: #0284c7;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+}
+
+.cd-sim-status-note {
+    font-size: 0.8125rem;
+    color: var(--cd-text-muted);
+    margin-top: 6px;
+}
+
+/* Các trường chọn thử nghiệm của Simulator */
+.cd-sim-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cd-sim-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--cd-text-main);
+    display: flex;
+    justify-content: space-between;
+}
+
+.cd-sim-points-awarded {
+    color: var(--cd-primary);
+    font-weight: 700;
+}
+
+.cd-sim-select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--cd-border);
+    border-radius: var(--cd-radius-sm);
+    font-size: 0.875rem;
+    background-color: #ffffff;
+    color: var(--cd-text-main);
+    transition: border-color 0.15s ease;
+}
+
+.cd-sim-select:focus {
+    outline: none;
+    border-color: var(--cd-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Nút hành động Lưu / Đặt lại */
+.cd-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 20px;
+    border-top: 1px solid var(--cd-border);
+}
+
+.cd-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: var(--cd-radius-sm);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    text-decoration: none;
+}
+
+.cd-btn-primary {
+    background: var(--cd-primary);
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
+}
+
+.cd-btn-primary:hover:not(:disabled) {
+    background: var(--cd-primary-hover);
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+}
+
+.cd-btn-outline {
+    background: #ffffff;
+    border-color: var(--cd-border);
+    color: var(--cd-text-main);
+}
+
+.cd-btn-outline:hover:not(:disabled) {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.cd-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Spinner */
+.cd-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: cd-spin 0.8s linear infinite;
+    display: none;
+}
+
+@keyframes cd-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Toast Notification */
+.cd-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1e293b;
+    color: #ffffff;
+    padding: 14px 20px;
+    border-radius: var(--cd-radius-md);
+    box-shadow: var(--cd-shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9375rem;
+    z-index: 9999;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cd-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Responsive Cho Điện Thoại & Tablet (Đặc biệt 360px theo quy định DoD) */
+@media (max-width: 992px) {
+    .cd-layout-grid {
+        grid-template-columns: 1fr;
+    }
+    .cd-simulator-card {
+        position: static;
+        order: -1; /* Đưa mô phỏng nhanh lên đầu hoặc ngay dưới trên mobile */
+    }
+}
+
+@media (max-width: 768px) {
+    .cd-header-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+    }
+    .cd-thresholds-grid {
+        grid-template-columns: 1fr;
+    }
+    .cd-criterion-main-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .cd-criterion-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .cd-form-actions {
+        flex-direction: column-reverse;
+        width: 100%;
+    }
+    .cd-form-actions .cd-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .cd-container {
+        padding: 16px 10px;
+    }
+    .cd-header-title h1 {
+        font-size: 1.25rem;
+    }
+    .cd-subtable-rows {
+        grid-template-columns: 1fr;
+    }
+}
