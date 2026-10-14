@@ -178,6 +178,21 @@ class LeadServiceTest {
     }
 
     @Test
+    @DisplayName("AC1: Tạo lead thủ công có ghi chú bối cảnh sự kiện/danh thiếp")
+    void testTaoLeadThuCongCoGhiChu() {
+        Lead lead = new Lead();
+        lead.setHoTen("Nguyễn Thị Mai");
+        lead.setNguonLeadId(1L);
+        lead.setNhuCauQuanTam("Tư vấn phần mềm");
+        lead.setGhiChu("Gặp tại TechExpo 2026");
+
+        Lead ketQua = leadService.taoLeadThuCong(lead, 100L);
+        assertNotNull(ketQua.getId());
+        assertTrue(ketQua.getNhuCauQuanTam().contains("Tư vấn phần mềm"));
+        assertTrue(ketQua.getNhuCauQuanTam().contains("Gặp tại TechExpo 2026"));
+    }
+
+    @Test
     @DisplayName("AC1: Từ chối tạo lead khi thiếu họ tên hoặc họ tên quá dài")
     void testTuChoiKhiThieuHoTen() {
         Lead leadRong = new Lead();

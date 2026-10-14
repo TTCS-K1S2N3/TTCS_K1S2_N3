@@ -122,8 +122,8 @@
      * Khởi tạo các tab bộ lọc danh sách xem trước (Tất cả, Hợp lệ, Có lỗi)
      */
     function initFilterTabs() {
-        const tabBtns = document.querySelectorAll('.lead-tab-btn');
-        const rows = document.querySelectorAll('.lead-preview-table tbody tr:not(#previewEmptyRow)');
+        const tabBtns = document.querySelectorAll('.lead-tab-btn, .lead-seg-btn');
+        const rows = document.querySelectorAll('.lead-preview-table tbody tr:not(#previewEmptyRow), .lead-table-modern tbody tr:not(#previewEmptyRow)');
         const emptyRow = document.getElementById('previewEmptyRow');
 
         if (!tabBtns.length) return;

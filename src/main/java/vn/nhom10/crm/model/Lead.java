@@ -45,6 +45,7 @@ public class Lead {
     private Long coHoiChuyenDoiId;
     private LocalDateTime chuyenDoiLuc;
     private Long gopVaoLeadId;
+    private String ghiChu;
     private Long createdBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -359,6 +360,14 @@ public class Lead {
 
     public void setGopVaoLeadId(Long gopVaoLeadId) {
         this.gopVaoLeadId = gopVaoLeadId;
+    }
+
+    public String getGhiChu() {
+        return ghiChu;
+    }
+
+    public void setGhiChu(String ghiChu) {
+        this.ghiChu = ghiChu;
     }
 
     public Long getCreatedBy() {

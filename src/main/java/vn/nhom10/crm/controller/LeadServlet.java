@@ -137,6 +137,7 @@ public class LeadServlet extends HttpServlet {
         String nguonLeadIdStr = request.getParameter("nguon_lead_id");
         String mucDoQuanTam = request.getParameter("muc_do_quan_tam");
         String nhuCauQuanTam = request.getParameter("nhu_cau_quan_tam");
+        String ghiChu = request.getParameter("ghi_chu");
         String tiepTuc = request.getParameter("tiepTuc");
 
         Map<String, String> errors = new HashMap<>();
@@ -192,6 +193,7 @@ public class LeadServlet extends HttpServlet {
         lead.setNguonLeadId(nguonLeadId);
         lead.setMucDoQuanTam(mucDoQuanTam != null && !mucDoQuanTam.isBlank() ? mucDoQuanTam.trim() : "TRUNG_BINH");
         lead.setNhuCauQuanTam(nhuCauQuanTam != null ? nhuCauQuanTam.trim() : null);
+        lead.setGhiChu(ghiChu != null && !ghiChu.isBlank() ? ghiChu.trim() : null);
 
         // Nếu có lỗi validation -> Trả lại giao diện kèm thông báo lỗi và giữ nguyên dữ liệu
         if (!errors.isEmpty()) {

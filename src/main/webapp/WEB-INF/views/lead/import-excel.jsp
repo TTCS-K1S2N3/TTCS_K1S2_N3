@@ -53,6 +53,20 @@
                 </div>
             </div>
 
+            <!-- Thông báo Lỗi / Thành công nếu có -->
+            <c:if test="${not empty thongBaoLoi}">
+                <div class="lead-pill-badge lead-pill-error" style="width: 100%; padding: 12px 16px; margin-bottom: 20px; border-radius: 8px;" role="alert">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">error</span>
+                    <span><c:out value="${thongBaoLoi}" /></span>
+                </div>
+            </c:if>
+            <c:if test="${not empty thongBaoThanhCong}">
+                <div class="lead-pill-badge lead-pill-valid" style="width: 100%; padding: 12px 16px; margin-bottom: 20px; border-radius: 8px;" role="alert">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
+                    <span><c:out value="${thongBaoThanhCong}" /></span>
+                </div>
+            </c:if>
+
             <!-- 3. Minimalist Stepper Wizard -->
             <div class="lead-stepper-modern">
                 <div class="lead-step-node ${empty baoCao ? 'active' : 'completed'}">

@@ -119,6 +119,17 @@ public class LeadService {
         if (lead.getMucDoQuanTam() == null || lead.getMucDoQuanTam().isBlank()) {
             lead.setMucDoQuanTam("TRUNG_BINH");
         }
+        String nhuCau = lead.getNhuCauQuanTam() != null ? lead.getNhuCauQuanTam().trim() : null;
+        String ghiChu = lead.getGhiChu() != null ? lead.getGhiChu().trim() : null;
+        if (ghiChu != null && !ghiChu.isEmpty()) {
+            if (nhuCau != null && !nhuCau.isEmpty()) {
+                lead.setNhuCauQuanTam(nhuCau + " (Ghi chú: " + ghiChu + ")");
+            } else {
+                lead.setNhuCauQuanTam(ghiChu);
+            }
+        } else {
+            lead.setNhuCauQuanTam(nhuCau);
+        }
 
         // 7. Sinh mã định danh duy nhất nếu chưa có
         if (lead.getMaLead() == null || lead.getMaLead().trim().isEmpty()) {

@@ -92,19 +92,16 @@
             });
         }
 
-        // Nếu select thay đổi trực tiếp (fallback)
-        if (selectNguon) {
-            selectNguon.addEventListener('change', function () {
-                const val = selectNguon.value;
-                chips.forEach(function (c) {
-                    if (c.getAttribute('data-value') === val) {
-                        c.classList.add('selected');
-                        if (bizSource) bizSource.textContent = c.querySelector('span:last-child').textContent;
-                    } else {
-                        c.classList.remove('selected');
-                    }
-                });
-                if (val) clearError(selectNguon);
+        // Khởi tạo thẻ danh thiếp ngay khi load trang
+        updateLiveCard();
+        if (selectNguon && selectNguon.value) {
+            chips.forEach(function (c) {
+                if (c.getAttribute('data-value') === selectNguon.value) {
+                    c.classList.add('selected');
+                    if (bizSource) bizSource.textContent = c.querySelector('span:last-child').textContent;
+                } else {
+                    c.classList.remove('selected');
+                }
             });
         }
 
