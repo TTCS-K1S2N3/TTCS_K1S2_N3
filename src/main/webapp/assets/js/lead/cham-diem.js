@@ -136,6 +136,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Lắng nghe thay đổi điểm tiêu chí để cập nhật ngay tổng điểm tối đa
+    document.querySelectorAll('input[id^="points_"]').forEach(function (pts) {
+        pts.addEventListener('input', function () {
+            recalcMaxPoints();
+            updateSimulation();
+        });
+    });
+
     [selIndustry, selSize, selSource, selInterest].forEach(function (sel) {
         if (sel) sel.addEventListener('change', updateSimulation);
     });
@@ -147,7 +155,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (inputWarm) inputWarm.value = 40;
             if (inputHot) inputHot.value = 70;
             switches.forEach(function (sw) { sw.checked = true; });
-            document.querySelectorAll('.criterion-row').forEach(function (r) { r.classList.remove('is-disabled'); });
+            document.querySelectorAll('.criteria-row-item, .criterion-row').forEach(function (r) {
+                r.classList.remove('is-disabled');
+            });
+            document.querySelectorAll('input[id^="points_"]').forEach(function (p) {
+                p.disabled = false;
+            });
             const pInd = document.getElementById('points_INDUSTRY_FIT');
             const pSize = document.getElementById('points_COMPANY_SIZE');
             const pSrc = document.getElementById('points_SOURCE');
@@ -163,18 +176,99 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Client validation khi submit form
+    // Client validation & AJAX submit form mượt mà
     const formConfig = document.getElementById('formCauHinhChamDiem');
+    const btnSubmit = document.getElementById('btnLuuCauHinh');
     if (formConfig) {
         formConfig.addEventListener('submit', function (e) {
+            e.preventDefault();
+
             const warm = parseInt(inputWarm ? inputWarm.value : 0, 10);
             const hot = parseInt(inputHot ? inputHot.value : 0, 10);
 
+            if (isNaN(warm) || isNaN(hot)) {
+                showToast('Lỗi: Ngưỡng điểm Nóng và Ấm phải là số hợp lệ!', true);
+                return;
+            }
+
             if (hot <= warm) {
-                e.preventDefault();
                 showToast('Lỗi: Ngưỡng Nóng (' + hot + 'đ) phải lớn hơn ngưỡng Ấm (' + warm + 'đ)!', true);
                 return;
             }
+
+            let anyEnabled = false;
+            switches.forEach(function (sw) {
+                if (sw.checked) anyEnabled = true;
+            });
+            if (!anyEnabled) {
+                showToast('Lỗi: Phải kích hoạt ít nhất một tiêu chí chấm điểm!', true);
+                return;
+            }
+
+            let pointsValid = true;
+            document.querySelectorAll('input[id^="points_"]').forEach(function (pts) {
+                const val = parseInt(pts.value, 10);
+                if (isNaN(val) || val < 0 || val > 100) {
+                    pointsValid = false;
+                }
+            });
+            if (!pointsValid) {
+                showToast('Lỗi: Điểm của mỗi tiêu chí phải nằm trong khoảng từ 0 đến 100!', true);
+                return;
+            }
+
+            // Chuẩn bị FormData (đảm bảo gửi đầy đủ points_ kể cả khi switch đang tắt)
+            const formData = new FormData(formConfig);
+            document.querySelectorAll('input[id^="points_"]').forEach(function (pts) {
+                const name = pts.getAttribute('name');
+                if (name && !formData.has(name)) {
+                    formData.append(name, pts.value);
+                }
+            });
+
+            const params = new URLSearchParams(formData);
+
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.style.opacity = '0.7';
+            }
+
+            fetch(formConfig.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: params.toString()
+            })
+            .then(function (res) {
+                return res.json();
+            })
+            .then(function (data) {
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.style.opacity = '1';
+                }
+                if (data.success) {
+                    showToast(data.message || 'Đã lưu cấu hình chấm điểm lead thành công!', false);
+                    if (data.configVersion) {
+                        const verEl = document.querySelector('.cd-breadcrumb strong');
+                        if (verEl) verEl.textContent = 'v' + data.configVersion + '.0';
+                    }
+                } else {
+                    const errMsg = (data.error && data.error.message) ? data.error.message : 'Có lỗi xảy ra khi lưu cấu hình.';
+                    showToast('Lỗi: ' + errMsg, true);
+                }
+            })
+            .catch(function (err) {
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.style.opacity = '1';
+                }
+                // Fallback nếu trình duyệt gặp lỗi mạng/JSON
+                formConfig.submit();
+            });
         });
     }
 
@@ -182,8 +276,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const toast = document.getElementById('toast');
         const toastText = document.getElementById('toastText');
         if (!toast || !toastText) return;
+        const icon = toast.querySelector('.material-symbols-outlined');
+        if (icon) {
+            icon.textContent = isError ? 'error' : 'check_circle';
+            icon.style.color = isError ? '#f87171' : '#60a5fa';
+        }
         toastText.textContent = msg;
-        toast.style.background = isError ? '#b91c1c' : '#0f172a';
+        toast.style.background = isError ? '#991b1b' : '#0f172a';
         toast.classList.add('show');
         setTimeout(function () { toast.classList.remove('show'); }, 3500);
     }
