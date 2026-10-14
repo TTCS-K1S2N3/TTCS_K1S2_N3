@@ -6,7 +6,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import vn.nhom10.crm.dto.*;
+import vn.nhom10.crm.dto.ChienDichDTO;
+import vn.nhom10.crm.dto.ChienDichPermissionsDTO;
+import vn.nhom10.crm.dto.ChienDichRowDTO;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.service.ChienDichService;
 import vn.nhom10.crm.service.PhienService;
@@ -14,8 +16,6 @@ import vn.nhom10.crm.service.PhienService;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Controller xử lý các yêu cầu liên quan đến Quản lý Chiến dịch Marketing (Story S4-03).
@@ -34,7 +34,7 @@ import java.util.logging.Logger;
 })
 public class ChienDichServlet extends HttpServlet {
 
-    private static final Logger LOGGER = Logger.getLogger(ChienDichServlet.class.getName());
+    private static final long serialVersionUID = 1L;
 
     private ChienDichService chienDichService;
 

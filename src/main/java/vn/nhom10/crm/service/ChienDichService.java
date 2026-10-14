@@ -1,7 +1,11 @@
 package vn.nhom10.crm.service;
 
 import vn.nhom10.crm.dao.ChienDichDAO;
-import vn.nhom10.crm.dto.*;
+import vn.nhom10.crm.dto.ChannelOptionDTO;
+import vn.nhom10.crm.dto.ChienDichDTO;
+import vn.nhom10.crm.dto.ChienDichPermissionsDTO;
+import vn.nhom10.crm.dto.ChienDichRowDTO;
+import vn.nhom10.crm.dto.ChienDichThongKeDTO;
 import vn.nhom10.crm.model.ChienDich;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.VaiTroEnum;
@@ -10,7 +14,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -341,12 +350,12 @@ public class ChienDichService {
      */
     private synchronized String sinhMaChienDich() {
         String datePrefix = "CD-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-";
-        int randomNum = 1000 + new Random().nextInt(9000);
+        int randomNum = ThreadLocalRandom.current().nextInt(1000, 10000);
         String ma = datePrefix + randomNum;
 
         int retry = 0;
         while (chienDichDAO.kiemTraTonTaiMa(ma) && retry < 10) {
-            randomNum = 1000 + new Random().nextInt(9000);
+            randomNum = ThreadLocalRandom.current().nextInt(1000, 10000);
             ma = datePrefix + randomNum;
             retry++;
         }
