@@ -176,6 +176,178 @@ public class LeadDAO {
     }
 
     /**
+     * Lấy danh sách Lead sắp xếp theo điểm số ưu tiên giảm dần (AC4 - Không tự loại lead điểm thấp).
+     */
+    public List<Lead> layDanhSachSapXepTheoDiem(int limit, int offset) {
+        List<Lead> danhSach = new ArrayList<>();
+        String sql = "SELECT " + COT_SELECT_LEAD + FROM_JOIN_LEAD +
+                "ORDER BY l.diem DESC, l.created_at DESC LIMIT ? OFFSET ?";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, limit > 0 ? limit : 50);
+            ps.setInt(2, Math.max(0, offset));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    danhSach.add(mapResultSetSangLead(rs));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi lấy danh sách Lead sắp xếp theo điểm", e);
+        }
+        return danhSach;
+    }
+
+    /**
+     * Lấy tất cả Lead trong hệ thống (phục vụ tính lại điểm hàng loạt khi cấu hình thay đổi).
+     */
+    public List<Lead> layTatCaLead() {
+        List<Lead> danhSach = new ArrayList<>();
+        String sql = "SELECT " + COT_SELECT_LEAD + FROM_JOIN_LEAD + "ORDER BY l.id ASC";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                danhSach.add(mapResultSetSangLead(rs));
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi lấy toàn bộ danh sách Lead", e);
+        }
+        return danhSach;
+    }
+
+    /**
+     * Cập nhật điểm và phân loại của Lead theo transaction Connection truyền vào (AC2, AC3).
+     */
+    public boolean capNhatDiemVaPhanLoai(Connection conn, Long leadId, int diem, String phanLoai) throws SQLException {
+        if (leadId == null) return false;
+        String sql = "UPDATE `lead` SET diem = ?, phan_loai = ?, updated_at = ? WHERE id = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, diem);
+            ps.setString(2, phanLoai);
+            ps.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setLong(4, leadId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Cập nhật điểm và phân loại của Lead độc lập (AC2, AC3).
+     */
+    public boolean capNhatDiemVaPhanLoai(Long leadId, int diem, String phanLoai) {
+        try (Connection conn = DatabaseConnection.layKetNoi()) {
+            return capNhatDiemVaPhanLoai(conn, leadId, diem, phanLoai);
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi cập nhật điểm và phân loại Lead ID: " + leadId, e);
+            return false;
+        }
+    }
+
+    /**
+     * Cập nhật đầy đủ thông tin Lead qua Connection truyền vào.
+     */
+    public boolean capNhat(Connection conn, Lead lead) throws SQLException {
+        if (lead == null || lead.getId() == null) return false;
+
+        String sql = "UPDATE `lead` SET " +
+                "ho_ten = ?, email = ?, email_chuan_hoa = ?, so_dien_thoai = ?, so_dien_thoai_chuan_hoa = ?, " +
+                "ten_cong_ty = ?, ten_cong_ty_chuan_hoa = ?, nhu_cau_quan_tam = ?, muc_do_quan_tam = ?, " +
+                "nganh_nghe_id = ?, quy_mo_id = ?, khu_vuc_id = ?, nguon_lead_id = ?, chien_dich_id = ?, bieu_mau_id = ?, " +
+                "diem = ?, phan_loai = ?, trang_thai = ?, nguoi_phu_trach_id = ?, nhom_phan_bo_id = ?, " +
+                "qua_sla = ?, updated_at = ? " +
+                "WHERE id = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, lead.getHoTen());
+            ps.setString(2, lead.getEmail());
+            ps.setString(3, lead.getEmailChuanHoa());
+            ps.setString(4, lead.getSoDienThoai());
+            ps.setString(5, lead.getSoDienThoaiChuanHoa());
+            ps.setString(6, lead.getTenCongTy());
+            ps.setString(7, lead.getTenCongTyChuanHoa());
+            ps.setString(8, lead.getNhuCauQuanTam());
+            ps.setString(9, lead.getMucDoQuanTam());
+
+            if (lead.getNganhNgheId() != null) {
+                ps.setLong(10, lead.getNganhNgheId());
+            } else {
+                ps.setNull(10, Types.BIGINT);
+            }
+
+            if (lead.getQuyMoId() != null) {
+                ps.setLong(11, lead.getQuyMoId());
+            } else {
+                ps.setNull(11, Types.BIGINT);
+            }
+
+            if (lead.getKhuVucId() != null) {
+                ps.setLong(12, lead.getKhuVucId());
+            } else {
+                ps.setNull(12, Types.BIGINT);
+            }
+
+            ps.setLong(13, lead.getNguonLeadId());
+
+            if (lead.getChienDichId() != null) {
+                ps.setLong(14, lead.getChienDichId());
+            } else {
+                ps.setNull(14, Types.BIGINT);
+            }
+
+            if (lead.getBieuMauId() != null) {
+                ps.setLong(15, lead.getBieuMauId());
+            } else {
+                ps.setNull(15, Types.BIGINT);
+            }
+
+            ps.setInt(16, lead.getDiem());
+            ps.setString(17, lead.getPhanLoai());
+            ps.setString(18, lead.getTrangThai() != null ? lead.getTrangThai().getMa() : TrangThaiLeadEnum.MOI.getMa());
+
+            if (lead.getNguoiPhuTrachId() != null) {
+                ps.setLong(19, lead.getNguoiPhuTrachId());
+            } else {
+                ps.setNull(19, Types.BIGINT);
+            }
+
+            if (lead.getNhomPhanBoId() != null) {
+                ps.setLong(20, lead.getNhomPhanBoId());
+            } else {
+                ps.setNull(20, Types.BIGINT);
+            }
+
+            ps.setBoolean(21, lead.isQuaSla());
+            LocalDateTime updatedAt = LocalDateTime.now();
+            ps.setTimestamp(22, Timestamp.valueOf(updatedAt));
+            ps.setLong(23, lead.getId());
+
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                lead.setUpdatedAt(updatedAt);
+                return true;
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Cập nhật thông tin Lead độc lập (kèm transaction an toàn nếu cần).
+     */
+    public boolean capNhat(Lead lead) {
+        try (Connection conn = DatabaseConnection.layKetNoi()) {
+            return capNhat(conn, lead);
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi cập nhật Lead ID: " + (lead != null ? lead.getId() : null), e);
+            return false;
+        }
+    }
+
+    /**
      * Kiểm tra trùng mã Lead.
      */
     public boolean kiemTraTonTaiMa(String maLead) {

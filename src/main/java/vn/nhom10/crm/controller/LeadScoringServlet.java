@@ -13,6 +13,7 @@ import vn.nhom10.crm.dto.TieuChiChamDiemDTO;
 import vn.nhom10.crm.model.ModuleHeThong;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.VaiTroEnum;
+import vn.nhom10.crm.service.LeadScoringService;
 import vn.nhom10.crm.service.MenuService;
 
 import java.io.IOException;
@@ -44,16 +45,23 @@ public class LeadScoringServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private final MenuService menuService;
-
-    // Lưu trữ cấu hình hiện hành trong bộ nhớ runtime (sẵn sàng kết nối Service/DAO của BE)
-    private static volatile CauHinhChamDiemDTO currentConfig = CauHinhChamDiemDTO.taoCauHinhMacDinh();
+    private final LeadScoringService leadScoringService;
 
     public LeadScoringServlet() {
-        this(MenuService.getInstance());
+        this(MenuService.getInstance(), LeadScoringService.getInstance());
     }
 
     public LeadScoringServlet(MenuService menuService) {
+        this(menuService, LeadScoringService.getInstance());
+    }
+
+    public LeadScoringServlet(MenuService menuService, LeadScoringService leadScoringService) {
         this.menuService = menuService != null ? menuService : MenuService.getInstance();
+        this.leadScoringService = leadScoringService != null ? leadScoringService : LeadScoringService.getInstance();
+    }
+
+    public LeadScoringServlet(LeadScoringService leadScoringService) {
+        this(MenuService.getInstance(), leadScoringService);
     }
 
     @Override
@@ -77,6 +85,7 @@ public class LeadScoringServlet extends HttpServlet {
         }
 
         boolean canEdit = kiemTraQuyenChinhSua(nguoiDung);
+        CauHinhChamDiemDTO currentConfig = leadScoringService.layCauHinhHienTai();
 
         // Chuẩn bị dữ liệu hiển thị cho JSP
         request.setAttribute("scoringConfig", currentConfig);
@@ -134,6 +143,8 @@ public class LeadScoringServlet extends HttpServlet {
             }
             return;
         }
+
+        CauHinhChamDiemDTO currentConfig = leadScoringService.layCauHinhHienTai();
 
         // Nhận dữ liệu form
         String hotMinStr = request.getParameter("hotMin");
@@ -247,15 +258,15 @@ public class LeadScoringServlet extends HttpServlet {
         }
 
         // Cập nhật cấu hình thành công
-        currentConfig = updatedConfig;
+        leadScoringService.luuCauHinh(updatedConfig, nguoiDung.getId(), nguoiDung.getHoTen());
         LOGGER.log(Level.INFO, "Cấu hình chấm điểm lead đã được cập nhật bởi user {0}", nguoiDung.getId());
 
         if (isAjaxRequest(request)) {
             response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"success\":true,\"message\":\"Đã lưu cấu hình chấm điểm lead thành công!\",\"configVersion\":" + currentConfig.getPhienBan() + "}");
+            response.getWriter().write("{\"success\":true,\"message\":\"Đã lưu cấu hình chấm điểm lead thành công!\",\"configVersion\":" + updatedConfig.getPhienBan() + "}");
         } else {
             HttpSession session = request.getSession();
-            session.setAttribute("flashSuccess", "Đã lưu cấu hình chấm điểm lead thành công (Phiên bản " + currentConfig.getPhienBan() + ")!");
+            session.setAttribute("flashSuccess", "Đã lưu cấu hình chấm điểm lead thành công (Phiên bản " + updatedConfig.getPhienBan() + ")!");
             response.sendRedirect(request.getContextPath() + "/lead/cham-diem");
         }
     }
