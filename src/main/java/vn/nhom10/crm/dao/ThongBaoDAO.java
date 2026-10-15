@@ -156,6 +156,55 @@ public class ThongBaoDAO {
         }
     }
 
+    /**
+     * Tìm thông báo theo ID.
+     */
+    public ThongBao timTheoId(Long id) {
+        if (id == null || id <= 0) {
+            return null;
+        }
+        String sql = "SELECT id, nguoi_dung_id, loai_thong_bao_id, tieu_de, noi_dung, " +
+                "loai_doi_tuong, doi_tuong_id, duong_dan_mo, da_doc, doc_luc, created_at " +
+                "FROM thong_bao WHERE id = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSet(rs);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi tìm thông báo theo ID: " + e.getMessage(), e);
+        }
+        return null;
+    }
+
+    /**
+     * Kiểm tra xem đã có thông báo cảnh báo SLA cho lead gửi tới người dùng này hay chưa (tránh spam/duplicate).
+     */
+    public boolean kiemTraDaCoThongBaoSla(Long nguoiDungId, Long leadId) {
+        if (nguoiDungId == null || leadId == null) {
+            return false;
+        }
+        String sql = "SELECT COUNT(*) FROM thong_bao WHERE nguoi_dung_id = ? " +
+                "AND loai_thong_bao_id = 8 AND doi_tuong_id = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, nguoiDungId);
+            ps.setLong(2, leadId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi kiểm tra trùng thông báo SLA: " + e.getMessage(), e);
+        }
+        return false;
+    }
+
+
     private ThongBao mapResultSet(ResultSet rs) throws SQLException {
         ThongBao tb = new ThongBao();
         tb.setId(rs.getLong("id"));

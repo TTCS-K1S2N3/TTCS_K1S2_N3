@@ -363,4 +363,129 @@ public class LeadDAO {
 
         return lead;
     }
+
+    /**
+     * Nhận Lead (AC1 của S4-07):
+     * Cập nhật trạng thái thành DANG_CHAM_SOC và ghi nhận thời điểm duoc_nhan_luc.
+     * Chỉ cho phép nhận khi lead đang ở trạng thái MOI và thuộc về chính nhân viên thao tác.
+     */
+    public boolean nhanLead(Long leadId, Long nguoiDungId, LocalDateTime duocNhanLuc) {
+        if (leadId == null || nguoiDungId == null) {
+            return false;
+        }
+        String sql = "UPDATE `lead` SET trang_thai = 'DANG_CHAM_SOC', duoc_nhan_luc = ?, updated_at = CURRENT_TIMESTAMP " +
+                "WHERE id = ? AND nguoi_phu_trach_id = ? AND trang_thai = 'MOI'";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            LocalDateTime thoiGian = (duocNhanLuc != null) ? duocNhanLuc : LocalDateTime.now();
+            ps.setTimestamp(1, Timestamp.valueOf(thoiGian));
+            ps.setLong(2, leadId);
+            ps.setLong(3, nguoiDungId);
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi tiếp nhận Lead id=" + leadId + ": " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi nhận lead: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Từ chối Lead trong Connection ngoài (hỗ trợ Transaction):
+     * Trả lead về hàng chờ phân bổ (nguoi_phu_trach_id = NULL, trạng thái = MOI), lưu lý do từ chối.
+     * Tuân thủ Q3: Chỉ cho phép từ chối khi đang ở trạng thái MOI (chưa nhận).
+     */
+    public boolean tuChoiLead(Connection conn, Long leadId, Long nguoiDungId, String lyDoTongHop) throws SQLException {
+        if (leadId == null || nguoiDungId == null) {
+            return false;
+        }
+        String sql = "UPDATE `lead` SET trang_thai = 'MOI', nguoi_phu_trach_id = NULL, " +
+                "ly_do_tu_choi = ?, updated_at = CURRENT_TIMESTAMP " +
+                "WHERE id = ? AND nguoi_phu_trach_id = ? AND trang_thai = 'MOI'";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, lyDoTongHop);
+            ps.setLong(2, leadId);
+            ps.setLong(3, nguoiDungId);
+
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Cập nhật cờ cảnh báo quá hạn SLA (AC3 của S4-07).
+     */
+    public boolean capNhatQuaSla(Long leadId, boolean quaSla) {
+        if (leadId == null || leadId <= 0) {
+            return false;
+        }
+        String sql = "UPDATE `lead` SET qua_sla = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setBoolean(1, quaSla);
+            ps.setLong(2, leadId);
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi cập nhật cờ quá SLA cho lead id=" + leadId + ": " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Cập nhật mốc thời gian liên hệ đầu tiên (AC3 của S4-07).
+     */
+    public boolean capNhatLienHeDau(Long leadId, LocalDateTime lienHeDauLuc) {
+        if (leadId == null || leadId <= 0 || lienHeDauLuc == null) {
+            return false;
+        }
+        String sql = "UPDATE `lead` SET lien_he_dau_luc = ?, updated_at = CURRENT_TIMESTAMP " +
+                "WHERE id = ? AND (lien_he_dau_luc IS NULL OR lien_he_dau_luc > ?)";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setTimestamp(1, Timestamp.valueOf(lienHeDauLuc));
+            ps.setLong(2, leadId);
+            ps.setTimestamp(3, Timestamp.valueOf(lienHeDauLuc));
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi cập nhật mốc liên hệ đầu cho lead id=" + leadId + ": " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Lấy danh sách các Lead cần kiểm tra SLA:
+     * - Đã được phân bổ cho nhân viên (nguoi_phu_trach_id IS NOT NULL)
+     * - Đang trong chu kỳ xử lý (trang_thai IN ('MOI', 'DANG_CHAM_SOC'))
+     * - Chưa bị đánh dấu quá hạn (qua_sla = 0)
+     * - Đã có mốc phân bổ hoặc mốc hạn SLA
+     */
+    public List<Lead> layDanhSachLeadCanKiemTraSla() {
+        List<Lead> ds = new ArrayList<>();
+        String sql = "SELECT " + COT_SELECT_LEAD + FROM_JOIN_LEAD +
+                "WHERE l.nguoi_phu_trach_id IS NOT NULL " +
+                "AND l.trang_thai IN ('MOI', 'DANG_CHAM_SOC') " +
+                "AND l.qua_sla = 0 " +
+                "AND l.duoc_phan_bo_luc IS NOT NULL " +
+                "ORDER BY l.han_phan_hoi_sla ASC";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                ds.add(mapResultSetSangLead(rs));
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi lấy danh sách lead cần kiểm tra SLA: " + e.getMessage(), e);
+        }
+
+        return ds;
+    }
 }
