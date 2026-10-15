@@ -394,4 +394,60 @@ class LeadTiepNhanServiceTest {
                 service.layChiTietLeadChoNguoiDung(1001L, salesKhac)
         );
     }
+
+    @Test
+    @DisplayName("VIEW S4-08: Lead DANG_CHAM_SOC và thuộc quyền Sales Rep -> coTheChuyenDoi = true")
+    void testLayChiTietLead_CoTheChuyenDoi_DangChamSoc() {
+        leadMau.setTrangThai(TrangThaiLeadEnum.DANG_CHAM_SOC);
+        when(leadDAO.timTheoId(1001L)).thenReturn(leadMau);
+        when(thongBaoDAO.demThongBaoChuaDoc(101L)).thenReturn(0);
+
+        LeadChiTietViewDTO view = service.layChiTietLeadChoNguoiDung(1001L, salesRep);
+
+        assertNotNull(view);
+        assertFalse(view.isCoTheNhan());
+        assertFalse(view.isCoTheTuChoi());
+        assertTrue(view.isCoTheChuyenDoi(), "Lead đang chăm sóc do mình phụ trách phải có cờ coTheChuyenDoi = true");
+    }
+
+    @Test
+    @DisplayName("VIEW S4-08: Lead MOI chưa tiếp nhận -> coTheChuyenDoi = false")
+    void testLayChiTietLead_KhongTheChuyenDoi_KhiLeadMoi() {
+        leadMau.setTrangThai(TrangThaiLeadEnum.MOI);
+        when(leadDAO.timTheoId(1001L)).thenReturn(leadMau);
+        when(thongBaoDAO.demThongBaoChuaDoc(101L)).thenReturn(0);
+
+        LeadChiTietViewDTO view = service.layChiTietLeadChoNguoiDung(1001L, salesRep);
+
+        assertNotNull(view);
+        assertTrue(view.isCoTheNhan());
+        assertFalse(view.isCoTheChuyenDoi(), "Lead ở trạng thái MOI chưa tiếp nhận thì coTheChuyenDoi phải là false");
+    }
+
+    @Test
+    @DisplayName("VIEW S4-08: Lead DA_CHUYEN_DOI -> coTheChuyenDoi = false")
+    void testLayChiTietLead_KhongTheChuyenDoi_KhiDaChuyenDoi() {
+        leadMau.setTrangThai(TrangThaiLeadEnum.DA_CHUYEN_DOI);
+        when(leadDAO.timTheoId(1001L)).thenReturn(leadMau);
+        when(thongBaoDAO.demThongBaoChuaDoc(101L)).thenReturn(0);
+
+        LeadChiTietViewDTO view = service.layChiTietLeadChoNguoiDung(1001L, salesRep);
+
+        assertNotNull(view);
+        assertFalse(view.isCoTheChuyenDoi(), "Lead đã chuyển đổi thì coTheChuyenDoi phải là false");
+    }
+
+    @Test
+    @DisplayName("VIEW S4-08: Team Lead xem lead DANG_CHAM_SOC trong nhóm mình -> coTheChuyenDoi = true")
+    void testLayChiTietLead_TeamLead_CoTheChuyenDoi() {
+        leadMau.setTrangThai(TrangThaiLeadEnum.DANG_CHAM_SOC);
+        leadMau.setNhomPhanBoId(10L);
+        when(leadDAO.timTheoId(1001L)).thenReturn(leadMau);
+        when(thongBaoDAO.demThongBaoChuaDoc(anyLong())).thenReturn(0);
+
+        LeadChiTietViewDTO view = service.layChiTietLeadChoNguoiDung(1001L, teamLead);
+
+        assertNotNull(view);
+        assertTrue(view.isCoTheChuyenDoi(), "Team Lead quản lý nhóm phải có quyền chuyển đổi lead");
+    }
 }

@@ -90,6 +90,11 @@ public class LeadTiepNhanService {
         view.setCoTheNhan(laNguoiPhuTrach && dangChoNhan);
         view.setCoTheTuChoi(laNguoiPhuTrach && dangChoNhan);
 
+        // Kiểm tra điều kiện và quyền Chuyển đổi Lead (Story S4-08)
+        boolean dangChamSoc = (lead.getTrangThai() == TrangThaiLeadEnum.DANG_CHAM_SOC);
+        boolean coQuyenChuyenDoi = LeadChuyenDoiService.kiemTraQuyenChuyenDoi(nguoiDung, lead);
+        view.setCoTheChuyenDoi(dangChamSoc && coQuyenChuyenDoi);
+
         // Xác định trạng thái SLA
         view.setTrangThaiSla(xacDinhTrangThaiSla(lead, LocalDateTime.now()));
         view.setDanhMucLyDoTuChoi(DanhMucLyDoTuChoiDTO.layDanhMucMacDinh());

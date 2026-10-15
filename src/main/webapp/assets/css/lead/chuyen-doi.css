@@ -1,0 +1,728 @@
+/* ==========================================================================
+   MODULE: CHUYỂN ĐỔI LEAD THÀNH KHÁCH HÀNG, LIÊN HỆ VÀ CƠ HỘI (S4-08)
+   Thiết kế: Hệ thống CRM Bán Hàng MSys - Nhóm 10
+   Đặc tả:
+   - 03 Khối xem trước CHỈ ĐỌC (Khách hàng doanh nghiệp, Người liên hệ, Cơ hội bán hàng)
+   - Bảng cảnh báo trùng lặp & Điều kiện chuyển đổi
+   - Tối ưu trải nghiệm từ Mobile 360px đến Desktop >= 1280px
+   ========================================================================== */
+
+:root {
+    --cdl-primary: #2563eb;
+    --cdl-primary-hover: #1d4ed8;
+    --cdl-primary-light: #eff6ff;
+    --cdl-primary-border: #bfdbfe;
+    --cdl-primary-glow: rgba(37, 99, 235, 0.15);
+
+    --cdl-slate-50: #f8fafc;
+    --cdl-slate-100: #f1f5f9;
+    --cdl-slate-200: #e2e8f0;
+    --cdl-slate-300: #cbd5e1;
+    --cdl-slate-400: #94a3b8;
+    --cdl-slate-500: #64748b;
+    --cdl-slate-600: #475569;
+    --cdl-slate-700: #334155;
+    --cdl-slate-800: #1e293b;
+    --cdl-slate-900: #0f172a;
+
+    --cdl-success: #10b981;
+    --cdl-success-hover: #059669;
+    --cdl-success-light: #ecfdf5;
+    --cdl-success-border: #a7f3d0;
+    --cdl-success-text: #065f46;
+
+    --cdl-danger: #ef4444;
+    --cdl-danger-hover: #dc2626;
+    --cdl-danger-light: #fef2f2;
+    --cdl-danger-border: #fecaca;
+    --cdl-danger-text: #991b1b;
+    --cdl-danger-glow: rgba(239, 68, 68, 0.2);
+
+    --cdl-warning: #f59e0b;
+    --cdl-warning-light: #fffbeb;
+    --cdl-warning-border: #fde68a;
+    --cdl-warning-text: #92400e;
+
+    --cdl-info: #0284c7;
+    --cdl-info-light: #f0f9ff;
+    --cdl-info-border: #bae6fd;
+    --cdl-info-text: #0369a1;
+
+    --cdl-purple: #7c3aed;
+    --cdl-purple-light: #f5f3ff;
+    --cdl-purple-border: #ddd6fe;
+    --cdl-purple-text: #5b21b6;
+
+    --cdl-radius-sm: 6px;
+    --cdl-radius-md: 10px;
+    --cdl-radius-lg: 16px;
+    --cdl-radius-xl: 20px;
+
+    --cdl-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --cdl-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+    --cdl-shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+    --cdl-shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+}
+
+/* Container chính */
+.cdl-container {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 24px 28px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Breadcrumb */
+.cdl-breadcrumb {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.cdl-breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--cdl-slate-500);
+}
+
+.cdl-breadcrumb-link {
+    color: var(--cdl-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
+}
+
+.cdl-breadcrumb-link:hover {
+    color: var(--cdl-primary-hover);
+    text-decoration: underline;
+}
+
+.cdl-breadcrumb-sep {
+    color: var(--cdl-slate-300);
+    user-select: none;
+}
+
+.cdl-breadcrumb-current {
+    color: var(--cdl-slate-700);
+    font-weight: 600;
+}
+
+/* Alert Banners */
+.cdl-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 20px;
+    border-radius: var(--cdl-radius-md);
+    margin-bottom: 24px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    animation: cdlSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cdl-alert-success {
+    background: var(--cdl-success-light);
+    border: 1px solid var(--cdl-success-border);
+    color: var(--cdl-success-text);
+}
+
+.cdl-alert-danger {
+    background: var(--cdl-danger-light);
+    border: 1px solid var(--cdl-danger-border);
+    color: var(--cdl-danger-text);
+}
+
+.cdl-alert-warning {
+    background: var(--cdl-warning-light);
+    border: 1px solid var(--cdl-warning-border);
+    color: var(--cdl-warning-text);
+}
+
+.cdl-alert-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.cdl-alert-content {
+    flex: 1;
+}
+
+.cdl-alert-title {
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+/* Header Card của Trang Chuyển Đổi */
+.cdl-header-card {
+    background: #ffffff;
+    border: 1px solid var(--cdl-slate-200);
+    border-radius: var(--cdl-radius-lg);
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    box-shadow: var(--cdl-shadow-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.cdl-header-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--cdl-primary), var(--cdl-purple));
+}
+
+.cdl-header-main {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.cdl-header-icon-wrap {
+    width: 58px;
+    height: 58px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #eff6ff 0%, #ede9fe 100%);
+    color: var(--cdl-primary);
+    border: 1.5px solid var(--cdl-primary-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+}
+
+.cdl-header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cdl-header-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.cdl-header-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--cdl-slate-900);
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.cdl-header-sub {
+    font-size: 0.925rem;
+    color: var(--cdl-slate-500);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.cdl-header-sub-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Nút bấm tiêu chuẩn */
+.cdl-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 22px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: var(--cdl-radius-md);
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    min-height: 44px;
+    text-decoration: none;
+    user-select: none;
+}
+
+.cdl-btn:focus-visible {
+    outline: 2px solid var(--cdl-primary);
+    outline-offset: 2px;
+}
+
+.cdl-btn-primary {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+.cdl-btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.cdl-btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.cdl-btn-success:hover:not(:disabled) {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.cdl-btn-outline {
+    background: #ffffff;
+    border: 1px solid var(--cdl-slate-300);
+    color: var(--cdl-slate-700);
+}
+
+.cdl-btn-outline:hover:not(:disabled) {
+    background: var(--cdl-slate-50);
+    border-color: var(--cdl-slate-400);
+    color: var(--cdl-slate-900);
+}
+
+.cdl-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Badges */
+.cdl-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 0.825rem;
+    font-weight: 600;
+}
+
+.cdl-badge-primary {
+    background: var(--cdl-primary-light);
+    color: var(--cdl-primary);
+    border: 1px solid var(--cdl-primary-border);
+}
+
+.cdl-badge-success {
+    background: var(--cdl-success-light);
+    color: var(--cdl-success-text);
+    border: 1px solid var(--cdl-success-border);
+}
+
+.cdl-badge-danger {
+    background: var(--cdl-danger-light);
+    color: var(--cdl-danger-text);
+    border: 1px solid var(--cdl-danger-border);
+}
+
+.cdl-badge-warning {
+    background: var(--cdl-warning-light);
+    color: var(--cdl-warning-text);
+    border: 1px solid var(--cdl-warning-border);
+}
+
+.cdl-badge-purple {
+    background: var(--cdl-purple-light);
+    color: var(--cdl-purple-text);
+    border: 1px solid var(--cdl-purple-border);
+}
+
+/* ==========================================================================
+   2. KHỐI GIẢI THÍCH QUY TRÌNH & BẢO TOÀN DỮ LIỆU
+   ========================================================================== */
+.cdl-process-banner {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid var(--cdl-slate-200);
+    border-radius: var(--cdl-radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.cdl-process-steps {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.cdl-process-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--cdl-slate-700);
+}
+
+.cdl-process-step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--cdl-primary);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.cdl-process-step-num.success {
+    background: var(--cdl-success);
+}
+
+.cdl-process-step-arrow {
+    color: var(--cdl-slate-400);
+    font-size: 18px;
+}
+
+.cdl-activity-counter {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: #ffffff;
+    border: 1px solid var(--cdl-slate-300);
+    border-radius: var(--cdl-radius-md);
+    font-size: 0.875rem;
+    color: var(--cdl-slate-700);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   3. LƯỚI 3 CARD XEM TRƯỚC CHỈ ĐỌC (AC1, AC2)
+   ========================================================================== */
+.cdl-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+@media (max-width: 1024px) {
+    .cdl-preview-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.cdl-card {
+    background: #ffffff;
+    border: 1px solid var(--cdl-slate-200);
+    border-radius: var(--cdl-radius-lg);
+    box-shadow: var(--cdl-shadow-sm);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cdl-card:hover {
+    box-shadow: var(--cdl-shadow-md);
+}
+
+.cdl-card-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--cdl-slate-100);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: #fafbfc;
+}
+
+.cdl-card-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cdl-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.cdl-card-icon.customer {
+    background: var(--cdl-primary-light);
+    color: var(--cdl-primary);
+}
+
+.cdl-card-icon.contact {
+    background: var(--cdl-success-light);
+    color: var(--cdl-success);
+}
+
+.cdl-card-icon.opportunity {
+    background: var(--cdl-purple-light);
+    color: var(--cdl-purple);
+}
+
+.cdl-card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--cdl-slate-900);
+    margin: 0;
+}
+
+.cdl-card-body {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.cdl-field-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cdl-field-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--cdl-slate-400);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cdl-field-source {
+    font-size: 0.725rem;
+    color: var(--cdl-slate-500);
+    font-weight: 500;
+    text-transform: none;
+    background: var(--cdl-slate-100);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.cdl-field-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--cdl-slate-800);
+    padding: 10px 12px;
+    background: var(--cdl-slate-50);
+    border: 1px solid var(--cdl-slate-200);
+    border-radius: var(--cdl-radius-sm);
+    word-break: break-word;
+}
+
+.cdl-field-value.highlight {
+    background: var(--cdl-primary-light);
+    border-color: var(--cdl-primary-border);
+    color: var(--cdl-primary);
+    font-weight: 700;
+}
+
+.cdl-field-value.opportunity-auto {
+    background: var(--cdl-purple-light);
+    border-color: var(--cdl-purple-border);
+    color: var(--cdl-purple-text);
+}
+
+.cdl-field-hint {
+    font-size: 0.785rem;
+    color: var(--cdl-slate-500);
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ==========================================================================
+   4. BẢNG CẢNH BÁO TRÙNG LẶP & ĐIỀU KIỆN (Q2)
+   ========================================================================== */
+.cdl-warning-card {
+    background: #ffffff;
+    border: 1.5px solid var(--cdl-warning-border);
+    border-radius: var(--cdl-radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--cdl-shadow-sm);
+}
+
+.cdl-warning-card.danger {
+    border-color: var(--cdl-danger-border);
+    background: #fffdfd;
+}
+
+.cdl-warning-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.cdl-warning-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--cdl-slate-900);
+    margin: 0;
+}
+
+.cdl-warning-desc {
+    font-size: 0.925rem;
+    color: var(--cdl-slate-700);
+    line-height: 1.55;
+    margin-bottom: 14px;
+}
+
+.cdl-duplicate-item {
+    padding: 10px 14px;
+    background: var(--cdl-warning-light);
+    border-left: 4px solid var(--cdl-warning);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: var(--cdl-warning-text);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cdl-duplicate-item.danger {
+    background: var(--cdl-danger-light);
+    border-left-color: var(--cdl-danger);
+    color: var(--cdl-danger-text);
+}
+
+/* Danh sách lỗi trường */
+.cdl-error-list {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cdl-error-list-item {
+    font-size: 0.9rem;
+    color: var(--cdl-danger);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   5. KHU VỰC SUBMIT & HÀNH ĐỘNG DƯỚI CÙNG
+   ========================================================================== */
+.cdl-action-bar {
+    background: #ffffff;
+    border: 1px solid var(--cdl-slate-200);
+    border-radius: var(--cdl-radius-lg);
+    padding: 20px 28px;
+    box-shadow: var(--cdl-shadow-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    position: sticky;
+    bottom: 20px;
+    z-index: 50;
+    backdrop-filter: blur(8px);
+}
+
+.cdl-action-note {
+    font-size: 0.885rem;
+    color: var(--cdl-slate-500);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 650px;
+    line-height: 1.45;
+}
+
+.cdl-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Animations */
+@keyframes cdlSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive 360px */
+@media (max-width: 480px) {
+    .cdl-container {
+        padding: 16px 12px;
+    }
+
+    .cdl-header-card {
+        padding: 18px 16px;
+    }
+
+    .cdl-header-main {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .cdl-action-bar {
+        position: static;
+        padding: 16px;
+        flex-direction: column-reverse;
+    }
+
+    .cdl-action-buttons {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .cdl-action-buttons .cdl-btn {
+        width: 100%;
+    }
+
+    .cdl-action-note {
+        width: 100%;
+    }
+}

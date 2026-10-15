@@ -96,6 +96,7 @@ public class LeadXuLyServlet extends HttpServlet {
             request.setAttribute("leadChiTiet", viewDTO.getLead());
             request.setAttribute("coTheNhan", viewDTO.isCoTheNhan());
             request.setAttribute("coTheTuChoi", viewDTO.isCoTheTuChoi());
+            request.setAttribute("coTheChuyenDoi", viewDTO.isCoTheChuyenDoi());
             request.setAttribute("trangThaiSla", viewDTO.getTrangThaiSla().name());
             request.setAttribute("danhMucLyDoTuChoi", viewDTO.getDanhMucLyDoTuChoi());
             request.setAttribute("soThongBaoChuaDoc", viewDTO.getSoThongBaoChuaDoc());

@@ -301,9 +301,15 @@ public class LeadDAO {
 
     /**
      * Cập nhật đầy đủ thông tin Lead qua Connection truyền vào.
+     * Chặn sửa bản ghi đã chuyển đổi DA_CHUYEN_DOI (Story S4-08 AC3).
      */
     public boolean capNhat(Connection conn, Lead lead) throws SQLException {
         if (lead == null || lead.getId() == null) return false;
+
+        // Guard AC3: Chặn mọi chỉnh sửa nếu trạng thái hiện tại là DA_CHUYEN_DOI
+        if (kiemTraDaChuyenDoi(conn, lead.getId())) {
+            throw new IllegalStateException("Lead đã ở trạng thái Đã chuyển đổi, không được phép chỉnh sửa nữa.");
+        }
 
         String sql = "UPDATE `lead` SET " +
                 "ho_ten = ?, email = ?, email_chuan_hoa = ?, so_dien_thoai = ?, so_dien_thoai_chuan_hoa = ?, " +
@@ -311,7 +317,7 @@ public class LeadDAO {
                 "nganh_nghe_id = ?, quy_mo_id = ?, khu_vuc_id = ?, nguon_lead_id = ?, chien_dich_id = ?, bieu_mau_id = ?, " +
                 "diem = ?, phan_loai = ?, trang_thai = ?, nguoi_phu_trach_id = ?, nhom_phan_bo_id = ?, " +
                 "qua_sla = ?, updated_at = ? " +
-                "WHERE id = ?";
+                "WHERE id = ? AND trang_thai != 'DA_CHUYEN_DOI'";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, lead.getHoTen());
@@ -387,13 +393,22 @@ public class LeadDAO {
     }
 
     /**
-     * Cập nhật thông tin Lead độc lập (kèm transaction an toàn nếu cần).
+     * Cập nhật thông tin Lead độc lập (kèm guard chặn sửa khi Lead đã chuyển đổi - Story S4-08 AC3).
      */
     public boolean capNhat(Lead lead) {
+        if (lead == null || lead.getId() == null) return false;
+
+        // Guard AC3: Chặn mọi chỉnh sửa nếu trạng thái hiện tại là DA_CHUYEN_DOI
+        if (kiemTraDaChuyenDoi(lead.getId())) {
+            throw new IllegalStateException("Lead đã ở trạng thái Đã chuyển đổi, không được phép chỉnh sửa nữa.");
+        }
+
         try (Connection conn = DatabaseConnection.layKetNoi()) {
             return capNhat(conn, lead);
+        } catch (IllegalStateException e) {
+            throw e;
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi cập nhật Lead ID: " + (lead != null ? lead.getId() : null), e);
+            LOGGER.log(Level.SEVERE, "Lỗi cập nhật Lead ID: " + lead.getId(), e);
             return false;
         }
     }
@@ -418,6 +433,96 @@ public class LeadDAO {
             LOGGER.log(Level.SEVERE, "Lỗi kiểm tra trùng mã Lead: " + maLead, e);
         }
         return false;
+    }
+
+    /**
+     * Khóa dòng Lead bằng SELECT ... FOR UPDATE trong transaction (Story S4-08).
+     * Ngăn chặn race condition khi hai người cùng bấm chuyển đổi hoặc chỉnh sửa đồng thời.
+     */
+    public Lead timTheoIdDeKhoa(Connection conn, Long id) throws SQLException {
+        if (id == null) return null;
+        String sql = "SELECT " + COT_SELECT_LEAD + FROM_JOIN_LEAD + "WHERE l.id = ? FOR UPDATE";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetSangLead(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Cập nhật chuyển đổi Lead thành công sang trạng thái DA_CHUYEN_DOI (Story S4-08 AC3).
+     * Gắn liên kết tới Khách hàng, Người liên hệ, Cơ hội và ghi nhận thời điểm chuyển đổi.
+     * @return true nếu cập nhật thành công 1 bản ghi, false nếu lead đã được chuyển đổi trước đó.
+     */
+    public boolean chuyenDoiLead(Connection conn, Long leadId, Long khachHangId, Long nlhId, Long coHoiId, LocalDateTime thoiDiem) throws SQLException {
+        if (leadId == null) return false;
+        String sql = "UPDATE `lead` SET " +
+                "trang_thai = 'DA_CHUYEN_DOI', " +
+                "khach_hang_chuyen_doi_id = ?, " +
+                "nguoi_lien_he_chuyen_doi_id = ?, " +
+                "co_hoi_chuyen_doi_id = ?, " +
+                "chuyen_doi_luc = ?, " +
+                "updated_at = CURRENT_TIMESTAMP " +
+                "WHERE id = ? AND trang_thai != 'DA_CHUYEN_DOI'";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (khachHangId != null) {
+                ps.setLong(1, khachHangId);
+            } else {
+                ps.setNull(1, Types.BIGINT);
+            }
+            if (nlhId != null) {
+                ps.setLong(2, nlhId);
+            } else {
+                ps.setNull(2, Types.BIGINT);
+            }
+            if (coHoiId != null) {
+                ps.setLong(3, coHoiId);
+            } else {
+                ps.setNull(3, Types.BIGINT);
+            }
+            ps.setTimestamp(4, Timestamp.valueOf(thoiDiem != null ? thoiDiem : LocalDateTime.now()));
+            ps.setLong(5, leadId);
+
+            int rows = ps.executeUpdate();
+            return rows > 0;
+        }
+    }
+
+    /**
+     * Kiểm tra trạng thái Lead đã chuyển đổi chưa qua Connection truyền vào (Story S4-08 AC3).
+     */
+    public boolean kiemTraDaChuyenDoi(Connection conn, Long leadId) throws SQLException {
+        if (leadId == null) return false;
+        String sql = "SELECT trang_thai FROM `lead` WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, leadId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String tt = rs.getString("trang_thai");
+                    return "DA_CHUYEN_DOI".equalsIgnoreCase(tt);
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Kiểm tra trạng thái Lead đã chuyển đổi chưa (Story S4-08 AC3).
+     */
+    public boolean kiemTraDaChuyenDoi(Long leadId) {
+        if (leadId == null) return false;
+        try (Connection conn = DatabaseConnection.layKetNoi()) {
+            return kiemTraDaChuyenDoi(conn, leadId);
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi kiểm tra trạng thái chuyển đổi Lead: " + leadId, e);
+            return false;
+        }
     }
 
     /**
@@ -542,7 +647,6 @@ public class LeadDAO {
             return ps.executeUpdate() > 0;
         }
     }
-
     private void datThamSoLead(PreparedStatement ps, Lead lead) throws SQLException {
         ps.setString(1, lead.getMaLead());
         ps.setString(2, lead.getHoTen());
