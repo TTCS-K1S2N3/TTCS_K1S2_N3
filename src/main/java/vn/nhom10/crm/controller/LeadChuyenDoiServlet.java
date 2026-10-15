@@ -99,22 +99,25 @@ public class LeadChuyenDoiServlet extends HttpServlet {
             return;
         }
 
+        // Kiểm tra CSRF token (Story S4-08): Bắt buộc session tồn tại, session token không rỗng và form token khớp
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Phiên làm việc không tồn tại hoặc đã hết hạn");
+            return;
+        }
+
+        String sessionCsrf = (String) session.getAttribute("csrfToken");
+        String formCsrf = request.getParameter("csrfToken");
+        if (sessionCsrf == null || sessionCsrf.isBlank() || formCsrf == null || formCsrf.isBlank() || !sessionCsrf.equals(formCsrf)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "CSRF token không hợp lệ hoặc bị thiếu");
+            return;
+        }
+
         String idStr = request.getParameter("leadId");
         Long leadId = parseLong(idStr);
         if (leadId == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Yêu cầu không hợp lệ: thiếu ID Lead");
             return;
-        }
-
-        // Kiểm tra CSRF token
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            String sessionCsrf = (String) session.getAttribute("csrfToken");
-            String formCsrf = request.getParameter("csrfToken");
-            if (sessionCsrf != null && !sessionCsrf.equals(formCsrf)) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "CSRF token không hợp lệ");
-                return;
-            }
         }
 
         // Thực hiện chuyển đổi qua Service (chỉ gửi leadId, toàn bộ giá trị khác do server tự sinh)

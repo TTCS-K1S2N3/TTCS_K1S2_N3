@@ -140,6 +140,45 @@ class LeadChuyenDoiServletTest {
     }
 
     @Test
+    @DisplayName("POST chuyển đổi thiếu CSRF token trong session -> trả về 403 Forbidden")
+    void testPostThieuCsrfTokenTrongSession() throws Exception {
+        when(request.getParameter("leadId")).thenReturn("100");
+        when(session.getAttribute("csrfToken")).thenReturn(null);
+        when(request.getParameter("csrfToken")).thenReturn("SOME_TOKEN");
+
+        servlet.doPost(request, response);
+
+        verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
+        verify(leadChuyenDoiService, never()).chuyenDoiLead(anyLong(), any());
+    }
+
+    @Test
+    @DisplayName("POST chuyển đổi rỗng CSRF token trong session -> trả về 403 Forbidden")
+    void testPostRongCsrfTokenTrongSession() throws Exception {
+        when(request.getParameter("leadId")).thenReturn("100");
+        when(session.getAttribute("csrfToken")).thenReturn("   ");
+        when(request.getParameter("csrfToken")).thenReturn("SOME_TOKEN");
+
+        servlet.doPost(request, response);
+
+        verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
+        verify(leadChuyenDoiService, never()).chuyenDoiLead(anyLong(), any());
+    }
+
+    @Test
+    @DisplayName("POST chuyển đổi thiếu CSRF token trong form -> trả về 403 Forbidden")
+    void testPostThieuCsrfTokenTrongForm() throws Exception {
+        when(request.getParameter("leadId")).thenReturn("100");
+        when(session.getAttribute("csrfToken")).thenReturn("VALID_TOKEN");
+        when(request.getParameter("csrfToken")).thenReturn(null);
+
+        servlet.doPost(request, response);
+
+        verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
+        verify(leadChuyenDoiService, never()).chuyenDoiLead(anyLong(), any());
+    }
+
+    @Test
     @DisplayName("POST chuyển đổi sai CSRF token -> trả về 403 Forbidden")
     void testPostSaiCsrfToken() throws Exception {
         when(request.getParameter("leadId")).thenReturn("100");
@@ -149,6 +188,7 @@ class LeadChuyenDoiServletTest {
         servlet.doPost(request, response);
 
         verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
+        verify(leadChuyenDoiService, never()).chuyenDoiLead(anyLong(), any());
     }
 
     @Test

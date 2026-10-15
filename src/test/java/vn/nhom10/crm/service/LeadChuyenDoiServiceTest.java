@@ -578,4 +578,42 @@ class LeadChuyenDoiServiceTest {
         int count = khachHang360DAO.demTongSoHoatDong(kq.getKhachHangId());
         assertEquals(0, count);
     }
+
+    @Test
+    @DisplayName("T11: Chuyển đổi thất bại -> Transaction rollback toàn bộ (không tạo rác dữ liệu)")
+    void testChuyenDoiThatBai_RollbackToanBo() throws SQLException {
+        // Tạo khách hàng trùng trước
+        KhachHang khSan = new KhachHang();
+        khSan.setTenCongTy("Công ty Đã Có Sẵn Trùng");
+        khSan.setTenChuanHoa("da co san trung");
+        khSan.setNguoiSoHuuId(701L);
+        khachHangDAO.themKhachHang(khSan);
+
+        // Tạo lead trùng tên công ty
+        Lead lead = taoLeadMau("LEAD-011", "Công ty Đã Có Sẵn Trùng", "Khách Rollback",
+                "rollback@test.vn", "0903333333", 701L, 10L, TrangThaiLeadEnum.DANG_CHAM_SOC);
+
+        int soKhachHangTruoc = 0;
+        try (var rs = rootConnection.createStatement().executeQuery("SELECT COUNT(*) FROM khach_hang")) {
+            if (rs.next()) soKhachHangTruoc = rs.getInt(1);
+        }
+
+        KetQuaChuyenDoiLeadDTO kq = service.chuyenDoiLead(lead.getId(), salesRepUser);
+        assertFalse(kq.isThanhCong());
+        assertEquals("CUSTOMER_ALREADY_EXISTS", kq.getMaLoi());
+
+        // Kiểm tra số lượng khách hàng không tăng
+        int soKhachHangSau = 0;
+        try (var rs = rootConnection.createStatement().executeQuery("SELECT COUNT(*) FROM khach_hang")) {
+            if (rs.next()) soKhachHangSau = rs.getInt(1);
+        }
+        assertEquals(soKhachHangTruoc, soKhachHangSau, "Không được tạo thêm khách hàng khi rollback");
+
+        // Lead vẫn ở trạng thái DANG_CHAM_SOC và chưa có FK
+        Lead leadSau = leadDAO.timTheoId(lead.getId());
+        assertEquals(TrangThaiLeadEnum.DANG_CHAM_SOC, leadSau.getTrangThai());
+        assertNull(leadSau.getKhachHangChuyenDoiId());
+        assertNull(leadSau.getNguoiLienHeChuyenDoiId());
+        assertNull(leadSau.getCoHoiChuyenDoiId());
+    }
 }

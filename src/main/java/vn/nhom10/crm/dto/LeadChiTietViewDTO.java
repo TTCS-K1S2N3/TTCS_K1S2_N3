@@ -23,6 +23,7 @@ public class LeadChiTietViewDTO implements Serializable {
     private TrangThaiSlaEnum trangThaiSla = TrangThaiSlaEnum.KHONG_XAC_DINH;
     private boolean coTheNhan = false;
     private boolean coTheTuChoi = false;
+    private boolean coTheChuyenDoi = false;
     private List<DanhMucLyDoTuChoiDTO> danhMucLyDoTuChoi;
     private String maLyDoTuChoiDaChon;
     private String lyDoTuChoiDaNhap;
@@ -63,6 +64,14 @@ public class LeadChiTietViewDTO implements Serializable {
 
     public void setCoTheTuChoi(boolean coTheTuChoi) {
         this.coTheTuChoi = coTheTuChoi;
+    }
+
+    public boolean isCoTheChuyenDoi() {
+        return coTheChuyenDoi;
+    }
+
+    public void setCoTheChuyenDoi(boolean coTheChuyenDoi) {
+        this.coTheChuyenDoi = coTheChuyenDoi;
     }
 
     public List<DanhMucLyDoTuChoiDTO> getDanhMucLyDoTuChoi() {

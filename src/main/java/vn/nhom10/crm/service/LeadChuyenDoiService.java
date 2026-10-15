@@ -425,7 +425,7 @@ public class LeadChuyenDoiService {
      * Director, Admin: toàn quyền.
      * Marketing, Cust. Success, Accountant: không có quyền tạo Cơ hội hoặc không quản lý Lead.
      */
-    public boolean kiemTraQuyenChuyenDoi(NguoiDung user, Lead lead) {
+    public static boolean kiemTraQuyenChuyenDoi(NguoiDung user, Lead lead) {
         if (user == null || lead == null) {
             return false;
         }

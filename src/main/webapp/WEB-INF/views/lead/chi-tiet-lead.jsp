@@ -156,6 +156,14 @@
                             <span>Từ chối</span>
                         </button>
                     </c:if>
+
+                    <!-- S4-08: Nút Chuyển đổi Lead (chỉ hiển thị khi Đang chăm sóc và người dùng có quyền) -->
+                    <c:if test="${coTheChuyenDoi}">
+                        <a href="${pageContext.request.contextPath}/lead/chuyen-doi?id=${leadChiTiet.id}" class="ctl-btn ctl-btn-success" id="btnChuyenDoiLead" title="Chuyển đổi Lead thành Khách hàng, Người liên hệ và Cơ hội">
+                            <span class="material-symbols-outlined" aria-hidden="true">transform</span>
+                            <span>Chuyển đổi Lead</span>
+                        </a>
+                    </c:if>
                 </div>
             </header>
 

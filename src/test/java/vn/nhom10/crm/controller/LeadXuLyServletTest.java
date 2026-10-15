@@ -118,6 +118,7 @@ class LeadXuLyServletTest {
         verify(request).setAttribute(eq("leadChiTiet"), eq(lead));
         verify(request).setAttribute(eq("coTheNhan"), eq(true));
         verify(request).setAttribute(eq("coTheTuChoi"), eq(true));
+        verify(request).setAttribute(eq("coTheChuyenDoi"), eq(false));
         verify(request).setAttribute(eq("trangThaiSla"), eq("DUNG_HAN"));
         verify(request).setAttribute(eq("soThongBaoChuaDoc"), eq(2));
         verify(dispatcher).forward(request, response);
@@ -242,5 +243,30 @@ class LeadXuLyServletTest {
         servlet.doPost(request, response);
 
         verify(response).sendError(eq(HttpServletResponse.SC_UNAUTHORIZED), anyString());
+    }
+
+    @Test
+    @DisplayName("GET /lead/chi-tiet: Lead đủ điều kiện chuyển đổi -> set coTheChuyenDoi true")
+    void testDoGet_CoTheChuyenDoi_SetAttribute() throws Exception {
+        when(request.getSession(false)).thenReturn(session);
+        when(session.getAttribute("nguoiDung")).thenReturn(user);
+        when(request.getParameter("leadId")).thenReturn("1002");
+
+        Lead lead = new Lead();
+        lead.setId(1002L);
+        lead.setTrangThai(TrangThaiLeadEnum.DANG_CHAM_SOC);
+
+        LeadChiTietViewDTO viewDTO = new LeadChiTietViewDTO();
+        viewDTO.setLead(lead);
+        viewDTO.setCoTheChuyenDoi(true);
+        viewDTO.setTrangThaiSla(LeadChiTietViewDTO.TrangThaiSlaEnum.DUNG_HAN);
+
+        when(service.layChiTietLeadChoNguoiDung(1002L, user)).thenReturn(viewDTO);
+        when(request.getRequestDispatcher("/WEB-INF/views/lead/chi-tiet-lead.jsp")).thenReturn(dispatcher);
+
+        servlet.doGet(request, response);
+
+        verify(request).setAttribute(eq("coTheChuyenDoi"), eq(true));
+        verify(dispatcher).forward(request, response);
     }
 }
