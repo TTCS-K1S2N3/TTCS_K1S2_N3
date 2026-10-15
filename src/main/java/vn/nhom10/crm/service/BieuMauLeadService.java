@@ -286,9 +286,11 @@ public class BieuMauLeadService {
 
         // TRẠNG THÁI MỚI (AC4)
         lead.setTrangThai(TrangThaiLeadEnum.MOI);
-        lead.setDiem(0);
         lead.setQuaSla(false);
         lead.setCreatedAt(LocalDateTime.now());
+
+        // TỰ ĐỘNG TÍNH ĐIỂM VÀ PHÂN LOẠI LEAD (Story S4-05 AC2, AC3)
+        LeadScoringService.getInstance().tinhDiemVaPhanLoai(lead);
 
         // Thực thi Transaction lưu Lead và Nhật ký gửi
         try (Connection conn = DatabaseConnection.layKetNoi()) {
