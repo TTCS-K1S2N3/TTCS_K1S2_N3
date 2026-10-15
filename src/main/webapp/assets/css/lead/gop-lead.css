@@ -1,0 +1,664 @@
+/* ==========================================================================
+   MODULE: CẢNH BÁO VÀ GỘP LEAD TRÙNG (EP-04 / STORY S4-04)
+   Dự án: MSys CRM - Nhóm 10
+   Quy chuẩn thiết kế:
+   - Màu sắc: Primary Blue (#2563eb), Neutral Slate (#0f172a -> #f8fafc), Semantic (Success, Danger, Warning, Info)
+   - Icons: Google Material Symbols Outlined
+   - Typography: Inter, Segoe UI, Roboto, sans-serif
+   - Responsive: Hoàn chỉnh từ Mobile 360px đến Desktop 1440px+
+   ========================================================================== */
+
+:root {
+    --gl-primary: #2563eb;
+    --gl-primary-hover: #1d4ed8;
+    --gl-primary-light: #eff6ff;
+    --gl-primary-border: #bfdbfe;
+    --gl-primary-text: #1e40af;
+
+    --gl-neutral-50: #f8fafc;
+    --gl-neutral-100: #f1f5f9;
+    --gl-neutral-200: #e2e8f0;
+    --gl-neutral-300: #cbd5e1;
+    --gl-neutral-400: #94a3b8;
+    --gl-neutral-500: #64748b;
+    --gl-neutral-600: #475569;
+    --gl-neutral-700: #334155;
+    --gl-neutral-800: #1e293b;
+    --gl-neutral-900: #0f172a;
+
+    --gl-success: #10b981;
+    --gl-success-light: #ecfdf5;
+    --gl-success-border: #a7f3d0;
+    --gl-success-text: #065f46;
+
+    --gl-danger: #ef4444;
+    --gl-danger-light: #fef2f2;
+    --gl-danger-border: #fecaca;
+    --gl-danger-text: #991b1b;
+
+    --gl-warning: #f59e0b;
+    --gl-warning-light: #fffbeb;
+    --gl-warning-border: #fde68a;
+    --gl-warning-text: #92400e;
+
+    --gl-purple: #8b5cf6;
+    --gl-purple-light: #f5f3ff;
+    --gl-purple-border: #ddd6fe;
+    --gl-purple-text: #6d28d9;
+
+    --gl-radius-sm: 6px;
+    --gl-radius-md: 10px;
+    --gl-radius-lg: 14px;
+    --gl-radius-xl: 18px;
+
+    --gl-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --gl-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --gl-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --gl-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+}
+
+/* ==========================================================================
+   1. KHUNG CHỨA VÀ BREADCRUMB
+   ========================================================================== */
+.gl-container {
+    padding: 24px 32px;
+    max-width: 1360px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.gl-breadcrumb {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.gl-breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--gl-neutral-500);
+}
+
+.gl-breadcrumb-link {
+    color: var(--gl-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
+}
+
+.gl-breadcrumb-link:hover {
+    color: var(--gl-primary-hover);
+    text-decoration: underline;
+}
+
+.gl-breadcrumb-sep {
+    color: var(--gl-neutral-300);
+    user-select: none;
+}
+
+.gl-breadcrumb-current {
+    color: var(--gl-neutral-700);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   2. TIÊU ĐỀ & ACTIONS BAR
+   ========================================================================== */
+.gl-header-card {
+    background: #ffffff;
+    border: 1px solid var(--gl-neutral-200);
+    border-radius: var(--gl-radius-lg);
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 24px;
+    box-shadow: var(--gl-shadow-sm);
+}
+
+.gl-header-title {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.gl-header-title h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gl-neutral-900);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.gl-header-title p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--gl-neutral-500);
+    line-height: 1.4;
+}
+
+.gl-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   3. NÚT BẤM (BUTTONS)
+   ========================================================================== */
+.gl-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: var(--gl-radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    border: 1px solid transparent;
+    min-height: 40px;
+    box-sizing: border-box;
+}
+
+.gl-btn:focus-visible {
+    outline: 2px solid var(--gl-primary);
+    outline-offset: 2px;
+}
+
+.gl-btn-primary {
+    background: var(--gl-primary);
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+}
+
+.gl-btn-primary:hover:not(:disabled) {
+    background: var(--gl-primary-hover);
+    box-shadow: 0 3px 6px rgba(37, 99, 235, 0.3);
+    transform: translateY(-1px);
+}
+
+.gl-btn-success {
+    background: var(--gl-success);
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgba(16, 185, 129, 0.2);
+}
+
+.gl-btn-success:hover:not(:disabled) {
+    background: #059669;
+    box-shadow: 0 3px 6px rgba(16, 185, 129, 0.3);
+    transform: translateY(-1px);
+}
+
+.gl-btn-warning {
+    background: var(--gl-warning);
+    color: #ffffff;
+}
+
+.gl-btn-warning:hover:not(:disabled) {
+    background: #d97706;
+}
+
+.gl-btn-outline {
+    background: #ffffff;
+    color: var(--gl-neutral-700);
+    border-color: var(--gl-neutral-300);
+}
+
+.gl-btn-outline:hover:not(:disabled) {
+    background: var(--gl-neutral-50);
+    border-color: var(--gl-neutral-400);
+    color: var(--gl-neutral-900);
+}
+
+.gl-btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8125rem;
+    min-height: 32px;
+    border-radius: var(--gl-radius-sm);
+}
+
+.gl-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* ==========================================================================
+   4. BADGES CHO MATCH REASONS (AC1)
+   ========================================================================== */
+.gl-badge-reason {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.gl-badge-reason-email {
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+}
+
+.gl-badge-reason-phone {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.gl-badge-reason-company {
+    background: #faf5ff;
+    color: #7e22ce;
+    border: 1px solid #e9d5ff;
+}
+
+/* ==========================================================================
+   5. CÁC THẺ CARD NỘI DUNG (LEAD GỐC & ỨNG VIÊN)
+   ========================================================================== */
+.gl-card {
+    background: #ffffff;
+    border: 1px solid var(--gl-neutral-200);
+    border-radius: var(--gl-radius-lg);
+    box-shadow: var(--gl-shadow-sm);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.gl-section-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--gl-neutral-900);
+    margin: 0 0 16px 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--gl-neutral-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.gl-info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    background: var(--gl-neutral-50);
+    padding: 16px 20px;
+    border-radius: var(--gl-radius-md);
+    border: 1px solid var(--gl-neutral-200);
+}
+
+.gl-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.gl-info-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--gl-neutral-500);
+    text-transform: uppercase;
+}
+
+.gl-info-value {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--gl-neutral-900);
+    word-break: break-word;
+}
+
+/* Ứng viên trùng lặp Grid */
+.gl-candidates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 18px;
+    margin-top: 14px;
+}
+
+.gl-candidate-card {
+    background: #ffffff;
+    border: 1px solid var(--gl-neutral-200);
+    border-radius: var(--gl-radius-md);
+    padding: 18px 20px;
+    box-shadow: var(--gl-shadow-xs);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+    transition: all 0.2s ease;
+    border-left: 4px solid var(--gl-warning);
+}
+
+.gl-candidate-card:hover {
+    border-color: var(--gl-neutral-300);
+    border-left-color: var(--gl-primary);
+    box-shadow: var(--gl-shadow-md);
+    transform: translateY(-2px);
+}
+
+.gl-candidate-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.gl-candidate-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gl-neutral-900);
+}
+
+.gl-candidate-code {
+    font-size: 0.75rem;
+    color: var(--gl-neutral-500);
+    font-family: monospace;
+}
+
+.gl-candidate-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.875rem;
+    color: var(--gl-neutral-700);
+}
+
+.gl-candidate-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gl-candidate-row .material-symbols-outlined {
+    font-size: 16px;
+    color: var(--gl-neutral-400);
+    flex-shrink: 0;
+}
+
+.gl-candidate-reasons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.gl-candidate-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--gl-neutral-200);
+}
+
+/* ==========================================================================
+   6. BẢNG SO SÁNH SIDE-BY-SIDE VÀ BẢO TOÀN LỊCH SỬ (AC3 PREVIEW)
+   ========================================================================== */
+.gl-compare-table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.gl-compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.gl-compare-table th {
+    padding: 14px 18px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid var(--gl-neutral-200);
+}
+
+.gl-compare-table th.col-field {
+    width: 25%;
+    background: var(--gl-neutral-50);
+    color: var(--gl-neutral-600);
+}
+
+.gl-compare-table th.col-source {
+    width: 37.5%;
+    background: var(--gl-danger-light);
+    color: var(--gl-danger-text);
+    border-top: 3px solid var(--gl-danger);
+}
+
+.gl-compare-table th.col-target {
+    width: 37.5%;
+    background: var(--gl-success-light);
+    color: var(--gl-success-text);
+    border-top: 3px solid var(--gl-success);
+}
+
+.gl-compare-table td {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--gl-neutral-200);
+    vertical-align: middle;
+}
+
+.gl-compare-table td.field-name {
+    font-weight: 600;
+    color: var(--gl-neutral-700);
+    background: var(--gl-neutral-50);
+}
+
+.gl-compare-table td.source-val {
+    background: #ffffff;
+    color: var(--gl-neutral-800);
+}
+
+.gl-compare-table td.target-val {
+    background: #ffffff;
+    color: var(--gl-neutral-900);
+    font-weight: 600;
+}
+
+/* Thẻ tóm tắt bảo toàn lịch sử (AC3) */
+.gl-history-preserve-card {
+    background: #ffffff;
+    border: 1px solid var(--gl-neutral-200);
+    border-radius: var(--gl-radius-lg);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--gl-shadow-sm);
+}
+
+.gl-history-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.gl-history-stat-box {
+    background: var(--gl-neutral-50);
+    border: 1px solid var(--gl-neutral-200);
+    border-radius: var(--gl-radius-md);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.gl-history-stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--gl-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+.gl-history-stat-icon.call {
+    background: var(--gl-primary-light);
+    color: var(--gl-primary);
+}
+
+.gl-history-stat-icon.task {
+    background: var(--gl-warning-light);
+    color: var(--gl-warning);
+}
+
+.gl-history-stat-icon.opportunity {
+    background: var(--gl-purple-light);
+    color: var(--gl-purple);
+}
+
+.gl-history-stat-icon.total {
+    background: var(--gl-success-light);
+    color: var(--gl-success);
+}
+
+.gl-history-stat-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.gl-history-stat-num {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--gl-neutral-900);
+}
+
+.gl-history-stat-label {
+    font-size: 0.75rem;
+    color: var(--gl-neutral-500);
+}
+
+/* ==========================================================================
+   7. FORM VÀ ALERT MESSAGES
+   ========================================================================== */
+.gl-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: var(--gl-radius-md);
+    margin-bottom: 20px;
+    font-size: 0.875rem;
+    animation: glFadeIn 0.25s ease-out;
+}
+
+.gl-alert-success {
+    background: var(--gl-success-light);
+    border: 1px solid var(--gl-success-border);
+    color: var(--gl-success-text);
+}
+
+.gl-alert-danger {
+    background: var(--gl-danger-light);
+    border: 1px solid var(--gl-danger-border);
+    color: var(--gl-danger-text);
+}
+
+.gl-alert-warning {
+    background: var(--gl-warning-light);
+    border: 1px solid var(--gl-warning-border);
+    color: var(--gl-warning-text);
+}
+
+.gl-alert-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    display: flex;
+    padding: 4px;
+}
+
+.gl-alert-close:hover {
+    opacity: 1;
+}
+
+@keyframes glFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Empty state */
+.gl-empty-card {
+    padding: 36px 20px;
+    text-align: center;
+    background: var(--gl-neutral-50);
+    border-radius: var(--gl-radius-md);
+    border: 1px dashed var(--gl-neutral-300);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--gl-neutral-500);
+    font-size: 0.875rem;
+}
+
+.gl-empty-card .material-symbols-outlined {
+    font-size: 32px;
+    color: var(--gl-neutral-400);
+}
+
+/* ==========================================================================
+   8. RESPONSIVE DESIGN (360px -> 1024px+)
+   ========================================================================== */
+@media (max-width: 1024px) {
+    .gl-info-grid,
+    .gl-history-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .gl-container {
+        padding: 16px;
+    }
+    .gl-header-card {
+        padding: 18px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .gl-info-grid,
+    .gl-history-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    .gl-candidates-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .gl-btn {
+        width: 100%;
+    }
+}
