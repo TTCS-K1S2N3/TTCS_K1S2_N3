@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Danh sách khách hàng tiềm năng với bộ lọc nâng cao và bộ lọc lưu sẵn - Story S4-09 MSys CRM">
-    <title>Danh Sách Khách Hàng Tiềm Năng (Lead) - MSys CRM</title>
+    <title>Danh Sách Khách Hàng Tiềm Năng (Lead) - CRM Bán Hàng</title>
 
     <!-- Google Fonts & Material Symbols -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,7 +19,8 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
 
-    <!-- CSS chuyên biệt cho Danh sách & Bộ lọc Lead (S4-09) -->
+    <!-- CSS Module Lead (S4-02 & S4-09) -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/lead.css?v=2.4">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/danh-sach-lead.css">
 </head>
 <body class="crm-body">
@@ -51,31 +52,67 @@
                 </div>
             </nav>
 
-            <!-- 2. Header Banner & Quick Actions -->
+            <%-- Xác thực vai trò người dùng từ session/request phục vụ hiển thị các nút điều hướng S4-06 --%>
+            <c:set var="userXacThuc" value="${not empty nguoiDung ? nguoiDung : sessionScope.nguoiDung}" />
+            <c:set var="vaiTroDto" value="${not empty currentUser and not empty currentUser.vaiTro ? currentUser.vaiTro.name() : ''}" />
+            <c:set var="laAdmin" value="${(not empty userXacThuc and userXacThuc.coVaiTro('ADMIN')) or vaiTroDto == 'ADMIN'}" />
+            <c:set var="laDirector" value="${(not empty userXacThuc and userXacThuc.coVaiTro('DIRECTOR')) or vaiTroDto == 'DIRECTOR'}" />
+            <c:set var="laTeamLead" value="${(not empty userXacThuc and userXacThuc.coVaiTro('TEAM_LEAD')) or vaiTroDto == 'TEAM_LEAD'}" />
+            <c:set var="coQuyenHangCho" value="${laAdmin or laDirector or laTeamLead}" />
+            <c:set var="coQuyenQuyTac" value="${laAdmin or laDirector}" />
+
+            <!-- 2. Header Banner & Quick Actions (Hợp nhất đầy đủ nút dev S4-02, S4-03, S4-06) -->
             <header class="lead-header-banner">
                 <div class="lead-header-title-wrap">
                     <div class="lead-header-icon-box" aria-hidden="true">
                         <span class="material-symbols-outlined">filter_alt</span>
                     </div>
                     <div class="lead-header-text">
-                        <h1>Khách Hàng Tiềm Năng (Lead)</h1>
-                        <p>Lọc, theo dõi và quản lý các cơ hội tiếp cận khách hàng theo thời gian thực</p>
+                        <h1>Khách Hàng Tiềm Năng (Leads)</h1>
+                        <p>Quản lý toàn bộ danh sách lead tiếp nhận từ hội thảo, danh thiếp sự kiện, nhập hàng loạt từ Excel hoặc qua biểu mẫu nhúng website</p>
                     </div>
                 </div>
-                <div class="lead-header-actions">
-                    <a href="${pageContext.request.contextPath}/lead/tao-moi" class="lead-btn lead-btn-primary" id="btnThemLeadMoi">
-                        <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
-                        <span>+ Tạo Lead thủ công</span>
+                <div class="lead-header-actions" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <c:if test="${coQuyenQuyTac}">
+                        <a href="${pageContext.request.contextPath}/admin/lead/phan-bo" class="lead-btn lead-btn-outline" id="btnQuyTacPhanBo" title="Cấu hình quy tắc phân bổ lead tự động (S4-06)">
+                            <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+                            <span>Quy tắc phân bổ</span>
+                        </a>
+                    </c:if>
+                    <c:if test="${coQuyenHangCho}">
+                        <a href="${pageContext.request.contextPath}/lead/hang-cho-phan-bo" class="lead-btn lead-btn-outline" id="btnHangChoPhanBo" title="Hàng chờ phân bổ lead (S4-06)">
+                            <span class="material-symbols-outlined" aria-hidden="true">inbox</span>
+                            <span>Hàng chờ phân bổ</span>
+                        </a>
+                    </c:if>
+                    <a href="${pageContext.request.contextPath}/marketing/campaigns" class="lead-btn lead-btn-outline" id="btnChienDichMarketing" title="Quản lý chiến dịch marketing (S4-03)">
+                        <span class="material-symbols-outlined" aria-hidden="true">campaign</span>
+                        <span>Chiến dịch Marketing</span>
                     </a>
-                    <a href="${pageContext.request.contextPath}/lead/import-excel" class="lead-btn lead-btn-outline" id="btnNhapLeadExcel">
+                    <a href="${pageContext.request.contextPath}/bieu-mau" class="lead-btn lead-btn-outline" id="btnBieuMauNhung" title="Quản lý biểu mẫu nhúng website">
+                        <span class="material-symbols-outlined" aria-hidden="true">dynamic_form</span>
+                        <span>Biểu mẫu nhúng</span>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/lead/import-excel" class="lead-btn lead-btn-outline" id="btnNhapExcel" title="Nhập hàng loạt lead từ tệp Excel (AC2)">
                         <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
                         <span>Nhập Excel</span>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/lead/tao-moi" class="lead-btn lead-btn-primary" id="btnThemLeadMoi" title="Tạo thủ công lead từ sự kiện hoặc danh thiếp (AC1)">
+                        <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                        <span>Tạo Lead thủ công</span>
                     </a>
                 </div>
             </header>
 
             <!-- 3. Thông báo hệ thống (Thành công / Lỗi) -->
-            <c:if test="${not empty thongBaoThanhCong}">
+            <c:if test="${param.thanhCong == 'tao-moi'}">
+                <div class="lead-alert lead-alert-success" role="alert">
+                    <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                    <span>Tạo khách hàng tiềm năng thành công! Mã Lead: <strong><c:out value="${param.maLead}" /></strong></span>
+                </div>
+            </c:if>
+
+            <c:if test="${not empty thongBaoThanhCong and param.thanhCong != 'tao-moi'}">
                 <div class="lead-alert lead-alert-success" role="alert">
                     <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
                     <span><c:out value="${thongBaoThanhCong}" /></span>
@@ -211,11 +248,11 @@
                         <span class="material-symbols-outlined" aria-hidden="true">tune</span>
                         <span>Bộ lọc tìm kiếm (AND giữa 5 tiêu chí)</span>
                         <c:set var="activeCount" value="0" />
-                        <c:if test="${not empty param.trangThai}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
-                        <c:if test="${not empty param.nguonLeadId}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
-                        <c:if test="${not empty param.phanLoai}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
-                        <c:if test="${not empty param.nguoiPhuTrachId}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
-                        <c:if test="${not empty param.tuNgay or not empty param.denNgay}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
+                        <c:if test="${not empty param.trangThai or not empty boLocHienTai.trangThai}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
+                        <c:if test="${not empty param.nguonLeadId or not empty boLocHienTai.nguonLeadId}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
+                        <c:if test="${not empty param.phanLoai or not empty boLocHienTai.phanLoai}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
+                        <c:if test="${not empty param.nguoiPhuTrachId or not empty boLocHienTai.nguoiPhuTrachId}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
+                        <c:if test="${not empty param.tuNgay or not empty param.denNgay or not empty boLocHienTai.tuNgay or not empty boLocHienTai.denNgay}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
 
                         <c:if test="${activeCount > 0}">
                             <span class="lead-active-filter-counter" id="activeFilterBadge">${activeCount} đang chọn</span>
@@ -224,7 +261,7 @@
                     <div>
                         <a href="${pageContext.request.contextPath}/lead" class="lead-btn lead-btn-outline lead-btn-sm" id="btnResetFilter" title="Xóa tất cả tiêu chí lọc về mặc định">
                             <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">restart_alt</span>
-                            <span>Đặt lại</span>
+                            <span>Xóa bộ lọc</span>
                         </a>
                     </div>
                 </div>
@@ -299,9 +336,9 @@
                                 <option value="">-- Tất cả trong phạm vi --</option>
                                 <c:choose>
                                     <c:when test="${not empty luaChonNguoiPhuTrach}">
-                                        <c:forEach var="user" items="${luaChonNguoiPhuTrach}">
-                                            <option value="${user.id}" ${(param.nguoiPhuTrachId == user.id) or (boLocHienTai.nguoiPhuTrachId == user.id) ? 'selected' : ''}>
-                                                <c:out value="${user.hoTen}" /> (<c:out value="${user.tenDangNhap}" />)
+                                        <c:forEach var="u" items="${luaChonNguoiPhuTrach}">
+                                            <option value="${u.id}" ${(param.nguoiPhuTrachId == u.id) or (boLocHienTai.nguoiPhuTrachId == u.id) ? 'selected' : ''}>
+                                                <c:out value="${u.hoTen}" /> (<c:out value="${u.tenDangNhap}" />)
                                             </option>
                                         </c:forEach>
                                     </c:when>
@@ -383,15 +420,16 @@
                     <table class="lead-table" aria-label="Danh sách Lead">
                         <thead>
                             <tr>
-                                <th style="width: 110px;">Mã Lead</th>
+                                <th style="width: 120px;">Mã Lead</th>
                                 <th>Khách Hàng / Công Ty</th>
-                                <th style="width: 140px;">Thông Tin Liên Hệ</th>
-                                <th style="width: 130px; text-align: center;">Phân Loại (AC1)</th>
-                                <th style="width: 150px;">Nguồn Lead (AC1)</th>
-                                <th style="width: 140px; text-align: center;">Trạng Thái (AC1)</th>
+                                <th style="width: 160px;">Thông Tin Liên Hệ</th>
+                                <th style="width: 130px; text-align: center;">Phân Loại</th>
+                                <th style="width: 160px;">Nguồn Lead</th>
+                                <th style="width: 140px; text-align: center;">Trạng Thái</th>
                                 <th style="width: 160px;">Người Phụ Trách</th>
-                                <th style="width: 140px; text-align: center;">Cảnh Báo SLA (AC2)</th>
-                                <th style="width: 140px; text-align: right;">Ngày Tạo</th>
+                                <th style="width: 130px; text-align: center;">Cảnh Báo SLA</th>
+                                <th style="width: 130px; text-align: right;">Ngày Tạo</th>
+                                <th style="width: 100px; text-align: center;">Thao Tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -399,19 +437,21 @@
                                 <c:when test="${not empty dsLead}">
                                     <c:forEach var="lead" items="${dsLead}">
                                         <!-- AC2: Tô viền đỏ và nền cảnh báo nếu Lead quá hạn SLA -->
-                                        <tr class="${lead.quaSla ? 'row-sla-overdue' : ''}">
+                                        <tr class="${lead.quaSla ? 'row-sla-overdue' : 'row-valid'}">
 
                                             <!-- 1. Mã Lead -->
-                                            <td class="lead-code-cell">
-                                                <a href="${pageContext.request.contextPath}/lead/chi-tiet?id=${lead.id}" title="Xem chi tiết lead" style="color: inherit; text-decoration: none;">
-                                                    <c:out value="${lead.maLead}" />
+                                            <td class="lead-code-cell font-mono">
+                                                <a href="${pageContext.request.contextPath}/lead/chi-tiet?leadId=${lead.id}"
+                                                   class="lead-code-link"
+                                                   title="Xem chi tiết lead ${lead.maLead}">
+                                                    <strong><c:out value="${lead.maLead}" /></strong>
                                                 </a>
                                             </td>
 
                                             <!-- 2. Họ tên & Công ty -->
                                             <td>
                                                 <div class="lead-name-cell">
-                                                    <a href="${pageContext.request.contextPath}/lead/chi-tiet?id=${lead.id}" class="lead-fullname">
+                                                    <a href="${pageContext.request.contextPath}/lead/chi-tiet?leadId=${lead.id}" class="lead-fullname" title="Xem chi tiết lead ${lead.maLead}">
                                                         <c:out value="${lead.hoTen}" />
                                                     </a>
                                                     <span class="lead-company">
@@ -435,7 +475,7 @@
                                                 </div>
                                             </td>
 
-                                            <!-- 4. Phân loại Nóng / Ấm / Lạnh (AC1) -->
+                                            <!-- 4. Phân loại Nóng / Ấm / Lạnh -->
                                             <td style="text-align: center;">
                                                 <c:choose>
                                                     <c:when test="${lead.phanLoai == 'NONG' || lead.phanLoai == 'Nóng'}">
@@ -465,7 +505,7 @@
                                                 </c:choose>
                                             </td>
 
-                                            <!-- 5. Nguồn Lead (AC1) -->
+                                            <!-- 5. Nguồn Lead -->
                                             <td>
                                                 <span class="lead-badge lead-badge-source">
                                                     <span class="material-symbols-outlined" aria-hidden="true">label</span>
@@ -473,7 +513,7 @@
                                                 </span>
                                             </td>
 
-                                            <!-- 6. Trạng thái Lead (AC1) -->
+                                            <!-- 6. Trạng thái Lead -->
                                             <td style="text-align: center;">
                                                 <c:choose>
                                                     <c:when test="${lead.trangThai != null && (lead.trangThai == 'MOI' || lead.trangThai.name() == 'MOI')}">
@@ -496,13 +536,13 @@
                                                     </c:when>
                                                     <c:otherwise>
                                                         <span class="lead-badge lead-badge-status-rejected">
-                                                            <c:out value="${lead.trangThai != null ? (lead.trangThai.tenHienThi != null ? lead.trangThai.tenHienThi : lead.trangThai) : 'Mới'}" />
+                                                            <c:out value="${lead.trangThai != null ? (lead.trangThai.moTa != null ? lead.trangThai.moTa : lead.trangThai) : 'Mới'}" />
                                                         </span>
                                                     </c:otherwise>
                                                 </c:choose>
                                             </td>
 
-                                            <!-- 7. Người phụ trách (AC1) -->
+                                            <!-- 7. Người phụ trách -->
                                             <td>
                                                 <div class="lead-assignee-cell">
                                                     <c:choose>
@@ -541,23 +581,42 @@
                                             <td style="text-align: right; font-size: 12.5px; color: var(--lead-text-muted);">
                                                 <c:out value="${lead.createdAt != null ? lead.createdAt : 'Hôm nay'}" />
                                             </td>
+
+                                            <!-- 10. Thao tác -->
+                                            <td style="text-align: center;">
+                                                <a href="${pageContext.request.contextPath}/lead/chi-tiet?leadId=${lead.id}"
+                                                   class="lead-btn-action"
+                                                   id="btnXemChiTiet_${lead.id}"
+                                                   title="Xem chi tiết Lead ${lead.maLead}">
+                                                    <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">visibility</span>
+                                                    <span>Chi tiết</span>
+                                                </a>
+                                            </td>
                                         </tr>
                                     </c:forEach>
                                 </c:when>
                                 <c:otherwise>
                                     <!-- Empty State khi không tìm thấy Lead nào -->
                                     <tr>
-                                        <td colspan="9">
+                                        <td colspan="10">
                                             <div class="lead-empty-state-wrap">
-                                                <div class="lead-empty-icon-circle" aria-hidden="true">
-                                                    <span class="material-symbols-outlined">search_off</span>
+                                                <div class="lead-empty-icon" aria-hidden="true">
+                                                    <span class="material-symbols-outlined">person_search</span>
                                                 </div>
-                                                <h3 class="lead-empty-title">Không tìm thấy khách hàng tiềm năng nào</h3>
+                                                <h3 class="lead-empty-title">Không tìm thấy khách hàng tiềm năng</h3>
                                                 <p class="lead-empty-desc">
-                                                    Không có Lead nào khớp với các tiêu chí lọc hiện tại. Thử thay đổi hoặc đặt lại bộ lọc để tìm kiếm rộng hơn.
+                                                    Không có khách hàng tiềm năng nào phù hợp với các tiêu chí lọc đang chọn hoặc trong phạm vi quyền được xem.
                                                 </p>
-                                                <div>
-                                                    <a href="${pageContext.request.contextPath}/lead" class="lead-btn lead-btn-primary lead-btn-sm" id="btnEmptyResetFilter">
+                                                <div class="lead-empty-actions" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                                                    <a href="${pageContext.request.contextPath}/lead/tao-moi" class="lead-btn lead-btn-primary lead-btn-sm" id="btnEmptyTaoLead">
+                                                        <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">add</span>
+                                                        <span>Tạo Lead thủ công</span>
+                                                    </a>
+                                                    <a href="${pageContext.request.contextPath}/lead/import-excel" class="lead-btn lead-btn-outline lead-btn-sm" id="btnEmptyNhapExcel">
+                                                        <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">upload_file</span>
+                                                        <span>Nhập từ Excel</span>
+                                                    </a>
+                                                    <a href="${pageContext.request.contextPath}/lead" class="lead-btn lead-btn-outline lead-btn-sm" id="btnEmptyResetFilter">
                                                         <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">restart_alt</span>
                                                         <span>Xóa bộ lọc hiện tại</span>
                                                     </a>
@@ -589,6 +648,7 @@
             </div>
 
             <form method="POST" action="${pageContext.request.contextPath}/lead/bo-loc/luu" id="formLuuBoLoc">
+                <input type="hidden" name="csrfToken" value="${csrfToken}" />
                 <div class="lead-modal-body">
                     <div class="lead-modal-group">
                         <label for="modalTenBoLoc" class="lead-modal-label">
@@ -623,7 +683,7 @@
         </div>
     </div>
 
-    <!-- JS chuyên biệt -->
+    <!-- JS chuyên biệt Danh sách & Bộ lọc Lead -->
     <script src="${pageContext.request.contextPath}/assets/js/lead/danh-sach-lead.js"></script>
 </body>
 </html>

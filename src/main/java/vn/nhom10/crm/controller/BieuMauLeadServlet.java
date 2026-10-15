@@ -53,6 +53,11 @@ public class BieuMauLeadServlet extends HttpServlet {
 
         String path = request.getServletPath();
 
+        if ("/lead".equals(path)) {
+            response.sendRedirect(request.getContextPath() + "/bieu-mau");
+            return;
+        }
+
         if ("/bieu-mau/tao".equals(path)) {
             hienThiTrangTao(request, response);
             return;

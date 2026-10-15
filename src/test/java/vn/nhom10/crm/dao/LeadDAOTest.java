@@ -178,4 +178,56 @@ class LeadDAOTest {
         Lead khongTimThay = dao.timTheoMa("LEAD-TX-ROLLBACK");
         assertNull(khongTimThay, "Lead đã bị rollback không được tồn tại trong DB");
     }
+
+    @Test
+    @DisplayName("S4-05: Cập nhật thông tin Lead và điểm số, phân loại thành công")
+    void testCapNhatLeadVaDiem() {
+        Lead lead = new Lead();
+        lead.setMaLead("LEAD-S405-UPDATE");
+        lead.setHoTen("Nguyễn Văn Ban Đầu");
+        lead.setNguonLeadId(1L);
+        lead.setTrangThai(TrangThaiLeadEnum.MOI);
+        Long id = dao.them(lead);
+        assertNotNull(id);
+
+        // Cập nhật điểm và phân loại
+        boolean okDiem = dao.capNhatDiemVaPhanLoai(id, 85, "NONG");
+        assertTrue(okDiem);
+
+        Lead sauCapNhatDiem = dao.timTheoId(id);
+        assertNotNull(sauCapNhatDiem);
+        assertEquals(85, sauCapNhatDiem.getDiem());
+        assertEquals("NONG", sauCapNhatDiem.getPhanLoai());
+
+        // Cập nhật toàn bộ thông tin
+        sauCapNhatDiem.setHoTen("Nguyễn Văn Sau Cập Nhật");
+        sauCapNhatDiem.setMucDoQuanTam("CAN_GAP");
+        sauCapNhatDiem.setDiem(100);
+        sauCapNhatDiem.setPhanLoai("NONG");
+        boolean okAll = dao.capNhat(sauCapNhatDiem);
+        assertTrue(okAll);
+
+        Lead sauCapNhatAll = dao.timTheoId(id);
+        assertEquals("Nguyễn Văn Sau Cập Nhật", sauCapNhatAll.getHoTen());
+        assertEquals("CAN_GAP", sauCapNhatAll.getMucDoQuanTam());
+        assertEquals(100, sauCapNhatAll.getDiem());
+    }
+
+    @Test
+    @DisplayName("S4-05: Lấy danh sách Lead sắp xếp theo điểm ưu tiên giảm dần")
+    void testLayDanhSachSapXepTheoDiem() {
+        Lead l1 = new Lead("LEAD-ORDER-1", "Lead Điểm Thấp", "thap@crm.vn", "0901", "Cty A", null, 1L);
+        l1.setDiem(20);
+        l1.setPhanLoai("LANH");
+        dao.them(l1);
+
+        Lead l2 = new Lead("LEAD-ORDER-2", "Lead Điểm Cao", "cao@crm.vn", "0902", "Cty B", null, 1L);
+        l2.setDiem(90);
+        l2.setPhanLoai("NONG");
+        dao.them(l2);
+
+        var list = dao.layDanhSachSapXepTheoDiem(10, 0);
+        assertTrue(list.size() >= 2);
+        assertTrue(list.get(0).getDiem() >= list.get(1).getDiem());
+    }
 }

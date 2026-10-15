@@ -77,6 +77,10 @@ public class MucDanhMucDTO implements Serializable {
         return tenMuc;
     }
 
+    public String getTen() {
+        return tenMuc;
+    }
+
     public void setTenMuc(String tenMuc) {
         this.tenMuc = tenMuc;
     }
