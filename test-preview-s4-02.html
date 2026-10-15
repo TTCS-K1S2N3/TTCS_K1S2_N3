@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview S4-02: Quản lý & Nhập Lead từ Excel - CRM Bán Hàng</title>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+
+    <style>
+        :root {
+            --lead-primary: #2563eb;
+            --lead-primary-hover: #1d4ed8;
+            --lead-primary-light: #eff6ff;
+            --lead-primary-border: #bfdbfe;
+            --lead-primary-glow: rgba(37, 99, 235, 0.15);
+
+            --lead-bg: #f8fafc;
+            --lead-card-bg: #ffffff;
+            --lead-neutral-50: #f8fafc;
+            --lead-neutral-100: #f1f5f9;
+            --lead-neutral-200: #e2e8f0;
+            --lead-neutral-300: #cbd5e1;
+            --lead-neutral-400: #94a3b8;
+            --lead-neutral-500: #64748b;
+            --lead-neutral-600: #475569;
+            --lead-neutral-700: #334155;
+            --lead-neutral-800: #1e293b;
+            --lead-neutral-900: #0f172a;
+
+            --lead-success: #10b981;
+            --lead-success-light: #ecfdf5;
+            --lead-success-border: #a7f3d0;
+            --lead-success-text: #065f46;
+
+            --lead-danger: #ef4444;
+            --lead-danger-light: #fef2f2;
+            --lead-danger-border: #fecaca;
+            --lead-danger-text: #991b1b;
+
+            --lead-warning: #f59e0b;
+            --lead-warning-light: #fffbeb;
+            --lead-warning-border: #fde68a;
+            --lead-warning-text: #92400e;
+
+            --lead-radius-xs: 6px;
+            --lead-radius-sm: 8px;
+            --lead-radius-md: 12px;
+            --lead-radius-lg: 16px;
+
+            --lead-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+            --lead-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+            --lead-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+            --lead-shadow-card: 0 0 0 1px rgba(226, 232, 240, 0.8), 0 2px 8px rgba(0, 0, 0, 0.04);
+            --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: #f1f5f9;
+            color: var(--lead-neutral-800);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Demo top toolbar */
+        .preview-toolbar {
+            background: #0f172a;
+            color: #ffffff;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .preview-toolbar-title {
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .preview-badge {
+            background: #2563eb;
+            color: #ffffff;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-weight: 600;
+        }
+
+        .preview-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .preview-btn-toggle {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+            font-family: inherit;
+        }
+
+        .preview-btn-toggle:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        .preview-btn-toggle.active {
+            background: #2563eb;
+            border-color: #3b82f6;
+        }
+
+        /* Layout Container */
+        .lead-container {
+            padding: 28px 36px 60px;
+            max-width: 1320px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Breadcrumb */
+        .lead-breadcrumb {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .lead-breadcrumb-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            list-style: none;
+        }
+
+        .lead-breadcrumb-link {
+            color: var(--lead-neutral-500);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .lead-breadcrumb-sep {
+            color: var(--lead-neutral-300);
+        }
+
+        .lead-breadcrumb-current {
+            color: var(--lead-neutral-900);
+            font-weight: 700;
+        }
+
+        /* Header Card */
+        .lead-header-card {
+            background: #ffffff;
+            border-radius: var(--lead-radius-md);
+            box-shadow: var(--lead-shadow-card);
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .lead-header-title h1 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--lead-neutral-900);
+            margin: 0 0 4px 0;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lead-header-title p {
+            font-size: 13.5px;
+            color: var(--lead-neutral-500);
+            margin: 0;
+            max-width: 680px;
+            line-height: 1.5;
+        }
+
+        .lead-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Buttons */
+        .lead-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 40px;
+            padding: 8px 16px;
+            font-size: 13.5px;
+            font-weight: 600;
+            border-radius: var(--lead-radius-sm);
+            border: 1px solid transparent;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            user-select: none;
+            font-family: inherit;
+        }
+
+        .lead-btn-primary {
+            background: var(--lead-primary);
+            color: #ffffff;
+            box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+        }
+
+        .lead-btn-primary:hover {
+            background: var(--lead-primary-hover);
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .lead-btn-outline {
+            background: #ffffff;
+            color: var(--lead-neutral-700);
+            border-color: var(--lead-neutral-300);
+        }
+
+        .lead-btn-outline:hover {
+            background: var(--lead-neutral-50);
+            border-color: var(--lead-neutral-400);
+            color: var(--lead-neutral-900);
+        }
+
+        .lead-btn-sm {
+            min-height: 36px;
+            padding: 6px 14px;
+            font-size: 13px;
+        }
+
+        /* Stats Row */
+        .lead-stats-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .lead-stat-card {
+            background: #ffffff;
+            border-radius: var(--lead-radius-md);
+            box-shadow: var(--lead-shadow-card);
+            padding: 20px 22px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .lead-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--lead-shadow-md);
+        }
+
+        .lead-stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--lead-radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .lead-stat-icon.total {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .lead-stat-icon.valid {
+            background: #ecfdf5;
+            color: #10b981;
+        }
+
+        .lead-stat-icon.error {
+            background: #fffbeb;
+            color: #d97706;
+        }
+
+        .lead-stat-icon .material-symbols-outlined {
+            font-size: 26px;
+        }
+
+        .lead-stat-number {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--lead-neutral-900);
+            line-height: 1.1;
+            display: block;
+            letter-spacing: -0.02em;
+        }
+
+        .lead-stat-label {
+            font-size: 13px;
+            color: var(--lead-neutral-500);
+            margin-top: 4px;
+            display: block;
+            font-weight: 500;
+        }
+
+        /* Main Card & Table */
+        .lead-form-card {
+            background: #ffffff;
+            border-radius: var(--lead-radius-md);
+            box-shadow: var(--lead-shadow-card);
+            padding: 24px 28px;
+        }
+
+        .lead-section-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--lead-neutral-500);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .lead-table-container {
+            border: 1px solid var(--lead-neutral-200);
+            border-radius: var(--lead-radius-sm);
+            overflow-x: auto;
+            background: #ffffff;
+        }
+
+        .lead-preview-table {
+            width: 100%;
+            min-width: 880px;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            text-align: left;
+        }
+
+        .lead-preview-table th {
+            background: #f8fafc;
+            color: var(--lead-neutral-600);
+            font-weight: 600;
+            padding: 13px 16px;
+            border-bottom: 1px solid var(--lead-neutral-200);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+
+        .lead-preview-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--lead-neutral-100);
+            color: var(--lead-neutral-800);
+            vertical-align: middle;
+        }
+
+        .lead-preview-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .lead-preview-table tr:hover {
+            background: #fafcff;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+
+        /* Badges */
+        .lead-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .lead-badge-source {
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        .lead-badge-valid {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        /* Empty State */
+        .lead-empty-state {
+            padding: 56px 24px;
+            text-align: center;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .lead-empty-icon {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            background: var(--lead-neutral-100);
+            color: var(--lead-neutral-400);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+
+        .lead-empty-icon .material-symbols-outlined {
+            font-size: 34px;
+        }
+
+        .lead-empty-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--lead-neutral-900);
+            margin: 0 0 6px 0;
+        }
+
+        .lead-empty-desc {
+            font-size: 13.5px;
+            color: var(--lead-neutral-500);
+            margin: 0 0 24px 0;
+            line-height: 1.5;
+        }
+
+        .lead-empty-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .lead-container {
+                padding: 16px 14px 32px;
+            }
+            .lead-header-card, .lead-form-card {
+                padding: 20px 16px;
+            }
+            .lead-header-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .lead-stats-summary {
+                grid-template-columns: 1fr;
+            }
+            .lead-header-actions {
+                width: 100%;
+            }
+            .lead-header-actions .lead-btn {
+                flex: 1 1 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Demo Toolbar -->
+    <div class="preview-toolbar">
+        <div class="preview-toolbar-title">
+            <span class="material-symbols-outlined" style="color: #60a5fa;">preview</span>
+            <span>PREVIEW GIAO DIỆN S4-02: QUẢN LÝ LEAD</span>
+            <span class="preview-badge">SaaS Enterprise UI</span>
+        </div>
+        <div class="preview-controls">
+            <span style="font-size: 12px; color: #94a3b8;">Chế độ xem:</span>
+            <button class="preview-btn-toggle active" id="btnModeEmpty" onclick="setMode('empty')">
+                <span class="material-symbols-outlined" style="font-size: 16px;">search_off</span>
+                <span>Chưa có Lead (Empty State)</span>
+            </button>
+            <button class="preview-btn-toggle" id="btnModeData" onclick="setMode('data')">
+                <span class="material-symbols-outlined" style="font-size: 16px;">view_list</span>
+                <span>Đã có dữ liệu Lead</span>
+            </button>
+        </div>
+    </div>
+
+    <main class="lead-container">
+        <!-- 1. Breadcrumb -->
+        <nav class="lead-breadcrumb" aria-label="Đường dẫn điều hướng">
+            <ol class="lead-breadcrumb-nav">
+                <li><a href="#" class="lead-breadcrumb-link">Trang chủ</a></li>
+                <span class="lead-breadcrumb-sep">/</span>
+                <li class="lead-breadcrumb-current">Lead & Phân bổ</li>
+            </ol>
+        </nav>
+
+        <!-- 2. Header Card -->
+        <header class="lead-header-card">
+            <div class="lead-header-title">
+                <h1>
+                    <span class="material-symbols-outlined" style="color: var(--lead-primary); font-size: 28px;">target</span>
+                    <span>Khách Hàng Tiềm Năng (Leads)</span>
+                </h1>
+                <p>Quản lý toàn bộ danh sách lead tiếp nhận từ hội thảo, danh thiếp sự kiện, nhập hàng loạt từ Excel hoặc qua biểu mẫu nhúng website (Epic EP-04 / Story S4-02).</p>
+            </div>
+            <div class="lead-header-actions">
+                <a href="#" class="lead-btn lead-btn-outline" title="Quản lý biểu mẫu nhúng website">
+                    <span class="material-symbols-outlined">dynamic_form</span>
+                    <span>Biểu mẫu nhúng</span>
+                </a>
+                <a href="#" class="lead-btn lead-btn-outline" title="Nhập hàng loạt lead từ tệp Excel (AC2)">
+                    <span class="material-symbols-outlined">upload_file</span>
+                    <span>Nhập Excel</span>
+                </a>
+                <a href="#" class="lead-btn lead-btn-primary" title="Tạo thủ công lead từ sự kiện hoặc danh thiếp (AC1)">
+                    <span class="material-symbols-outlined">add</span>
+                    <span>+ Tạo Lead thủ công</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- 3. Thẻ thống kê tổng quan -->
+        <section class="lead-stats-summary" aria-label="Thống kê Lead">
+            <div class="lead-stat-card">
+                <div class="lead-stat-icon total">
+                    <span class="material-symbols-outlined">groups</span>
+                </div>
+                <div>
+                    <span class="lead-stat-number" id="statTotal">0</span>
+                    <span class="lead-stat-label">Tổng khách hàng tiềm năng</span>
+                </div>
+            </div>
+
+            <div class="lead-stat-card">
+                <div class="lead-stat-icon valid">
+                    <span class="material-symbols-outlined">fiber_new</span>
+                </div>
+                <div>
+                    <span class="lead-stat-number" id="statNew" style="color: var(--lead-success);">0</span>
+                    <span class="lead-stat-label">Trạng thái: Mới tiếp nhận</span>
+                </div>
+            </div>
+
+            <div class="lead-stat-card">
+                <div class="lead-stat-icon error">
+                    <span class="material-symbols-outlined">verified_user</span>
+                </div>
+                <div>
+                    <span class="lead-stat-number" id="statSource" style="color: var(--lead-warning-text);">0</span>
+                    <span class="lead-stat-label">Đã gắn đúng Nguồn (AC3)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Danh sách Lead -->
+        <section class="lead-form-card">
+            <h2 class="lead-section-title">
+                <span class="material-symbols-outlined" style="color: var(--lead-primary);">list_alt</span>
+                <span>Danh sách Lead tiếp nhận</span>
+            </h2>
+
+            <div class="lead-table-container">
+                <table class="lead-preview-table" aria-label="Bảng dữ liệu Lead">
+                    <thead>
+                        <tr>
+                            <th style="width: 120px;">Mã Lead</th>
+                            <th>Họ và Tên</th>
+                            <th style="width: 190px;">Nguồn Lead (AC3)</th>
+                            <th>Tên Công Ty</th>
+                            <th style="width: 140px;">Số Điện Thoại</th>
+                            <th>Email</th>
+                            <th style="width: 120px; text-align: center;">Trạng Thái</th>
+                            <th style="width: 140px; text-align: right;">Thời Gian Tạo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leadTableBody">
+                        <!-- Sẽ được điền động qua JS để test cả 2 trạng thái -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const sampleLeads = [
+            {
+                ma: 'LEAD-261015-D14B7',
+                ten: 'Nguyễn Thị Mai',
+                nguon: 'Sự kiện TechExpo 2026',
+                congTy: 'Công ty Cổ phần AlphaTech',
+                sdt: '0912 345 678',
+                email: 'mai.nguyen@alphatech.vn',
+                trangThai: 'Mới',
+                thoiGian: '10 phút trước'
+            },
+            {
+                ma: 'LEAD-261015-AAD10',
+                ten: 'Trần Văn Hùng',
+                nguon: 'Danh thiếp đối tác',
+                congTy: 'Tập đoàn Bán lẻ VinaMart',
+                sdt: '0988 765 432',
+                email: 'hung.tran@vinamart.vn',
+                trangThai: 'Mới',
+                thoiGian: 'Hôm nay'
+            },
+            {
+                ma: 'LEAD-261015-79B46',
+                ten: 'Lê Hoàng Anh',
+                nguon: 'Giới thiệu khách hàng',
+                congTy: 'Công ty TNHH SmartLogistics',
+                sdt: '0903 112 233',
+                email: 'anh.le@smartlog.vn',
+                trangThai: 'Mới',
+                thoiGian: 'Hôm qua'
+            }
+        ];
+
+        function renderEmpty() {
+            document.getElementById('statTotal').textContent = '0';
+            document.getElementById('statNew').textContent = '0';
+            document.getElementById('statSource').textContent = '0';
+
+            document.getElementById('leadTableBody').innerHTML = `
+                <tr>
+                    <td colspan="8">
+                        <div class="lead-empty-state">
+                            <div class="lead-empty-icon" aria-hidden="true">
+                                <span class="material-symbols-outlined">person_search</span>
+                            </div>
+                            <h3 class="lead-empty-title">Chưa có khách hàng tiềm năng</h3>
+                            <p class="lead-empty-desc">
+                                Bắt đầu tiếp nhận lead bằng cách tạo thủ công từ danh thiếp sự kiện hoặc nhập hàng loạt từ tệp Excel.
+                            </p>
+                            <div class="lead-empty-actions">
+                                <button type="button" class="lead-btn lead-btn-primary lead-btn-sm">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+                                    <span>+ Tạo Lead thủ công</span>
+                                </button>
+                                <button type="button" class="lead-btn lead-btn-outline lead-btn-sm">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">upload_file</span>
+                                    <span>Nhập từ Excel</span>
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function renderData() {
+            document.getElementById('statTotal').textContent = sampleLeads.length;
+            document.getElementById('statNew').textContent = sampleLeads.length;
+            document.getElementById('statSource').textContent = '100%';
+
+            let html = '';
+            sampleLeads.forEach(lead => {
+                html += `
+                    <tr>
+                        <td class="font-mono">
+                            <strong style="color: var(--lead-primary);">${lead.ma}</strong>
+                        </td>
+                        <td>
+                            <strong style="color: var(--lead-neutral-900);">${lead.ten}</strong>
+                        </td>
+                        <td>
+                            <span class="lead-badge lead-badge-source">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">label</span>
+                                ${lead.nguon}
+                            </span>
+                        </td>
+                        <td>${lead.congTy}</td>
+                        <td class="font-mono">${lead.sdt}</td>
+                        <td>${lead.email}</td>
+                        <td style="text-align: center;">
+                            <span class="lead-badge lead-badge-valid">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">fiber_new</span>
+                                ${lead.trangThai}
+                            </span>
+                        </td>
+                        <td style="text-align: right; font-size: 12.5px; color: var(--lead-neutral-500);">${lead.thoiGian}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('leadTableBody').innerHTML = html;
+        }
+
+        function setMode(mode) {
+            document.getElementById('btnModeEmpty').classList.toggle('active', mode === 'empty');
+            document.getElementById('btnModeData').classList.toggle('active', mode === 'data');
+            if (mode === 'empty') {
+                renderEmpty();
+            } else {
+                renderData();
+            }
+        }
+
+        // Mặc định hiển thị Empty State
+        renderEmpty();
+    </script>
+</body>
+</html>

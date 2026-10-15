@@ -27,7 +27,7 @@ import java.util.List;
  * - /bieu-mau/ma-nhung   : Lấy mã nhúng HTML/Iframe/Script để dán vào website bất kỳ (AC1)
  * - /bieu-mau/trang-thai : Bật/tắt trạng thái hoạt động của biểu mẫu
  */
-@WebServlet(name = "BieuMauLeadServlet", urlPatterns = {"/bieu-mau", "/bieu-mau/tao", "/bieu-mau/ma-nhung", "/bieu-mau/trang-thai", "/lead"})
+@WebServlet(name = "BieuMauLeadServlet", urlPatterns = {"/bieu-mau", "/bieu-mau/tao", "/bieu-mau/ma-nhung", "/bieu-mau/trang-thai"})
 public class BieuMauLeadServlet extends HttpServlet {
 
     private final BieuMauLeadService bieuMauLeadService;
