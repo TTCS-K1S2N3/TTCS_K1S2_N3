@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
     <!-- CSS Chuyên biệt Module Lead (Story S4-02) -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/lead.css?v=2.1">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/lead.css?v=2.4">
 </head>
 <body class="crm-body">
 
@@ -59,7 +59,7 @@
                     </a>
                     <a href="${pageContext.request.contextPath}/lead/tao-moi" class="lead-btn lead-btn-primary" id="btnTaoLeadMoi" title="Tạo thủ công lead từ sự kiện hoặc danh thiếp (AC1)">
                         <span class="material-symbols-outlined" aria-hidden="true">add</span>
-                        <span>+ Tạo Lead thủ công</span>
+                        <span>Tạo Lead thủ công</span>
                     </a>
                 </div>
             </header>
@@ -174,7 +174,7 @@
                                                 <div class="lead-empty-actions">
                                                     <a href="${pageContext.request.contextPath}/lead/tao-moi" class="lead-btn lead-btn-primary lead-btn-sm" id="btnEmptyTaoLead">
                                                         <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">add</span>
-                                                        <span>+ Tạo Lead thủ công</span>
+                                                        <span>Tạo Lead thủ công</span>
                                                     </a>
                                                     <a href="${pageContext.request.contextPath}/lead/import-excel" class="lead-btn lead-btn-outline lead-btn-sm" id="btnEmptyNhapExcel">
                                                         <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">upload_file</span>

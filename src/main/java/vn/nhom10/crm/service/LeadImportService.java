@@ -47,13 +47,31 @@ public class LeadImportService {
     /**
      * Thẩm định tệp Excel tải lên và sinh báo cáo xem trước (AC2 & AC3).
      * Chưa ghi dữ liệu vào CSDL ở bước này.
+    /**
+     * Lấy danh sách nguồn Lead hiện hành đang kích hoạt trong CSDL.
+     */
+    public List<MucDanhMucDTO> layDanhSachNguonLeadHienHanh() {
+        return danhMucBanHangDAO.layDanhSach(LoaiDanhMuc.NGUON_LEAD, true);
+    }
+
+    /**
+     * Tạo tệp mẫu Excel với danh mục nguồn Lead thực tế từ CSDL.
+     */
+    public byte[] taoTepMauExcel() throws IOException {
+        List<MucDanhMucDTO> dsNguon = layDanhSachNguonLeadHienHanh();
+        return ExcelLeadUtil.taoTepMauExcel(dsNguon);
+    }
+
+    /**
+     * Thẩm định tệp Excel tải lên và sinh báo cáo xem trước (AC2 & AC3).
+     * Chưa ghi dữ liệu vào CSDL ở bước này.
      *
      * @param is     luồng dữ liệu tệp Excel
      * @param tenTep tên tệp tải lên
      * @return Báo cáo xem trước gồm tổng dòng, số dòng hợp lệ, số dòng lỗi và chi tiết từng dòng
      */
     public BaoCaoNhapLeadExcelDTO thamDinhTepExcel(InputStream is, String tenTep) throws IOException {
-        List<MucDanhMucDTO> dsNguon = danhMucBanHangDAO.layDanhSach(LoaiDanhMuc.NGUON_LEAD, true);
+        List<MucDanhMucDTO> dsNguon = layDanhSachNguonLeadHienHanh();
         List<DongExcelLeadDTO> dsDong = ExcelLeadUtil.docDanhSachLead(is, dsNguon);
 
         BaoCaoNhapLeadExcelDTO baoCao = new BaoCaoNhapLeadExcelDTO(tenTep);
@@ -75,13 +93,13 @@ public class LeadImportService {
         }
 
         baoCao.setDaThucHienNhap(true);
+        baoCao.khoiTaoTienTrinhNhap();
 
         for (DongExcelLeadDTO dong : baoCao.getDanhSachTatCaDong()) {
             if (!dong.isHopLe()) {
                 dong.setDaNhap(false);
                 dong.setThanhCong(false);
                 dong.setGhiChuKetQua("Bỏ qua do dữ liệu không hợp lệ: " + dong.getChuoiLoi());
-                baoCao.setSoDongThatBai(baoCao.getSoDongThatBai() + 1);
                 continue;
             }
 
@@ -91,7 +109,7 @@ public class LeadImportService {
                 lead.setMaLead(leadService.sinhMaLeadMoi());
                 lead.setHoTen(dong.getHoTen().trim());
 
-                // AC3: Gắn nguồn lead bắt buộc
+                // AC3: Gắn nguồn lead bắt buộc từ ID thực tế đã đối chiếu
                 lead.setNguonLeadId(dong.getNguonLeadId());
 
                 if (dong.getEmail() != null && !dong.getEmail().isBlank()) {
@@ -121,24 +139,41 @@ public class LeadImportService {
                 lead.setCreatedAt(LocalDateTime.now());
 
                 Long leadId = leadDAO.them(lead);
-                dong.setIdLead(leadId);
-                dong.setMaLead(lead.getMaLead());
-                dong.setGhiChuKetQua("Đã thêm mới thành công vào CRM (" + lead.getMaLead() + ")");
-
-                baoCao.capNhatKetQuaNhap(dong, true);
+                if (leadId == null || leadId <= 0) {
+                    LOGGER.warning("Không thể thêm Lead dòng " + dong.getSoDong() + ": DAO trả về ID không hợp lệ");
+                    dong.themLoi("Lưu vào cơ sở dữ liệu thất bại: Không thể cấp mã khách hàng tiềm năng hợp lệ.");
+                    dong.setGhiChuKetQua("Lưu thất bại: Hệ thống không tạo được bản ghi.");
+                    baoCao.ghiNhanLoiLuuDb(dong);
+                } else {
+                    dong.setIdLead(leadId);
+                    dong.setMaLead(lead.getMaLead());
+                    dong.setGhiChuKetQua("Đã thêm mới thành công vào CRM (" + lead.getMaLead() + ")");
+                    baoCao.ghiNhanThanhCong(dong);
+                }
 
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "Lỗi khi nhập dòng " + dong.getSoDong() + " (" + dong.getHoTen() + "): " + e.getMessage(), e);
-                dong.themLoi("Lỗi cơ sở dữ liệu khi lưu: " + e.getMessage());
-                baoCao.capNhatKetQuaNhap(dong, false);
+                dong.themLoi("Lưu vào cơ sở dữ liệu thất bại do ràng buộc dữ liệu hoặc lỗi hệ thống.");
+                dong.setGhiChuKetQua("Lưu thất bại: Lỗi hệ thống khi lưu trữ.");
+                baoCao.ghiNhanLoiLuuDb(dong);
             }
         }
+
+        baoCao.hoanTatTienTrinhNhap();
 
         // Lưu vết lịch sử đợt nhập vào dot_nhap_du_lieu và loi_nhap_du_lieu
         dotNhapDuLieuDAO.luuDotNhapLead(baoCao, nguoiThucHienId);
 
-        baoCao.setThongDiep(String.format("Kết quả nhập danh sách khách hàng tiềm năng: %d/%d lead nhập thành công, %d dòng lỗi bị bỏ qua.",
-                baoCao.getSoDongThanhCong(), baoCao.getTongSoDong(), baoCao.getSoDongLoi()));
+        if (baoCao.getSoDongThatBai() == 0) {
+            baoCao.setThongDiep(String.format("Nhập hoàn tất toàn bộ %d/%d lead vào hệ thống CRM.",
+                    baoCao.getSoDongThanhCong(), baoCao.getTongSoDong()));
+        } else if (baoCao.getSoDongThanhCong() > 0) {
+            baoCao.setThongDiep(String.format("Kết quả nhập danh sách khách hàng tiềm năng: %d/%d lead nhập thành công, %d dòng lỗi bị bỏ qua.",
+                    baoCao.getSoDongThanhCong(), baoCao.getTongSoDong(), baoCao.getSoDongThatBai()));
+        } else {
+            baoCao.setThongDiep(String.format("Không thể nhập dữ liệu: 0/%d lead được tạo, toàn bộ %d dòng đều gặp lỗi.",
+                    baoCao.getTongSoDong(), baoCao.getSoDongThatBai()));
+        }
 
         return baoCao;
     }
