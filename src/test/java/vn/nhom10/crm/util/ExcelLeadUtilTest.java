@@ -167,6 +167,125 @@ class ExcelLeadUtilTest {
         }
     }
 
+    @Test
+    @DisplayName("S4-02: Tạo tệp mẫu Excel sử dụng danh mục nguồn thực tế từ CSDL")
+    void testTaoTepMauExcelTheoDanhMucDB() throws Exception {
+        List<MucDanhMucDTO> dsNguon = List.of(
+                new MucDanhMucDTO(1L, null, "CNTT", "cntt", "", 1, true, 0, null, "")
+        );
+        byte[] bytes = ExcelLeadUtil.taoTepMauExcel(dsNguon);
+        assertNotNull(bytes);
+
+        try (InputStream is = new ByteArrayInputStream(bytes);
+             Workbook workbook = WorkbookFactory.create(is)) {
+            Sheet dataSheet = workbook.getSheetAt(0);
+            // Dòng mẫu 1, 2, 3 đều phải sử dụng nguồn thực tế từ DB là "cntt"
+            assertEquals("cntt", dataSheet.getRow(1).getCell(2).getStringCellValue());
+            assertEquals("cntt", dataSheet.getRow(2).getCell(2).getStringCellValue());
+            assertEquals("cntt", dataSheet.getRow(3).getCell(2).getStringCellValue());
+
+            Sheet guideSheet = workbook.getSheetAt(1);
+            String guideText = guideSheet.getRow(4).getCell(2).getStringCellValue();
+            assertTrue(guideText.contains("cntt"), "Hướng dẫn phải chứa nguồn cntt thực tế từ DB");
+            assertFalse(guideText.contains("Sự kiện / Hội thảo"), "Không được hard-code các nguồn giả định");
+        }
+    }
+
+    @Test
+    @DisplayName("S4-02: Đối chiếu nguồn nghiêm ngặt với CSDL - Tuyệt đối không fallback sang ID 1-6")
+    void testTimIdNguonLeadChuanXacKhongFallbackGiaDinh() {
+        List<MucDanhMucDTO> dsNguon = List.of(
+                new MucDanhMucDTO(1L, null, "CNTT", "cntt", "", 1, true, 0, null, "")
+        );
+
+        // Khớp nguồn thật "cntt"
+        assertEquals(1L, ExcelLeadUtil.timIdNguonLead("cntt", dsNguon));
+        assertEquals(1L, ExcelLeadUtil.timIdNguonLead("CNTT", dsNguon));
+        assertEquals(1L, ExcelLeadUtil.timIdNguonLead("1", dsNguon));
+
+        // Các nguồn giả định không có trong DB phải trả về null, KHÔNG được gán nhầm sang 1L (cntt)
+        assertNull(ExcelLeadUtil.timIdNguonLead("Sự kiện / Hội thảo", dsNguon));
+        assertNull(ExcelLeadUtil.timIdNguonLead("Danh thiếp đối tác", dsNguon));
+        assertNull(ExcelLeadUtil.timIdNguonLead("Khách hàng giới thiệu", dsNguon));
+        assertNull(ExcelLeadUtil.timIdNguonLead("Website / Biểu mẫu trực tuyến", dsNguon));
+        assertNull(ExcelLeadUtil.timIdNguonLead("2", dsNguon));
+        assertNull(ExcelLeadUtil.timIdNguonLead("999", dsNguon));
+        assertNull(ExcelLeadUtil.timIdNguonLead("", dsNguon));
+        assertNull(ExcelLeadUtil.timIdNguonLead(null, dsNguon));
+    }
+
+    @Test
+    @DisplayName("Test 5: Tệp Excel sai mẫu (thiếu cột bắt buộc) phải ném ngoại lệ rõ ràng")
+    void testUploadFileExcelSaiMau_BaoLoi() throws Exception {
+        byte[] fileBytes;
+        try (Workbook wb = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = wb.createSheet("InvalidTemplate");
+            var header = sheet.createRow(0);
+            header.createCell(0).setCellValue("Mã sản phẩm");
+            header.createCell(1).setCellValue("Tên sản phẩm");
+            header.createCell(2).setCellValue("Đơn giá");
+
+            var r1 = sheet.createRow(1);
+            r1.createCell(0).setCellValue("SP01");
+            r1.createCell(1).setCellValue("Laptop Dell");
+            r1.createCell(2).setCellValue("15000000");
+
+            wb.write(out);
+            fileBytes = out.toByteArray();
+        }
+
+        try (InputStream is = new ByteArrayInputStream(fileBytes)) {
+            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                    ExcelLeadUtil.docDanhSachLead(is, taoDanhSachNguonMau())
+            );
+            assertTrue(ex.getMessage().contains("không đúng cấu trúc mẫu nhập Lead"));
+            assertTrue(ex.getMessage().contains("Họ và tên"));
+            assertTrue(ex.getMessage().contains("Nguồn Lead"));
+        }
+    }
+
+    @Test
+    @DisplayName("Test 5: Tệp Excel đảo thứ tự các cột vẫn phân tích chính xác từng trường")
+    void testUploadFileExcelDaoThuTuCot_VanDocDung() throws Exception {
+        byte[] fileBytes;
+        try (Workbook wb = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = wb.createSheet("ReorderedColumns");
+            var header = sheet.createRow(0);
+            // Đảo thứ tự: Email ở cột 0, Nguồn Lead ở cột 1, Họ và tên ở cột 2, SĐT ở cột 3
+            header.createCell(0).setCellValue("Email");
+            header.createCell(1).setCellValue("Nguồn Lead (*)");
+            header.createCell(2).setCellValue("Họ và tên (*)");
+            header.createCell(3).setCellValue("Số điện thoại");
+
+            var r1 = sheet.createRow(1);
+            r1.createCell(0).setCellValue("hoang.nam@congty.vn");
+            r1.createCell(1).setCellValue("Sự kiện / Hội thảo");
+            r1.createCell(2).setCellValue("Hoàng Văn Nam");
+            r1.createCell(3).setCellValue("0912998877");
+
+            wb.write(out);
+            fileBytes = out.toByteArray();
+        }
+
+        try (InputStream is = new ByteArrayInputStream(fileBytes)) {
+            List<DongExcelLeadDTO> ds = ExcelLeadUtil.docDanhSachLead(is, taoDanhSachNguonMau());
+            assertEquals(1, ds.size());
+            DongExcelLeadDTO d = ds.get(0);
+            assertTrue(d.isHopLe());
+            // Họ tên được đọc từ cột 2
+            assertEquals("Hoàng Văn Nam", d.getHoTen());
+            // Nguồn được đọc từ cột 1
+            assertEquals("Sự kiện / Hội thảo", d.getTenNguonLead());
+            assertEquals(1L, d.getNguonLeadId());
+            // Email được đọc từ cột 0
+            assertEquals("hoang.nam@congty.vn", d.getEmail());
+            // SĐT được đọc từ cột 3
+            assertEquals("0912998877", d.getSoDienThoai());
+        }
+    }
+
     private List<MucDanhMucDTO> taoDanhSachNguonMau() {
         List<MucDanhMucDTO> list = new ArrayList<>();
         list.add(new MucDanhMucDTO(1L, null, "SU_KIEN", "Sự kiện / Hội thảo", "", 1, true, 0, null, ""));

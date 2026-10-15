@@ -689,11 +689,25 @@
 /* ==========================================================================
    7. MINIMALIST DROPZONE (EXCEL UPLOAD)
    ========================================================================== */
+.lead-file-input {
+    display: none !important;
+    position: absolute !important;
+    top: -9999px !important;
+    left: -9999px !important;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0 !important;
+    overflow: hidden !important;
+    z-index: -100 !important;
+    pointer-events: none !important;
+}
+
 .lead-dropzone-modern {
+    position: relative;
     border: 1.5px dashed var(--lead-neutral-300);
     border-radius: var(--lead-radius-md);
     background: #fafcff;
-    padding: 40px 24px;
+    padding: 36px 24px;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -705,6 +719,10 @@
     border-color: var(--lead-primary);
     background: #f0f7ff;
     box-shadow: 0 0 0 4px var(--lead-primary-glow);
+}
+
+.lead-dropzone-prompt {
+    transition: opacity 0.2s ease;
 }
 
 .lead-dropzone-icon-wrap {
@@ -734,6 +752,108 @@
 .lead-dropzone-desc {
     font-size: 13px;
     color: var(--lead-neutral-400);
+}
+
+.lead-selected-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 18px;
+    background: #ffffff;
+    border: 1.5px solid var(--lead-primary);
+    border-radius: var(--lead-radius-sm);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    max-width: 460px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.lead-selected-file-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+}
+
+.lead-file-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--lead-neutral-900);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lead-file-size {
+    font-size: 13px;
+    color: var(--lead-neutral-500);
+    white-space: nowrap;
+}
+
+.lead-btn-clear-file {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: var(--lead-neutral-100);
+    color: var(--lead-neutral-600);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.lead-btn-clear-file:hover {
+    background: var(--lead-danger-bg);
+    color: var(--lead-danger);
+}
+
+.lead-uploaded-file-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: #ffffff;
+    border: 1px solid var(--lead-neutral-200);
+    border-radius: var(--lead-radius-sm);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.lead-uploaded-file-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.lead-uploaded-file-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #eff6ff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.lead-uploaded-file-title {
+    font-size: 15px;
+    color: var(--lead-neutral-900);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lead-uploaded-file-meta {
+    font-size: 13px;
+    color: var(--lead-neutral-500);
+    margin-top: 3px;
 }
 
 /* ==========================================================================

@@ -39,7 +39,19 @@ public class ExcelLeadUtil {
      * - Sheet 1: DanhSachLead (bảng nhập mẫu kèm 3 dòng dữ liệu mẫu)
      * - Sheet 2: HuongDan_QuyTac (hướng dẫn quy tắc cột bắt buộc và AC3)
      */
+    /**
+     * Tạo tệp mẫu Excel (.xlsx) chuẩn nghiệp vụ CRM không kèm danh sách nguồn động.
+     */
     public static byte[] taoTepMauExcel() throws IOException {
+        return taoTepMauExcel(null);
+    }
+
+    /**
+     * Tạo tệp mẫu Excel (.xlsx) chuẩn nghiệp vụ CRM gồm 2 sheet:
+     * - Sheet 1: DanhSachLead (bảng nhập mẫu kèm 3 dòng dữ liệu mẫu sử dụng nguồn từ CSDL)
+     * - Sheet 2: HuongDan_QuyTac (hướng dẫn quy tắc cột bắt buộc và AC3 theo danh mục nguồn thực tế)
+     */
+    public static byte[] taoTepMauExcel(List<MucDanhMucDTO> dsNguonLead) throws IOException {
         try (Workbook workbook = new XSSFWorkbook();
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
@@ -92,11 +104,40 @@ public class ExcelLeadUtil {
                 cell.setCellStyle(styleHeader);
             }
 
+            // Lấy danh sách nguồn hợp lệ thực tế từ CSDL
+            List<String> tenNguonHopLe = new ArrayList<>();
+            if (dsNguonLead != null) {
+                for (MucDanhMucDTO dm : dsNguonLead) {
+                    if (dm != null && dm.isKichHoat() && dm.getTenMuc() != null && !dm.getTenMuc().isBlank()) {
+                        tenNguonHopLe.add(dm.getTenMuc().trim());
+                    }
+                }
+            }
+
+            // Nếu có danh mục thực tế truyền vào từ CSDL thì sử dụng danh mục CSDL; nếu không thì dùng mẫu chuẩn
+            String nguon1;
+            String nguon2;
+            String nguon3;
+            String huongDanNguon;
+
+            if (!tenNguonHopLe.isEmpty()) {
+                nguon1 = tenNguonHopLe.get(0);
+                nguon2 = tenNguonHopLe.size() > 1 ? tenNguonHopLe.get(1) : nguon1;
+                nguon3 = tenNguonHopLe.size() > 2 ? tenNguonHopLe.get(2) : nguon2;
+                huongDanNguon = "QUY TẮC BẮT BUỘC (AC3): Mỗi lead nhập vào bắt buộc phải có Nguồn. Các giá trị hợp lệ theo danh mục hiện hành: "
+                        + String.join(", ", tenNguonHopLe) + ".";
+            } else {
+                nguon1 = "Sự kiện / Hội thảo";
+                nguon2 = "Danh thiếp đối tác";
+                nguon3 = "Khách hàng giới thiệu";
+                huongDanNguon = "QUY TẮC BẮT BUỘC (AC3): Mỗi lead nhập vào bắt buộc phải có Nguồn. Các giá trị hợp lệ: Sự kiện / Hội thảo, Danh thiếp đối tác, Khách hàng giới thiệu, Website / Biểu mẫu trực tuyến, Gọi điện thoại trực tiếp, Nguồn tiếp cận khác.";
+            }
+
             // Dữ liệu mẫu (3 dòng)
             String[][] duLieuMau = {
-                    {"1", "Nguyễn Văn An", "Sự kiện / Hội thảo", "0912345678", "an.nguyen@congty.vn", "Công ty Cổ phần Công nghệ Alpha", "CAO", "Tư vấn phần mềm quản trị quan hệ khách hàng CRM"},
-                    {"2", "Trần Thị Bình", "Danh thiếp đối tác", "0987654321", "binh.tran@doanhnghiep.vn", "Tập đoàn Bán lẻ Beta", "TRUNG_BINH", "Tìm hiểu giải pháp quản lý bán hàng đa kênh"},
-                    {"3", "Lê Hoàng Cường", "Khách hàng giới thiệu", "0903112233", "cuong.le@startup.vn", "Công ty TNHH Dịch vụ Gamma", "THAP", "Yêu cầu gửi tài liệu giới thiệu giải pháp"}
+                    {"1", "Nguyễn Văn An", nguon1, "0912345678", "an.nguyen@congty.vn", "Công ty Cổ phần Công nghệ Alpha", "CAO", "Tư vấn phần mềm quản trị quan hệ khách hàng CRM"},
+                    {"2", "Trần Thị Bình", nguon2, "0987654321", "binh.tran@doanhnghiep.vn", "Tập đoàn Bán lẻ Beta", "TRUNG_BINH", "Tìm hiểu giải pháp quản lý bán hàng đa kênh"},
+                    {"3", "Lê Hoàng Cường", nguon3, "0903112233", "cuong.le@startup.vn", "Công ty TNHH Dịch vụ Gamma", "THAP", "Yêu cầu gửi tài liệu giới thiệu giải pháp"}
             };
 
             for (int r = 0; r < duLieuMau.length; r++) {
@@ -138,7 +179,7 @@ public class ExcelLeadUtil {
             String[][] huongDan = {
                     {"Cột", "Bắt buộc", "Quy tắc thẩm định chi tiết"},
                     {"Họ và tên (*)", "CÓ", "Tối đa 150 ký tự, hỗ trợ tiếng Việt có dấu. Không được để trống."},
-                    {"Nguồn Lead (*) [AC3]", "CÓ", "QUY TẮC BẮT BUỘC (AC3): Mỗi lead nhập vào bắt buộc phải có Nguồn. Các giá trị hợp lệ: Sự kiện / Hội thảo, Danh thiếp đối tác, Khách hàng giới thiệu, Website / Biểu mẫu trực tuyến, Gọi điện thoại trực tiếp, Nguồn tiếp cận khác."},
+                    {"Nguồn Lead (*) [AC3]", "CÓ", huongDanNguon},
                     {"Số điện thoại", "KHÔNG", "Định dạng số điện thoại Việt Nam (8-15 chữ số)."},
                     {"Email", "KHÔNG", "Địa chỉ email hợp lệ theo chuẩn RFC (ví dụ: hoten@congty.vn)."},
                     {"Tên công ty", "KHÔNG", "Tên doanh nghiệp / cơ quan của khách hàng tiềm năng, tối đa 255 ký tự."},
@@ -194,20 +235,61 @@ public class ExcelLeadUtil {
 
             DataFormatter formatter = new DataFormatter();
 
+            // Nhận diện linh hoạt thứ tự các cột từ dòng tiêu đề
+            Row headerRow = sheet.getRow(0);
+            if (headerRow == null) {
+                throw new IllegalArgumentException("Tệp Excel không đúng cấu trúc: Thiếu dòng tiêu đề cột.");
+            }
+
+            int colHoTen = -1;
+            int colNguon = -1;
+            int colSdt = -1;
+            int colEmail = -1;
+            int colCongTy = -1;
+            int colMucDo = -1;
+            int colNhuCau = -1;
+
+            int lastCellNum = headerRow.getLastCellNum();
+            for (int c = 0; c < lastCellNum; c++) {
+                String headerVal = layGiaTriChuoi(headerRow.getCell(c), formatter).toLowerCase();
+                if (headerVal.isEmpty()) continue;
+
+                if (colHoTen == -1 && (headerVal.contains("họ và tên") || headerVal.contains("họ tên") || headerVal.contains("ho ten") || headerVal.contains("fullname") || headerVal.contains("full name"))) {
+                    colHoTen = c;
+                } else if (colNguon == -1 && (headerVal.contains("nguồn") || headerVal.contains("nguon") || headerVal.contains("source"))) {
+                    colNguon = c;
+                } else if (colSdt == -1 && (headerVal.contains("điện thoại") || headerVal.contains("dien thoai") || headerVal.contains("sđt") || headerVal.contains("sdt") || headerVal.contains("phone"))) {
+                    colSdt = c;
+                } else if (colEmail == -1 && (headerVal.contains("email") || headerVal.contains("thư điện tử") || headerVal.contains("mail"))) {
+                    colEmail = c;
+                } else if (colCongTy == -1 && (headerVal.contains("công ty") || headerVal.contains("cong ty") || headerVal.contains("doanh nghiệp") || headerVal.contains("company"))) {
+                    colCongTy = c;
+                } else if (colMucDo == -1 && (headerVal.contains("mức độ") || headerVal.contains("muc do") || headerVal.contains("quan tâm") || headerVal.contains("priority"))) {
+                    colMucDo = c;
+                } else if (colNhuCau == -1 && (headerVal.contains("nhu cầu") || headerVal.contains("nhu cau") || headerVal.contains("ghi chú") || headerVal.contains("note"))) {
+                    colNhuCau = c;
+                }
+            }
+
+            // Kiểm tra cấu trúc mẫu: Bắt buộc phải nhận diện được cột Họ tên và Nguồn Lead
+            if (colHoTen == -1 || colNguon == -1) {
+                throw new IllegalArgumentException("Tệp Excel không đúng cấu trúc mẫu nhập Lead. Yêu cầu tệp phải có các cột: 'Họ và tên' và 'Nguồn Lead'.");
+            }
+
             for (int r = 1; r <= lastRowNum; r++) {
                 Row row = sheet.getRow(r);
                 if (row == null) {
                     continue;
                 }
 
-                // Đọc các ô theo thứ tự cột chuẩn
-                String valHoTen = layGiaTriChuoi(row.getCell(1), formatter);
-                String valNguon = layGiaTriChuoi(row.getCell(2), formatter);
-                String valSdt = layGiaTriChuoi(row.getCell(3), formatter);
-                String valEmail = layGiaTriChuoi(row.getCell(4), formatter);
-                String valCongTy = layGiaTriChuoi(row.getCell(5), formatter);
-                String valMucDo = layGiaTriChuoi(row.getCell(6), formatter);
-                String valNhuCau = layGiaTriChuoi(row.getCell(7), formatter);
+                // Đọc các ô theo đúng vị trí cột nhận diện được từ tiêu đề
+                String valHoTen = colHoTen >= 0 ? layGiaTriChuoi(row.getCell(colHoTen), formatter) : "";
+                String valNguon = colNguon >= 0 ? layGiaTriChuoi(row.getCell(colNguon), formatter) : "";
+                String valSdt = colSdt >= 0 ? layGiaTriChuoi(row.getCell(colSdt), formatter) : "";
+                String valEmail = colEmail >= 0 ? layGiaTriChuoi(row.getCell(colEmail), formatter) : "";
+                String valCongTy = colCongTy >= 0 ? layGiaTriChuoi(row.getCell(colCongTy), formatter) : "";
+                String valMucDo = colMucDo >= 0 ? layGiaTriChuoi(row.getCell(colMucDo), formatter) : "";
+                String valNhuCau = colNhuCau >= 0 ? layGiaTriChuoi(row.getCell(colNhuCau), formatter) : "";
 
                 // Nếu tất cả các ô trong dòng đều rỗng -> bỏ qua dòng trống
                 if (valHoTen.isEmpty() && valNguon.isEmpty() && valSdt.isEmpty() &&
@@ -290,71 +372,65 @@ public class ExcelLeadUtil {
 
     /**
      * Tìm ID nguồn lead khớp với tên hoặc mã được ghi trong tệp Excel.
+     * Chỉ chấp nhận nguồn thực tế tồn tại và kích hoạt trong CSDL (dsNguonLead).
+     * Tuyệt đối không fallback sang ID giả định.
      */
     public static Long timIdNguonLead(String tenNguon, List<MucDanhMucDTO> dsNguonLead) {
-        if (tenNguon == null || tenNguon.trim().isEmpty()) {
+        if (tenNguon == null || tenNguon.trim().isEmpty() || dsNguonLead == null || dsNguonLead.isEmpty()) {
             return null;
         }
 
-        String search = tenNguon.trim().toLowerCase();
+        String search = tenNguon.trim();
 
-        // 1. Thử đối chiếu trực tiếp với danh sách cấu hình từ CSDL
-        if (dsNguonLead != null && !dsNguonLead.isEmpty()) {
-            // Khớp theo ID nếu người dùng điền số ID
-            try {
-                long idNum = Long.parseLong(search);
-                for (MucDanhMucDTO dm : dsNguonLead) {
-                    if (dm.getId() != null && dm.getId() == idNum) {
+        // 1. Đối chiếu theo ID số nếu người dùng điền trực tiếp ID nguồn
+        try {
+            long idNum = Long.parseLong(search);
+            for (MucDanhMucDTO dm : dsNguonLead) {
+                if (dm != null && dm.getId() != null && dm.getId() == idNum && dm.isKichHoat()) {
+                    return dm.getId();
+                }
+            }
+        } catch (NumberFormatException ignored) {
+        }
+
+        // 2. Khớp chính xác tên mục hoặc mã mục (không phân biệt hoa/thường)
+        for (MucDanhMucDTO dm : dsNguonLead) {
+            if (dm == null || !dm.isKichHoat() || dm.getId() == null) {
+                continue;
+            }
+            if (dm.getTenMuc() != null && dm.getTenMuc().trim().equalsIgnoreCase(search)) {
+                return dm.getId();
+            }
+            if (dm.getMaMuc() != null && dm.getMaMuc().trim().equalsIgnoreCase(search)) {
+                return dm.getId();
+            }
+        }
+
+        // 3. Khớp chuẩn hóa đối với tên có dấu gạch chéo '/' (ví dụ: "Website / Biểu mẫu")
+        String searchNorm = search.toLowerCase();
+        for (MucDanhMucDTO dm : dsNguonLead) {
+            if (dm == null || !dm.isKichHoat() || dm.getId() == null) {
+                continue;
+            }
+            String tenNorm = dm.getTenMuc() != null ? dm.getTenMuc().trim().toLowerCase() : "";
+            if (tenNorm.isEmpty()) continue;
+
+            if (tenNorm.contains("/")) {
+                String[] parts = tenNorm.split("/");
+                for (String part : parts) {
+                    if (part.trim().equalsIgnoreCase(searchNorm)) {
                         return dm.getId();
                     }
                 }
-            } catch (NumberFormatException ignored) {
             }
-
-            // Khớp chính xác tên mục hoặc mã mục
-            for (MucDanhMucDTO dm : dsNguonLead) {
-                if (dm.getTenMuc() != null && dm.getTenMuc().trim().equalsIgnoreCase(tenNguon.trim())) {
-                    return dm.getId();
-                }
-                if (dm.getMaMuc() != null && dm.getMaMuc().trim().equalsIgnoreCase(tenNguon.trim())) {
-                    return dm.getId();
+            if (searchNorm.contains("/")) {
+                String[] parts = searchNorm.split("/");
+                for (String part : parts) {
+                    if (part.trim().equalsIgnoreCase(tenNorm)) {
+                        return dm.getId();
+                    }
                 }
             }
-
-            // Khớp gần đúng (chứa từ khóa)
-            for (MucDanhMucDTO dm : dsNguonLead) {
-                String tenLower = dm.getTenMuc() != null ? dm.getTenMuc().toLowerCase() : "";
-                if (!tenLower.isEmpty() && (tenLower.contains(search) || search.contains(tenLower))) {
-                    return dm.getId();
-                }
-            }
-        }
-
-        // 2. Fallback nhận diện theo các nguồn chuẩn của hệ thống CRM
-        if (search.contains("sự kiện") || search.contains("su kien") || search.contains("hội thảo") || search.contains("hoi thao") || search.contains("event")) {
-            return 1L;
-        }
-        if (search.contains("danh thiếp") || search.contains("danh thiep") || search.contains("namecard") || search.contains("card")) {
-            return 2L;
-        }
-        if (search.contains("giới thiệu") || search.contains("gioi thieu") || search.contains("referral")) {
-            return 3L;
-        }
-        if (search.contains("website") || search.contains("web") || search.contains("biểu mẫu") || search.contains("bieu mau") || search.contains("form")) {
-            return 4L;
-        }
-        if (search.contains("điện thoại") || search.contains("dien thoai") || search.contains("gọi") || search.contains("call")) {
-            return 5L;
-        }
-        if (search.contains("khác") || search.contains("khac") || search.contains("other")) {
-            return 6L;
-        }
-
-        // Nếu danh sách từ CSDL rỗng và người dùng nhập ID hợp lệ
-        try {
-            long id = Long.parseLong(search);
-            if (id > 0) return id;
-        } catch (NumberFormatException ignored) {
         }
 
         return null;

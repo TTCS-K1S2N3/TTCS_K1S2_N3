@@ -19,6 +19,7 @@
     function initDropzone() {
         const dropzone = document.getElementById('dropzoneExcel');
         const fileInput = document.getElementById('fileExcel');
+        const prompt = document.getElementById('dropzonePrompt');
         const fileInfo = document.getElementById('selectedFileInfo');
         const fileNameSpan = document.getElementById('selectedFileName');
         const fileSizeSpan = document.getElementById('selectedFileSize');
@@ -27,7 +28,12 @@
 
         if (!dropzone || !fileInput) return;
 
-        // Click vào dropzone để mở dialog chọn file
+        // Ban đầu chưa có file: disable nút xem trước
+        if (btnSubmitPreview && (!fileInput.files || fileInput.files.length === 0)) {
+            btnSubmitPreview.disabled = true;
+        }
+
+        // Click vào dropzone để mở dialog chọn file (ngoại trừ click nút xóa)
         dropzone.addEventListener('click', function (e) {
             if (e.target.closest('#btnClearFile')) return;
             fileInput.click();
@@ -35,6 +41,7 @@
 
         // Hỗ trợ phím Enter/Space khi focus vào dropzone
         dropzone.addEventListener('keydown', function (e) {
+            if (e.target.closest('#btnClearFile')) return;
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 fileInput.click();
@@ -60,39 +67,60 @@
 
         dropzone.addEventListener('drop', function (e) {
             const dt = e.dataTransfer;
-            const files = dt.files;
+            const files = dt && dt.files;
             if (files && files.length > 0) {
-                handleFileSelect(files[0]);
+                const file = files[0];
+                if (!validateFile(file)) {
+                    fileInput.value = '';
+                    return;
+                }
+
+                // Gán đúng tệp kéo thả vào fileInput để form submit gửi được lên backend
+                try {
+                    fileInput.files = files;
+                } catch (err) {
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    fileInput.files = dataTransfer.files;
+                }
+
+                showSelectedFile(file);
             }
         });
 
         fileInput.addEventListener('change', function () {
             if (fileInput.files && fileInput.files.length > 0) {
-                handleFileSelect(fileInput.files[0]);
+                const file = fileInput.files[0];
+                if (!validateFile(file)) {
+                    fileInput.value = '';
+                    return;
+                }
+                showSelectedFile(file);
             }
         });
 
-        function handleFileSelect(file) {
-            // Kiểm tra phần mở rộng file
+        function validateFile(file) {
+            // Kiểm tra phần mở rộng file (.xlsx hoặc .xls)
             const fileName = file.name;
             const ext = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
             if (ext !== '.xlsx' && ext !== '.xls') {
                 alert('Vui lòng chọn tệp định dạng Excel (.xlsx hoặc .xls).');
-                fileInput.value = '';
-                return;
+                return false;
             }
 
             // Kiểm tra dung lượng (10MB)
             const MAX_SIZE = 10 * 1024 * 1024;
             if (file.size > MAX_SIZE) {
                 alert('Dung lượng tệp vượt quá 10MB cho phép. Vui lòng kiểm tra lại.');
-                fileInput.value = '';
-                return;
+                return false;
             }
+            return true;
+        }
 
-            // Hiển thị thông tin file đã chọn
-            if (fileNameSpan) fileNameSpan.textContent = fileName;
+        function showSelectedFile(file) {
+            if (fileNameSpan) fileNameSpan.textContent = file.name;
             if (fileSizeSpan) fileSizeSpan.textContent = '(' + formatFileSize(file.size) + ')';
+            if (prompt) prompt.style.display = 'none';
             if (fileInfo) fileInfo.style.display = 'flex';
             if (btnSubmitPreview) btnSubmitPreview.disabled = false;
         }
@@ -102,6 +130,7 @@
                 e.stopPropagation();
                 fileInput.value = '';
                 if (fileInfo) fileInfo.style.display = 'none';
+                if (prompt) prompt.style.display = 'block';
                 if (fileNameSpan) fileNameSpan.textContent = '';
                 if (fileSizeSpan) fileSizeSpan.textContent = '';
                 if (btnSubmitPreview) btnSubmitPreview.disabled = true;

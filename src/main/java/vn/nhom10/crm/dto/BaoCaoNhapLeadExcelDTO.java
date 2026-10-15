@@ -17,12 +17,17 @@ public class BaoCaoNhapLeadExcelDTO implements Serializable {
     private int tongSoDong = 0;
     private int soDongHopLe = 0;
     private int soDongLoi = 0;
+    private int soDongHopLeXemTruoc = 0;
+    private int soDongLoiXemTruoc = 0;
     private int soDongThanhCong = 0;
     private int soDongThatBai = 0;
+    private int soDongLoiLuuDb = 0;
 
     private List<DongExcelLeadDTO> danhSachTatCaDong = new ArrayList<>();
     private List<DongExcelLeadDTO> danhSachDongHopLe = new ArrayList<>();
     private List<DongExcelLeadDTO> danhSachDongLoi = new ArrayList<>();
+    private List<DongExcelLeadDTO> danhSachDongThanhCong = new ArrayList<>();
+    private List<DongExcelLeadDTO> danhSachDongLoiLuuDb = new ArrayList<>();
 
     private String thongDiep;
     private boolean daThucHienNhap = false;
@@ -36,12 +41,14 @@ public class BaoCaoNhapLeadExcelDTO implements Serializable {
     }
 
     /**
-     * Nạp danh sách các dòng đọc được từ Excel và tự động phân loại, tính toán thống kê.
+     * Nạp danh sách các dòng đọc được từ Excel và tự động phân loại, tính toán thống kê xem trước.
      */
     public void napDanhSachDong(List<DongExcelLeadDTO> danhSach) {
         this.danhSachTatCaDong = (danhSach != null) ? danhSach : new ArrayList<>();
         this.danhSachDongHopLe.clear();
         this.danhSachDongLoi.clear();
+        this.danhSachDongThanhCong.clear();
+        this.danhSachDongLoiLuuDb.clear();
 
         this.tongSoDong = this.danhSachTatCaDong.size();
         for (DongExcelLeadDTO dong : this.danhSachTatCaDong) {
@@ -51,21 +58,74 @@ public class BaoCaoNhapLeadExcelDTO implements Serializable {
                 this.danhSachDongLoi.add(dong);
             }
         }
-        this.soDongHopLe = this.danhSachDongHopLe.size();
-        this.soDongLoi = this.danhSachDongLoi.size();
+        this.soDongHopLeXemTruoc = this.danhSachDongHopLe.size();
+        this.soDongLoiXemTruoc = this.danhSachDongLoi.size();
+        this.soDongHopLe = this.soDongHopLeXemTruoc;
+        this.soDongLoi = this.soDongLoiXemTruoc;
     }
 
     /**
-     * Cập nhật kết quả sau khi thực hiện ghi vào cơ sở dữ liệu cho một dòng.
+     * Khởi tạo bộ đếm và danh sách cho tiến trình ghi dữ liệu thực tế.
+     */
+    public void khoiTaoTienTrinhNhap() {
+        this.danhSachDongThanhCong.clear();
+        this.danhSachDongLoiLuuDb.clear();
+        this.soDongThanhCong = 0;
+        this.soDongLoiLuuDb = 0;
+    }
+
+    /**
+     * Ghi nhận một dòng lưu thành công vào cơ sở dữ liệu.
+     */
+    public void ghiNhanThanhCong(DongExcelLeadDTO dong) {
+        if (dong == null) return;
+        dong.setThanhCong(true);
+        dong.setDaNhap(true);
+        if (!this.danhSachDongThanhCong.contains(dong)) {
+            this.danhSachDongThanhCong.add(dong);
+        }
+        this.soDongThanhCong = this.danhSachDongThanhCong.size();
+    }
+
+    /**
+     * Ghi nhận một dòng hợp lệ lúc xem trước nhưng thất bại khi lưu MySQL.
+     * Không tính trùng nếu đã có trong danh sách lỗi.
+     */
+    public void ghiNhanLoiLuuDb(DongExcelLeadDTO dong) {
+        if (dong == null) return;
+        dong.setThanhCong(false);
+        dong.setDaNhap(false);
+        this.danhSachDongHopLe.remove(dong);
+        if (!this.danhSachDongLoiLuuDb.contains(dong)) {
+            this.danhSachDongLoiLuuDb.add(dong);
+        }
+        if (!this.danhSachDongLoi.contains(dong)) {
+            this.danhSachDongLoi.add(dong);
+        }
+        this.soDongLoiLuuDb = this.danhSachDongLoiLuuDb.size();
+    }
+
+    /**
+     * Hoàn tất tiến trình nhập và đồng bộ các chỉ số thống kê thực tế.
+     */
+    public void hoanTatTienTrinhNhap() {
+        this.soDongThanhCong = this.danhSachDongThanhCong.size();
+        this.soDongLoiLuuDb = this.danhSachDongLoiLuuDb.size();
+        this.soDongThatBai = this.danhSachDongLoi.size();
+        this.soDongLoi = this.soDongThatBai;
+        this.soDongHopLe = this.soDongThanhCong;
+    }
+
+    /**
+     * Cập nhật kết quả sau khi thực hiện ghi vào cơ sở dữ liệu cho một dòng (tương thích ngược).
      */
     public void capNhatKetQuaNhap(DongExcelLeadDTO dong, boolean thanhCong) {
-        dong.setDaNhap(true);
-        dong.setThanhCong(thanhCong);
         if (thanhCong) {
-            this.soDongThanhCong++;
+            ghiNhanThanhCong(dong);
         } else {
-            this.soDongThatBai++;
+            ghiNhanLoiLuuDb(dong);
         }
+        hoanTatTienTrinhNhap();
     }
 
     public String getTenTep() {
@@ -100,6 +160,22 @@ public class BaoCaoNhapLeadExcelDTO implements Serializable {
         this.soDongLoi = soDongLoi;
     }
 
+    public int getSoDongHopLeXemTruoc() {
+        return soDongHopLeXemTruoc;
+    }
+
+    public void setSoDongHopLeXemTruoc(int soDongHopLeXemTruoc) {
+        this.soDongHopLeXemTruoc = soDongHopLeXemTruoc;
+    }
+
+    public int getSoDongLoiXemTruoc() {
+        return soDongLoiXemTruoc;
+    }
+
+    public void setSoDongLoiXemTruoc(int soDongLoiXemTruoc) {
+        this.soDongLoiXemTruoc = soDongLoiXemTruoc;
+    }
+
     public int getSoDongThanhCong() {
         return soDongThanhCong;
     }
@@ -116,6 +192,14 @@ public class BaoCaoNhapLeadExcelDTO implements Serializable {
         this.soDongThatBai = soDongThatBai;
     }
 
+    public int getSoDongLoiLuuDb() {
+        return soDongLoiLuuDb;
+    }
+
+    public void setSoDongLoiLuuDb(int soDongLoiLuuDb) {
+        this.soDongLoiLuuDb = soDongLoiLuuDb;
+    }
+
     public List<DongExcelLeadDTO> getDanhSachTatCaDong() {
         return danhSachTatCaDong;
     }
@@ -130,6 +214,14 @@ public class BaoCaoNhapLeadExcelDTO implements Serializable {
 
     public List<DongExcelLeadDTO> getDanhSachDongLoi() {
         return danhSachDongLoi;
+    }
+
+    public List<DongExcelLeadDTO> getDanhSachDongThanhCong() {
+        return danhSachDongThanhCong;
+    }
+
+    public List<DongExcelLeadDTO> getDanhSachDongLoiLuuDb() {
+        return danhSachDongLoiLuuDb;
     }
 
     public String getThongDiep() {

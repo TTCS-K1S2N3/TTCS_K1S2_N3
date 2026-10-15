@@ -147,10 +147,10 @@ public class LeadImportServlet extends HttpServlet {
     }
 
     /**
-     * Tải tệp mẫu Excel chuẩn (.xlsx) có sẵn hướng dẫn và dữ liệu mẫu.
+     * Tải tệp mẫu Excel chuẩn (.xlsx) có sẵn hướng dẫn và dữ liệu mẫu lấy từ CSDL thực tế.
      */
     private void xuLyTaiTepMau(HttpServletResponse response) throws IOException {
-        byte[] fileBytes = ExcelLeadUtil.taoTepMauExcel();
+        byte[] fileBytes = importService.taoTepMauExcel();
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setContentLength(fileBytes.length);
@@ -201,9 +201,12 @@ public class LeadImportServlet extends HttpServlet {
             request.setAttribute("baoCao", baoCao);
             request.setAttribute("cheDo", "xem-truoc");
             request.setAttribute("tenTep", fileName);
+        } catch (IllegalArgumentException e) {
+            LOGGER.log(Level.WARNING, "Tệp Excel không đúng mẫu hoặc cấu trúc: " + e.getMessage());
+            request.setAttribute("thongBaoLoi", e.getMessage());
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Lỗi khi xử lý tệp Excel lead: " + e.getMessage(), e);
-            request.setAttribute("thongBaoLoi", "Không thể phân tích tệp Excel. Chi tiết: " + e.getMessage());
+            request.setAttribute("thongBaoLoi", "Không thể phân tích tệp Excel. Vui lòng kiểm tra lại định dạng tệp.");
         }
 
         request.getRequestDispatcher("/WEB-INF/views/lead/import-excel.jsp").forward(request, response);

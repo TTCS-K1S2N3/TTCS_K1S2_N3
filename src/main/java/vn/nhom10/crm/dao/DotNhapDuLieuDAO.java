@@ -150,13 +150,23 @@ public class DotNhapDuLieuDAO {
                 }
             }
 
-            // Lưu các dòng lỗi vào loi_nhap_du_lieu
+            // Lưu các dòng lỗi vào loi_nhap_du_lieu (bao gồm cả lỗi validation và lỗi lưu MySQL)
             if (baoCao.getDanhSachDongLoi() != null && !baoCao.getDanhSachDongLoi().isEmpty()) {
                 try (PreparedStatement psLoi = conn.prepareStatement(sqlLoi)) {
                     for (DongExcelLeadDTO dong : baoCao.getDanhSachDongLoi()) {
                         psLoi.setLong(1, dotNhapId);
                         psLoi.setInt(2, dong.getSoDong());
-                        psLoi.setString(3, dong.getChuoiLoi());
+                        String loiMsg = dong.getChuoiLoi();
+                        if (loiMsg == null || loiMsg.isBlank()) {
+                            loiMsg = dong.getGhiChuKetQua();
+                        }
+                        if (loiMsg == null || loiMsg.isBlank()) {
+                            loiMsg = "Dữ liệu dòng không hợp lệ hoặc lưu vào cơ sở dữ liệu thất bại.";
+                        }
+                        if (loiMsg.length() > 950) {
+                            loiMsg = loiMsg.substring(0, 950) + "...";
+                        }
+                        psLoi.setString(3, loiMsg);
                         psLoi.addBatch();
                     }
                     psLoi.executeBatch();

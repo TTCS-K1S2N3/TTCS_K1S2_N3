@@ -17,6 +17,7 @@ import vn.nhom10.crm.model.VaiTro;
 import vn.nhom10.crm.model.VaiTroEnum;
 import vn.nhom10.crm.service.LeadImportService;
 import vn.nhom10.crm.service.PermissionService;
+import vn.nhom10.crm.util.ExcelLeadUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -76,6 +77,7 @@ class LeadImportServletTest {
     void testTaiTepMauExcel() throws Exception {
         when(session.getAttribute("nguoiDung")).thenReturn(userMarketing);
         when(request.getServletPath()).thenReturn("/lead/tai-tep-mau");
+        when(importService.taoTepMauExcel()).thenReturn(ExcelLeadUtil.taoTepMauExcel());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ServletOutputStream sos = new ServletOutputStream() {
