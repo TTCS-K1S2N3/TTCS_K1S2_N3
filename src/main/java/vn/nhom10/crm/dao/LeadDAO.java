@@ -151,6 +151,57 @@ public class LeadDAO {
     }
 
     /**
+     * AC2: Lấy danh sách Lead theo chiến dịch sinh ra chúng.
+     */
+    public List<Lead> layDanhSachTheoChienDich(Long chienDichId, int limit) {
+        List<Lead> danhSach = new ArrayList<>();
+        if (chienDichId == null) return danhSach;
+
+        String sql = "SELECT " + COT_SELECT_LEAD + FROM_JOIN_LEAD +
+                "WHERE l.chien_dich_id = ? ORDER BY l.created_at DESC LIMIT ?";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, chienDichId);
+            ps.setInt(2, limit > 0 ? limit : 50);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    danhSach.add(mapResultSetSangLead(rs));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi lấy danh sách Lead theo chiến dịch: " + chienDichId, e);
+        }
+        return danhSach;
+    }
+
+    /**
+     * AC2: Cập nhật liên kết chiến dịch cho Lead.
+     */
+    public boolean capNhatChienDich(Long leadId, Long chienDichId) {
+        if (leadId == null) return false;
+        String sql = "UPDATE `lead` SET chien_dich_id = ?, updated_at = NOW() WHERE id = ?";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            if (chienDichId != null) {
+                ps.setLong(1, chienDichId);
+            } else {
+                ps.setNull(1, Types.BIGINT);
+            }
+            ps.setLong(2, leadId);
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi cập nhật chiến dịch cho Lead: " + leadId, e);
+        }
+        return false;
+    }
+
+    /**
      * Lấy danh sách Lead tổng quan.
      */
     public List<Lead> layDanhSach(int limit, int offset) {

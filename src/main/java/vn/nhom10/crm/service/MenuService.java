@@ -136,8 +136,8 @@ public class MenuService {
             return true;
         }
 
-        // Module LEAD: Quản lý biểu mẫu lead
-        if (urlPath.startsWith("/bieu-mau")) {
+        // Module LEAD: Quản lý biểu mẫu lead và Chiến dịch marketing (Story S4-03)
+        if (urlPath.startsWith("/bieu-mau") || urlPath.startsWith("/marketing/campaign") || urlPath.startsWith("/chien-dich")) {
             return kiemTraQuyenTruyCap(nguoiDung, ModuleHeThong.LEAD);
         }
         ModuleHeThong module = ModuleHeThong.tuDuongDan(urlPath);
@@ -169,6 +169,8 @@ public class MenuService {
                             || currentUri.startsWith(mod.getDuongDanUrl() + "/")
                             || (mod == ModuleHeThong.LEAD && (
                                     currentUri.startsWith("/bieu-mau")
+                                    || currentUri.startsWith("/marketing/campaign")
+                                    || currentUri.startsWith("/chien-dich")
                                ))
                             || (mod == ModuleHeThong.KHACH_HANG && (
                                     currentUri.startsWith("/yeu-cau-ho-tro")
