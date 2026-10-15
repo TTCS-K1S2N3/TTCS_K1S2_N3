@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 public class QuyTacPhanBoService {
 
     private static final Logger LOGGER = Logger.getLogger(QuyTacPhanBoService.class.getName());
+    private static final java.util.concurrent.atomic.AtomicLong COUNTER = new java.util.concurrent.atomic.AtomicLong(System.currentTimeMillis() % 10000);
 
     private final QuyTacPhanBoLeadDAO quyTacDAO;
     private final LichSuPhanBoLeadDAO lichSuDAO;
@@ -78,7 +79,7 @@ public class QuyTacPhanBoService {
         validateRequest(req);
 
         QuyTacPhanBoLead qt = new QuyTacPhanBoLead();
-        qt.setMaQuyTac("QT_" + System.currentTimeMillis());
+        qt.setMaQuyTac("QT_" + System.currentTimeMillis() + "_" + COUNTER.incrementAndGet());
         qt.setTenQuyTac(req.getTenQuyTac().trim());
 
         KieuPhanBoEnum kieu = KieuPhanBoEnum.tuChuoi(req.getKieuPhanBo());
