@@ -116,6 +116,42 @@ class QuyTacPhanBoServletTest {
     }
 
     @Test
+    @DisplayName("Quản trị viên ADMIN truy cập -> Hiển thị trang cấu hình quy tắc (200 OK)")
+    void testAdminTruyCapThanhCong() throws Exception {
+        NguoiDung userAdmin = new NguoiDung();
+        userAdmin.setId(99L);
+        userAdmin.setHoTen("Quản trị viên");
+        userAdmin.themVaiTro(VaiTroEnum.ADMIN);
+
+        when(session.getAttribute("nguoiDung")).thenReturn(userAdmin);
+        when(request.getServletPath()).thenReturn("/admin/lead/phan-bo");
+
+        servlet.doGet(request, response);
+
+        verify(service, atLeastOnce()).layDanhSachQuyTac(false);
+        verify(request).getRequestDispatcher("/WEB-INF/views/lead/quy-tac-phan-bo.jsp");
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("Trưởng nhóm TEAM_LEAD truy cập quy tắc phân bổ -> Bị chặn 403 Forbidden")
+    void testTeamLeadKhongCoQuyen() throws Exception {
+        NguoiDung userTeamLead = new NguoiDung();
+        userTeamLead.setId(10L);
+        userTeamLead.setHoTen("Trưởng nhóm KD");
+        userTeamLead.themVaiTro(VaiTroEnum.TEAM_LEAD);
+
+        when(session.getAttribute("nguoiDung")).thenReturn(userTeamLead);
+        when(request.getServletPath()).thenReturn("/admin/lead/phan-bo");
+
+        servlet.doGet(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+        verify(request).getRequestDispatcher("/WEB-INF/views/common/403.jsp");
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
     @DisplayName("Tạo mới quy tắc phân bổ thành công qua form submit")
     void testTaoMoiQuyTacThanhCong() throws Exception {
         when(session.getAttribute("nguoiDung")).thenReturn(userDirector);

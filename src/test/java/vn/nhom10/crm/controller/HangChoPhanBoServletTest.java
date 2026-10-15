@@ -98,6 +98,42 @@ class HangChoPhanBoServletTest {
     }
 
     @Test
+    @DisplayName("Giám đốc kinh doanh truy cập hàng chờ -> Thành công (200 OK)")
+    void testDirectorTruyCapHangCho() throws Exception {
+        NguoiDung director = new NguoiDung();
+        director.setId(30L);
+        director.setHoTen("Giám đốc KD");
+        director.themVaiTro(VaiTroEnum.DIRECTOR);
+
+        when(session.getAttribute("nguoiDung")).thenReturn(director);
+        when(request.getServletPath()).thenReturn("/lead/hang-cho-phan-bo");
+
+        servlet.doGet(request, response);
+
+        verify(service).layDanhSachHangCho(anyInt(), anyInt());
+        verify(request).getRequestDispatcher("/WEB-INF/views/lead/hang-cho-phan-bo.jsp");
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("Quản trị viên truy cập hàng chờ -> Thành công (200 OK)")
+    void testAdminTruyCapHangCho() throws Exception {
+        NguoiDung admin = new NguoiDung();
+        admin.setId(1L);
+        admin.setHoTen("Admin");
+        admin.themVaiTro(VaiTroEnum.ADMIN);
+
+        when(session.getAttribute("nguoiDung")).thenReturn(admin);
+        when(request.getServletPath()).thenReturn("/lead/hang-cho-phan-bo");
+
+        servlet.doGet(request, response);
+
+        verify(service).layDanhSachHangCho(anyInt(), anyInt());
+        verify(request).getRequestDispatcher("/WEB-INF/views/lead/hang-cho-phan-bo.jsp");
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
     @DisplayName("Trưởng nhóm phân tay thành công cho nhân viên trong nhóm")
     void testPhanTayThanhCong() throws Exception {
         when(session.getAttribute("nguoiDung")).thenReturn(userTeamLead);

@@ -33,7 +33,7 @@
                 <div class="pb-breadcrumb-links">
                     <a href="${pageContext.request.contextPath}/dieu-huong">Trang chủ</a>
                     <span class="sep">/</span>
-                    <a href="${pageContext.request.contextPath}/admin/lead/phan-bo">Lead & Phân bổ</a>
+                    <a href="${pageContext.request.contextPath}/lead">Lead & Phân bổ</a>
                     <span class="sep">/</span>
                     <span class="current">Hàng chờ phân bổ (AC3)</span>
                 </div>
