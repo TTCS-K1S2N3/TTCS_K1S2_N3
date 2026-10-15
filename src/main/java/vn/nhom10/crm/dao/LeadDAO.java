@@ -1,6 +1,9 @@
 package vn.nhom10.crm.dao;
 
+import vn.nhom10.crm.dto.BoLocLeadDTO;
 import vn.nhom10.crm.model.Lead;
+import vn.nhom10.crm.model.NguoiDung;
+import vn.nhom10.crm.model.PhamViDuLieu;
 import vn.nhom10.crm.model.TrangThaiLeadEnum;
 import vn.nhom10.crm.util.DatabaseConnection;
 
@@ -362,5 +365,160 @@ public class LeadDAO {
         if (updated != null) lead.setUpdatedAt(updated.toLocalDateTime());
 
         return lead;
+    }
+
+    /**
+     * Tìm kiếm và lọc danh sách Lead theo 5 nhóm tiêu chí và Data Scope (Story S4-09, AC1, AC2).
+     * Mặc định sắp xếp: Lead quá SLA lên trước, sau đó ngày tạo mới nhất (qua_sla DESC, created_at DESC, id DESC).
+     */
+    public List<Lead> layDanhSachLead(BoLocLeadDTO boLoc, NguoiDung user, PhamViDuLieu phamVi, int limit, int offset) {
+        List<Lead> danhSach = new ArrayList<>();
+        List<Object> thamSo = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT " + COT_SELECT_LEAD + FROM_JOIN_LEAD + "WHERE 1=1 ");
+
+        apDungDieuKienLocLead(sql, thamSo, boLoc, user, phamVi);
+
+        // Baseline Q5: Ưu tiên Lead quá SLA lên trước, sau đó ngày tạo mới nhất, cuối cùng ID giảm dần
+        sql.append(" ORDER BY l.qua_sla DESC, l.created_at DESC, l.id DESC");
+
+        if (limit > 0) {
+            sql.append(" LIMIT ? OFFSET ?");
+            thamSo.add(limit);
+            thamSo.add(Math.max(0, offset));
+        }
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < thamSo.size(); i++) {
+                ps.setObject(i + 1, thamSo.get(i));
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    danhSach.add(mapResultSetSangLead(rs));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi truy vấn danh sách Lead theo bộ lọc: " + e.getMessage(), e);
+        }
+        return danhSach;
+    }
+
+    /**
+     * Đếm tổng số Lead thỏa mãn điều kiện lọc và Data Scope (Story S4-09).
+     */
+    public int demTongSoLead(BoLocLeadDTO boLoc, NguoiDung user, PhamViDuLieu phamVi) {
+        List<Object> thamSo = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT COUNT(l.id) FROM `lead` l WHERE 1=1 ");
+
+        apDungDieuKienLocLead(sql, thamSo, boLoc, user, phamVi);
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < thamSo.size(); i++) {
+                ps.setObject(i + 1, thamSo.get(i));
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi đếm số lượng Lead theo bộ lọc: " + e.getMessage(), e);
+        }
+        return 0;
+    }
+
+    /**
+     * Áp dụng các điều kiện lọc và Data Scope cho truy vấn Lead (AC1 & AC2).
+     */
+    private void apDungDieuKienLocLead(StringBuilder sql, List<Object> thamSo, BoLocLeadDTO boLoc, NguoiDung user, PhamViDuLieu phamVi) {
+        // 1. Phân quyền Data Scope (Server-side Enforcement - Q2)
+        if (user != null) {
+            if (phamVi == null) {
+                phamVi = PhamViDuLieu.CA_NHAN;
+            }
+            if (phamVi == PhamViDuLieu.CA_NHAN) {
+                // Sales Rep chỉ xem Lead do chính mình phụ trách
+                sql.append(" AND l.nguoi_phu_trach_id = ?");
+                thamSo.add(user.getId());
+            } else if (phamVi == PhamViDuLieu.NHOM) {
+                // Team Lead xem Lead thuộc nhóm mình quản lý
+                Long nhomId = user.getNhomKinhDoanhId() != null ? Long.valueOf(user.getNhomKinhDoanhId()) : -1L;
+                sql.append(" AND (l.nhom_phan_bo_id = ? OR l.nguoi_phu_trach_id IN (SELECT id FROM nguoi_dung WHERE nhom_kinh_doanh_id = ?))");
+                thamSo.add(nhomId);
+                thamSo.add(nhomId);
+            }
+            // TOAN_BO (Director / Admin): Không giới hạn theo phạm vi sở hữu
+        }
+
+        if (boLoc == null) {
+            return;
+        }
+
+        // 2. Tiêu chí 1: Trạng thái Lead
+        if (boLoc.getTrangThai() != null && !boLoc.getTrangThai().isBlank()) {
+            sql.append(" AND l.trang_thai = ?");
+            thamSo.add(boLoc.getTrangThai().trim());
+        }
+
+        // 3. Tiêu chí 2: Nguồn Lead
+        if (boLoc.getNguonLeadId() != null && boLoc.getNguonLeadId() > 0) {
+            sql.append(" AND l.nguon_lead_id = ?");
+            thamSo.add(boLoc.getNguonLeadId());
+        }
+
+        // 4. Tiêu chí 3: Phân loại Nóng / Ấm / Lạnh
+        if (boLoc.getPhanLoai() != null && !boLoc.getPhanLoai().isBlank()) {
+            String pl = boLoc.getPhanLoai().trim().toUpperCase();
+            if ("NONG".equals(pl) || "NÓNG".equals(pl)) {
+                sql.append(" AND (UPPER(l.phan_loai) = 'NONG' OR l.phan_loai = 'Nóng')");
+            } else if ("AM".equals(pl) || "ẤM".equals(pl)) {
+                sql.append(" AND (UPPER(l.phan_loai) = 'AM' OR l.phan_loai = 'Ấm')");
+            } else if ("LANH".equals(pl) || "LẠNH".equals(pl)) {
+                sql.append(" AND (UPPER(l.phan_loai) = 'LANH' OR l.phan_loai = 'Lạnh')");
+            } else {
+                sql.append(" AND l.phan_loai = ?");
+                thamSo.add(boLoc.getPhanLoai().trim());
+            }
+        }
+
+        // 5. Tiêu chí 4: Người phụ trách cụ thể (nếu được phép xem toàn bộ/nhóm và chọn lọc)
+        if (boLoc.getNguoiPhuTrachId() != null && boLoc.getNguoiPhuTrachId() > 0) {
+            if (phamVi != PhamViDuLieu.CA_NHAN) {
+                sql.append(" AND l.nguoi_phu_trach_id = ?");
+                thamSo.add(boLoc.getNguoiPhuTrachId());
+            }
+        }
+
+        // 6. Tiêu chí 5: Khoảng thời gian tạo (tuNgay - denNgay, Q1)
+        if (boLoc.getTuNgay() != null && !boLoc.getTuNgay().isBlank()) {
+            try {
+                String tuNgayStr = boLoc.getTuNgay().trim();
+                if (!tuNgayStr.contains(":")) {
+                    tuNgayStr += " 00:00:00";
+                }
+                sql.append(" AND l.created_at >= ?");
+                thamSo.add(Timestamp.valueOf(tuNgayStr));
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Không thể parse tuNgay: " + boLoc.getTuNgay(), e);
+            }
+        }
+
+        if (boLoc.getDenNgay() != null && !boLoc.getDenNgay().isBlank()) {
+            try {
+                String denNgayStr = boLoc.getDenNgay().trim();
+                if (!denNgayStr.contains(":")) {
+                    denNgayStr += " 23:59:59";
+                }
+                sql.append(" AND l.created_at <= ?");
+                thamSo.add(Timestamp.valueOf(denNgayStr));
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Không thể parse denNgay: " + boLoc.getDenNgay(), e);
+            }
+        }
     }
 }
