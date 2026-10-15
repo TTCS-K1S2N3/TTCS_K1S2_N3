@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview Standalone S4-09: Lọc Danh Sách Lead & Bộ Lọc Đã Lưu - MSys CRM</title>
+
+    <!-- Google Fonts & Material Symbols -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <link rel="stylesheet" href="src/main/webapp/assets/css/lead/danh-sach-lead.css">
+
+    <style>
+        body {
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* Mock Topbar Standalone */
+        .mock-topbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .mock-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 18px;
+            color: #2563eb;
+        }
+        .mock-user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13.5px;
+            color: #334155;
+            background: #f1f5f9;
+            padding: 6px 14px;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mock Navigation Topbar -->
+    <header class="mock-topbar">
+        <div class="mock-logo">
+            <span class="material-symbols-outlined" style="font-size: 26px;">dataset</span>
+            <span>MSys CRM Enterprise</span>
+        </div>
+        <div class="mock-user-badge">
+            <span class="material-symbols-outlined" style="color: #2563eb; font-size: 18px;">account_circle</span>
+            <span>Nguyễn Văn An (Sales Rep - W*)</span>
+            <span style="background: #2563eb; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">Story S4-09 FE</span>
+        </div>
+    </header>
+
+    <main class="lead-page-container">
+
+        <!-- 1. Breadcrumb -->
+        <nav class="lead-breadcrumb" aria-label="Breadcrumb">
+            <ul class="lead-breadcrumb-list">
+                <li><a href="#" class="lead-breadcrumb-link">Trang chủ</a></li>
+                <li class="lead-breadcrumb-separator" aria-hidden="true">/</li>
+                <li><a href="#" class="lead-breadcrumb-link">Lead & Phân bổ</a></li>
+                <li class="lead-breadcrumb-separator" aria-hidden="true">/</li>
+                <li class="lead-breadcrumb-active" aria-current="page">Danh sách Lead & Bộ lọc (S4-09)</li>
+            </ul>
+        </nav>
+
+        <!-- 2. Header Banner -->
+        <header class="lead-header-banner">
+            <div class="lead-header-title-wrap">
+                <div class="lead-header-icon-box" aria-hidden="true">
+                    <span class="material-symbols-outlined">filter_alt</span>
+                </div>
+                <div class="lead-header-text">
+                    <h1>Khách Hàng Tiềm Năng (Lead)</h1>
+                    <p>Lọc, theo dõi và quản lý các cơ hội tiếp cận khách hàng theo thời gian thực (Sprint 4)</p>
+                </div>
+            </div>
+            <div class="lead-header-actions">
+                <button class="lead-btn lead-btn-primary" id="btnThemLeadMoi">
+                    <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+                    <span>+ Tạo Lead thủ công</span>
+                </button>
+                <button class="lead-btn lead-btn-outline" id="btnNhapLeadExcel">
+                    <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
+                    <span>Nhập Excel</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 3. Morning KPI Cards (AC2: Sales Rep mở máy buổi sáng biết ngay cần gọi ai) -->
+        <section class="lead-morning-kpis" aria-label="Thống kê nhanh đầu ngày">
+            <!-- Card 1: AC2 - Lead Quá Hạn SLA -->
+            <div class="lead-kpi-card kpi-sla-alert" id="kpiCardSlaAlert" title="Bấm để cuộn nhanh đến các Lead quá hạn phản hồi">
+                <div class="lead-kpi-icon-wrap" aria-hidden="true">
+                    <span class="material-symbols-outlined">alarm_on</span>
+                </div>
+                <div class="lead-kpi-info">
+                    <div class="lead-kpi-value">
+                        <span id="kpiCountSla">2</span>
+                        <span class="lead-sla-pulse-dot" title="Đang có 2 lead quá SLA!"></span>
+                    </div>
+                    <div class="lead-kpi-label">Lead Quá SLA (Cần gọi ngay)</div>
+                </div>
+            </div>
+
+            <!-- Card 2: Phân loại Nóng -->
+            <div class="lead-kpi-card kpi-hot" id="kpiCardNong">
+                <div class="lead-kpi-icon-wrap" aria-hidden="true">
+                    <span class="material-symbols-outlined">local_fire_department</span>
+                </div>
+                <div class="lead-kpi-info">
+                    <div class="lead-kpi-value">
+                        <span id="kpiCountNong">3</span>
+                    </div>
+                    <div class="lead-kpi-label">Lead Nóng (Tiềm năng cao)</div>
+                </div>
+            </div>
+
+            <!-- Card 3: Mới tiếp nhận -->
+            <div class="lead-kpi-card kpi-new" id="kpiCardMoi">
+                <div class="lead-kpi-icon-wrap" aria-hidden="true">
+                    <span class="material-symbols-outlined">fiber_new</span>
+                </div>
+                <div class="lead-kpi-info">
+                    <div class="lead-kpi-value">
+                        <span id="kpiCountMoi">3</span>
+                    </div>
+                    <div class="lead-kpi-label">Mới tiếp nhận (Chưa liên hệ)</div>
+                </div>
+            </div>
+
+            <!-- Card 4: Tổng số Lead -->
+            <div class="lead-kpi-card kpi-total" id="kpiCardTong">
+                <div class="lead-kpi-icon-wrap" aria-hidden="true">
+                    <span class="material-symbols-outlined">groups</span>
+                </div>
+                <div class="lead-kpi-info">
+                    <div class="lead-kpi-value">
+                        <span id="kpiCountTong">5</span>
+                    </div>
+                    <div class="lead-kpi-label">Tổng Lead trong phạm vi</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Saved Filters Bar (AC3: Thanh Bộ Lọc Đã Lưu Sẵn) -->
+        <section class="lead-saved-filters-section" aria-label="Bộ lọc đã lưu sẵn">
+            <div class="lead-saved-filters-left">
+                <span class="lead-saved-filter-label">
+                    <span class="material-symbols-outlined" aria-hidden="true">bookmark</span>
+                    <span>Bộ lọc đã lưu:</span>
+                </span>
+
+                <div class="lead-saved-filter-chips" id="savedFilterChipsWrap">
+                    <button type="button" class="lead-saved-filter-chip is-active" data-filter="all" id="btnFilterAll">
+                        <span class="material-symbols-outlined" aria-hidden="true">list</span>
+                        <span>Tất cả Lead</span>
+                    </button>
+                    <button type="button" class="lead-saved-filter-chip" data-filter="sla-overdue" id="btnFilterSlaOverdue">
+                        <span class="material-symbols-outlined" style="color: #dc2626;" aria-hidden="true">warning</span>
+                        <span>Lead Quá Hạn SLA (AC2)</span>
+                    </button>
+                    <button type="button" class="lead-saved-filter-chip" data-filter="hot-leads" id="btnFilterHot">
+                        <span class="material-symbols-outlined" style="color: #ea580c;" aria-hidden="true">local_fire_department</span>
+                        <span>Khách Hàng Nóng Tuần Này</span>
+                    </button>
+                    <button type="button" class="lead-saved-filter-chip" data-filter="web-leads" id="btnFilterWeb">
+                        <span class="material-symbols-outlined" style="color: #0284c7;" aria-hidden="true">language</span>
+                        <span>Thu Thập Từ Website</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="lead-saved-filters-right">
+                <button type="button" class="lead-btn-save-filter-trigger" id="btnOpenModalLuuBoLoc" title="Lưu lại các tiêu chí lọc đang chọn">
+                    <span class="material-symbols-outlined" aria-hidden="true">bookmark_add</span>
+                    <span>⭐ Lưu bộ lọc hiện tại</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- 5. Form Bộ Lọc 5 Tiêu Chí (AC1: Trạng thái, Nguồn, Phân loại, Người phụ trách, Thời gian) -->
+        <section class="lead-filter-card" aria-label="Bộ lọc tiêu chí Lead">
+            <div class="lead-filter-header">
+                <div class="lead-filter-header-title">
+                    <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+                    <span>Bộ lọc tìm kiếm (AND giữa 5 tiêu chí)</span>
+                    <span class="lead-active-filter-counter" id="activeFilterBadge" style="display: none;">0 đang chọn</span>
+                </div>
+                <div>
+                    <button type="button" class="lead-btn lead-btn-outline lead-btn-sm" id="btnResetFilter" title="Xóa tất cả tiêu chí lọc về mặc định">
+                        <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">restart_alt</span>
+                        <span>Đặt lại</span>
+                    </button>
+                </div>
+            </div>
+
+            <form id="formLocLead" onsubmit="event.preventDefault(); applyInteractiveFilter();">
+                <div class="lead-filter-grid">
+
+                    <!-- Tiêu chí 1: Trạng thái -->
+                    <div class="lead-filter-field">
+                        <label for="filterTrangThai">
+                            <span class="material-symbols-outlined" aria-hidden="true">flag</span>
+                            <span>1. Trạng thái</span>
+                        </label>
+                        <select name="trangThai" id="filterTrangThai" class="lead-select">
+                            <option value="">-- Tất cả trạng thái --</option>
+                            <option value="MOI">Mới tiếp nhận</option>
+                            <option value="DANG_CHAM_SOC">Đang chăm sóc</option>
+                            <option value="DA_CHUYEN_DOI">Đã chuyển đổi</option>
+                            <option value="TU_CHOI">Từ chối</option>
+                            <option value="DA_GOP">Đã gộp trùng</option>
+                        </select>
+                    </div>
+
+                    <!-- Tiêu chí 2: Nguồn Lead -->
+                    <div class="lead-filter-field">
+                        <label for="filterNguonLead">
+                            <span class="material-symbols-outlined" aria-hidden="true">share</span>
+                            <span>2. Nguồn Lead</span>
+                        </label>
+                        <select name="nguonLeadId" id="filterNguonLead" class="lead-select">
+                            <option value="">-- Tất cả nguồn --</option>
+                            <option value="Website">Website / Biểu mẫu nhúng</option>
+                            <option value="Excel">Nhập tệp Excel</option>
+                            <option value="Sự kiện">Sự kiện / Hội thảo</option>
+                            <option value="Facebook Ads">Chiến dịch Facebook</option>
+                            <option value="Giới thiệu">Giới thiệu (Referral)</option>
+                        </select>
+                    </div>
+
+                    <!-- Tiêu chí 3: Phân loại Nóng / Ấm / Lạnh -->
+                    <div class="lead-filter-field">
+                        <label for="filterPhanLoai">
+                            <span class="material-symbols-outlined" aria-hidden="true">thermostat</span>
+                            <span>3. Phân loại</span>
+                        </label>
+                        <select name="phanLoai" id="filterPhanLoai" class="lead-select">
+                            <option value="">-- Tất cả phân loại --</option>
+                            <option value="NONG">🔥 Nóng (Hot)</option>
+                            <option value="AM">☀️ Ấm (Warm)</option>
+                            <option value="LANH">❄️ Lạnh (Cold)</option>
+                        </select>
+                    </div>
+
+                    <!-- Tiêu chí 4: Người phụ trách -->
+                    <div class="lead-filter-field">
+                        <label for="filterNguoiPhuTrach">
+                            <span class="material-symbols-outlined" aria-hidden="true">support_agent</span>
+                            <span>4. Người phụ trách</span>
+                        </label>
+                        <select name="nguoiPhuTrachId" id="filterNguoiPhuTrach" class="lead-select">
+                            <option value="">-- Tất cả trong phạm vi --</option>
+                            <option value="1">Nguyễn Văn An (Chính tôi)</option>
+                            <option value="2">Trần Thị Bình</option>
+                            <option value="3">Lê Hoàng Nam</option>
+                        </select>
+                    </div>
+
+                    <!-- Tiêu chí 5: Khoảng thời gian tạo Lead -->
+                    <div class="lead-filter-field">
+                        <label>
+                            <span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+                            <span>5. Khoảng thời gian tạo</span>
+                        </label>
+                        <div class="lead-date-range-row">
+                            <input type="date" name="tuNgay" id="filterTuNgay" class="lead-input" title="Từ ngày tạo" placeholder="Từ ngày">
+                            <input type="date" name="denNgay" id="filterDenNgay" class="lead-input" title="Đến ngày tạo" placeholder="Đến ngày">
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Bottom Bar -->
+                <div class="lead-filter-actions">
+                    <div class="lead-active-chips-bar" id="activeFilterTagsBar">
+                        <span class="lead-active-chip-title">Điều kiện đang áp dụng:</span>
+                        <span style="font-size: 12px; color: #94a3b8; font-style: italic;" id="tagDefaultScope">Mặc định (Toàn bộ trong phạm vi phân quyền)</span>
+                    </div>
+
+                    <div class="lead-filter-actions-right">
+                        <button type="submit" class="lead-btn lead-btn-primary" id="btnSubmitFilter">
+                            <span class="material-symbols-outlined" aria-hidden="true">filter_alt</span>
+                            <span>Áp dụng lọc</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- 6. Bảng Dữ Liệu Lead & SLA Highlight (AC1, AC2) -->
+        <section class="lead-table-card" aria-label="Bảng dữ liệu Lead">
+            <div class="lead-table-header-meta">
+                <div class="lead-table-count">
+                    Hiển thị <strong id="leadTableCount">5</strong> Lead phù hợp
+                </div>
+                <div style="font-size: 13px; color: var(--lead-text-muted);">
+                    Sắp xếp: <strong>Lead quá SLA lên trước</strong>, ngày tạo mới nhất
+                </div>
+            </div>
+
+            <div class="lead-table-wrap">
+                <table class="lead-table" id="mockLeadTable" aria-label="Danh sách Lead">
+                    <thead>
+                        <tr>
+                            <th style="width: 110px;">Mã Lead</th>
+                            <th>Khách Hàng / Công Ty</th>
+                            <th style="width: 140px;">Thông Tin Liên Hệ</th>
+                            <th style="width: 130px; text-align: center;">Phân Loại (AC1)</th>
+                            <th style="width: 150px;">Nguồn Lead (AC1)</th>
+                            <th style="width: 140px; text-align: center;">Trạng Thái (AC1)</th>
+                            <th style="width: 160px;">Người Phụ Trách</th>
+                            <th style="width: 140px; text-align: center;">Cảnh Báo SLA (AC2)</th>
+                            <th style="width: 140px; text-align: right;">Ngày Tạo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leadTableBody">
+                        <!-- Dòng 1: Quá hạn SLA, Nóng -->
+                        <tr class="row-sla-overdue" data-trangthai="MOI" data-nguon="Website" data-phanloai="NONG" data-nguoiphutrach="1" data-quasla="true">
+                            <td class="lead-code-cell">LEAD-00104</td>
+                            <td>
+                                <div class="lead-name-cell">
+                                    <span class="lead-fullname">Trần Đình Trọng</span>
+                                    <span class="lead-company">Công ty TNHH Giải Pháp Số Alpha</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="lead-contact-info">
+                                    <span><span class="material-symbols-outlined" style="font-size: 13px; vertical-align: -2px;">call</span> 0912 345 678</span>
+                                    <span><span class="material-symbols-outlined" style="font-size: 13px; vertical-align: -2px;">mail</span> trong.td@alpha.vn</span>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="lead-badge lead-badge-hot">
+                                    <span class="material-symbols-outlined">local_fire_department</span>
+                                    <span>Nóng</span>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="lead-badge lead-badge-source">
+                                    <span class="material-symbols-outlined">language</span>
+                                    <span>Website</span>
+                                </span>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="lead-badge lead-badge-status-new">
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">fiber_new</span>
+                                    <span>Mới tiếp nhận</span>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="lead-assignee-cell">
+                                    <div class="lead-avatar-mini">A</div>
+                                    <span style="font-weight: 500; font-size: 13px;">Nguyễn Văn An</span>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="lead-badge lead-badge-sla-danger" title="Quá hạn phản hồi 4 giờ 15 phút!">
+                                    <span class="material-symbols-outlined">warning</span>
+                                    <span>Quá SLA</span>
+                                </span>
+                            </td>
+                            <td style="text-align: right; font-size: 12.5px; color: var(--lead-text-muted);">
+                                Hôm nay 08:15
+                            </td>
+                        </tr>
+
+                        <!-- Dòng 2: Quá hạn SLA, Ấm -->
+                        <tr class="row-sla-overdue" data-trangthai="DANG_CHAM_SOC" data-nguon="Facebook Ads" data-phanloai="AM" data-nguoiphutrach="1" data-quasla="true">
+                            <td class="lead-code-cell">LEAD-00103</td>
+                            <td>
+                                <div class="lead-name-cell">
+                                    <span class="lead-fullname">Phạm Thúy Hằng</span>
+                                    <span class="lead-company">Tập đoàn Bất Động Sản Đại Nam</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="lead-contact-info">
+                                    <span><span class="material-symbols-outlined" style="font-size: 13px; vertical-align: -2px;">call</span> 0988 765 432</span>
+                                    <span><span class="material-symbols-outlined" style="font-size: 13px; vertical-align: -2px;">mail</span> hang.pt@dainam.com</span>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="lead-badge lead-badge-warm">
+                                    <span class="material-symbols-outlined">sunny</span>
+                                    <span>Ấm</span>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="lead-badge lead-badge-source">
+                                    <span class="material-symbols-outlined">campaign</span>
+                                    <span>Facebook Ads</span>
+                                </span>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="lead-badge lead-badge-status-progress">
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">pending</span>
+                                    <span>Đang chăm sóc</span>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="lead-assignee-cell">
+                                    <div class="lead-avatar-mini">A</div>
+                                    <span style="font-weight: 500; font-size: 13px;">Nguyễn Văn An</span>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="lead-badge lead-badge-sla-danger" title="Quá hạn phản hồi 1 giờ 30 phút!">
+                                    <span class="material-symbols-outlined">warning</span>
+                                    <span>Quá SLA</span>
+                                </span>
+                            </td>
+                            <td style="text-align: right; font-size: 12.5px; color: var(--lead-text-muted);">
+                                Hôm qua 16:30
+                            </td>
+                        </tr>
+
+                        <!-- Dòng 3: Đúng hạn SLA, Nóng -->
+                        <tr data-trangthai="MOI" data-nguon="Website" data-phanloai="NONG" data-nguoiphutrach="1" data-quasla="false">
+                            <td class="lead-code-cell">LEAD-00102</td>
+                            <td>
+                                <div class="lead-name-cell">
+                                    <span class="lead-fullname">Vũ Mạnh Cường</span>
+                                    <span class="lead-company">Công ty CP Công Nghệ Sao Mai</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="lead-contact-info">
+                                    <span><span class="material-symbols-outlined" style="font-size: 13px; vertical-align: -2px;">call</span> 0903 112 233</span>
+                                    <span><span class="material-symbols-outlined" style="font-size: 13px; vertical-align: -2px;">mail</span> cuong.vm@saomai.vn</span>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="lead-badge lead-badge-hot">
+                                    <span class="material-symbols-outlined">local_fire_department</span>
+                                    <span>Nóng</span>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="lead-badge lead-badge-source">
+                                    <span class="material-symbols-outlined">language</span>
+                                    <span>Website</span>
+                                </span>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="lead-badge lead-badge-status-new">
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">fiber_new</span>
+                                    <span>Mới tiếp nhận</span>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="lead-assignee-cell">
+                                    <div class="lead-avatar-mini">A</div>
+                                    <span style="font-weight: 500; font-size: 13px;">Nguyễn Văn An</span>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="lead-badge lead-badge-sla-normal">
+                                    <span class="material-symbols-outlined" style="color: #10b981;">check</span>
+                                    <span>Đúng hạn</span>
+                                </span>
+                            </td>
+                            <td style="text-align: right; font-size: 12.5px; color: var(--lead-text-muted);">
+                                Hôm nay 09:00
+                            </td>
+                        </tr>
+
+                        <!-- Dòng 4: Đúng hạn SLA, Lạnh -->
+                        <tr data-trangthai="DA_CHUYEN_DOI" data-nguon="Excel" data-phanloai="LANH" data-nguoiphutrach="2" data-quasla="false">
+                            <td class="lead-code-cell">LEAD-00101</td>
+                            <td>
+                                <div class="lead-name-cell">
+                                    <span class="lead-fullname">Đỗ Thị Bích Ngân</span>
+                                    <span class="lead-company">Chuỗi Bán Lẻ Thời Trang Sun</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="lead-contact-info">
+                                    <span><span class="material-symbols-outlined" style="font-size: 13px; vertical-align: -2px;">call</span> 0977 445 566</span>
+                                    <span><span class="material-symbols-outlined" style="font-size: 13px; vertical-align: -2px;">mail</span> ngan.dtb@sun.vn</span>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="lead-badge lead-badge-cold">
+                                    <span class="material-symbols-outlined">ac_unit</span>
+                                    <span>Lạnh</span>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="lead-badge lead-badge-source">
+                                    <span class="material-symbols-outlined">upload_file</span>
+                                    <span>Excel</span>
+                                </span>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="lead-badge lead-badge-status-converted">
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span>
+                                    <span>Đã chuyển đổi</span>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="lead-assignee-cell">
+                                    <div class="lead-avatar-mini" style="background: #fde68a; color: #92400e;">B</div>
+                                    <span style="font-weight: 500; font-size: 13px;">Trần Thị Bình</span>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="lead-badge lead-badge-sla-normal">
+                                    <span class="material-symbols-outlined" style="color: #10b981;">check</span>
+                                    <span>Đúng hạn</span>
+                                </span>
+                            </td>
+                            <td style="text-align: right; font-size: 12.5px; color: var(--lead-text-muted);">
+                                14/10/2026
+                            </td>
+                        </tr>
+
+                        <!-- Dòng 5: Đúng hạn SLA, Nóng -->
+                        <tr data-trangthai="MOI" data-nguon="Sự kiện" data-phanloai="NONG" data-nguoiphutrach="1" data-quasla="false">
+                            <td class="lead-code-cell">LEAD-00100</td>
+                            <td>
+                                <div class="lead-name-cell">
+                                    <span class="lead-fullname">Hoàng Quốc Bảo</span>
+                                    <span class="lead-company">Công ty Kiến Trúc Xanh</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="lead-contact-info">
+                                    <span><span class="material-symbols-outlined" style="font-size: 13px; vertical-align: -2px;">call</span> 0933 889 900</span>
+                                    <span><span class="material-symbols-outlined" style="font-size: 13px; vertical-align: -2px;">mail</span> bao.hq@greenarch.vn</span>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="lead-badge lead-badge-hot">
+                                    <span class="material-symbols-outlined">local_fire_department</span>
+                                    <span>Nóng</span>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="lead-badge lead-badge-source">
+                                    <span class="material-symbols-outlined">event</span>
+                                    <span>Sự kiện</span>
+                                </span>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="lead-badge lead-badge-status-new">
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">fiber_new</span>
+                                    <span>Mới tiếp nhận</span>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="lead-assignee-cell">
+                                    <div class="lead-avatar-mini">A</div>
+                                    <span style="font-weight: 500; font-size: 13px;">Nguyễn Văn An</span>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="lead-badge lead-badge-sla-normal">
+                                    <span class="material-symbols-outlined" style="color: #10b981;">check</span>
+                                    <span>Đúng hạn</span>
+                                </span>
+                            </td>
+                            <td style="text-align: right; font-size: 12.5px; color: var(--lead-text-muted);">
+                                14/10/2026
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Lưu Bộ Lọc Cá Nhân (AC3) -->
+    <div class="lead-modal-backdrop" id="modalLuuBoLoc" aria-hidden="true" role="dialog" aria-labelledby="modalLuuBoLocTitle">
+        <div class="lead-modal-dialog">
+            <div class="lead-modal-header">
+                <div class="lead-modal-header-title" id="modalLuuBoLocTitle">
+                    <span class="material-symbols-outlined" aria-hidden="true">bookmark_add</span>
+                    <span>Lưu bộ lọc tìm kiếm</span>
+                </div>
+                <button type="button" class="lead-modal-close-btn" id="btnCloseModalLuuBoLoc" aria-label="Đóng hộp thoại">
+                    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                </button>
+            </div>
+
+            <form id="formLuuBoLoc" onsubmit="event.preventDefault(); handleModalSaveFilter();">
+                <div class="lead-modal-body">
+                    <div class="lead-modal-group">
+                        <label for="modalTenBoLoc" class="lead-modal-label">
+                            Tên bộ lọc <span style="color: #ef4444;">*</span>
+                        </label>
+                        <input type="text" name="tenBoLoc" id="modalTenBoLoc" class="lead-input"
+                               placeholder="VD: Lead Nóng chưa gọi sáng nay..."
+                               maxlength="80" required autocomplete="off">
+                        <div class="lead-modal-char-count" id="modalCharCount">0/80 ký tự</div>
+                    </div>
+
+                    <!-- Hiển thị tóm tắt các điều kiện lọc sẽ được lưu -->
+                    <div class="lead-modal-preview-box">
+                        <div class="lead-modal-preview-title">
+                            <span class="material-symbols-outlined" style="font-size: 16px; color: var(--lead-primary);" aria-hidden="true">checklist</span>
+                            <span>Tiêu chí đang áp dụng sẽ được lưu:</span>
+                        </div>
+                        <div class="lead-modal-preview-tags" id="modalFilterPreviewTags">
+                            <!-- Render bằng JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lead-modal-footer">
+                    <button type="button" class="lead-btn lead-btn-outline" id="btnCancelModalLuuBoLoc">Hủy bỏ</button>
+                    <button type="submit" class="lead-btn lead-btn-primary" id="btnSubmitLuuBoLoc">
+                        <span class="material-symbols-outlined" aria-hidden="true">save</span>
+                        <span>Lưu bộ lọc</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JS tương tác của màn hình -->
+    <script src="src/main/webapp/assets/js/lead/danh-sach-lead.js"></script>
+
+    <!-- Kịch bản kiểm thử tương tác trên bản Standalone Preview -->
+    <script>
+        function applyInteractiveFilter() {
+            const trangThai = document.getElementById('filterTrangThai').value;
+            const nguon = document.getElementById('filterNguonLead').value;
+            const phanLoai = document.getElementById('filterPhanLoai').value;
+            const nguoiPhuTrach = document.getElementById('filterNguoiPhuTrach').value;
+
+            const rows = document.querySelectorAll('#leadTableBody tr');
+            let matchCount = 0;
+
+            rows.forEach(row => {
+                let show = true;
+                if (trangThai && row.dataset.trangthai !== trangThai) show = false;
+                if (nguon && row.dataset.nguon !== nguon) show = false;
+                if (phanLoai && row.dataset.phanloai !== phanLoai) show = false;
+                if (nguoiPhuTrach && row.dataset.nguoiphutrach !== nguoiPhuTrach) show = false;
+
+                row.style.display = show ? '' : 'none';
+                if (show) matchCount++;
+            });
+
+            document.getElementById('leadTableCount').textContent = matchCount;
+
+            // Cập nhật tag điều kiện đang lọc
+            updateActiveFilterTags();
+        }
+
+        function updateActiveFilterTags() {
+            const tagsBar = document.getElementById('activeFilterTagsBar');
+            const defaultTag = document.getElementById('tagDefaultScope');
+            const countBadge = document.getElementById('activeFilterBadge');
+
+            const fields = [
+                { id: 'filterTrangThai', label: 'Trạng thái' },
+                { id: 'filterNguonLead', label: 'Nguồn' },
+                { id: 'filterPhanLoai', label: 'Phân loại' },
+                { id: 'filterNguoiPhuTrach', label: 'Người phụ trách' }
+            ];
+
+            let activeCount = 0;
+            let tagsHtml = '<span class="lead-active-chip-title">Điều kiện đang áp dụng:</span> ';
+
+            fields.forEach(f => {
+                const el = document.getElementById(f.id);
+                if (el && el.value) {
+                    activeCount++;
+                    const text = el.options[el.selectedIndex].text;
+                    tagsHtml += `<span class="lead-active-tag">${f.label}: <strong>${text}</strong></span> `;
+                }
+            });
+
+            if (activeCount > 0) {
+                tagsBar.innerHTML = tagsHtml;
+                countBadge.style.display = 'inline-block';
+                countBadge.textContent = activeCount + ' đang chọn';
+            } else {
+                tagsBar.innerHTML = '<span class="lead-active-chip-title">Điều kiện đang áp dụng:</span> <span style="font-size: 12px; color: #94a3b8; font-style: italic;">Mặc định (Toàn bộ trong phạm vi phân quyền)</span>';
+                countBadge.style.display = 'none';
+            }
+        }
+
+        // Saved filter chips clicking in mock
+        document.querySelectorAll('.lead-saved-filter-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                document.querySelectorAll('.lead-saved-filter-chip').forEach(c => c.classList.remove('is-active'));
+                this.classList.add('is-active');
+
+                const type = this.dataset.filter;
+                const rows = document.querySelectorAll('#leadTableBody tr');
+                let count = 0;
+
+                rows.forEach(r => {
+                    let show = false;
+                    if (type === 'all') show = true;
+                    else if (type === 'sla-overdue') show = (r.dataset.quasla === 'true');
+                    else if (type === 'hot-leads') show = (r.dataset.phanloai === 'NONG');
+                    else if (type === 'web-leads') show = (r.dataset.nguon === 'Website');
+
+                    r.style.display = show ? '' : 'none';
+                    if (show) count++;
+                });
+
+                document.getElementById('leadTableCount').textContent = count;
+            });
+        });
+
+        // Xử lý lưu bộ lọc trong preview
+        function handleModalSaveFilter() {
+            const ten = document.getElementById('modalTenBoLoc').value.trim();
+            if (!ten) return;
+
+            const wrap = document.getElementById('savedFilterChipsWrap');
+            const newChip = document.createElement('button');
+            newChip.type = 'button';
+            newChip.className = 'lead-saved-filter-chip is-active';
+            newChip.innerHTML = `<span class="material-symbols-outlined" style="color: #2563eb;" aria-hidden="true">bookmark</span><span>${ten}</span>`;
+            wrap.appendChild(newChip);
+
+            document.getElementById('modalLuuBoLoc').classList.remove('is-open');
+            alert('Đã lưu bộ lọc cá nhân "' + ten + '" thành công!');
+        }
+    </script>
+</body>
+</html>
