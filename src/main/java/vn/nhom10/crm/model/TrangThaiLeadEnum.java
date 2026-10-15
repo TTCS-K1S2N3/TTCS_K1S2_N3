@@ -10,6 +10,8 @@ package vn.nhom10.crm.model;
  */
 public enum TrangThaiLeadEnum {
     MOI("MOI", "Mới", "Lead mới thu thập được, chưa tiếp nhận xử lý"),
+    HANG_CHO_PHAN_BO("HANG_CHO_PHAN_BO", "Hàng chờ phân bổ", "Lead chưa khớp quy tắc, chờ trưởng nhóm phân tay"),
+    DA_PHAN_BO("DA_PHAN_BO", "Đã phân bổ", "Đã phân bổ cho nhân viên kinh doanh, chờ tiếp nhận"),
     DANG_CHAM_SOC("DANG_CHAM_SOC", "Đang chăm sóc", "Nhân viên kinh doanh đang chủ động liên hệ"),
     DA_CHUYEN_DOI("DA_CHUYEN_DOI", "Đã chuyển đổi", "Đã chuyển đổi thành hồ sơ khách hàng chính thức"),
     TU_CHOI("TU_CHOI", "Từ chối", "Lead không tiềm năng hoặc từ chối hợp tác"),

@@ -5,7 +5,8 @@ import java.time.LocalDateTime;
 
 /**
  * Model ánh xạ bảng `lich_su_phan_bo_lead` (Schema 001).
- * Ghi nhận lịch sử phân bổ, chuyển giao, nhận lead và từ chối lead (Story S4-07).
+ * Hợp nhất nghiệp vụ của cả Story S4-06 (Phân bổ Lead tự động, hàng chờ, phân bổ thủ công)
+ * và Story S4-07 (Tiếp nhận lead, từ chối lead và kiểm soát SLA).
  */
 public class LichSuPhanBoLead implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -16,16 +17,55 @@ public class LichSuPhanBoLead implements Serializable {
     private Long nguoiDungCuId;
     private Long nguoiDungMoiId;
     private Long nhomId;
-    private String hanhDong; // PHAN_BO, CHUYEN_GIAO, NHAN, TU_CHOI
+    private String hanhDong; // Lưu mã hành động chuẩn trong MySQL VARCHAR(30)
     private String lyDo;
     private Long thucHienBoiId;
     private LocalDateTime createdAt;
 
+    // Joined fields (phục vụ hiển thị chi tiết lịch sử phân bổ)
+    private String tenLead;
+    private String tenQuyTac;
+    private String tenNguoiDungCu;
+    private String tenNguoiDungMoi;
+    private String tenThucHienBoi;
+
     public LichSuPhanBoLead() {
     }
 
+    /**
+     * Constructor phục vụ Story S4-06 (phân bổ tự động theo quy tắc, hàng chờ, hoặc phân bổ thủ công).
+     */
+    public LichSuPhanBoLead(Long leadId, Long quyTacId, Long nguoiDungMoiId, Long nhomId, HanhDongPhanBoEnum hanhDong, String lyDo, Long thucHienBoiId) {
+        this.leadId = leadId;
+        this.quyTacId = quyTacId;
+        this.nguoiDungMoiId = nguoiDungMoiId;
+        this.nhomId = nhomId;
+        this.hanhDong = hanhDong != null ? hanhDong.getMa() : null;
+        this.lyDo = lyDo;
+        this.thucHienBoiId = thucHienBoiId;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    /**
+     * Constructor phục vụ Story S4-07 (tiếp nhận lead 'NHAN', từ chối lead 'TU_CHOI', chuyển giao).
+     */
     public LichSuPhanBoLead(Long leadId, Long nguoiDungCuId, Long nguoiDungMoiId, Long nhomId, String hanhDong, String lyDo, Long thucHienBoiId) {
         this.leadId = leadId;
+        this.nguoiDungCuId = nguoiDungCuId;
+        this.nguoiDungMoiId = nguoiDungMoiId;
+        this.nhomId = nhomId;
+        this.hanhDong = hanhDong;
+        this.lyDo = lyDo;
+        this.thucHienBoiId = thucHienBoiId;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    /**
+     * Constructor đầy đủ tất cả các trường.
+     */
+    public LichSuPhanBoLead(Long leadId, Long quyTacId, Long nguoiDungCuId, Long nguoiDungMoiId, Long nhomId, String hanhDong, String lyDo, Long thucHienBoiId) {
+        this.leadId = leadId;
+        this.quyTacId = quyTacId;
         this.nguoiDungCuId = nguoiDungCuId;
         this.nguoiDungMoiId = nguoiDungMoiId;
         this.nhomId = nhomId;
@@ -91,6 +131,19 @@ public class LichSuPhanBoLead implements Serializable {
         this.hanhDong = hanhDong;
     }
 
+    public void setHanhDong(HanhDongPhanBoEnum hanhDong) {
+        this.hanhDong = hanhDong != null ? hanhDong.getMa() : null;
+    }
+
+    public HanhDongPhanBoEnum getHanhDongEnum() {
+        return HanhDongPhanBoEnum.tuChuoi(this.hanhDong);
+    }
+
+    public String getTenHanhDongHienThi() {
+        HanhDongPhanBoEnum en = getHanhDongEnum();
+        return en != null ? en.getTenHienThi() : this.hanhDong;
+    }
+
     public String getLyDo() {
         return lyDo;
     }
@@ -113,5 +166,45 @@ public class LichSuPhanBoLead implements Serializable {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getTenLead() {
+        return tenLead;
+    }
+
+    public void setTenLead(String tenLead) {
+        this.tenLead = tenLead;
+    }
+
+    public String getTenQuyTac() {
+        return tenQuyTac;
+    }
+
+    public void setTenQuyTac(String tenQuyTac) {
+        this.tenQuyTac = tenQuyTac;
+    }
+
+    public String getTenNguoiDungCu() {
+        return tenNguoiDungCu;
+    }
+
+    public void setTenNguoiDungCu(String tenNguoiDungCu) {
+        this.tenNguoiDungCu = tenNguoiDungCu;
+    }
+
+    public String getTenNguoiDungMoi() {
+        return tenNguoiDungMoi;
+    }
+
+    public void setTenNguoiDungMoi(String tenNguoiDungMoi) {
+        this.tenNguoiDungMoi = tenNguoiDungMoi;
+    }
+
+    public String getTenThucHienBoi() {
+        return tenThucHienBoi;
+    }
+
+    public void setTenThucHienBoi(String tenThucHienBoi) {
+        this.tenThucHienBoi = tenThucHienBoi;
     }
 }

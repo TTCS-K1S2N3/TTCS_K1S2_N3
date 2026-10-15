@@ -956,6 +956,13 @@ public class NguoiDungDAO {
     }
 
     /**
+     * Lấy danh sách toàn bộ người dùng đang hoạt động (Story S4-06).
+     */
+    public List<NguoiDung> layDanhSachHoatDong() {
+        return layDanhSachNguoiDungKhaDungTiepNhan(0);
+    }
+
+    /**
      * Cập nhật đường dẫn ảnh đại diện và ảnh thumbnail cho người dùng (Story S2-03).
      */
     public boolean capNhatAnhDaiDien(long nguoiDungId, String anhDaiDienPath, String anhDaiDienThumbPath) {

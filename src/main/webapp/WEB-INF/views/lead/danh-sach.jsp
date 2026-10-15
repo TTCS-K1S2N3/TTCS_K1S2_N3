@@ -39,6 +39,15 @@
                 </div>
             </c:if>
 
+            <%-- Xác thực vai trò người dùng từ session/request phục vụ hiển thị các nút điều hướng S4-06 --%>
+            <c:set var="userXacThuc" value="${not empty nguoiDung ? nguoiDung : sessionScope.nguoiDung}" />
+            <c:set var="vaiTroDto" value="${not empty currentUser and not empty currentUser.vaiTro ? currentUser.vaiTro.name() : ''}" />
+            <c:set var="laAdmin" value="${(not empty userXacThuc and userXacThuc.coVaiTro('ADMIN')) or vaiTroDto == 'ADMIN'}" />
+            <c:set var="laDirector" value="${(not empty userXacThuc and userXacThuc.coVaiTro('DIRECTOR')) or vaiTroDto == 'DIRECTOR'}" />
+            <c:set var="laTeamLead" value="${(not empty userXacThuc and userXacThuc.coVaiTro('TEAM_LEAD')) or vaiTroDto == 'TEAM_LEAD'}" />
+            <c:set var="coQuyenHangCho" value="${laAdmin or laDirector or laTeamLead}" />
+            <c:set var="coQuyenQuyTac" value="${laAdmin or laDirector}" />
+
             <!-- 2. Header Card với các nút hành động chính của Story S4-02 -->
             <header class="lead-header-card lead-page-header">
                 <div class="lead-header-title lead-title-wrap">
@@ -49,6 +58,18 @@
                     <p>Quản lý toàn bộ danh sách lead tiếp nhận từ hội thảo, danh thiếp sự kiện, nhập hàng loạt từ Excel hoặc qua biểu mẫu nhúng website (Epic EP-04 / Story S4-02).</p>
                 </div>
                 <div class="lead-header-actions">
+                    <c:if test="${coQuyenQuyTac}">
+                        <a href="${pageContext.request.contextPath}/admin/lead/phan-bo" class="lead-btn lead-btn-outline" id="btnQuyTacPhanBo" title="Cấu hình quy tắc phân bổ lead tự động (S4-06)">
+                            <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+                            <span>Quy tắc phân bổ</span>
+                        </a>
+                    </c:if>
+                    <c:if test="${coQuyenHangCho}">
+                        <a href="${pageContext.request.contextPath}/lead/hang-cho-phan-bo" class="lead-btn lead-btn-outline" id="btnHangChoPhanBo" title="Hàng chờ phân bổ lead (S4-06)">
+                            <span class="material-symbols-outlined" aria-hidden="true">inbox</span>
+                            <span>Hàng chờ phân bổ</span>
+                        </a>
+                    </c:if>
                     <a href="${pageContext.request.contextPath}/marketing/campaigns" class="lead-btn lead-btn-outline" id="btnChienDichMarketing" title="Quản lý chiến dịch marketing (S4-03)">
                         <span class="material-symbols-outlined" aria-hidden="true">campaign</span>
                         <span>Chiến dịch Marketing</span>

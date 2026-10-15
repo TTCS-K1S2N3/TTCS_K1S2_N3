@@ -420,6 +420,129 @@ public class LeadDAO {
         return false;
     }
 
+    /**
+     * Lấy danh sách Lead chưa được phân bổ để tiến trình nền xử lý (Story S4-06, AC4).
+     */
+    public List<Lead> layDanhSachChuaPhanBo(int limit) {
+        List<Lead> danhSach = new ArrayList<>();
+        String sql = "SELECT " + COT_SELECT_LEAD + FROM_JOIN_LEAD +
+                "WHERE l.trang_thai = 'MOI' AND l.nguoi_phu_trach_id IS NULL " +
+                "ORDER BY l.created_at ASC LIMIT ?";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, limit > 0 ? limit : 50);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    danhSach.add(mapResultSetSangLead(rs));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi lấy danh sách Lead chưa phân bổ: " + e.getMessage(), e);
+        }
+        return danhSach;
+    }
+
+    /**
+     * Lấy danh sách Lead trong hàng chờ phân bổ (Story S4-06, AC3).
+     */
+    public List<Lead> layDanhSachHangCho(int limit, int offset) {
+        List<Lead> danhSach = new ArrayList<>();
+        String sql = "SELECT " + COT_SELECT_LEAD + FROM_JOIN_LEAD +
+                "WHERE l.trang_thai = 'HANG_CHO_PHAN_BO' " +
+                "ORDER BY l.created_at DESC LIMIT ? OFFSET ?";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, limit > 0 ? limit : 50);
+            ps.setInt(2, Math.max(0, offset));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    danhSach.add(mapResultSetSangLead(rs));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi lấy danh sách Lead hàng chờ: " + e.getMessage(), e);
+        }
+        return danhSach;
+    }
+
+    /**
+     * Đếm tổng số Lead trong hàng chờ phân bổ (Story S4-06, AC3).
+     */
+    public int demLeadHangCho() {
+        String sql = "SELECT COUNT(id) FROM `lead` WHERE trang_thai = 'HANG_CHO_PHAN_BO'";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi đếm số Lead trong hàng chờ: " + e.getMessage(), e);
+        }
+        return 0;
+    }
+
+    /**
+     * Cập nhật thông tin phân bổ cho Lead trong transaction (Story S4-06).
+     */
+    public boolean capNhatPhanBo(Connection conn, Long leadId, Long nguoiPhuTrachId, Long nhomPhanBoId,
+                                 TrangThaiLeadEnum trangThai, LocalDateTime duocPhanBoLuc, LocalDateTime hanPhanHoiSla) throws SQLException {
+        String sql = "UPDATE `lead` SET " +
+                "nguoi_phu_trach_id = ?, nhom_phan_bo_id = ?, trang_thai = ?, " +
+                "duoc_phan_bo_luc = ?, han_phan_hoi_sla = ?, updated_at = CURRENT_TIMESTAMP " +
+                "WHERE id = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (nguoiPhuTrachId != null) {
+                ps.setLong(1, nguoiPhuTrachId);
+            } else {
+                ps.setNull(1, Types.BIGINT);
+            }
+
+            if (nhomPhanBoId != null) {
+                ps.setLong(2, nhomPhanBoId);
+            } else {
+                ps.setNull(2, Types.BIGINT);
+            }
+
+            ps.setString(3, trangThai != null ? trangThai.getMa() : TrangThaiLeadEnum.DA_PHAN_BO.getMa());
+
+            if (duocPhanBoLuc != null) {
+                ps.setTimestamp(4, Timestamp.valueOf(duocPhanBoLuc));
+            } else {
+                ps.setNull(4, Types.TIMESTAMP);
+            }
+
+            if (hanPhanHoiSla != null) {
+                ps.setTimestamp(5, Timestamp.valueOf(hanPhanHoiSla));
+            } else {
+                ps.setNull(5, Types.TIMESTAMP);
+            }
+
+            ps.setLong(6, leadId);
+
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Chuyển Lead vào hàng chờ phân bổ khi không khớp bất kỳ quy tắc nào (Story S4-06, AC3).
+     */
+    public boolean chuyenVaoHangCho(Connection conn, Long leadId) throws SQLException {
+        String sql = "UPDATE `lead` SET " +
+                "trang_thai = 'HANG_CHO_PHAN_BO', nguoi_phu_trach_id = NULL, updated_at = CURRENT_TIMESTAMP " +
+                "WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, leadId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
     private void datThamSoLead(PreparedStatement ps, Lead lead) throws SQLException {
         ps.setString(1, lead.getMaLead());
         ps.setString(2, lead.getHoTen());
