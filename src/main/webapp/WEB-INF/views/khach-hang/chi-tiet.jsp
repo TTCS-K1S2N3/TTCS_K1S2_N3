@@ -34,39 +34,78 @@
             </ol>
         </nav>
 
-        <!-- Thông báo phản hồi nếu có -->
-        <c:if test="${not empty thongBaoThanhCong}">
-            <div class="alert alert-success" style="margin-bottom: 20px;" id="alertSuccess">
-                <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
-                <span><c:out value="${thongBaoThanhCong}" /></span>
-            </div>
-        </c:if>
-        <c:if test="${not empty sessionScope.thongBaoThanhCong}">
-            <div class="alert alert-success" style="margin-bottom: 20px;">
-                <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
-                <span><c:out value="${sessionScope.thongBaoThanhCong}" /></span>
-            </div>
-            <c:remove var="thongBaoThanhCong" scope="session" />
-        </c:if>
-        <c:if test="${not empty thongBaoLoi}">
-            <div class="alert alert-danger" style="margin-bottom: 20px;" id="alertError">
-                <span class="material-symbols-outlined" aria-hidden="true">error</span>
-                <span><c:out value="${thongBaoLoi}" /></span>
-            </div>
-        </c:if>
-        <c:if test="${not empty sessionScope.thongBaoLoi}">
-            <div class="alert alert-danger" style="margin-bottom: 20px;">
-                <span class="material-symbols-outlined" aria-hidden="true">error</span>
-                <span><c:out value="${sessionScope.thongBaoLoi}" /></span>
-            </div>
-            <c:remove var="thongBaoLoi" scope="session" />
-        </c:if>
-        <c:if test="${not empty thongBaoCanhBao}">
-            <div class="alert alert-warning" style="margin-bottom: 20px;">
-                <span class="material-symbols-outlined" aria-hidden="true">warning</span>
-                <span><c:out value="${thongBaoCanhBao}" /></span>
-            </div>
-        </c:if>
+        <!-- Thông báo phản hồi nếu có (Story Review 20261013: Auto-dismiss 4s success, 6s warning/info, manual close X) -->
+        <div id="crmNotificationArea" class="crm-notification-area">
+            <c:if test="${not empty thongBaoThanhCong}">
+                <div class="alert alert-success alert-dismissible" id="alertSuccess" role="alert">
+                    <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                    <span><c:out value="${thongBaoThanhCong}" /></span>
+                    <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
+                </div>
+            </c:if>
+            <c:if test="${not empty sessionScope.thongBaoThanhCong}">
+                <div class="alert alert-success alert-dismissible" role="alert">
+                    <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                    <span><c:out value="${sessionScope.thongBaoThanhCong}" /></span>
+                    <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
+                </div>
+                <c:remove var="thongBaoThanhCong" scope="session" />
+            </c:if>
+            <c:if test="${not empty sessionScope.flashThanhCong}">
+                <div class="alert alert-success alert-dismissible" role="alert">
+                    <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                    <span><c:out value="${sessionScope.flashThanhCong}" /></span>
+                    <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
+                </div>
+                <c:remove var="flashThanhCong" scope="session" />
+            </c:if>
+            <c:if test="${not empty sessionScope.flashSuccess}">
+                <div class="alert alert-success alert-dismissible" role="alert">
+                    <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                    <span><c:out value="${sessionScope.flashSuccess}" /></span>
+                    <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
+                </div>
+                <c:remove var="flashSuccess" scope="session" />
+            </c:if>
+            <c:if test="${not empty thongBaoLoi}">
+                <div class="alert alert-danger alert-dismissible" id="alertError" role="alert">
+                    <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                    <span><c:out value="${thongBaoLoi}" /></span>
+                    <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
+                </div>
+            </c:if>
+            <c:if test="${not empty sessionScope.thongBaoLoi}">
+                <div class="alert alert-danger alert-dismissible" role="alert">
+                    <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                    <span><c:out value="${sessionScope.thongBaoLoi}" /></span>
+                    <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
+                </div>
+                <c:remove var="thongBaoLoi" scope="session" />
+            </c:if>
+            <c:if test="${not empty sessionScope.flashLoi}">
+                <div class="alert alert-danger alert-dismissible" role="alert">
+                    <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                    <span><c:out value="${sessionScope.flashLoi}" /></span>
+                    <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
+                </div>
+                <c:remove var="flashLoi" scope="session" />
+            </c:if>
+            <c:if test="${not empty sessionScope.flashError}">
+                <div class="alert alert-danger alert-dismissible" role="alert">
+                    <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                    <span><c:out value="${sessionScope.flashError}" /></span>
+                    <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
+                </div>
+                <c:remove var="flashError" scope="session" />
+            </c:if>
+            <c:if test="${not empty thongBaoCanhBao}">
+                <div class="alert alert-warning alert-dismissible" role="alert">
+                    <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+                    <span><c:out value="${thongBaoCanhBao}" /></span>
+                    <button type="button" class="alert-close-btn" onclick="dongThongBao(this)" aria-label="Đóng">&times;</button>
+                </div>
+            </c:if>
+        </div>
 
         <!-- STORY S3-08 AC3: CỜ RỦI RO HIỂN THỊ TRÊN TRANG 360 VÀ CẢNH BÁO CHO NHÂN VIÊN KINH DOANH PHỤ TRÁCH -->
         <c:choose>
@@ -201,6 +240,10 @@
                     <span>Danh sách khách hàng</span>
                 </a>
                 <c:if test="${coQuyenSuaKhach}">
+                <button type="button" class="btn btn-outline" onclick="moModalSuaKhachHang()" id="btnSuaKhachHang">
+                    <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                    <span>Sửa hồ sơ</span>
+                </button>
                 <c:choose>
                     <c:when test="${not empty thongKeNhomCongTy.congTyMe.congTyMeId}">
                         <button type="button" class="btn btn-outline" onclick="moModalChonCongTyMe()" id="btnDoiCongTyMe">
@@ -227,21 +270,21 @@
             </div>
         </div>
 
-        <!-- 2. Thẻ Tóm Tắt Giá Trị & Chỉ Số KPI (S3-03 AC2, AC3 & S3-05 AC2) -->
+        <!-- 2. Thẻ Tóm Tắt Giá Trị & Chỉ Số KPI (S3-03 AC2, AC3 & S3-05 AC2) - Compact Height 105-125px -->
         <div class="kpi-summary-grid">
             <!-- Thẻ 1: Tổng giá trị đã ký (S3-03 AC2) -->
             <div class="kpi-card">
                 <div class="kpi-card-header">
-                    <span class="kpi-card-label">Tổng giá trị đã ký</span>
+                    <span class="kpi-card-label" title="Tổng giá trị đã ký">Tổng giá trị đã ký</span>
                     <div class="kpi-card-icon success">
                         <span class="material-symbols-outlined" aria-hidden="true">verified</span>
                     </div>
                 </div>
-                <div>
+                <div class="kpi-card-content">
                     <div class="kpi-card-value text-success" id="kpiGiaTriDaKy">
                         <c:out value="${not empty khachHang360.tongGiaTriDaKyDinhDang ? khachHang360.tongGiaTriDaKyDinhDang : (not empty kpiGiaTriDaKy ? kpiGiaTriDaKy : '0 đ')}" />
                     </div>
-                    <div class="kpi-card-sub">
+                    <div class="kpi-card-sub" title="Số lượng hợp đồng và cơ hội đã ký kết">
                         <c:choose>
                             <c:when test="${not empty khachHang360.dsCoHoiDaDong}">
                                 <c:out value="${khachHang360.dsCoHoiDaDong.size()}" /> hợp đồng/cơ hội đã chốt
@@ -255,16 +298,16 @@
             <!-- Thẻ 2: Giá trị cơ hội đang mở (S3-03 AC2) -->
             <div class="kpi-card">
                 <div class="kpi-card-header">
-                    <span class="kpi-card-label">Giá trị cơ hội đang mở</span>
+                    <span class="kpi-card-label" title="Giá trị cơ hội đang mở">Giá trị cơ hội đang mở</span>
                     <div class="kpi-card-icon primary">
                         <span class="material-symbols-outlined" aria-hidden="true">trending_up</span>
                     </div>
                 </div>
-                <div>
+                <div class="kpi-card-content">
                     <div class="kpi-card-value text-primary" id="kpiGiaTriDangMo">
                         <c:out value="${not empty khachHang360.tongGiaTriCoHoiDangMoDinhDang ? khachHang360.tongGiaTriCoHoiDangMoDinhDang : (not empty kpiGiaTriDangMo ? kpiGiaTriDangMo : '0 đ')}" />
                     </div>
-                    <div class="kpi-card-sub">
+                    <div class="kpi-card-sub" title="Số cơ hội kinh doanh đang mở">
                         <c:choose>
                             <c:when test="${not empty khachHang360.dsCoHoiDangMo}">
                                 <c:out value="${khachHang360.dsCoHoiDangMo.size()}" /> cơ hội đang mở
@@ -278,17 +321,17 @@
             <!-- Thẻ 3: Tổng Giá Trị Hợp Đồng Nhóm Công Ty (Story S3-05 AC2) -->
             <div class="kpi-card highlight" id="kpiTongGiaTriTapDoan">
                 <div class="kpi-card-header">
-                    <span class="kpi-card-label">Tổng Hợp Đồng Nhóm Công Ty</span>
+                    <span class="kpi-card-label" title="Tổng Hợp Đồng Nhóm Công Ty">Hợp Đồng Nhóm Công Ty</span>
                     <div class="kpi-card-icon" style="background: #e0f2fe; color: #0284c7;">
                         <span class="material-symbols-outlined" aria-hidden="true">hub</span>
                     </div>
                 </div>
-                <div>
+                <div class="kpi-card-content">
                     <div class="kpi-card-value" id="valTongGiaTriTapDoan" style="color: #0369a1;">
                         <c:out value="${not empty thongKeNhomCongTy ? thongKeNhomCongTy.tongGiaTriHopDongNhomCongTyDinhDang : '0 ₫'}" />
                     </div>
-                    <div class="kpi-card-sub">
-                        Gồm công ty mẹ + <strong><c:out value="${not empty thongKeNhomCongTy ? thongKeNhomCongTy.soLuongCongTyCon : 0}" /></strong> công ty con trực thuộc
+                    <div class="kpi-card-sub" title="Gồm công ty mẹ và các công ty con trực thuộc">
+                        Mẹ + <strong><c:out value="${not empty thongKeNhomCongTy ? thongKeNhomCongTy.soLuongCongTyCon : 0}" /></strong> công ty con trực thuộc
                     </div>
                 </div>
             </div>
@@ -296,20 +339,22 @@
             <!-- Thẻ 4: Hiệu năng tải 500 hoạt động (S3-03 AC3) -->
             <div class="kpi-card">
                 <div class="kpi-card-header">
-                    <span class="kpi-card-label">Hiệu năng tải (AC3)</span>
+                    <span class="kpi-card-label" title="Hiệu năng tải batch (AC3)">Hiệu năng tải (AC3)</span>
                     <div class="kpi-card-icon primary">
                         <span class="material-symbols-outlined" aria-hidden="true">speed</span>
                     </div>
                 </div>
-                <div>
-                    <div class="kpi-card-value text-primary" id="metricRenderTime">~18 ms</div>
-                    <div class="kpi-card-sub">
-                        Tiêu chuẩn AC3: <strong>&lt; 1,5 giây / 500 hoạt động</strong>
+                <div class="kpi-card-content">
+                    <div class="kpi-card-benchmark-row">
+                        <div class="kpi-card-value text-primary" id="metricRenderTime">~18 ms</div>
+                        <button type="button" class="btn-benchmark-compact" id="btnRunBenchmark" title="Đo kiểm tải 500 hoạt động thực tế">
+                            <span class="material-symbols-outlined" aria-hidden="true">play_arrow</span>
+                            <span>Đo kiểm</span>
+                        </button>
                     </div>
-                    <button type="button" class="btn-benchmark" id="btnRunBenchmark" title="Đo kiểm tải 500 hoạt động thực tế">
-                        <span class="material-symbols-outlined" aria-hidden="true">play_arrow</span>
-                        Đo kiểm 500 hoạt động
-                    </button>
+                    <div class="kpi-card-sub">
+                        AC3: <strong>&lt; 1,5s / 500 h.động</strong>
+                    </div>
                 </div>
             </div>
         </div>
@@ -490,6 +535,7 @@
                             <button type="button" class="timeline-filter-btn" data-type="CUOC_HOP">Cuộc họp</button>
                             <button type="button" class="timeline-filter-btn" data-type="EMAIL">Email</button>
                             <button type="button" class="timeline-filter-btn" data-type="GHI_CHU">Ghi chú</button>
+                            <button type="button" class="timeline-filter-btn" data-type="CHINH_SUA">Nhật ký thay đổi</button>
                         </div>
 
                         <div class="timeline-search-box">
@@ -531,21 +577,27 @@
                         <div class="deals-section-header">
                             <h3 class="deals-section-title">
                                 <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary);">trending_up</span>
-                                Cơ Hội Đang Mở (${not empty khachHang360.dsCoHoiDangMo ? khachHang360.dsCoHoiDangMo.size() : 0})
+                                <span>Cơ Hội Đang Mở (${not empty khachHang360.dsCoHoiDangMo ? khachHang360.dsCoHoiDangMo.size() : 0})</span>
                             </h3>
-                            <span class="deals-section-sum">Tổng giá trị đang mở: <strong><c:out value="${not empty khachHang360.tongGiaTriCoHoiDangMoDinhDang ? khachHang360.tongGiaTriCoHoiDangMoDinhDang : '0 đ'}" /></strong></span>
+                            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                <span class="table-scroll-hint">
+                                    <span class="material-symbols-outlined" aria-hidden="true">swipe</span>
+                                    <span>Kéo ngang để xem thêm</span>
+                                </span>
+                                <span class="deals-section-sum">Tổng giá trị đang mở: <strong><c:out value="${not empty khachHang360.tongGiaTriCoHoiDangMoDinhDang ? khachHang360.tongGiaTriCoHoiDangMoDinhDang : '0 đ'}" /></strong></span>
+                            </div>
                         </div>
                         <div class="table-responsive">
-                            <table class="data-table">
+                            <table class="data-table" id="bangCoHoiDangMo">
                                 <thead>
                                     <tr>
-                                        <th style="width: 100px;">Mã Deal</th>
-                                        <th>Tên Cơ Hội</th>
-                                        <th>Giai Đoạn</th>
-                                        <th style="text-align: right;">Giá Trị Dự Kiến</th>
-                                        <th style="text-align: center;">Xác Suất</th>
-                                        <th>Dự Kiến Chốt</th>
-                                        <th>Người Phụ Trách</th>
+                                        <th class="col-deal-code">Mã Deal</th>
+                                        <th class="col-deal-name">Tên Cơ Hội</th>
+                                        <th class="col-deal-stage">Giai Đoạn</th>
+                                        <th class="col-deal-value">Giá Trị Dự Kiến</th>
+                                        <th class="col-deal-prob">Xác Suất</th>
+                                        <th class="col-deal-date">Dự Kiến Chốt</th>
+                                        <th class="col-deal-owner">Người Phụ Trách</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -553,27 +605,36 @@
                                         <c:when test="${not empty khachHang360.dsCoHoiDangMo}">
                                             <c:forEach var="deal" items="${khachHang360.dsCoHoiDangMo}">
                                                 <tr>
-                                                    <td class="font-mono"><c:out value="${deal.maCoHoi}" /></td>
-                                                    <td><strong><c:out value="${deal.tenCoHoi}" /></strong></td>
-                                                    <td><span class="pipeline-stage-badge"><c:out value="${deal.tenGiaiDoan}" /></span></td>
-                                                    <td style="text-align: right; font-weight: 700; color: var(--primary);">
+                                                    <td class="col-deal-code"><c:out value="${deal.maCoHoi}" /></td>
+                                                    <td class="col-deal-name"><strong><c:out value="${deal.tenCoHoi}" /></strong></td>
+                                                    <td class="col-deal-stage"><span class="pipeline-stage-badge"><c:out value="${deal.tenGiaiDoan}" /></span></td>
+                                                    <td class="col-deal-value">
                                                         <c:out value="${deal.giaTriDuKienDinhDang}" />
                                                     </td>
-                                                    <td style="text-align: center;">
+                                                    <td class="col-deal-prob">
                                                         <div class="probability-bar-wrap">
                                                             <div class="probability-bar"><div class="probability-bar-fill" style="width: ${deal.xacSuat}%;"></div></div>
-                                                            <span><c:out value="${deal.xacSuat}" />%</span>
+                                                            <span style="font-weight: 600; color: #334155; font-size: 12.5px;"><c:out value="${deal.xacSuat}" />%</span>
                                                         </div>
                                                     </td>
-                                                    <td><c:out value="${deal.ngayChotDuKienDinhDang}" /></td>
-                                                    <td><c:out value="${deal.tenNguoiPhuTrach}" /></td>
+                                                    <td class="col-deal-date"><c:out value="${deal.ngayChotDuKienDinhDang}" /></td>
+                                                    <td class="col-deal-owner">
+                                                        <span style="display: inline-flex; align-items: center; gap: 6px;">
+                                                            <span class="material-symbols-outlined" style="font-size: 16px; color: #64748b;" aria-hidden="true">person</span>
+                                                            <c:out value="${deal.tenNguoiPhuTrach}" />
+                                                        </span>
+                                                    </td>
                                                 </tr>
                                             </c:forEach>
                                         </c:when>
                                         <c:otherwise>
                                             <tr>
-                                                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">
-                                                    Chưa có cơ hội bán hàng nào đang mở cho khách hàng này.
+                                                <td colspan="7" class="crm-table-empty">
+                                                    <div class="empty-state-icon">
+                                                        <span class="material-symbols-outlined" aria-hidden="true">trending_up</span>
+                                                    </div>
+                                                    <div class="empty-state-title">Chưa có cơ hội bán hàng nào đang mở cho khách hàng này.</div>
+                                                    <div class="empty-state-desc">Các cơ hội bán hàng mới được tạo sẽ xuất hiện tại đây.</div>
                                                 </td>
                                             </tr>
                                         </c:otherwise>
@@ -588,20 +649,26 @@
                         <div class="deals-section-header">
                             <h3 class="deals-section-title">
                                 <span class="material-symbols-outlined" aria-hidden="true" style="color: #059669;">task_alt</span>
-                                Cơ Hội Đã Đóng / Đã Ký (${not empty khachHang360.dsCoHoiDaDong ? khachHang360.dsCoHoiDaDong.size() : 0})
+                                <span>Cơ Hội Đã Đóng / Đã Ký (${not empty khachHang360.dsCoHoiDaDong ? khachHang360.dsCoHoiDaDong.size() : 0})</span>
                             </h3>
-                            <span class="deals-section-sum">Tổng giá trị đã ký: <strong style="color: #059669;"><c:out value="${not empty khachHang360.tongGiaTriDaKyDinhDang ? khachHang360.tongGiaTriDaKyDinhDang : '0 đ'}" /></strong></span>
+                            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                <span class="table-scroll-hint">
+                                    <span class="material-symbols-outlined" aria-hidden="true">swipe</span>
+                                    <span>Kéo ngang để xem thêm</span>
+                                </span>
+                                <span class="deals-section-sum">Tổng giá trị đã ký: <strong style="color: #059669;"><c:out value="${not empty khachHang360.tongGiaTriDaKyDinhDang ? khachHang360.tongGiaTriDaKyDinhDang : '0 đ'}" /></strong></span>
+                            </div>
                         </div>
                         <div class="table-responsive">
-                            <table class="data-table">
+                            <table class="data-table" id="bangCoHoiDaDong">
                                 <thead>
                                     <tr>
-                                        <th style="width: 100px;">Mã Deal</th>
-                                        <th>Tên Cơ Hội</th>
-                                        <th>Kết Quả</th>
-                                        <th style="text-align: right;">Giá Trị Đã Ký</th>
-                                        <th>Ngày Ký / Đóng</th>
-                                        <th>Lý Do Thắng / Thua</th>
+                                        <th class="col-deal-code">Mã Deal</th>
+                                        <th class="col-deal-name">Tên Cơ Hội</th>
+                                        <th class="col-deal-result">Kết Quả</th>
+                                        <th class="col-deal-value">Giá Trị Đã Ký</th>
+                                        <th class="col-deal-date">Ngày Ký / Đóng</th>
+                                        <th class="col-deal-reason">Lý Do Thắng / Thua</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -609,30 +676,40 @@
                                         <c:when test="${not empty khachHang360.dsCoHoiDaDong}">
                                             <c:forEach var="deal" items="${khachHang360.dsCoHoiDaDong}">
                                                 <tr>
-                                                    <td class="font-mono"><c:out value="${deal.maCoHoi}" /></td>
-                                                    <td><strong><c:out value="${deal.tenCoHoi}" /></strong></td>
-                                                    <td>
+                                                    <td class="col-deal-code"><c:out value="${deal.maCoHoi}" /></td>
+                                                    <td class="col-deal-name"><strong><c:out value="${deal.tenCoHoi}" /></strong></td>
+                                                    <td class="col-deal-result">
                                                         <c:choose>
                                                             <c:when test="${deal.trangThai == 'DONG_THANG' || deal.trangThai == 'DA_KY'}">
-                                                                <span class="badge badge-success">Đóng Thắng (Đã ký)</span>
+                                                                <span class="badge badge-success" style="display: inline-flex; align-items: center; gap: 4px;">
+                                                                    <span class="material-symbols-outlined" style="font-size: 14px;" aria-hidden="true">check_circle</span>
+                                                                    <span>Đóng Thắng (Đã ký)</span>
+                                                                </span>
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <span class="badge" style="background: #fee2e2; color: #b91c1c;">Đóng Thua</span>
+                                                                <span class="badge" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; display: inline-flex; align-items: center; gap: 4px;">
+                                                                    <span class="material-symbols-outlined" style="font-size: 14px;" aria-hidden="true">cancel</span>
+                                                                    <span>Đóng Thua</span>
+                                                                </span>
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </td>
-                                                    <td style="text-align: right; font-weight: 700; color: #059669;">
+                                                    <td class="col-deal-value">
                                                         <c:out value="${deal.giaTriChotDinhDang}" />
                                                     </td>
-                                                    <td><c:out value="${deal.ngayKyDinhDang}" /></td>
-                                                    <td><c:out value="${deal.tenLyDoThangThua}" /></td>
+                                                    <td class="col-deal-date"><c:out value="${deal.ngayKyDinhDang}" /></td>
+                                                    <td class="col-deal-reason"><c:out value="${deal.tenLyDoThangThua}" /></td>
                                                 </tr>
                                             </c:forEach>
                                         </c:when>
                                         <c:otherwise>
                                             <tr>
-                                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">
-                                                    Chưa có cơ hội bán hàng nào đã đóng cho khách hàng này.
+                                                <td colspan="6" class="crm-table-empty">
+                                                    <div class="empty-state-icon">
+                                                        <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
+                                                    </div>
+                                                    <div class="empty-state-title">Chưa có cơ hội bán hàng nào đã đóng cho khách hàng này.</div>
+                                                    <div class="empty-state-desc">Lịch sử các cơ hội thắng/thua đã ký kết sẽ được lưu trữ tại đây.</div>
                                                 </td>
                                             </tr>
                                         </c:otherwise>
@@ -847,58 +924,305 @@
                 </div>
 
                 <div class="tab-panel" id="panel-attachments" style="display: none;">
-                    <div class="panel-section-title">
-                        <span class="material-symbols-outlined" aria-hidden="true">attachment</span>
-                        <span>Tệp Đính Kèm & Tài Liệu Dự Án (AC1)</span>
+                    <!-- CARD 1: Tệp Đính Kèm & Tài Liệu Dự Án (AC1) -->
+                    <div class="group-table-card" id="cardTepDinhKem" style="margin-bottom: 24px;">
+                        <div class="group-table-header">
+                            <div>
+                                <h3 style="font-size: 16px; font-weight: 700; color: var(--slate-900); margin: 0; display: flex; align-items: center; gap: 8px;">
+                                    <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary); font-size: 20px;">attachment</span>
+                                    <span>Tệp Đính Kèm &amp; Tài Liệu Dự Án (AC1)</span>
+                                    <span class="badge" style="background: #e0f2fe; color: #0369a1; font-size: 12px; margin-left: 4px;">
+                                        ${not empty khachHang360.dsTepDinhKem ? khachHang360.dsTepDinhKem.size() : 0} tệp
+                                    </span>
+                                </h3>
+                                <p style="font-size: 13px; color: var(--slate-500); margin: 4px 0 0 0;">
+                                    Quản lý và lưu trữ hồ sơ, tài liệu, báo giá và tệp đính kèm liên kết trực tiếp với khách hàng này.
+                                </p>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                <span class="table-scroll-hint">
+                                    <span class="material-symbols-outlined" aria-hidden="true">swipe</span>
+                                    <span>Kéo ngang để xem thêm</span>
+                                </span>
+                                <c:if test="${coQuyenSuaKhach}">
+                                <button type="button" class="btn btn-primary" onclick="moModalTaiTaiLieu()" id="btnTaiTaiLieu" style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px;">upload_file</span>
+                                    <span>+ Tải tài liệu lên</span>
+                                </button>
+                                </c:if>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table" id="bangTepDinhKem">
+                                <thead>
+                                    <tr>
+                                        <th class="col-file-name">Tên Tài Liệu / Tệp</th>
+                                        <th class="col-file-type">Loại Tài Liệu</th>
+                                        <th class="col-file-size">Dung Lượng</th>
+                                        <th class="col-file-owner">Người Tải Lên</th>
+                                        <th class="col-file-date">Ngày Tải Lên</th>
+                                        <th class="col-file-action" style="text-align: center;">Thao Tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyTepDinhKem">
+                                    <c:choose>
+                                        <c:when test="${not empty khachHang360.dsTepDinhKem}">
+                                            <c:forEach var="file" items="${khachHang360.dsTepDinhKem}">
+                                                <tr id="row-tep-${file.id}">
+                                                    <td class="col-file-name">
+                                                        <div class="file-row-item">
+                                                            <div class="file-type-icon ${file.iconClass}">
+                                                                <span class="material-symbols-outlined" aria-hidden="true">${file.iconName}</span>
+                                                            </div>
+                                                            <div class="file-meta-content">
+                                                                <div class="file-meta-name" title="<c:out value='${file.tenFileGoc}' />">
+                                                                    <c:out value="${file.tenFileGoc}" />
+                                                                </div>
+                                                                <div class="file-meta-sub"><c:out value="${file.tenLoaiHienThi}" /></div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="col-file-type">
+                                                        <span class="badge badge-file-type"><c:out value="${file.tenLoaiHienThi}" /></span>
+                                                    </td>
+                                                    <td class="col-file-size font-mono"><c:out value="${file.dungLuongHienThi}" /></td>
+                                                    <td class="col-file-owner"><c:out value="${file.tenNguoiTaiLen}" /></td>
+                                                    <td class="col-file-date text-nowrap"><c:out value="${file.ngayTaiLenDinhDang}" /></td>
+                                                    <td class="col-file-action">
+                                                        <div class="table-actions-cell">
+                                                            <a href="${pageContext.request.contextPath}/khach-hang/tep-dinh-kem?id=${file.id}" target="_blank" class="tbl-btn-action" title="Xem trước tài liệu" aria-label="Xem trước tài liệu">
+                                                                <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+                                                            </a>
+                                                            <a href="${pageContext.request.contextPath}/khach-hang/tep-dinh-kem?id=${file.id}&download=true" class="tbl-btn-action" title="Tải xuống tệp tin" aria-label="Tải xuống tệp tin">
+                                                                <span class="material-symbols-outlined" aria-hidden="true">download</span>
+                                                            </a>
+                                                            <c:if test="${coQuyenSuaKhach}">
+                                                            <button type="button" class="tbl-btn-action btn-danger-action" title="Xóa tài liệu này" aria-label="Xóa tài liệu" data-id="${file.id}" data-name="<c:out value='${file.tenFileGoc}' />" onclick="xacNhanXoaTep(this.dataset.id, this.dataset.name)">
+                                                                <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                                                            </button>
+                                                            </c:if>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr id="rowEmptyTep">
+                                                <td colspan="6" class="crm-table-empty">
+                                                    <div class="empty-state-icon">
+                                                        <span class="material-symbols-outlined" aria-hidden="true">attach_file</span>
+                                                    </div>
+                                                    <div class="empty-state-title">Chưa có tệp đính kèm nào được tải lên cho khách hàng này.</div>
+                                                    <div class="empty-state-desc">Hồ sơ năng lực, báo giá, hợp đồng scan hoặc tài liệu kỹ thuật sẽ hiển thị tại đây. Vui lòng sử dụng nút <strong>"+ Tải tài liệu lên"</strong> ở góc trên bên phải để đính kèm tệp mới.</div>
+                                                </td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
-                    <div class="table-responsive" style="margin-bottom: 24px;">
-                        <table class="data-table">
+                    <!-- CARD 2: Hợp Đồng Pháp Lý Đã Ký -->
+                    <div class="group-table-card" id="cardHopDongKhachHang">
+                        <div class="group-table-header">
+                            <div>
+                                <h3 style="font-size: 16px; font-weight: 700; color: var(--slate-900); margin: 0; display: flex; align-items: center; gap: 8px;">
+                                    <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary); font-size: 20px;">description</span>
+                                    <span>Hợp Đồng Pháp Lý Đã Ký</span>
+                                    <span class="badge" style="background: #dcfce7; color: #15803d; font-size: 12px; margin-left: 4px;">
+                                        ${not empty khachHang360.dsHopDong ? khachHang360.dsHopDong.size() : 0} hợp đồng
+                                    </span>
+                                </h3>
+                                <p style="font-size: 13px; color: var(--slate-500); margin: 4px 0 0 0;">
+                                    Danh sách hợp đồng pháp lý ký kết trực tiếp với khách hàng này. Doanh thu hợp đồng được phản ánh vào thẻ KPI "Tổng giá trị đã ký".
+                                </p>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                <span class="table-scroll-hint">
+                                    <span class="material-symbols-outlined" aria-hidden="true">swipe</span>
+                                    <span>Kéo ngang để xem thêm</span>
+                                </span>
+                                <c:if test="${coQuyenSuaKhach}">
+                                <button type="button" class="btn btn-primary" onclick="moModalThemHopDong()" id="btnThemHopDong" style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px;">add_circle</span>
+                                    <span>+ Thêm hợp đồng</span>
+                                </button>
+                                </c:if>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table" id="bangHopDongKhachHang">
+                                <thead>
+                                    <tr>
+                                        <th class="col-hd-code">Số Hợp Đồng</th>
+                                        <th class="col-hd-value" style="text-align: right;">Giá Trị Hợp Đồng</th>
+                                        <th class="col-hd-date">Ngày Ký</th>
+                                        <th class="col-hd-effect">Ngày Hiệu Lực</th>
+                                        <th class="col-hd-expire">Ngày Hết Hạn</th>
+                                        <th class="col-hd-terms">Điều Khoản Thanh Toán</th>
+                                        <th class="col-hd-status" style="text-align: center;">Trạng Thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyHopDongKhachHang">
+                                    <c:choose>
+                                        <c:when test="${not empty khachHang360.dsHopDong}">
+                                            <c:forEach var="hd" items="${khachHang360.dsHopDong}">
+                                                <tr id="row-hd-${hd.id}">
+                                                    <td class="col-hd-code font-mono text-nowrap" style="font-weight: 600; color: #0f172a;">
+                                                        <c:out value="${hd.soHopDong}" />
+                                                    </td>
+                                                    <td class="col-hd-value text-nowrap" style="text-align: right; font-weight: 700; color: #16a34a; font-variant-numeric: tabular-nums;">
+                                                        <c:out value="${thongKeNhomCongTy.dinhDangTienTe(hd.giaTriHopDong)}" />
+                                                    </td>
+                                                    <td class="col-hd-date text-nowrap"><c:out value="${hd.ngayKyDinhDang}" /></td>
+                                                    <td class="col-hd-effect text-nowrap"><c:out value="${hd.ngayHieuLuc != null ? hd.ngayHieuLuc : '-'}" /></td>
+                                                    <td class="col-hd-expire text-nowrap"><c:out value="${hd.ngayHetHan != null ? hd.ngayHetHan : '-'}" /></td>
+                                                    <td class="col-hd-terms">
+                                                        <c:out value="${not empty hd.dieuKhoanThanhToan ? hd.dieuKhoanThanhToan : '—'}" />
+                                                    </td>
+                                                    <td class="col-hd-status" style="text-align: center;">
+                                                        <c:choose>
+                                                            <c:when test="${hd.trangThai == 'DA_KY'}">
+                                                                <span class="badge badge-success">Đã ký</span>
+                                                            </c:when>
+                                                            <c:when test="${hd.trangThai == 'DANG_HIEU_LUC'}">
+                                                                <span class="badge" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;">Đang hiệu lực</span>
+                                                            </c:when>
+                                                            <c:when test="${hd.trangThai == 'HET_HAN'}">
+                                                                <span class="badge" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1;">Hết hạn</span>
+                                                            </c:when>
+                                                            <c:when test="${hd.trangThai == 'DA_HUY'}">
+                                                                <span class="badge" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;">Đã hủy</span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="badge badge-neutral"><c:out value="${hd.trangThai}" /></span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr id="rowEmptyHopDong">
+                                                <td colspan="7" class="crm-table-empty">
+                                                    <div class="empty-state-icon">
+                                                        <span class="material-symbols-outlined" aria-hidden="true">description</span>
+                                                    </div>
+                                                    <div class="empty-state-title">Chưa có hợp đồng pháp lý nào được ký với khách hàng này.</div>
+                                                    <div class="empty-state-desc">Thêm hợp đồng để lưu trữ điều khoản thanh toán và ghi nhận doanh thu vào hồ sơ 360°. Vui lòng sử dụng nút <strong>"+ Thêm hợp đồng"</strong> ở góc trên bên phải để tạo hợp đồng mới.</div>
+                                                </td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </tbody>
+                            </table>
+                    </div>
+                </div>
+
+                <!-- STORY S3-05 AC1 & AC2: BẢNG DANH SÁCH CÁC CÔNG TY CON TRỰC THUỘC (Đặt ngay dưới vùng Timeline) -->
+                <div class="group-table-card" id="khuVucCongTyCon">
+                    <div class="group-table-header">
+                        <div>
+                            <h3 style="font-size: 16px; font-weight: 700; color: var(--slate-900); margin: 0; display: flex; align-items: center; gap: 8px;">
+                                <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary); font-size: 20px;">domain</span>
+                                <span>Danh Sách Công Ty Con Trực Thuộc Tập Đoàn</span>
+                            </h3>
+                            <p style="font-size: 13px; color: var(--slate-500); margin: 4px 0 0 0;">
+                                Toàn bộ các pháp nhân con được gắn vào công ty mẹ này. Doanh thu hợp đồng được tổng hợp tự động vào nhóm.
+                            </p>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <span class="table-scroll-hint">
+                                <span class="material-symbols-outlined" aria-hidden="true">swipe</span>
+                                <span>Kéo ngang để xem thêm</span>
+                            </span>
+                            <c:if test="${coQuyenSuaKhach}">
+                            <button type="button" class="btn btn-outline" onclick="moModalGanCongTyCon()" id="btnThemCongTyConBang">
+                                <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 16px;">add</span>
+                                <span>Gắn Thêm Công Ty Con</span>
+                            </button>
+                            </c:if>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table" id="bangCongTyCon">
                             <thead>
                                 <tr>
-                                    <th>Tên Tài Liệu / Tệp</th>
-                                    <th>Loại Tài Liệu</th>
-                                    <th>Dung Lượng</th>
-                                    <th>Người Tải Lên</th>
-                                    <th>Ngày Tải Lên</th>
-                                    <th style="text-align: center; width: 140px;">Thao Tác</th>
+                                    <th class="col-sub-stt">STT</th>
+                                    <th class="col-sub-code">Mã KH</th>
+                                    <th class="col-sub-name">Tên Công Ty Con</th>
+                                    <th class="col-sub-owner">Người Phụ Trách</th>
+                                    <th class="col-sub-team">Nhóm Kinh Doanh</th>
+                                    <th class="col-sub-status">Trạng Thái</th>
+                                    <th class="col-sub-value">Giá Trị Hợp Đồng</th>
+                                    <th class="col-sub-action">Thao Tác</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <c:choose>
-                                    <c:when test="${not empty khachHang360.dsTepDinhKem}">
-                                        <c:forEach var="file" items="${khachHang360.dsTepDinhKem}">
+                                    <c:when test="${not empty thongKeNhomCongTy.danhSachCongTyCon}">
+                                        <c:forEach var="con" items="${thongKeNhomCongTy.danhSachCongTyCon}" varStatus="loop">
                                             <tr>
-                                                <td>
-                                                    <div class="file-row-item">
-                                                        <div class="file-type-icon ${file.iconClass}">
-                                                            <span class="material-symbols-outlined" aria-hidden="true">${file.iconName}</span>
-                                                        </div>
-                                                        <div>
-                                                            <div class="file-meta-name"><c:out value="${file.tenFileGoc}" /></div>
-                                                            <div class="file-meta-sub"><c:out value="${file.tenLoaiHienThi}" /></div>
-                                                        </div>
+                                                <td class="col-sub-stt">${loop.index + 1}</td>
+                                                <td class="col-sub-code"><c:out value="${con.maKhachHang}" /></td>
+                                                <td class="col-sub-name">
+                                                    <div style="font-weight: 600; color: var(--slate-900);">
+                                                        <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${con.id}" style="color: var(--primary); text-decoration: none;">
+                                                            <c:out value="${con.tenCongTy}" />
+                                                        </a>
                                                     </div>
+                                                    <c:if test="${not empty con.moTaChiTiet}">
+                                                        <div style="font-size: 12.5px; color: var(--slate-500); margin-top: 2px;"><c:out value="${con.moTaChiTiet}" /></div>
+                                                    </c:if>
                                                 </td>
-                                                <td><span class="badge" style="background: #e0f2fe; color: #0369a1;"><c:out value="${file.loaiTep}" /></span></td>
-                                                <td class="font-mono"><c:out value="${file.dungLuongHienThi}" /></td>
-                                                <td><c:out value="${file.tenNguoiTaiLen}" /></td>
-                                                <td><c:out value="${file.ngayTaiLenDinhDang}" /></td>
-                                                <td style="text-align: center;">
-                                                    <a href="${pageContext.request.contextPath}${file.duongDan}" target="_blank" class="btn-action" title="Tải xuống tệp" aria-label="Tải xuống tệp">
-                                                        <span class="material-symbols-outlined" aria-hidden="true">download</span>
-                                                    </a>
-                                                    <a href="${pageContext.request.contextPath}${file.duongDan}" target="_blank" class="btn-action" title="Xem trước tài liệu" aria-label="Xem trước tài liệu">
-                                                        <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
-                                                    </a>
+                                                <td class="col-sub-owner">
+                                                    <span style="display: inline-flex; align-items: center; gap: 6px;">
+                                                        <span class="material-symbols-outlined" style="font-size: 16px; color: #64748b;" aria-hidden="true">person</span>
+                                                        <c:out value="${con.tenNguoiSoHuu}" />
+                                                    </span>
+                                                </td>
+                                                <td class="col-sub-team"><c:out value="${con.tenNhomKinhDoanh}" /></td>
+                                                <td class="col-sub-status">
+                                                    <span class="badge badge-success"><c:out value="${con.trangThai}" /></span>
+                                                </td>
+                                                <td class="col-sub-value">
+                                                    <c:out value="${thongKeNhomCongTy.dinhDangTienTe(con.tongGiaTriHopDong)}" />
+                                                </td>
+                                                <td class="col-sub-action">
+                                                    <div class="table-actions-cell">
+                                                        <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${con.id}" class="btn-action" title="Xem chi tiết công ty con" aria-label="Xem chi tiết công ty con">
+                                                            <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 16px;">visibility</span>
+                                                        </a>
+                                                        <!-- Nút gỡ bỏ khỏi công ty mẹ -->
+                                                        <c:if test="${coQuyenSuaKhach}">
+                                                        <form method="POST" action="${pageContext.request.contextPath}/khach-hang" style="display: inline; margin: 0;" onsubmit="return confirm('Bạn có chắc chắn muốn gỡ công ty \'${con.tenCongTy}\' khỏi nhóm công ty mẹ này?');">
+                                                            <input type="hidden" name="action" value="go-cong-ty-con">
+                                                            <input type="hidden" name="congTyConId" value="${con.id}">
+                                                            <input type="hidden" name="congTyMeId" value="${banGhi.id}">
+                                                            <button type="submit" class="btn-action" title="Gỡ bỏ khỏi công ty mẹ" aria-label="Gỡ bỏ khỏi công ty mẹ" style="color: #ef4444; border-color: #fecaca; background: #fff5f5;">
+                                                                <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 16px;">link_off</span>
+                                                            </button>
+                                                        </form>
+                                                        </c:if>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         </c:forEach>
                                     </c:when>
                                     <c:otherwise>
                                         <tr>
-                                            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">
-                                                Chưa có tệp đính kèm nào được tải lên cho khách hàng này.
+                                            <td colspan="8" class="crm-table-empty">
+                                                <div class="empty-state-icon">
+                                                    <span class="material-symbols-outlined" aria-hidden="true">domain</span>
+                                                </div>
+                                                <div class="empty-state-title">Công ty này hiện chưa có công ty con nào trực thuộc.</div>
+                                                <div class="empty-state-desc">
+                                                    Bấm nút <strong>"Gắn Thêm Công Ty Con"</strong> phía trên để khai báo quan hệ tập đoàn mẹ - con.
+                                                </div>
                                             </td>
                                         </tr>
                                     </c:otherwise>
@@ -906,206 +1230,87 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
 
-                    <!-- Bảng hợp đồng riêng của khách hàng -->
-                    <c:if test="${not empty khachHang360.dsHopDong}">
-                        <div class="panel-section-title" style="margin-top: 16px;">
-                            <span class="material-symbols-outlined" aria-hidden="true">description</span>
-                            <span>Hợp Đồng Pháp Lý Đã Ký (${khachHang360.dsHopDong.size()})</span>
+                <!-- BẢNG DANH SÁCH TẤT CẢ HỢP ĐỒNG CỦA TOÀN BỘ NHÓM CÔNG TY (STORY S3-05 AC2) -->
+                <div class="group-table-card" id="khuVucHopDongNhom">
+                    <div class="group-table-header">
+                        <div>
+                            <h3 style="font-size: 16px; font-weight: 700; color: var(--slate-900); margin: 0; display: flex; align-items: center; gap: 8px;">
+                                <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary); font-size: 20px;">description</span>
+                                <span>Danh Sách Hợp Đồng Của Toàn Nhóm Công Ty (Tập Đoàn)</span>
+                            </h3>
+                            <p style="font-size: 13px; color: var(--slate-500); margin: 4px 0 0 0;">
+                                Tổng hợp hợp đồng từ công ty mẹ và toàn bộ các công ty con trực thuộc.
+                            </p>
                         </div>
-                        <div class="table-responsive">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Số Hợp Đồng</th>
-                                        <th style="text-align: right;">Giá Trị Hợp Đồng</th>
-                                        <th>Ngày Ký</th>
-                                        <th>Hiệu Lực</th>
-                                        <th>Hết Hạn</th>
-                                        <th>Trạng Thái</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <c:forEach var="hd" items="${khachHang360.dsHopDong}">
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <span class="table-scroll-hint">
+                                <span class="material-symbols-outlined" aria-hidden="true">swipe</span>
+                                <span>Kéo ngang để xem thêm</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" id="bangHopDongNhom">
+                            <thead>
+                                <tr>
+                                    <th class="col-grp-code">Số Hợp Đồng</th>
+                                    <th class="col-grp-entity">Pháp Nhân Ký Kết</th>
+                                    <th class="col-grp-role">Vai Trò Nhóm</th>
+                                    <th class="col-grp-value">Giá Trị Hợp Đồng</th>
+                                    <th class="col-grp-date">Ngày Ký</th>
+                                    <th class="col-grp-status">Trạng Thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:choose>
+                                    <c:when test="${not empty thongKeNhomCongTy.danhSachHopDongNhom}">
+                                        <c:forEach var="hd" items="${thongKeNhomCongTy.danhSachHopDongNhom}">
+                                            <tr>
+                                                <td class="col-grp-code"><c:out value="${hd.soHopDong}" /></td>
+                                                <td class="col-grp-entity">
+                                                    <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${hd.khachHangId}" style="color: var(--primary); text-decoration: none; font-weight: 600;">
+                                                        <c:out value="${hd.tenKhachHang}" />
+                                                    </a>
+                                                </td>
+                                                <td class="col-grp-role">
+                                                    <c:choose>
+                                                        <c:when test="${hd.khachHangId == banGhi.id}">
+                                                            <span class="badge" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-weight: 600; padding: 4px 10px; border-radius: 9999px;">Công ty mẹ</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-weight: 600; padding: 4px 10px; border-radius: 9999px;">Công ty con</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                                <td class="col-grp-value">
+                                                    <c:out value="${thongKeNhomCongTy.dinhDangTienTe(hd.giaTriHopDong)}" />
+                                                </td>
+                                                <td class="col-grp-date"><c:out value="${hd.ngayKyDinhDang}" /></td>
+                                                <td class="col-grp-status"><span class="badge badge-success"><c:out value="${hd.trangThai}" /></span></td>
+                                            </tr>
+                                        </c:forEach>
+                                    </c:when>
+                                    <c:otherwise>
                                         <tr>
-                                            <td class="font-mono" style="font-weight: 600;"><c:out value="${hd.soHopDong}" /></td>
-                                            <td style="text-align: right; font-weight: 700; color: #16a34a;">
-                                                <c:out value="${thongKeNhomCongTy.dinhDangTienTe(hd.giaTriHopDong)}" />
+                                            <td colspan="6" class="crm-table-empty">
+                                                <div class="empty-state-icon">
+                                                    <span class="material-symbols-outlined" aria-hidden="true">description</span>
+                                                </div>
+                                                <div class="empty-state-title">Chưa có hợp đồng nào được ghi nhận cho nhóm công ty này.</div>
+                                                <div class="empty-state-desc">
+                                                    Hợp đồng của công ty mẹ và các công ty con khi phát sinh sẽ được tự động tổng hợp tại đây.
+                                                </div>
                                             </td>
-                                            <td><c:out value="${hd.ngayKyDinhDang}" /></td>
-                                            <td><c:out value="${hd.ngayHieuLuc != null ? hd.ngayHieuLuc : '-'}" /></td>
-                                            <td><c:out value="${hd.ngayHetHan != null ? hd.ngayHetHan : '-'}" /></td>
-                                            <td><span class="badge badge-success"><c:out value="${hd.trangThai}" /></span></td>
                                         </tr>
-                                    </c:forEach>
-                                </tbody>
-                            </table>
-                        </div>
-                    </c:if>
+                                    </c:otherwise>
+                                </c:choose>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
-        </div>
-
-        <!-- STORY S3-05 AC1 & AC2: BẢNG DANH SÁCH CÁC CÔNG TY CON TRỰC THUỘC -->
-        <div class="table-container" style="margin-bottom: 24px;" id="khuVucCongTyCon">
-            <div style="padding: 16px 20px; background: #f8fafc; border-bottom: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-                <div>
-                    <h3 style="font-size: 16px; font-weight: 700; color: var(--slate-900); margin: 0; display: flex; align-items: center; gap: 8px;">
-                        <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary); font-size: 20px;">domain</span>
-                        <span>Danh Sách Công Ty Con Trực Thuộc Tập Đoàn</span>
-                    </h3>
-                    <p style="font-size: 13px; color: var(--slate-500); margin: 4px 0 0 0;">
-                        Toàn bộ các pháp nhân con được gắn vào công ty mẹ này. Doanh thu hợp đồng được tổng hợp tự động vào nhóm.
-                    </p>
-                </div>
-                <c:if test="${coQuyenSuaKhach}">
-                <div>
-                    <button type="button" class="btn btn-outline" onclick="moModalGanCongTyCon()" id="btnThemCongTyConBang">
-                        <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 16px;">add</span>
-                        <span>Gắn Thêm Công Ty Con</span>
-                    </button>
-                </div>
-                </c:if>
-            </div>
-
-            <table class="data-table" id="bangCongTyCon">
-                <thead>
-                    <tr>
-                        <th style="width: 60px; text-align: center;">STT</th>
-                        <th style="width: 110px;">Mã KH</th>
-                        <th>Tên Công Ty Con</th>
-                        <th>Người Phụ Trách</th>
-                        <th>Nhóm Kinh Doanh</th>
-                        <th>Trạng Thái</th>
-                        <th style="text-align: right;">Giá Trị Hợp Đồng</th>
-                        <th style="width: 140px; text-align: center;">Thao Tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <c:choose>
-                        <c:when test="${not empty thongKeNhomCongTy.danhSachCongTyCon}">
-                            <c:forEach var="con" items="${thongKeNhomCongTy.danhSachCongTyCon}" varStatus="loop">
-                                <tr>
-                                    <td style="text-align: center; color: var(--slate-500); font-weight: 500;">${loop.index + 1}</td>
-                                    <td class="font-mono"><c:out value="${con.maKhachHang}" /></td>
-                                    <td>
-                                        <div style="font-weight: 600; color: var(--slate-900);">
-                                            <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${con.id}" style="color: var(--primary); text-decoration: none;">
-                                                <c:out value="${con.tenCongTy}" />
-                                            </a>
-                                        </div>
-                                        <c:if test="${not empty con.moTaChiTiet}">
-                                            <div style="font-size: 12.5px; color: var(--slate-500);"><c:out value="${con.moTaChiTiet}" /></div>
-                                        </c:if>
-                                    </td>
-                                    <td><c:out value="${con.tenNguoiSoHuu}" /></td>
-                                    <td><c:out value="${con.tenNhomKinhDoanh}" /></td>
-                                    <td>
-                                        <span class="badge badge-success"><c:out value="${con.trangThai}" /></span>
-                                    </td>
-                                    <td style="text-align: right; font-weight: 700; color: #16a34a;">
-                                        <c:out value="${thongKeNhomCongTy.dinhDangTienTe(con.tongGiaTriHopDong)}" />
-                                    </td>
-                                    <td style="text-align: center;">
-                                        <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                            <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${con.id}" class="btn-action" title="Xem chi tiết công ty con" aria-label="Xem chi tiết công ty con">
-                                                <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 16px;">visibility</span>
-                                            </a>
-                                            <!-- Nút gỡ bỏ khỏi công ty mẹ -->
-                                            <c:if test="${coQuyenSuaKhach}">
-                                            <form method="POST" action="${pageContext.request.contextPath}/khach-hang" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn gỡ công ty \'${con.tenCongTy}\' khỏi nhóm công ty mẹ này?');">
-                                                <input type="hidden" name="action" value="go-cong-ty-con">
-                                                <input type="hidden" name="congTyConId" value="${con.id}">
-                                                <input type="hidden" name="congTyMeId" value="${banGhi.id}">
-                                                <button type="submit" class="btn-action" title="Gỡ bỏ khỏi công ty mẹ" aria-label="Gỡ bỏ khỏi công ty mẹ" style="color: #ef4444; border-color: #fecaca; background: #fff5f5;">
-                                                    <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 16px;">link_off</span>
-                                                </button>
-                                            </form>
-                                            </c:if>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </c:forEach>
-                        </c:when>
-                        <c:otherwise>
-                            <tr>
-                                <td colspan="8" style="text-align: center; padding: 36px 20px; color: var(--slate-500);">
-                                    <div style="font-size: 14px; font-weight: 500;">Công ty này hiện chưa có công ty con nào trực thuộc.</div>
-                                    <div style="font-size: 13px; color: var(--slate-400); margin-top: 4px;">
-                                        Bấm nút <strong>"Gán Công Ty Con"</strong> phía trên để khai báo quan hệ tập đoàn mẹ - con.
-                                    </div>
-                                </td>
-                            </tr>
-                        </c:otherwise>
-                    </c:choose>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- BẢNG DANH SÁCH TẤT CẢ HỢP ĐỒNG CỦA TOÀN BỘ NHÓM CÔNG TY (STORY S3-05 AC2) -->
-        <div class="table-container" style="margin-bottom: 30px;" id="khuVucHopDongNhom">
-            <div style="padding: 16px 20px; background: #f8fafc; border-bottom: 1px solid var(--slate-200);">
-                <h3 style="font-size: 16px; font-weight: 700; color: var(--slate-900); margin: 0; display: flex; align-items: center; gap: 8px;">
-                    <span class="material-symbols-outlined" aria-hidden="true" style="color: var(--primary); font-size: 20px;">description</span>
-                    <span>Danh Sách Hợp Đồng Của Toàn Nhóm Công Ty (Tập Đoàn)</span>
-                </h3>
-                <p style="font-size: 13px; color: var(--slate-500); margin: 4px 0 0 0;">
-                    Tổng hợp hợp đồng từ công ty mẹ và toàn bộ các công ty con trực thuộc.
-                </p>
-            </div>
-            <table class="data-table" id="bangHopDongNhom">
-                <thead>
-                    <tr>
-                        <th style="width: 140px;">Số Hợp Đồng</th>
-                        <th>Pháp Nhân Ký Kết</th>
-                        <th>Vai Trò Nhóm</th>
-                        <th style="text-align: right;">Giá Trị Hợp Đồng</th>
-                        <th>Ngày Ký</th>
-                        <th>Trạng Thái</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <c:choose>
-                        <c:when test="${not empty thongKeNhomCongTy.danhSachHopDongNhom}">
-                            <c:forEach var="hd" items="${thongKeNhomCongTy.danhSachHopDongNhom}">
-                                <tr>
-                                    <td class="font-mono" style="font-weight: 600;"><c:out value="${hd.soHopDong}" /></td>
-                                    <td>
-                                        <a href="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${hd.khachHangId}" style="color: var(--primary); text-decoration: none; font-weight: 600;">
-                                            <c:out value="${hd.tenKhachHang}" />
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <c:choose>
-                                            <c:when test="${hd.khachHangId == banGhi.id}">
-                                                <span class="badge" style="background: #e0f2fe; color: #0369a1;">Công ty mẹ</span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span class="badge" style="background: #f1f5f9; color: #475569;">Công ty con</span>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                    <td style="text-align: right; font-weight: 700; color: #16a34a;">
-                                        <c:out value="${thongKeNhomCongTy.dinhDangTienTe(hd.giaTriHopDong)}" />
-                                    </td>
-                                    <td><c:out value="${hd.ngayKyDinhDang}" /></td>
-                                    <td><span class="badge badge-success"><c:out value="${hd.trangThai}" /></span></td>
-                                </tr>
-                            </c:forEach>
-                        </c:when>
-                        <c:otherwise>
-                            <tr>
-                                <td colspan="6" style="text-align: center; padding: 36px 20px; color: var(--slate-500);">
-                                    <div style="font-size: 14px; font-weight: 500;">Chưa có hợp đồng nào được ghi nhận cho nhóm công ty này.</div>
-                                    <div style="font-size: 13px; color: var(--slate-400); margin-top: 4px;">
-                                        Hợp đồng của công ty mẹ và các công ty con khi phát sinh sẽ được tự động tổng hợp tại đây.
-                                    </div>
-                                </td>
-                            </tr>
-                        </c:otherwise>
-                    </c:choose>
-                </tbody>
-            </table>
         </div>
 
         <!-- STORY S3-08 AC1 & AC3: BẢNG YÊU CẦU HỖ TRỢ SAU BÁN TRÊN TRANG 360 -->
@@ -1508,28 +1713,35 @@
             </div>
         </div>
 
-                        <div>
+        <!-- ========================================== -->
+        <!-- MODAL CHỈNH SỬA HỒ SƠ KHÁCH HÀNG (Story S3-01) -->
+        <!-- ========================================== -->
+        <div class="modal-backdrop" id="modalSuaKhachHang" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalSuaKhachHangTieuDe">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div>
                         <h2 class="modal-title" id="modalSuaKhachHangTieuDe">Chỉnh Sửa Hồ Sơ Khách Hàng</h2>
                         <p class="modal-subtitle">Cập nhật thông tin hồ sơ khách hàng doanh nghiệp (Story S3-01)</p>
                     </div>
-                    <button type="button" class="modal-close-btn" id="btnDongModalSuaKhachHang" aria-label="Đóng" title="Đóng">
+                    <button type="button" class="modal-close-btn" id="btnDongModalSuaKhachHang" aria-label="Đóng" title="Đóng" onclick="dongModalSuaKhachHang()">
                         <span class="material-symbols-outlined" aria-hidden="true">close</span>
                     </button>
                 </div>
                 <form id="formSuaKhachHang" method="POST" action="${pageContext.request.contextPath}/khach-hang">
                     <input type="hidden" name="action" value="sua">
-                    <input type="hidden" id="suaKhachHangId" name="id" value="">
+                    <input type="hidden" id="suaKhachHangId" name="id" value="${banGhi.id}">
+                    <input type="hidden" name="returnUrl" value="${pageContext.request.contextPath}/khach-hang/chi-tiet?id=${banGhi.id}">
 
                     <div class="modal-body">
                         <!-- Tên công ty & Mã khách hàng -->
                         <div class="form-row">
                             <div class="form-col" style="flex: 2;">
                                 <label class="form-label" for="suaTenCongTy">Tên công ty / Khách hàng (AC1) <span class="required">*</span></label>
-                                <input type="text" id="suaTenCongTy" name="tenCongTy" class="form-input" required autocomplete="off">
+                                <input type="text" id="suaTenCongTy" name="tenCongTy" class="form-input" required autocomplete="off" value="<c:out value="${not empty khachHang.tenCongTy ? khachHang.tenCongTy : banGhi.tieuDe}" />">
                             </div>
                             <div class="form-col" style="flex: 1;">
                                 <label class="form-label" for="suaMaKhachHang">Mã khách hàng</label>
-                                <input type="text" id="suaMaKhachHang" name="maKhachHang" class="form-input" readonly style="background-color: var(--slate-100); font-family: monospace;">
+                                <input type="text" id="suaMaKhachHang" name="maKhachHang" class="form-input" readonly style="background-color: var(--slate-100); font-family: monospace;" value="<c:out value="${not empty khachHang.maKhachHang ? khachHang.maKhachHang : banGhi.maBanGhi}" />">
                             </div>
                         </div>
 
@@ -1537,18 +1749,18 @@
                         <div class="form-row">
                             <div class="form-col">
                                 <label class="form-label" for="suaMaSoThue">Mã số thuế (AC1, AC2) <small style="color: var(--slate-500); font-weight: normal;">(Nếu có phải duy nhất)</small></label>
-                                <input type="text" id="suaMaSoThue" name="maSoThue" class="form-input" autocomplete="off">
+                                <input type="text" id="suaMaSoThue" name="maSoThue" class="form-input" autocomplete="off" value="<c:out value="${khachHang.maSoThue}" />">
                             </div>
                             <div class="form-col">
                                 <label class="form-label" for="suaWebsite">Website (AC1)</label>
-                                <input type="text" id="suaWebsite" name="website" class="form-input" autocomplete="off">
+                                <input type="text" id="suaWebsite" name="website" class="form-input" autocomplete="off" value="<c:out value="${khachHang.website}" />">
                             </div>
                         </div>
 
                         <!-- Địa chỉ -->
                         <div class="form-group">
                             <label class="form-label" for="suaDiaChi">Địa chỉ trụ sở / văn phòng (AC1)</label>
-                            <input type="text" id="suaDiaChi" name="diaChi" class="form-input" autocomplete="off">
+                            <input type="text" id="suaDiaChi" name="diaChi" class="form-input" autocomplete="off" value="<c:out value="${khachHang.diaChi}" />">
                         </div>
 
                         <!-- Trạng thái & Doanh thu ước tính -->
@@ -1556,26 +1768,26 @@
                             <div class="form-col">
                                 <label class="form-label" for="suaTrangThai">Trạng thái khách hàng (AC3) <span class="required">*</span></label>
                                 <select id="suaTrangThai" name="trangThai" class="form-select" required>
-                                    <option value="Tiềm năng">Tiềm năng</option>
-                                    <option value="Đang giao dịch">Đang giao dịch</option>
-                                    <option value="Khách hàng">Khách hàng</option>
-                                    <option value="Ngừng hợp tác">Ngừng hợp tác</option>
+                                    <option value="Tiềm năng" ${currentStatus == 'Tiềm năng' || currentStatus == 'TIEM_NANG' ? 'selected' : ''}>Tiềm năng</option>
+                                    <option value="Đang giao dịch" ${currentStatus == 'Đang giao dịch' || currentStatus == 'DANG_GIAO_DICH' ? 'selected' : ''}>Đang giao dịch</option>
+                                    <option value="Khách hàng" ${currentStatus == 'Khách hàng' || currentStatus == 'KHACH_HANG' ? 'selected' : ''}>Khách hàng</option>
+                                    <option value="Ngừng hợp tác" ${currentStatus == 'Ngừng hợp tác' || currentStatus == 'NGUNG_HOP_TAC' ? 'selected' : ''}>Ngừng hợp tác</option>
                                 </select>
                             </div>
                             <div class="form-col">
                                 <label class="form-label" for="suaDoanhThuUocTinh">Doanh thu ước tính (VND)</label>
-                                <input type="text" id="suaDoanhThuUocTinh" name="doanhThuUocTinh" class="form-input" autocomplete="off">
+                                <input type="text" id="suaDoanhThuUocTinh" name="doanhThuUocTinh" class="form-input" autocomplete="off" value="<c:out value="${not empty khachHang.doanhThuUocTinh ? khachHang.doanhThuUocTinh : banGhi.giaTri}" />">
                             </div>
                         </div>
 
                         <!-- Ghi chú chi tiết -->
                         <div class="form-group">
                             <label class="form-label" for="suaMoTaChiTiet">Ghi chú / Mô tả chi tiết</label>
-                            <textarea id="suaMoTaChiTiet" name="moTaChiTiet" class="form-textarea" rows="3"></textarea>
+                            <textarea id="suaMoTaChiTiet" name="moTaChiTiet" class="form-textarea" rows="3"><c:out value="${not empty khachHang.moTaChiTiet ? khachHang.moTaChiTiet : banGhi.moTaChiTiet}" /></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline" id="btnHuySuaKhachHang">Hủy bỏ</button>
+                        <button type="button" class="btn btn-outline" id="btnHuySuaKhachHang" onclick="dongModalSuaKhachHang()">Hủy bỏ</button>
                         <button type="submit" class="btn btn-primary" id="btnXacNhanSuaKhachHang">
                             <span class="material-symbols-outlined" aria-hidden="true">save</span>
                             <span>Lưu Thay Đổi</span>
@@ -1764,6 +1976,221 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline" onclick="dongModalLichSu()">Đóng</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- MODAL TẢI TÀI LIỆU LÊN (Story S3-03 AC1 & Task 1.1) -->
+        <!-- ========================================== -->
+        <div class="modal-backdrop" id="modalTaiTaiLieu" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalUploadTitle">
+            <div class="modal-card" style="max-width: 580px;">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="modal-title" id="modalUploadTitle">Tải Tài Liệu Lên</h2>
+                        <p class="modal-subtitle">Đính kèm tệp tin và lưu trữ hồ sơ cho khách hàng</p>
+                    </div>
+                    <button type="button" class="modal-close-btn" aria-label="Đóng" onclick="dongModalTaiTaiLieu()">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
+                </div>
+                <form id="formTaiTaiLieu" method="POST" action="${pageContext.request.contextPath}/khach-hang/tep-dinh-kem" enctype="multipart/form-data" onsubmit="return submitFormUploadTep(event)">
+                    <input type="hidden" name="khachHangId" value="${not empty khachHang ? khachHang.id : banGhi.id}">
+
+                    <div class="modal-body">
+                        <!-- Thông tin khách hàng tự động -->
+                        <div class="form-group" style="margin-bottom: 14px;">
+                            <label class="form-label">Khách hàng liên kết</label>
+                            <input type="text" class="form-input" value="<c:out value="${not empty khachHang ? khachHang.tenCongTy : banGhi.tieuDe}" /> (<c:out value="${not empty khachHang ? khachHang.maKhachHang : banGhi.maBanGhi}" />)" readonly style="background-color: #f8fafc; color: var(--slate-700); font-weight: 600;">
+                        </div>
+
+                        <!-- Chọn tệp tin -->
+                        <div class="form-group" style="margin-bottom: 14px;">
+                            <label class="form-label" for="inputChonTep">Chọn tệp tài liệu <span style="color: #ef4444;">*</span></label>
+                            <div class="file-drop-zone" id="dropZoneTep" onclick="document.getElementById('inputChonTep').click()">
+                                <input type="file" id="inputChonTep" name="tepTin" style="display: none;" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" onchange="xuLyChonTep(this)">
+                                <span class="material-symbols-outlined file-drop-icon" aria-hidden="true">cloud_upload</span>
+                                <div class="file-drop-title">Nhấp để chọn tệp hoặc kéo thả tệp vào đây</div>
+                                <div class="file-drop-hint">Hỗ trợ: PDF, DOC, DOCX, XLS, XLSX, PNG, JPG, JPEG (Tối đa 10 MB)</div>
+                            </div>
+                            <!-- Khu vực hiển thị tệp đã chọn -->
+                            <div id="fileSelectedInfo" class="file-selected-card" style="display: none;">
+                                <div class="file-selected-left">
+                                    <span class="material-symbols-outlined file-selected-icon" id="fileSelectedIcon">description</span>
+                                    <div>
+                                        <div class="file-selected-name" id="fileSelectedName">ten-file.pdf</div>
+                                        <div class="file-selected-size" id="fileSelectedSize">0 KB</div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-remove-selected" onclick="huyChonTep()" title="Hủy chọn tệp">&times;</button>
+                            </div>
+                            <span id="errTepTin" style="color: #ef4444; font-size: 12px; display: none; margin-top: 4px;">Vui lòng chọn tệp tài liệu hợp lệ (tối đa 10 MB).</span>
+                        </div>
+
+                        <!-- Loại tài liệu -->
+                        <div class="form-group" style="margin-bottom: 14px;">
+                            <label class="form-label" for="selectLoaiTaiLieu">Loại tài liệu <span style="color: #ef4444;">*</span></label>
+                            <select id="selectLoaiTaiLieu" name="loaiTaiLieu" class="form-select" required>
+                                <option value="HOP_DONG">Hợp đồng đã ký</option>
+                                <option value="BAO_GIA">Báo giá &amp; Dự toán</option>
+                                <option value="HO_SO_NANG_LUC">Hồ sơ năng lực / Hồ sơ khách hàng</option>
+                                <option value="BIEN_BAN">Biên bản làm việc / Khảo sát kỹ thuật</option>
+                                <option value="TAI_LIEU" selected>Tài liệu dự án</option>
+                                <option value="KHAC">Khác</option>
+                            </select>
+                        </div>
+
+                        <!-- Tên hiển thị tài liệu -->
+                        <div class="form-group" style="margin-bottom: 14px;">
+                            <label class="form-label" for="inputTenTaiLieu">Tên tài liệu hiển thị</label>
+                            <input type="text" id="inputTenTaiLieu" name="tenTaiLieu" class="form-input" placeholder="Mặc định lấy theo tên tệp đính kèm">
+                            <span style="font-size: 12px; color: var(--slate-500); margin-top: 2px; display: block;">Có thể đặt tên ngắn gọn để dễ tra cứu trong danh mục.</span>
+                        </div>
+
+                        <!-- Mô tả tệp tin -->
+                        <div class="form-group">
+                            <label class="form-label" for="inputMoTaTep">Mô tả / Ghi chú</label>
+                            <textarea id="inputMoTaTep" name="moTa" class="form-textarea" rows="2" placeholder="Ghi chú thêm về nội dung, phiên bản hoặc bối cảnh tài liệu..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" onclick="dongModalTaiTaiLieu()">Hủy</button>
+                        <button type="submit" class="btn btn-primary" id="btnSubmitUploadTep">
+                            <span class="material-symbols-outlined" aria-hidden="true">upload</span>
+                            <span>Tải lên</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- MODAL THÊM HỢP ĐỒNG PHÁP LÝ (Story S3-03 & Task 3) -->
+        <!-- ========================================== -->
+        <div class="modal-backdrop" id="modalThemHopDong" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalHopDongTitle">
+            <div class="modal-card" style="max-width: 620px;">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="modal-title" id="modalHopDongTitle">Thêm Hợp Đồng Pháp Lý</h2>
+                        <p class="modal-subtitle">Khai báo hợp đồng đã ký và ghi nhận giá trị vào KPI hồ sơ 360°</p>
+                    </div>
+                    <button type="button" class="modal-close-btn" aria-label="Đóng" onclick="dongModalThemHopDong()">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
+                </div>
+                <form id="formThemHopDong" method="POST" action="${pageContext.request.contextPath}/khach-hang" onsubmit="return submitFormThemHopDong(event)">
+                    <input type="hidden" name="action" value="them-hop-dong">
+                    <input type="hidden" name="khachHangId" value="${not empty khachHang ? khachHang.id : banGhi.id}">
+
+                    <div class="modal-body">
+                        <!-- Thông báo lỗi modal nếu có -->
+                        <div id="errModalHopDong" class="alert alert-danger" style="display: none; margin-bottom: 14px; padding: 10px 14px; border-radius: 6px; background-color: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; font-size: 13px;">
+                            <div style="display: flex; gap: 8px; align-items: flex-start;">
+                                <span class="material-symbols-outlined" style="font-size: 20px; color: #ef4444;" aria-hidden="true">error</span>
+                                <span id="errModalHopDongText"></span>
+                            </div>
+                        </div>
+
+                        <!-- Cảnh báo khi khách hàng chưa có báo giá phù hợp -->
+                        <div id="alertKhongCoBaoGia" class="alert alert-warning" style="display: ${empty dsBaoGiaHopLe ? 'block' : 'none'}; margin-bottom: 14px; padding: 12px 14px; border-radius: 6px; background-color: #fffbeb; border: 1px solid #fde68a; color: #92400e; font-size: 13px;">
+                            <div style="display: flex; gap: 8px; align-items: flex-start;">
+                                <span class="material-symbols-outlined" style="font-size: 20px; color: #d97706; flex-shrink: 0;" aria-hidden="true">warning</span>
+                                <div>
+                                    <strong>Khách hàng chưa có báo giá hợp lệ để ký kết:</strong>
+                                    <div style="margin-top: 4px; line-height: 1.5;">
+                                        Hệ thống chưa tìm thấy báo giá nào ở trạng thái hợp lệ chưa tạo hợp đồng cho khách hàng này (hoặc tất cả báo giá hiện có đã được chuyển đổi thành hợp đồng pháp lý).
+                                    </div>
+                                    <div style="margin-top: 6px; padding: 6px 10px; background-color: #fef3c7; border-radius: 4px; color: #78350f; font-size: 12px; line-height: 1.4;">
+                                        <strong>Quy định nghiệp vụ:</strong> Hợp đồng pháp lý bắt buộc phải gắn với một báo giá đã được phê duyệt sẵn sàng trong cơ sở dữ liệu (ràng buộc <code>uk_hd_bg</code>). Phân hệ tạo và phê duyệt báo giá trực tuyến thuộc phạm vi triển khai của Sprint 7 (Báo Giá &amp; Phê Duyệt). Vui lòng hoàn tất báo giá hợp lệ cho khách hàng trước khi lập hợp đồng.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Khách hàng -->
+                        <div class="form-group" style="margin-bottom: 14px;">
+                            <label class="form-label">Khách hàng ký kết</label>
+                            <input type="text" class="form-input" value="<c:out value="${not empty khachHang ? khachHang.tenCongTy : banGhi.tieuDe}" /> (<c:out value="${not empty khachHang ? khachHang.maKhachHang : banGhi.maBanGhi}" />)" readonly style="background-color: #f8fafc; color: var(--slate-700); font-weight: 600;">
+                        </div>
+
+                        <!-- Chọn báo giá hợp lệ -->
+                        <div class="form-group" style="margin-bottom: 14px;">
+                            <label class="form-label" for="hdBaoGiaId">Chọn báo giá liên kết <span style="color: #ef4444;">*</span></label>
+                            <select id="hdBaoGiaId" name="baoGiaId" class="form-select" required onchange="chonBaoGiaLienKet(this)">
+                                <option value="">-- Chọn báo giá hợp lệ --</option>
+                                <c:forEach var="bg" items="${dsBaoGiaHopLe}">
+                                    <option value="${bg.id}"
+                                            data-giatri="${bg.giaTriBaoGia}"
+                                            data-dieukhoan="<c:out value="${bg.dieuKhoanThanhToan}" />"
+                                            data-cohoi="<c:out value="${bg.tenCoHoi}" />">
+                                        <c:out value="${bg.maBaoGia}" /> - <c:out value="${bg.tieuDe}" /> (<c:out value="${bg.giaTriDinhDang}" />)
+                                    </option>
+                                </c:forEach>
+                            </select>
+                            <span id="errHdBaoGiaId" style="color: #ef4444; font-size: 12px; display: none; margin-top: 4px;">Vui lòng chọn báo giá hợp lệ cho hợp đồng.</span>
+                            <small class="form-hint" style="color: var(--slate-500); font-size: 12px; margin-top: 4px; display: block;">
+                                Chỉ hiển thị các báo giá chưa tạo hợp đồng trong phạm vi quản lý của bạn. Khi chọn báo giá, hệ thống sẽ tự động điền giá trị và điều khoản thanh toán tương ứng.
+                            </small>
+                        </div>
+
+                        <!-- Số hợp đồng & Giá trị -->
+                        <div class="form-row" style="margin-bottom: 14px;">
+                            <div class="form-col">
+                                <label class="form-label" for="hdSoHopDong">Số hợp đồng <span style="color: #ef4444;">*</span></label>
+                                <input type="text" id="hdSoHopDong" name="soHopDong" class="form-input font-mono" placeholder="Ví dụ: HĐ-2026/088-FPT" required autocomplete="off">
+                                <span id="errHdSoHopDong" style="color: #ef4444; font-size: 12px; display: none; margin-top: 4px;">Vui lòng nhập số hợp đồng.</span>
+                            </div>
+                            <div class="form-col">
+                                <label class="form-label" for="hdGiaTri">Giá trị hợp đồng (VNĐ) <span style="color: #ef4444;">*</span></label>
+                                <input type="text" id="hdGiaTri" name="giaTriHopDong" class="form-input font-mono" placeholder="Ví dụ: 150,000,000" required autocomplete="off" oninput="dinhDangTienTeInput(this)">
+                                <span id="errHdGiaTri" style="color: #ef4444; font-size: 12px; display: none; margin-top: 4px;">Giá trị phải là số dương hợp lệ.</span>
+                            </div>
+                        </div>
+
+                        <!-- Ngày ký & Ngày hiệu lực -->
+                        <div class="form-row" style="margin-bottom: 14px;">
+                            <div class="form-col">
+                                <label class="form-label" for="hdNgayKy">Ngày ký <span style="color: #ef4444;">*</span></label>
+                                <input type="date" id="hdNgayKy" name="ngayKy" class="form-input" required>
+                            </div>
+                            <div class="form-col">
+                                <label class="form-label" for="hdNgayHieuLuc">Ngày có hiệu lực</label>
+                                <input type="date" id="hdNgayHieuLuc" name="ngayHieuLuc" class="form-input">
+                            </div>
+                        </div>
+
+                        <!-- Ngày hết hạn & Trạng thái -->
+                        <div class="form-row" style="margin-bottom: 14px;">
+                            <div class="form-col">
+                                <label class="form-label" for="hdNgayHetHan">Ngày hết hạn</label>
+                                <input type="date" id="hdNgayHetHan" name="ngayHetHan" class="form-input">
+                            </div>
+                            <div class="form-col">
+                                <label class="form-label" for="hdTrangThai">Trạng thái hợp đồng</label>
+                                <select id="hdTrangThai" name="trangThai" class="form-select">
+                                    <option value="DA_KY" selected>Đã ký (DA_KY)</option>
+                                    <option value="DANG_HIEU_LUC">Đang hiệu lực (DANG_HIEU_LUC)</option>
+                                    <option value="HET_HAN">Hết hạn (HET_HAN)</option>
+                                    <option value="DA_HUY">Đã hủy (DA_HUY)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Điều khoản thanh toán -->
+                        <div class="form-group">
+                            <label class="form-label" for="hdDieuKhoan">Điều khoản thanh toán</label>
+                            <textarea id="hdDieuKhoan" name="dieuKhoanThanhToan" class="form-textarea" rows="2" placeholder="Ví dụ: Tạm ứng 30% khi ký HĐ, 50% khi nghiệm thu giai đoạn 1, 20% khi thanh lý..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" onclick="dongModalThemHopDong()">Hủy</button>
+                        <button type="submit" class="btn btn-primary" id="btnSubmitThemHopDong">
+                            <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                            <span>Lưu Hợp Đồng</span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </main>

@@ -12,6 +12,7 @@ import vn.nhom10.crm.dao.KhachHangDAO;
 import vn.nhom10.crm.dao.KhuVucDiaLyDAO;
 import vn.nhom10.crm.dao.NguoiDungDAO;
 import vn.nhom10.crm.dto.BanGhiNghiepVuDTO;
+import vn.nhom10.crm.dto.BaoGiaHopLeDTO;
 import vn.nhom10.crm.dto.BoLocKhachHangDTO;
 import vn.nhom10.crm.dto.CapKhachHangTrungDTO;
 import vn.nhom10.crm.dto.KetQuaGopKhachHangDTO;
@@ -25,6 +26,7 @@ import vn.nhom10.crm.dto.ThongKeNhomCongTyDTO;
 import vn.nhom10.crm.dto.ThongTinRuiRoDTO;
 import vn.nhom10.crm.model.BoLocDaLuu;
 import vn.nhom10.crm.model.HoatDong;
+import vn.nhom10.crm.model.HopDong;
 import vn.nhom10.crm.model.KhachHang;
 import vn.nhom10.crm.model.KhuVucDiaLy;
 import vn.nhom10.crm.model.LoaiDanhMuc;
@@ -242,6 +244,26 @@ public class KhachHangServlet extends HttpServlet {
         NguoiDung user = (NguoiDung) session.getAttribute("nguoiDung");
         NguoiDungDTO userDTO = NguoiDungDTO.tuNguoiDung(user);
 
+        // Đọc và tiêu thụ một lần (single-consumption) thông báo flash từ session nếu có
+        String flashSuccess = (String) session.getAttribute("flashThanhCong");
+        if (flashSuccess == null) {
+            flashSuccess = (String) session.getAttribute("flashSuccess");
+        }
+        if (flashSuccess != null) {
+            request.setAttribute("thongBaoThanhCong", flashSuccess);
+            session.removeAttribute("flashThanhCong");
+            session.removeAttribute("flashSuccess");
+        }
+        String flashError = (String) session.getAttribute("flashLoi");
+        if (flashError == null) {
+            flashError = (String) session.getAttribute("flashError");
+        }
+        if (flashError != null) {
+            request.setAttribute("thongBaoLoi", flashError);
+            session.removeAttribute("flashLoi");
+            session.removeAttribute("flashError");
+        }
+
         // Phân quyền runtime: Kiểm tra quyền READ trên module KHACH_HANG (Permission Matrix)
         if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.READ)) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -304,6 +326,44 @@ public class KhachHangServlet extends HttpServlet {
             List<HoatDong> ds = khachHang360Service.layDsHoatDong(id, limit, 0);
             response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().write(chuyenDsHoatDongSangJson(ds));
+            return;
+        }
+
+        // STORY: API lấy danh sách báo giá hợp lệ chưa gắn hợp đồng cho khách hàng (Bảo vệ bằng Data Scope)
+        if ("ds-bao-gia-hop-le".equalsIgnoreCase(action)) {
+            response.setContentType("application/json;charset=UTF-8");
+            Long id = parseLong(paramId);
+            if (id == null) {
+                id = parseLong(request.getParameter("khachHangId"));
+            }
+            if (id == null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("[]");
+                return;
+            }
+
+            BanGhiNghiepVuDTO banGhi = phanQuyenService.timBanGhiTheoId(id, "KHACH_HANG");
+            if (banGhi == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("[]");
+                return;
+            }
+            PhanQuyenDuLieuService.KetQuaKiemTra ketQua = phanQuyenService.kiemTraQuyenTruyCap(userDTO, banGhi);
+            if (!ketQua.isCoQuyen()) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("[]");
+                return;
+            }
+
+            try {
+                List<BaoGiaHopLeDTO> dsBaoGia = congTyMeConService.layDanhSachBaoGiaHopLe(id, userDTO);
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write(chuyenDsBaoGiaSangJson(dsBaoGia));
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Lỗi nạp danh sách báo giá hợp lệ: " + e.getMessage(), e);
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write("[]");
+            }
             return;
         }
 
@@ -388,6 +448,14 @@ public class KhachHangServlet extends HttpServlet {
                 }
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Không thể tải dữ liệu 360 cho ID " + id + ": " + e.getMessage());
+            }
+
+            // Nạp danh sách báo giá hợp lệ sẵn sàng ký hợp đồng cho khách hàng
+            try {
+                List<BaoGiaHopLeDTO> dsBaoGiaHopLe = congTyMeConService.layDanhSachBaoGiaHopLe(id, userDTO);
+                request.setAttribute("dsBaoGiaHopLe", dsBaoGiaHopLe);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Không thể tải danh sách báo giá hợp lệ cho ID " + id + ": " + e.getMessage());
             }
 
             // Lấy danh sách người liên hệ của khách hàng này (Story S3-02 AC1, AC2, AC3)
@@ -489,7 +557,18 @@ public class KhachHangServlet extends HttpServlet {
             boLoc.setKhuVucId(khuVucId);
             boLoc.setNguoiSoHuuId(nguoiSoHuuId);
 
-            if (!boLoc.coDieuKienLoc() && reset == null) {
+            boolean coYeuCauLocThuCong = request.getParameter("loc") != null
+                    || request.getParameter("tenCongTy") != null
+                    || request.getParameter("maSoThue") != null
+                    || request.getParameter("soDienThoai") != null
+                    || request.getParameter("trangThai") != null
+                    || request.getParameter("nganhNgheId") != null
+                    || request.getParameter("quyMoId") != null
+                    || request.getParameter("khuVucId") != null
+                    || request.getParameter("nguoiSoHuuId") != null
+                    || (tuKhoa != null && !tuKhoa.trim().isEmpty());
+
+            if (!boLoc.coDieuKienLoc() && reset == null && !coYeuCauLocThuCong) {
                 BoLocDaLuu macDinh = boLocService.timBoLocMacDinh(user);
                 if (macDinh != null) {
                     boLoc = BoLocKhachHangDTO.tuJson(macDinh.getTieuChiJson());
@@ -512,13 +591,27 @@ public class KhachHangServlet extends HttpServlet {
         int kichThuocTrang = 20;
 
         // Tự động lọc danh sách khách hàng DTO (Story S1-05 Data Scope)
-        List<BanGhiNghiepVuDTO> danhSachKhachHang = phanQuyenService.layDanhSachDuLieu(
-                userDTO, phamViHieuLuc, boLoc.getTuKhoa(), "KHACH_HANG"
-        );
+        // Khi có điều kiện lọc (Story S3-07), tuyệt đối không dùng danh sách dự phòng chưa lọc
+        List<BanGhiNghiepVuDTO> danhSachKhachHang;
+        if (boLoc.coDieuKienLoc()) {
+            danhSachKhachHang = Collections.emptyList();
+        } else {
+            danhSachKhachHang = phanQuyenService.layDanhSachDuLieu(
+                    userDTO, phamViHieuLuc, boLoc.getTuKhoa(), "KHACH_HANG"
+            );
+        }
 
         // Truy vấn danh sách khách hàng Model theo bộ lọc (Story S3-07 AC1, AC2)
-        List<KhachHang> dsKhachHangModel = khachHangService.timKiemVaLoc(userDTO, boLoc);
-        int tongSoKhachHangModel = khachHangService.demSoLuong(userDTO, boLoc);
+        List<KhachHang> dsKhachHangModel = Collections.emptyList();
+        int tongSoKhachHangModel = 0;
+        try {
+            dsKhachHangModel = khachHangService.timKiemVaLoc(userDTO, boLoc);
+            tongSoKhachHangModel = khachHangService.demSoLuong(userDTO, boLoc);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Lỗi truy vấn danh sách khách hàng theo bộ lọc: " + e.getMessage(), e);
+            dsKhachHangModel = Collections.emptyList();
+            tongSoKhachHangModel = 0;
+        }
 
         if (dsKhachHangModel == null) {
             dsKhachHangModel = Collections.emptyList();
@@ -544,7 +637,9 @@ public class KhachHangServlet extends HttpServlet {
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setHeader("Content-Disposition", "attachment; filename=\"du-lieu-khach-hang-" + phamViHieuLuc.getMa().toLowerCase() + ".xlsx\"");
             byte[] excelBytes;
-            if (dsKhachHangModel != null && !dsKhachHangModel.isEmpty()) {
+            if (boLoc.coDieuKienLoc()) {
+                excelBytes = khachHangService.xuatDanhSachExcel(dsKhachHangModel != null ? dsKhachHangModel : Collections.emptyList());
+            } else if (dsKhachHangModel != null && !dsKhachHangModel.isEmpty()) {
                 excelBytes = khachHangService.xuatDanhSachExcel(dsKhachHangModel);
             } else {
                 excelBytes = phanQuyenService.xuatDuLieuExcel(danhSachKhachHang);
@@ -606,10 +701,19 @@ public class KhachHangServlet extends HttpServlet {
         request.setAttribute("danhSachPhamViChoPhep", userDTO.getDanhSachPhamViChoPhep());
 
         // Thiết lập attributes cho View & Phân trang (S1-05, S3-01, S3-04, S3-07, S3-09)
+        int tongSoHienThi;
+        if (boLoc.coDieuKienLoc()) {
+            tongSoHienThi = tongSoKhachHangModel;
+        } else if (tongSoKhachHangModel > 0 || (dsKhachHangModel != null && !dsKhachHangModel.isEmpty())) {
+            tongSoHienThi = tongSoKhachHangModel;
+        } else {
+            tongSoHienThi = (danhSachKhachHang != null ? danhSachKhachHang.size() : 0);
+        }
+
         request.setAttribute("danhSachKhachHang", danhSachKhachHang);
         request.setAttribute("danhSachKhachHangModel", dsKhachHangModel);
         request.setAttribute("dsKhachHangModel", dsKhachHangModel);
-        request.setAttribute("tongSoKhachHang", tongSoKhachHangModel > 0 ? tongSoKhachHangModel : (danhSachKhachHang != null ? danhSachKhachHang.size() : 0));
+        request.setAttribute("tongSoKhachHang", tongSoHienThi);
         request.setAttribute("tuKhoaHienTai", boLoc.getTuKhoa() != null ? boLoc.getTuKhoa() : "");
         request.setAttribute("trangThaiHienTai", boLoc.getTrangThai() != null ? boLoc.getTrangThai() : "");
         request.setAttribute("nganhNgheIdHienTai", boLoc.getNganhNgheId());
@@ -847,6 +951,153 @@ public class KhachHangServlet extends HttpServlet {
             return;
         }
 
+        // 5.1 TASK 3: Bổ sung nơi nhập hợp đồng pháp lý cho khách hàng
+        if ("them-hop-dong".equalsIgnoreCase(action)) {
+            response.setContentType("application/json;charset=UTF-8");
+            if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("{\"success\":false,\"message\":\"Từ chối thao tác: Yêu cầu quyền WRITE trở lên.\"}");
+                return;
+            }
+
+            Long khId = parseLong(request.getParameter("khachHangId"));
+            if (khId == null || khId <= 0) {
+                khId = parseLong(request.getParameter("id"));
+            }
+            if (khId == null || khId <= 0) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"success\":false,\"message\":\"ID khách hàng không hợp lệ.\"}");
+                return;
+            }
+
+            String soHopDong = request.getParameter("soHopDong");
+            if (soHopDong == null || soHopDong.trim().isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"success\":false,\"message\":\"Số hợp đồng không được để trống.\"}");
+                return;
+            }
+
+            String rawGiaTri = request.getParameter("giaTriHopDong");
+            if (rawGiaTri == null || rawGiaTri.trim().isEmpty()) {
+                rawGiaTri = request.getParameter("giaTri");
+            }
+            BigDecimal giaTri = BigDecimal.ZERO;
+            try {
+                if (rawGiaTri != null) {
+                    String cleanGiaTri = rawGiaTri.replaceAll("[^0-9.]", "").trim();
+                    if (!cleanGiaTri.isEmpty()) {
+                        giaTri = new BigDecimal(cleanGiaTri);
+                    }
+                }
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"success\":false,\"message\":\"Giá trị hợp đồng không hợp lệ. Vui lòng nhập số tiền hợp lệ không âm.\"}");
+                return;
+            }
+
+            if (giaTri.compareTo(BigDecimal.ZERO) < 0) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"success\":false,\"message\":\"Giá trị hợp đồng không được âm.\"}");
+                return;
+            }
+
+            String rawNgayKy = request.getParameter("ngayKy");
+            String rawNgayHieuLuc = request.getParameter("ngayHieuLuc");
+            String rawNgayHetHan = request.getParameter("ngayHetHan");
+            String trangThai = request.getParameter("trangThai");
+            if (trangThai == null || trangThai.isBlank()) trangThai = "DA_KY";
+            String dieuKhoan = request.getParameter("dieuKhoanThanhToan");
+
+            LocalDate ngayKy = LocalDate.now();
+            try {
+                if (rawNgayKy != null && !rawNgayKy.isBlank()) {
+                    ngayKy = LocalDate.parse(rawNgayKy.trim());
+                }
+            } catch (Exception ignored) {}
+
+            LocalDate ngayHieuLuc = ngayKy;
+            try {
+                if (rawNgayHieuLuc != null && !rawNgayHieuLuc.isBlank()) {
+                    ngayHieuLuc = LocalDate.parse(rawNgayHieuLuc.trim());
+                }
+            } catch (Exception ignored) {}
+
+            LocalDate ngayHetHan = null;
+            try {
+                if (rawNgayHetHan != null && !rawNgayHetHan.isBlank()) {
+                    ngayHetHan = LocalDate.parse(rawNgayHetHan.trim());
+                }
+            } catch (Exception ignored) {}
+
+            Long baoGiaId = parseLong(request.getParameter("baoGiaId"));
+            if (baoGiaId == null || baoGiaId <= 0) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"success\":false,\"message\":\"Vui lòng chọn báo giá hợp lệ cho hợp đồng.\"}");
+                return;
+            }
+
+            HopDong hd = new HopDong();
+            hd.setSoHopDong(soHopDong.trim());
+            hd.setBaoGiaId(baoGiaId);
+            hd.setKhachHangId(khId);
+            hd.setGiaTriHopDong(giaTri);
+            hd.setNgayKy(ngayKy);
+            hd.setNgayHieuLuc(ngayHieuLuc);
+            hd.setNgayHetHan(ngayHetHan);
+            hd.setTrangThai(trangThai.trim());
+            hd.setDieuKhoanThanhToan(dieuKhoan != null ? dieuKhoan.trim() : "");
+            hd.setCreatedBy(user != null ? user.getId() : null);
+
+            try {
+                Long newHdId = congTyMeConService.themHopDong(hd, userDTO);
+                if (newHdId != null) {
+                    hd.setId(newHdId);
+                }
+
+                // Ghi nhận hoạt động vào timeline 360°
+                try {
+                    Long nhomId = user != null && user.getNhomKinhDoanhId() != null ? Long.valueOf(user.getNhomKinhDoanhId()) : null;
+                    khachHang360Service.themHoatDong(
+                            khId,
+                            user != null ? user.getId() : null,
+                            nhomId,
+                            "HOP_DONG",
+                            "Ký kết hợp đồng: " + hd.getSoHopDong(),
+                            "Hợp đồng pháp lý số " + hd.getSoHopDong() + " đã được thêm mới thành công. Giá trị: " + String.format(java.util.Locale.US, "%,d", giaTri.longValue()) + " VNĐ"
+                    );
+                } catch (Exception logEx) {
+                    LOGGER.log(Level.WARNING, "Không thể ghi nhật ký hoạt động cho hợp đồng: " + logEx.getMessage());
+                }
+
+                boolean isAjax = "application/json".equals(request.getHeader("Accept")) || "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+                if (isAjax) {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.getWriter().write("{\"success\":true,\"message\":\"Thêm mới hợp đồng thành công!\",\"id\":" + (newHdId != null ? newHdId : 0) + "}");
+                } else {
+                    session.setAttribute("thongBaoThanhCong", "Thêm mới hợp đồng " + hd.getSoHopDong() + " thành công!");
+                    response.sendRedirect(request.getContextPath() + "/khach-hang/360?id=" + khId + "&tab=attachments");
+                }
+            } catch (LoiPhanQuyenException pe) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("{\"success\":false,\"message\":\"" + escapeJson(pe.getMessage()) + "\"}");
+            } catch (IllegalArgumentException iae) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"success\":false,\"message\":\"" + escapeJson(iae.getMessage()) + "\"}");
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Lỗi thêm hợp đồng: " + e.getMessage(), e);
+                String errorMsg = "Lỗi hệ thống khi lưu hợp đồng. Vui lòng thử lại sau.";
+                String detailedMsg = e.getMessage() != null ? e.getMessage() : "";
+                if (detailedMsg.contains("uk_hd_bg") || (detailedMsg.contains("Duplicate entry") && detailedMsg.contains("bao_gia"))) {
+                    errorMsg = "Báo giá này đã được sử dụng cho một hợp đồng khác. Vui lòng chọn báo giá khác.";
+                } else if (detailedMsg.contains("uk_hop_dong_so") || detailedMsg.contains("so_hop_dong") || (detailedMsg.contains("Duplicate entry") && detailedMsg.contains("so"))) {
+                    errorMsg = "Số hợp đồng này đã tồn tại trong hệ thống. Vui lòng kiểm tra lại.";
+                }
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write("{\"success\":false,\"message\":\"" + escapeJson(errorMsg) + "\"}");
+            }
+            return;
+        }
+
         // 6. XỬ LÝ THAO TÁC SỬA KHÁCH HÀNG (STORY S3-01 & S1-05)
         if ("sua".equals(action) || (paramId != null && !"danhDauLienHe".equals(action))) {
             if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE)) {
@@ -942,6 +1193,18 @@ public class KhachHangServlet extends HttpServlet {
             }
 
             request.setAttribute("thongBaoThanhCong", "Cập nhật dữ liệu khách hàng thành công.");
+
+            String returnUrl = request.getParameter("returnUrl");
+            if (returnUrl != null && !returnUrl.isBlank()) {
+                session.setAttribute("flashThanhCong", "Cập nhật dữ liệu khách hàng thành công.");
+                response.sendRedirect(returnUrl);
+                return;
+            }
+            if ("application/json".equals(request.getHeader("Accept")) || "XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":true,\"message\":\"Cập nhật dữ liệu khách hàng thành công.\"}");
+                return;
+            }
         } else if ("gop".equals(action)) {
             // Story S3-04: Cảnh báo và gộp khách hàng trùng lặp (AC3, AC4)
             if (!permissionService.coQuyen(user, "KHACH_HANG", MucQuyen.WRITE)) {
@@ -1435,6 +1698,7 @@ public class KhachHangServlet extends HttpServlet {
 
     private String chuyenHoatDongSangJson(HoatDong h) {
         if (h == null) return "{}";
+        long epoch = h.getThoiGianEpoch();
         return "{" +
                 "\"id\":" + (h.getId() != null ? h.getId() : 0) + "," +
                 "\"maHoatDong\":\"" + escapeJson(h.getMaHoatDong()) + "\"," +
@@ -1443,6 +1707,7 @@ public class KhachHangServlet extends HttpServlet {
                 "\"tieuDe\":\"" + escapeJson(h.getTieuDe()) + "\"," +
                 "\"thoiGian\":\"" + escapeJson(h.getThoiGianDinhDang()) + "\"," +
                 "\"thoiGianDinhDang\":\"" + escapeJson(h.getThoiGianDinhDang()) + "\"," +
+                "\"thoiGianEpoch\":" + epoch + "," +
                 "\"nguoiThucHien\":\"" + escapeJson(h.getTenNguoiThucHien()) + "\"," +
                 "\"tenNguoiThucHien\":\"" + escapeJson(h.getTenNguoiThucHien()) + "\"," +
                 "\"nguoiLienHe\":\"" + escapeJson(h.getTenNguoiLienHe()) + "\"," +
@@ -1450,6 +1715,32 @@ public class KhachHangServlet extends HttpServlet {
                 "\"moTa\":\"" + escapeJson(h.getNoiDung()) + "\"," +
                 "\"ketQua\":\"" + escapeJson(h.getKetQua()) + "\"" +
                 "}";
+    }
+
+    private String chuyenDsBaoGiaSangJson(List<BaoGiaHopLeDTO> ds) {
+        if (ds == null || ds.isEmpty()) {
+            return "[]";
+        }
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < ds.size(); i++) {
+            if (i > 0) sb.append(",");
+            BaoGiaHopLeDTO bg = ds.get(i);
+            sb.append("{")
+                    .append("\"id\":").append(bg.getId() != null ? bg.getId() : 0).append(",")
+                    .append("\"maBaoGia\":\"").append(escapeJson(bg.getMaBaoGia())).append("\",")
+                    .append("\"tieuDe\":\"").append(escapeJson(bg.getTieuDe())).append("\",")
+                    .append("\"khachHangId\":").append(bg.getKhachHangId() != null ? bg.getKhachHangId() : 0).append(",")
+                    .append("\"coHoiId\":").append(bg.getCoHoiId() != null ? bg.getCoHoiId() : 0).append(",")
+                    .append("\"tenCoHoi\":\"").append(escapeJson(bg.getTenCoHoi())).append("\",")
+                    .append("\"phienBanId\":").append(bg.getPhienBanId() != null ? bg.getPhienBanId() : 0).append(",")
+                    .append("\"giaTriBaoGia\":").append(bg.getGiaTriBaoGia() != null ? bg.getGiaTriBaoGia().toPlainString() : "0").append(",")
+                    .append("\"giaTriDinhDang\":\"").append(escapeJson(bg.getGiaTriDinhDang())).append("\",")
+                    .append("\"trangThai\":\"").append(escapeJson(bg.getTrangThai())).append("\",")
+                    .append("\"dieuKhoanThanhToan\":\"").append(escapeJson(bg.getDieuKhoanThanhToan())).append("\"")
+                    .append("}");
+        }
+        sb.append("]");
+        return sb.toString();
     }
 
     private static String escapeJson(String text) {

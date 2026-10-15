@@ -6,10 +6,57 @@ window.chuyenBoLoc = function (boLocId) {
         return;
     }
     const url = new URL(window.location.href);
-    url.searchParams.set('boLocId', boLocId);
-    url.searchParams.delete('trang');
-    url.searchParams.delete('reset');
-    window.location.href = url.toString();
+    const phamVi = url.searchParams.get('phamVi');
+    const newUrl = new URL(window.location.pathname, window.location.origin);
+    if (phamVi) {
+        newUrl.searchParams.set('phamVi', phamVi);
+    }
+    newUrl.searchParams.set('boLocId', boLocId);
+    window.location.href = newUrl.toString();
+};
+
+// Story S3-07: Định nghĩa hàm toggleAdvancedFilter toàn cục ngay từ đầu (tránh bị gián đoạn bởi các module khác)
+window.toggleAdvancedFilter = function (forceOpen) {
+    const advancedFilterPanel = document.getElementById('advancedFilterPanel');
+    const btnToggleAdvancedFilter = document.getElementById('btnToggleAdvancedFilter');
+    const iconFilterArrow = document.getElementById('iconFilterArrow');
+    if (!advancedFilterPanel) return;
+
+    const isOpen = advancedFilterPanel.classList.contains('is-open') ||
+        (advancedFilterPanel.style.display !== 'none' && advancedFilterPanel.style.display !== '');
+    const willOpen = typeof forceOpen === 'boolean' ? forceOpen : !isOpen;
+
+    if (willOpen) {
+        advancedFilterPanel.classList.add('is-open');
+        advancedFilterPanel.style.display = 'block';
+        advancedFilterPanel.setAttribute('aria-hidden', 'false');
+        if (btnToggleAdvancedFilter) {
+            btnToggleAdvancedFilter.setAttribute('aria-expanded', 'true');
+            btnToggleAdvancedFilter.classList.add('is-active');
+        }
+        if (iconFilterArrow) {
+            iconFilterArrow.textContent = 'expand_less';
+        }
+        // Tự động focus vào ô đầu tiên trong khung lọc
+        const firstInput = advancedFilterPanel.querySelector('input:not([type="hidden"]), select');
+        if (firstInput) {
+            setTimeout(function () { firstInput.focus(); }, 120);
+        }
+    } else {
+        advancedFilterPanel.classList.remove('is-open');
+        advancedFilterPanel.style.display = 'none';
+        advancedFilterPanel.setAttribute('aria-hidden', 'true');
+        if (btnToggleAdvancedFilter) {
+            btnToggleAdvancedFilter.setAttribute('aria-expanded', 'false');
+            const badge = document.getElementById('filterCountBadge');
+            if (!badge) {
+                btnToggleAdvancedFilter.classList.remove('is-active');
+            }
+        }
+        if (iconFilterArrow) {
+            iconFilterArrow.textContent = 'expand_more';
+        }
+    }
 };
 
 /**
@@ -22,6 +69,43 @@ window.chuyenBoLoc = function (boLocId) {
  */
 document.addEventListener('DOMContentLoaded', function () {
     'use strict';
+
+    // =========================================================================
+    // 0. Khởi tạo Bộ lọc nâng cao ĐẦU TIÊN (Độc lập, không bị ảnh hưởng bởi lỗi module khác)
+    // =========================================================================
+    (function khoiTaoBoLocNangCao() {
+        try {
+            const btnToggleAdvancedFilter = document.getElementById('btnToggleAdvancedFilter');
+            const btnDongFilterPanel = document.getElementById('btnDongFilterPanel');
+            const btnDongFilterPanelBottom = document.getElementById('btnDongFilterPanelBottom');
+
+            if (btnToggleAdvancedFilter) {
+                btnToggleAdvancedFilter.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.toggleAdvancedFilter();
+                });
+            }
+
+            if (btnDongFilterPanel) {
+                btnDongFilterPanel.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    window.toggleAdvancedFilter(false);
+                    if (btnToggleAdvancedFilter) btnToggleAdvancedFilter.focus();
+                });
+            }
+
+            if (btnDongFilterPanelBottom) {
+                btnDongFilterPanelBottom.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    window.toggleAdvancedFilter(false);
+                    if (btnToggleAdvancedFilter) btnToggleAdvancedFilter.focus();
+                });
+            }
+        } catch (errFilter) {
+            console.error('Lỗi khi gắn sự kiện bộ lọc nâng cao:', errFilter);
+        }
+    })();
 
     // =========================================================================
     // 1. Quản lý Tabs Navigation System (S3-01, S3-09, S3-04)
@@ -369,8 +453,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const textNgayCuoi = row.querySelector('.cell-ngay-tt-cuoi');
         const badgeTrangThai = row.querySelector('.cell-badge-trang-thai');
         const btnMark = row.querySelector('.btn-action-mark');
+        const statusDot = row.querySelector('.cell-status-dot-cs');
 
         if (daLienHe) {
+            if (statusDot) {
+                statusDot.className = 'status-indicator-dot dot-teal cell-status-dot-cs';
+                statusDot.title = 'Đã liên hệ hôm nay';
+            }
             if (overdueBadge) {
                 overdueBadge.className = 'overdue-badge badge-green cell-overdue-badge';
             }
@@ -381,8 +470,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 textNgayCuoi.textContent = 'Gần nhất: Vừa xong';
             }
             if (badgeTrangThai) {
-                badgeTrangThai.className = 'badge badge-success cell-badge-trang-thai';
-                badgeTrangThai.textContent = 'Đã chăm sóc';
+                badgeTrangThai.className = 'tbl-badge-status cell-badge-trang-thai status-khach-hang';
+                badgeTrangThai.textContent = 'Đã liên hệ';
             }
             if (btnMark) {
                 btnMark.className = 'btn-contact-mark is-contacted btn-action-mark';
@@ -391,6 +480,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         } else {
             const isRed = soNgay > 60;
+            if (statusDot) {
+                statusDot.className = 'status-indicator-dot ' + (isRed ? 'dot-red' : 'dot-amber') + ' cell-status-dot-cs';
+                statusDot.title = isRed ? 'Quá hạn > 60 ngày' : 'Cần liên hệ';
+            }
             if (overdueBadge) {
                 overdueBadge.className = `overdue-badge ${isRed ? 'badge-red' : 'badge-amber'} cell-overdue-badge`;
             }
@@ -404,8 +497,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 textNgayCuoi.textContent = `Lần cuối: ${dStr}`;
             }
             if (badgeTrangThai) {
-                badgeTrangThai.className = `badge ${isRed ? 'badge-danger' : 'badge-warning'} cell-badge-trang-thai`;
-                badgeTrangThai.textContent = isRed ? 'Quá hạn cao' : 'Cần liên hệ';
+                badgeTrangThai.className = 'tbl-badge-status cell-badge-trang-thai ' + (isRed ? 'status-ngung-hop-tac' : 'status-dang-giao-dich');
+                badgeTrangThai.textContent = isRed ? 'Quá hạn' : 'Cần liên hệ';
             }
             if (btnMark) {
                 btnMark.className = 'btn-contact-mark btn-action-mark';
@@ -1695,7 +1788,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function escapeHtml(text) {
-        if (!text) return '';
+        if (text === null || text === undefined) return '';
+        const str = String(text);
         const map = {
             '&': '&amp;',
             '<': '&lt;',
@@ -1703,7 +1797,7 @@ document.addEventListener('DOMContentLoaded', function () {
             '"': '&quot;',
             "'": '&#039;'
         };
-        return text.replace(/[&<>"']/g, function (m) { return map[m]; });
+        return str.replace(/[&<>"']/g, function (m) { return map[m]; });
     }
 
     function debounce(fn, delay) {
@@ -1720,47 +1814,59 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // =========================================================================
-    // 10. Khởi chạy ban đầu khi nạp trang
+    // 10. Khởi chạy ban đầu khi nạp trang (Bọc try-catch độc lập từng phần)
     // =========================================================================
     // 1. Khởi chạy tính toán chăm sóc định kỳ (Story S3-09)
-    if (typeof khoiTaoBangChamSoc === 'function') {
-        khoiTaoBangChamSoc();
+    try {
+        if (typeof khoiTaoBangChamSoc === 'function') {
+            khoiTaoBangChamSoc();
+        }
+    } catch (errChamSoc) {
+        console.warn('Lỗi khi khởi chạy bảng chăm sóc định kỳ:', errChamSoc);
     }
 
     // 2. Khởi chạy quét và hiển thị trùng lặp (Story S3-04)
-    currentCustomerList = extractCustomersFromTable();
-    if (window.SERVER_DANH_SACH_CAP_TRUNG && Array.isArray(window.SERVER_DANH_SACH_CAP_TRUNG) && window.SERVER_DANH_SACH_CAP_TRUNG.length > 0) {
-        // Ưu tiên danh sách đã quét từ server theo thẩm quyền Data Scope (AC1)
-        detectedDuplicatePairs = window.SERVER_DANH_SACH_CAP_TRUNG;
-        detectedDuplicatePairs.forEach(function (pair) {
-            if (pair.recordA) {
-                pair.recordA.mstClean = pair.recordA.mstClean || cleanTaxCode(pair.recordA.mst);
-                pair.recordA.webClean = pair.recordA.webClean || cleanWebsite(pair.recordA.web);
-            }
-            if (pair.recordB) {
-                pair.recordB.mstClean = pair.recordB.mstClean || cleanTaxCode(pair.recordB.mst);
-                pair.recordB.webClean = pair.recordB.webClean || cleanWebsite(pair.recordB.web);
-            }
-        });
-    } else {
-        // Fallback: quét từ DOM bảng khách hàng nếu server không trả về danh sách
-        detectedDuplicatePairs = detectDuplicatePairs();
+    try {
+        currentCustomerList = extractCustomersFromTable();
+        if (window.SERVER_DANH_SACH_CAP_TRUNG && Array.isArray(window.SERVER_DANH_SACH_CAP_TRUNG) && window.SERVER_DANH_SACH_CAP_TRUNG.length > 0) {
+            // Ưu tiên danh sách đã quét từ server theo thẩm quyền Data Scope (AC1)
+            detectedDuplicatePairs = window.SERVER_DANH_SACH_CAP_TRUNG;
+            detectedDuplicatePairs.forEach(function (pair) {
+                if (pair.recordA) {
+                    pair.recordA.mstClean = pair.recordA.mstClean || cleanTaxCode(pair.recordA.mst);
+                    pair.recordA.webClean = pair.recordA.webClean || cleanWebsite(pair.recordA.web);
+                }
+                if (pair.recordB) {
+                    pair.recordB.mstClean = pair.recordB.mstClean || cleanTaxCode(pair.recordB.mst);
+                    pair.recordB.webClean = pair.recordB.webClean || cleanWebsite(pair.recordB.web);
+                }
+            });
+        } else {
+            // Fallback: quét từ DOM bảng khách hàng nếu server không trả về danh sách
+            detectedDuplicatePairs = detectDuplicatePairs();
+        }
+        updateUiDuplicateStatus();
+    } catch (errTrungLap) {
+        console.warn('Lỗi khi quét trùng lặp khách hàng:', errTrungLap);
     }
-    updateUiDuplicateStatus();
 
     // 3. Mở đúng tab theo yêu cầu server hoặc URL
-    if (window.TAB_HIEN_TAI === 'trung') {
-        chuyenTab('trung');
-    } else if (window.TAB_HIEN_TAI === 'cham-soc') {
-        chuyenTab('cham-soc');
-    } else {
-        const urlParams = new URLSearchParams(window.location.search);
-        const tabParam = urlParams.get('tab');
-        if (tabParam === 'trung') {
+    try {
+        if (window.TAB_HIEN_TAI === 'trung') {
             chuyenTab('trung');
-        } else if (tabParam === 'cham-soc') {
+        } else if (window.TAB_HIEN_TAI === 'cham-soc') {
             chuyenTab('cham-soc');
+        } else {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam === 'trung') {
+                chuyenTab('trung');
+            } else if (tabParam === 'cham-soc') {
+                chuyenTab('cham-soc');
+            }
         }
+    } catch (errTab) {
+        console.warn('Lỗi khi chuyển tab mặc định:', errTab);
     }
 
 
@@ -1894,23 +2000,97 @@ document.addEventListener('DOMContentLoaded', function () {
         btnClearTuKhoa.addEventListener('click', function () {
             tuKhoaInput.value = '';
             capNhatNutClear();
+            if (formLocKhachHang) {
+                const hiddenBoLocId = formLocKhachHang.querySelector('input[name="boLocId"]');
+                if (hiddenBoLocId) {
+                    hiddenBoLocId.remove();
+                }
+                const selectBoLoc = document.getElementById('selectBoLocDaLuu');
+                if (selectBoLoc) {
+                    selectBoLoc.value = '';
+                }
+                let locInput = formLocKhachHang.querySelector('input[name="loc"]');
+                if (!locInput) {
+                    locInput = document.createElement('input');
+                    locInput.type = 'hidden';
+                    locInput.name = 'loc';
+                    locInput.value = '1';
+                    formLocKhachHang.appendChild(locInput);
+                }
+            }
             tuKhoaInput.focus();
             if (formLocKhachHang) formLocKhachHang.submit();
         });
     }
 
-    // Xóa từng chip tiêu chí
+    // Khi người dùng chỉnh sửa tiêu chí lọc trong form -> chuyển sang bộ lọc tùy chỉnh, bỏ boLocId
+    if (formLocKhachHang) {
+        const cacTruongLoc = formLocKhachHang.querySelectorAll('input:not([name="phamVi"]):not([name="boLocId"]):not([name="loc"]), select:not(#selectBoLocDaLuu)');
+        function chuyenSangBoLocTuyChinh() {
+            const hiddenBoLocId = formLocKhachHang.querySelector('input[name="boLocId"]');
+            if (hiddenBoLocId) {
+                hiddenBoLocId.remove();
+            }
+            const selectBoLoc = document.getElementById('selectBoLocDaLuu');
+            if (selectBoLoc) {
+                selectBoLoc.value = '';
+            }
+            let locInput = formLocKhachHang.querySelector('input[name="loc"]');
+            if (!locInput) {
+                locInput = document.createElement('input');
+                locInput.type = 'hidden';
+                locInput.name = 'loc';
+                locInput.value = '1';
+                formLocKhachHang.appendChild(locInput);
+            }
+        }
+        cacTruongLoc.forEach(function (el) {
+            el.addEventListener('input', chuyenSangBoLocTuyChinh);
+            el.addEventListener('change', chuyenSangBoLocTuyChinh);
+        });
+
+        formLocKhachHang.addEventListener('submit', function () {
+            let locInput = formLocKhachHang.querySelector('input[name="loc"]');
+            if (!locInput) {
+                locInput = document.createElement('input');
+                locInput.type = 'hidden';
+                locInput.name = 'loc';
+                locInput.value = '1';
+                formLocKhachHang.appendChild(locInput);
+            }
+        });
+    }
+
+    // Xóa từng chip tiêu chí (AC3: chỉ xóa đúng điều kiện đó, chuyển sang bộ lọc tùy chỉnh, bỏ boLocId)
     const chipRemoveButtons = document.querySelectorAll('.filter-chip-remove');
     chipRemoveButtons.forEach(function (btn) {
         btn.addEventListener('click', function (e) {
             e.preventDefault();
+            e.stopPropagation();
             const field = btn.getAttribute('data-field');
             if (field && formLocKhachHang) {
                 const targetInput = formLocKhachHang.querySelector('[name="' + field + '"]');
                 if (targetInput) {
                     targetInput.value = '';
-                    formLocKhachHang.submit();
                 }
+                // Chuyển sang bộ lọc tùy chỉnh: xóa bỏ boLocId khỏi form gửi lên
+                const hiddenBoLocId = formLocKhachHang.querySelector('input[name="boLocId"]');
+                if (hiddenBoLocId) {
+                    hiddenBoLocId.remove();
+                }
+                const selectBoLoc = document.getElementById('selectBoLocDaLuu');
+                if (selectBoLoc) {
+                    selectBoLoc.value = '';
+                }
+                let locInput = formLocKhachHang.querySelector('input[name="loc"]');
+                if (!locInput) {
+                    locInput = document.createElement('input');
+                    locInput.type = 'hidden';
+                    locInput.name = 'loc';
+                    locInput.value = '1';
+                    formLocKhachHang.appendChild(locInput);
+                }
+                formLocKhachHang.submit();
             }
         });
     });
