@@ -32,7 +32,7 @@
                 <ol class="cd-breadcrumb-nav">
                     <li><a href="${pageContext.request.contextPath}/dieu-huong" class="cd-breadcrumb-link">Trang chủ</a></li>
                     <span class="cd-breadcrumb-sep" aria-hidden="true">/</span>
-                    <li><a href="${pageContext.request.contextPath}/marketing/campaigns" class="cd-breadcrumb-link">Lead & Phân bổ</a></li>
+                    <li><a href="${pageContext.request.contextPath}/lead" class="cd-breadcrumb-link">Lead & Phân bổ</a></li>
                     <span class="cd-breadcrumb-sep" aria-hidden="true">/</span>
                     <li class="cd-breadcrumb-current" aria-current="page">Chiến dịch marketing</li>
                 </ol>
