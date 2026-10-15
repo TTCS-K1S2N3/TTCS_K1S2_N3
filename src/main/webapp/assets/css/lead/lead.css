@@ -1358,3 +1358,141 @@
     outline: 2px solid var(--lead-primary);
     outline-offset: 2px;
 }
+
+/* Biến thể nút Thao tác */
+.lead-btn-action.lead-btn-edit {
+    color: #0284c7;
+    background: #f0f9ff;
+    border-color: rgba(2, 132, 199, 0.25);
+}
+
+.lead-btn-action.lead-btn-edit:hover {
+    background: #0284c7;
+    color: #ffffff;
+    border-color: #0284c7;
+    box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
+}
+
+.lead-btn-action.lead-btn-delete {
+    color: #dc2626;
+    background: #fef2f2;
+    border-color: rgba(220, 38, 38, 0.25);
+    cursor: pointer;
+}
+
+.lead-btn-action.lead-btn-delete:hover {
+    background: #dc2626;
+    color: #ffffff;
+    border-color: #dc2626;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.25);
+}
+
+.lead-btn-action.lead-btn-score {
+    color: #7c3aed;
+    background: #f5f3ff;
+    border-color: rgba(124, 58, 237, 0.25);
+    cursor: pointer;
+}
+
+.lead-btn-action.lead-btn-score:hover {
+    background: #7c3aed;
+    color: #ffffff;
+    border-color: #7c3aed;
+    box-shadow: 0 2px 4px rgba(124, 58, 237, 0.25);
+}
+
+/* Nút Danger dùng cho Modal Xác nhận Xóa */
+.lead-btn-danger {
+    background: #dc2626;
+    color: #ffffff;
+    border: 1px solid #dc2626;
+}
+
+.lead-btn-danger:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35);
+}
+
+/* Huy hiệu Phân loại Lead theo Chấm điểm S4-05 */
+.lead-badge-nong {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 9999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+    white-space: nowrap;
+}
+
+.lead-badge-am {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 9999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+    white-space: nowrap;
+}
+
+.lead-badge-lanh {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 9999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    background: #e0f2fe;
+    color: #075985;
+    border: 1px solid #7dd3fc;
+    white-space: nowrap;
+}
+
+/* Modal Backdrop & Card chuẩn thiết kế CRM */
+.lead-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 16px;
+    box-sizing: border-box;
+    animation: leadFadeIn 0.18s ease-out;
+}
+
+.lead-modal-card {
+    background: #ffffff;
+    border-radius: var(--lead-radius-md, 12px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
+    max-width: 480px;
+    width: 100%;
+    padding: 24px;
+    box-sizing: border-box;
+    animation: leadSlideUp 0.18s ease-out;
+}
+
+@keyframes leadFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes leadSlideUp {
+    from { transform: translateY(16px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+

@@ -23,16 +23,32 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Controller phục vụ Quản lý Khách hàng tiềm năng (Lead) và Tạo Lead thủ công.
+ * Controller phục vụ Quản lý Khách hàng tiềm năng (Lead), Tạo/Sửa/Xóa Lead và Chấm điểm Lead.
  * Phục vụ Story S4-02:
  * - AC1: Nhập tay một lead từ sự kiện hoặc danh thiếp
+ * - AC2: Cập nhật / Sửa thông tin Lead, Xóa Lead
  * - AC3: Bắt buộc mọi lead nhập vào phải có nguồn
+ * Phục vụ Story S4-05:
+ * - Tự động tính lại điểm & phân loại khi sửa Lead (AC2)
+ * - Tích hợp chức năng chấm điểm trực tiếp từ màn hình Lead
  * URLs:
- * - /lead          : Danh sách khách hàng tiềm năng
- * - /lead/tao-moi  : Giao diện và xử lý tạo lead thủ công
- * - /lead/tao-lead : Alias đường dẫn tạo lead
+ * - /lead               : Danh sách khách hàng tiềm năng
+ * - /lead/tao-moi       : Giao diện và xử lý tạo lead thủ công
+ * - /lead/tao-lead      : Alias đường dẫn tạo lead
+ * - /lead/sua           : Giao diện và xử lý cập nhật lead
+ * - /lead/xoa           : Xóa lead khỏi hệ thống
+ * - /lead/cham-diem-lead: Tính lại điểm cho 1 lead
+ * - /lead/tinh-lai-diem : Tính lại điểm toàn bộ lead
  */
-@WebServlet(name = "LeadServlet", urlPatterns = {"/lead", "/lead/tao-moi", "/lead/tao-lead"})
+@WebServlet(name = "LeadServlet", urlPatterns = {
+        "/lead",
+        "/lead/tao-moi",
+        "/lead/tao-lead",
+        "/lead/sua",
+        "/lead/xoa",
+        "/lead/cham-diem-lead",
+        "/lead/tinh-lai-diem"
+})
 public class LeadServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(LeadServlet.class.getName());
@@ -82,13 +98,51 @@ public class LeadServlet extends HttpServlet {
 
             List<MucDanhMucDTO> dsNguonLead = leadService.layDanhSachNguonLead();
             request.setAttribute("dsNguonLead", dsNguonLead);
+            request.setAttribute("isEditMode", false);
             request.setAttribute("currentUser", userDTO);
             request.setAttribute("nguoiDung", user);
             request.getRequestDispatcher("/WEB-INF/views/lead/tao-lead.jsp").forward(request, response);
             return;
         }
 
-        // 2. Màn hình danh sách lead (/lead) - Yêu cầu READ
+        // 2. Màn hình chỉnh sửa lead (/lead/sua) - Yêu cầu WRITE
+        if ("/lead/sua".equals(path)) {
+            if (!permissionService.coQuyen(user, "LEAD", MucQuyen.WRITE)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                request.setAttribute("currentUser", userDTO);
+                request.setAttribute("errorMessage", "Bạn không có quyền chỉnh sửa khách hàng tiềm năng.");
+                request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
+                return;
+            }
+
+            String idStr = request.getParameter("id");
+            if (idStr == null || idStr.isBlank()) {
+                response.sendRedirect(request.getContextPath() + "/lead");
+                return;
+            }
+
+            try {
+                Long id = Long.parseLong(idStr.trim());
+                Lead lead = leadService.timTheoId(id);
+                if (lead == null) {
+                    response.sendRedirect(request.getContextPath() + "/lead?loi=not_found");
+                    return;
+                }
+
+                request.setAttribute("formData", lead);
+                request.setAttribute("isEditMode", true);
+                request.setAttribute("dsNguonLead", leadService.layDanhSachNguonLead());
+                request.setAttribute("currentUser", userDTO);
+                request.setAttribute("nguoiDung", user);
+                request.getRequestDispatcher("/WEB-INF/views/lead/tao-lead.jsp").forward(request, response);
+                return;
+            } catch (NumberFormatException e) {
+                response.sendRedirect(request.getContextPath() + "/lead");
+                return;
+            }
+        }
+
+        // 3. Màn hình danh sách lead (/lead) - Yêu cầu READ
         if (!permissionService.coQuyen(user, "LEAD", MucQuyen.READ)) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             request.setAttribute("currentUser", userDTO);
@@ -119,14 +173,100 @@ public class LeadServlet extends HttpServlet {
 
         NguoiDung user = (NguoiDung) session.getAttribute("nguoiDung");
         NguoiDungDTO userDTO = NguoiDungDTO.tuNguoiDung(user);
+        String path = request.getServletPath();
+        String actionParam = request.getParameter("action");
 
-        // Kiểm tra quyền WRITE để tạo Lead
+        // Kiểm tra quyền WRITE để thao tác
         if (!permissionService.coQuyen(user, "LEAD", MucQuyen.WRITE)) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            if (isAjax(request)) {
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":false,\"message\":\"Từ chối thao tác: Yêu cầu quyền WRITE.\"}");
+                return;
+            }
             request.setAttribute("currentUser", userDTO);
-            request.setAttribute("errorMessage", "Bạn không có quyền tạo khách hàng tiềm năng.");
+            request.setAttribute("errorMessage", "Bạn không có quyền thực hiện thao tác trên khách hàng tiềm năng.");
             request.getRequestDispatcher("/WEB-INF/views/common/403.jsp").forward(request, response);
             return;
+        }
+
+        // A. XỬ LÝ XÓA LEAD (/lead/xoa hoặc /lead với action=xoa)
+        if ("/lead/xoa".equals(path) || ("xoa".equals(actionParam) && "/lead".equals(path))) {
+            String idStr = request.getParameter("id");
+            if (idStr == null || idStr.isBlank()) {
+                idStr = request.getParameter("leadId");
+            }
+            if (idStr != null && !idStr.isBlank()) {
+                try {
+                    Long id = Long.parseLong(idStr.trim());
+                    boolean daXoa = leadService.xoaLead(id, user.getId());
+                    if (isAjax(request)) {
+                        response.setContentType("application/json;charset=UTF-8");
+                        response.getWriter().write("{\"success\":" + daXoa + ",\"message\":\"" +
+                                (daXoa ? "Xóa khách hàng tiềm năng thành công." : "Không thể xóa khách hàng tiềm năng.") + "\"}");
+                        return;
+                    }
+                    if (daXoa) {
+                        response.sendRedirect(request.getContextPath() + "/lead?thanhCong=xoa");
+                    } else {
+                        response.sendRedirect(request.getContextPath() + "/lead?loi=xoa-that-bai");
+                    }
+                    return;
+                } catch (NumberFormatException ignored) {}
+            }
+            response.sendRedirect(request.getContextPath() + "/lead");
+            return;
+        }
+
+        // B. XỬ LÝ CHẤM ĐIỂM 1 LEAD (/lead/cham-diem-lead)
+        if ("/lead/cham-diem-lead".equals(path)) {
+            String idStr = request.getParameter("id");
+            if (idStr != null && !idStr.isBlank()) {
+                try {
+                    Long id = Long.parseLong(idStr.trim());
+                    Lead lead = leadService.chamDiemLead(id);
+                    if (isAjax(request)) {
+                        response.setContentType("application/json;charset=UTF-8");
+                        response.getWriter().write("{\"success\":true,\"diem\":" + (lead != null ? lead.getDiem() : 0) +
+                                ",\"phanLoai\":\"" + (lead != null ? lead.getPhanLoai() : "") + "\"}");
+                        return;
+                    }
+                    response.sendRedirect(request.getContextPath() + "/lead?thanhCong=cham-diem&maLead=" + (lead != null ? lead.getMaLead() : ""));
+                    return;
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Lỗi chấm điểm lead ID=" + idStr + ": " + e.getMessage(), e);
+                }
+            }
+            response.sendRedirect(request.getContextPath() + "/lead");
+            return;
+        }
+
+        // C. XỬ LÝ TÍNH LẠI ĐIỂM TOÀN BỘ LEAD (/lead/tinh-lai-diem)
+        if ("/lead/tinh-lai-diem".equals(path)) {
+            try {
+                int count = leadService.tinhLaiDiemToanBoLead();
+                if (isAjax(request)) {
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"success\":true,\"count\":" + count + ",\"message\":\"Đã tính lại điểm cho " + count + " lead.\"}");
+                    return;
+                }
+                response.sendRedirect(request.getContextPath() + "/lead?thanhCong=tinh-lai-diem&count=" + count);
+                return;
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Lỗi tính lại điểm toàn bộ lead: " + e.getMessage(), e);
+                response.sendRedirect(request.getContextPath() + "/lead?loi=tinh-diem-that-bai");
+                return;
+            }
+        }
+
+        // D. XỬ LÝ TẠO MỚI HOẶC SỬA LEAD
+        boolean isEdit = "/lead/sua".equals(path) || "sua".equals(actionParam);
+        String idStr = request.getParameter("id");
+        Long id = null;
+        if (isEdit && idStr != null && !idStr.isBlank()) {
+            try {
+                id = Long.parseLong(idStr.trim());
+            } catch (NumberFormatException ignored) {}
         }
 
         // Đọc các trường từ form submit
@@ -186,6 +326,7 @@ public class LeadServlet extends HttpServlet {
 
         // Chuẩn bị đối tượng Lead lưu giữ dữ liệu người dùng đã nhập
         Lead lead = new Lead();
+        lead.setId(id);
         lead.setHoTen(hoTen != null ? hoTen.trim() : "");
         lead.setTenCongTy(tenCongTy != null ? tenCongTy.trim() : null);
         lead.setSoDienThoai(soDienThoai != null ? soDienThoai.trim() : null);
@@ -199,6 +340,7 @@ public class LeadServlet extends HttpServlet {
         if (!errors.isEmpty()) {
             request.setAttribute("errors", errors);
             request.setAttribute("formData", lead);
+            request.setAttribute("isEditMode", isEdit);
             request.setAttribute("dsNguonLead", leadService.layDanhSachNguonLead());
             request.setAttribute("currentUser", userDTO);
             request.setAttribute("nguoiDung", user);
@@ -207,28 +349,43 @@ public class LeadServlet extends HttpServlet {
         }
 
         try {
-            Lead leadMoi = leadService.taoLeadThuCong(lead, user.getId());
-
-            if ("true".equalsIgnoreCase(tiepTuc)) {
-                // Người dùng chọn "Lưu & Tiếp tục thêm mới"
-                request.setAttribute("thongBaoThanhCong", "Tạo khách hàng tiềm năng thành công (" + leadMoi.getMaLead() + "). Bạn có thể tiếp tục tạo lead mới.");
-                request.setAttribute("dsNguonLead", leadService.layDanhSachNguonLead());
-                request.setAttribute("currentUser", userDTO);
-                request.setAttribute("nguoiDung", user);
-                request.getRequestDispatcher("/WEB-INF/views/lead/tao-lead.jsp").forward(request, response);
+            if (isEdit) {
+                // Xử lý CẬP NHẬT Lead
+                Lead leadCapNhat = leadService.capNhatLead(lead, user.getId());
+                response.sendRedirect(request.getContextPath() + "/lead?thanhCong=cap-nhat&maLead=" + leadCapNhat.getMaLead());
             } else {
-                // Điều hướng về trang danh sách lead
-                response.sendRedirect(request.getContextPath() + "/lead?thanhCong=tao-moi&maLead=" + leadMoi.getMaLead());
+                // Xử lý TẠO MỚI Lead
+                Lead leadMoi = leadService.taoLeadThuCong(lead, user.getId());
+
+                if ("true".equalsIgnoreCase(tiepTuc)) {
+                    // Người dùng chọn "Lưu & Tiếp tục thêm mới"
+                    request.setAttribute("thongBaoThanhCong", "Tạo khách hàng tiềm năng thành công (" + leadMoi.getMaLead() + "). Bạn có thể tiếp tục tạo lead mới.");
+                    request.setAttribute("dsNguonLead", leadService.layDanhSachNguonLead());
+                    request.setAttribute("isEditMode", false);
+                    request.setAttribute("currentUser", userDTO);
+                    request.setAttribute("nguoiDung", user);
+                    request.getRequestDispatcher("/WEB-INF/views/lead/tao-lead.jsp").forward(request, response);
+                } else {
+                    // Điều hướng về trang danh sách lead
+                    response.sendRedirect(request.getContextPath() + "/lead?thanhCong=tao-moi&maLead=" + leadMoi.getMaLead());
+                }
             }
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi lưu Lead thủ công: " + e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi lưu/cập nhật Lead: " + e.getMessage(), e);
             request.setAttribute("thongBaoLoi", "Không thể lưu thông tin khách hàng tiềm năng: " + e.getMessage());
             request.setAttribute("formData", lead);
+            request.setAttribute("isEditMode", isEdit);
             request.setAttribute("dsNguonLead", leadService.layDanhSachNguonLead());
             request.setAttribute("currentUser", userDTO);
             request.setAttribute("nguoiDung", user);
             request.getRequestDispatcher("/WEB-INF/views/lead/tao-lead.jsp").forward(request, response);
         }
+    }
+
+    private boolean isAjax(HttpServletRequest request) {
+        String xrw = request.getHeader("X-Requested-With");
+        String accept = request.getHeader("Accept");
+        return "XMLHttpRequest".equalsIgnoreCase(xrw) || (accept != null && accept.contains("application/json"));
     }
 }

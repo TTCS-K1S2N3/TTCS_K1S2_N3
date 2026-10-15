@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tạo Khách Hàng Tiềm Năng - CRM Bán Hàng</title>
+    <title><c:out value="${isEditMode ? 'Chỉnh Sửa' : 'Tạo'}" /> Khách Hàng Tiềm Năng - CRM Bán Hàng</title>
     <!-- CSS Hệ thống chung -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
@@ -27,7 +27,7 @@
                     <span class="lead-breadcrumb-sep">/</span>
                     <li><a href="${pageContext.request.contextPath}/lead" class="lead-breadcrumb-link">Lead & Phân bổ</a></li>
                     <span class="lead-breadcrumb-sep">/</span>
-                    <li class="lead-breadcrumb-current">Tạo Lead mới</li>
+                    <li class="lead-breadcrumb-current"><c:out value="${isEditMode ? 'Chỉnh sửa Lead' : 'Tạo Lead mới'}" /></li>
                 </ol>
             </nav>
 
@@ -35,21 +35,23 @@
             <div class="lead-page-header">
                 <div class="lead-title-wrap">
                     <h1>
-                        <span>Tạo Mới Khách Hàng Tiềm Năng</span>
-                        <span class="lead-header-pill">Lead mới</span>
+                        <span><c:out value="${isEditMode ? 'Chỉnh Sửa Khách Hàng Tiềm Năng' : 'Tạo Mới Khách Hàng Tiềm Năng'}" /></span>
+                        <span class="lead-header-pill"><c:out value="${isEditMode ? formData.maLead : 'Lead mới'}" /></span>
                     </h1>
-                    <p>Nhập thông tin khách hàng từ sự kiện, hội thảo hoặc danh thiếp tiếp xúc ban đầu.</p>
+                    <p><c:out value="${isEditMode ? 'Cập nhật lại thông tin liên hệ, nguồn tiếp nhận và nhu cầu khách hàng (điểm số sẽ tự động tính lại theo S4-05).' : 'Nhập thông tin khách hàng từ sự kiện, hội thảo hoặc danh thiếp tiếp xúc ban đầu.'}" /></p>
                 </div>
                 <div class="lead-header-actions">
                     <a href="${pageContext.request.contextPath}/lead" class="lead-btn lead-btn-outline" id="btnHuyTop">
                         <span>Hủy bỏ</span>
                     </a>
-                    <button type="button" class="lead-btn lead-btn-outline" id="btnLuuVaTiepTuc">
-                        <span>Lưu & Thêm tiếp</span>
-                    </button>
+                    <c:if test="${!isEditMode}">
+                        <button type="button" class="lead-btn lead-btn-outline" id="btnLuuVaTiepTuc">
+                            <span>Lưu & Thêm tiếp</span>
+                        </button>
+                    </c:if>
                     <button type="button" class="lead-btn lead-btn-primary" onclick="document.getElementById('formTaoLead').requestSubmit()">
                         <span class="material-symbols-outlined" style="font-size: 18px;">save</span>
-                        <span>Lưu thông tin</span>
+                        <span><c:out value="${isEditMode ? 'Lưu thay đổi' : 'Lưu thông tin'}" /></span>
                     </button>
                 </div>
             </div>
@@ -73,8 +75,14 @@
 
                 <!-- CỘT CHÍNH (TRÁI): FORM NHẬP LIỆU THANH THOÁT -->
                 <div class="lead-main-card">
-                    <form action="${pageContext.request.contextPath}/lead/tao-moi" method="POST" id="formTaoLead" novalidate>
-                        <input type="hidden" name="action" value="tao-thu-cong">
+                    <form action="${pageContext.request.contextPath}/lead/${isEditMode ? 'sua' : 'tao-moi'}" method="POST" id="formTaoLead" novalidate>
+                        <c:if test="${isEditMode}">
+                            <input type="hidden" name="id" value="${formData.id}">
+                            <input type="hidden" name="action" value="sua">
+                        </c:if>
+                        <c:if test="${!isEditMode}">
+                            <input type="hidden" name="action" value="tao-thu-cong">
+                        </c:if>
 
                         <!-- Khối 1: Người liên hệ & Công ty -->
                         <div class="lead-form-section">
@@ -265,9 +273,9 @@
                                         <span>Mức độ quan tâm</span>
                                     </label>
                                     <select id="muc_do_quan_tam" name="muc_do_quan_tam" class="lead-select">
-                                        <option value="CAO">Ưu tiên cao - Nhu cầu gấp</option>
-                                        <option value="TRUNG_BINH" selected>Trung bình - Đang khảo sát</option>
-                                        <option value="THAP">Thấp - Nhận diện ban đầu</option>
+                                        <option value="CAO" ${formData != null && formData.mucDoQuanTam == 'CAO' ? 'selected' : ''}>Ưu tiên cao - Nhu cầu gấp</option>
+                                        <option value="TRUNG_BINH" ${(formData == null || formData.mucDoQuanTam == 'TRUNG_BINH' || empty formData.mucDoQuanTam) ? 'selected' : ''}>Trung bình - Đang khảo sát</option>
+                                        <option value="THAP" ${formData != null && formData.mucDoQuanTam == 'THAP' ? 'selected' : ''}>Thấp - Nhận diện ban đầu</option>
                                     </select>
                                 </div>
 
@@ -302,7 +310,7 @@
                             <a href="${pageContext.request.contextPath}/lead" class="lead-btn lead-btn-outline">Hủy bỏ</a>
                             <button type="submit" class="lead-btn lead-btn-primary" id="btnLuuLead">
                                 <span class="material-symbols-outlined" style="font-size: 18px;">save</span>
-                                <span>Lưu thông tin Lead</span>
+                                <span><c:out value="${isEditMode ? 'Lưu thay đổi' : 'Lưu thông tin Lead'}" /></span>
                             </button>
                         </div>
                     </form>

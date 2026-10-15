@@ -195,4 +195,93 @@ class LeadServletTest {
         verify(request).getRequestDispatcher("/WEB-INF/views/lead/tao-lead.jsp");
         verify(dispatcher).forward(request, response);
     }
+
+    @Test
+    @DisplayName("S4-02: GET /lead/sua: Hiển thị form chỉnh sửa Lead khi tồn tại")
+    void testHienThiFormSuaLead() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userMarketing);
+        when(request.getServletPath()).thenReturn("/lead/sua");
+        when(request.getParameter("id")).thenReturn("55");
+
+        Lead leadMock = new Lead();
+        leadMock.setId(55L);
+        leadMock.setHoTen("Nguyễn Văn An");
+        leadMock.setMaLead("LEAD-261015-ABC12");
+        when(leadService.timTheoId(55L)).thenReturn(leadMock);
+        when(leadService.layDanhSachNguonLead()).thenReturn(List.of(new MucDanhMucDTO()));
+
+        servlet.doGet(request, response);
+
+        verify(request).setAttribute(eq("formData"), eq(leadMock));
+        verify(request).setAttribute(eq("isEditMode"), eq(true));
+        verify(request).getRequestDispatcher("/WEB-INF/views/lead/tao-lead.jsp");
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("S4-02 & S4-05: POST /lead/sua: Cập nhật thành công và chuyển hướng")
+    void testCapNhatLeadThanhCong() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userMarketing);
+        when(request.getServletPath()).thenReturn("/lead/sua");
+        when(request.getParameter("id")).thenReturn("55");
+        when(request.getParameter("ho_ten")).thenReturn("Nguyễn Văn An Cập Nhật");
+        when(request.getParameter("nguon_lead_id")).thenReturn("2");
+
+        Lead leadDaCapNhat = new Lead();
+        leadDaCapNhat.setId(55L);
+        leadDaCapNhat.setMaLead("LEAD-261015-ABC12");
+        when(leadService.capNhatLead(any(Lead.class), eq(10L))).thenReturn(leadDaCapNhat);
+
+        servlet.doPost(request, response);
+
+        verify(leadService).capNhatLead(any(Lead.class), eq(10L));
+        verify(response).sendRedirect(contains("/crm/lead?thanhCong=cap-nhat&maLead=LEAD-261015-ABC12"));
+    }
+
+    @Test
+    @DisplayName("S4-02: POST /lead/xoa: Xóa Lead thành công và chuyển hướng")
+    void testXoaLeadThanhCong() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userMarketing);
+        when(request.getServletPath()).thenReturn("/lead/xoa");
+        when(request.getParameter("id")).thenReturn("55");
+        when(leadService.xoaLead(55L, 10L)).thenReturn(true);
+
+        servlet.doPost(request, response);
+
+        verify(leadService).xoaLead(55L, 10L);
+        verify(response).sendRedirect(contains("/crm/lead?thanhCong=xoa"));
+    }
+
+    @Test
+    @DisplayName("S4-05: POST /lead/cham-diem-lead: Chấm điểm 1 Lead thành công")
+    void testChamDiem1LeadThanhCong() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userMarketing);
+        when(request.getServletPath()).thenReturn("/lead/cham-diem-lead");
+        when(request.getParameter("id")).thenReturn("55");
+
+        Lead leadDaCham = new Lead();
+        leadDaCham.setId(55L);
+        leadDaCham.setMaLead("LEAD-261015-ABC12");
+        leadDaCham.setDiem(85);
+        leadDaCham.setPhanLoai("NONG");
+        when(leadService.chamDiemLead(55L)).thenReturn(leadDaCham);
+
+        servlet.doPost(request, response);
+
+        verify(leadService).chamDiemLead(55L);
+        verify(response).sendRedirect(contains("/crm/lead?thanhCong=cham-diem&maLead=LEAD-261015-ABC12"));
+    }
+
+    @Test
+    @DisplayName("S4-05: POST /lead/tinh-lai-diem: Tính lại điểm toàn bộ Lead thành công")
+    void testTinhLaiDiemToanBoThanhCong() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userMarketing);
+        when(request.getServletPath()).thenReturn("/lead/tinh-lai-diem");
+        when(leadService.tinhLaiDiemToanBoLead()).thenReturn(15);
+
+        servlet.doPost(request, response);
+
+        verify(leadService).tinhLaiDiemToanBoLead();
+        verify(response).sendRedirect(contains("/crm/lead?thanhCong=tinh-lai-diem&count=15"));
+    }
 }

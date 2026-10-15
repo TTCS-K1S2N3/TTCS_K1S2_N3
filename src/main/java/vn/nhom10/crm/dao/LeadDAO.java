@@ -348,6 +348,64 @@ public class LeadDAO {
     }
 
     /**
+     * Xóa một Lead theo ID trong Connection ngoài (Story S4-02).
+     */
+    public boolean xoa(Connection conn, Long id) throws SQLException {
+        if (id == null) return false;
+
+        // Xóa liên kết gộp lead nếu có
+        try {
+            try (PreparedStatement psGopRef = conn.prepareStatement("UPDATE `lead` SET gop_vao_lead_id = NULL WHERE gop_vao_lead_id = ?")) {
+                psGopRef.setLong(1, id);
+                psGopRef.executeUpdate();
+            }
+        } catch (SQLException ignored) {
+            // Bỏ qua nếu cột hoặc bảng không tồn tại trong môi trường test
+        }
+
+        try {
+            try (PreparedStatement psLsgl = conn.prepareStatement("DELETE FROM `lich_su_gop_lead` WHERE lead_nguon_id = ? OR lead_dich_id = ?")) {
+                psLsgl.setLong(1, id);
+                psLsgl.setLong(2, id);
+                psLsgl.executeUpdate();
+            }
+        } catch (SQLException ignored) {
+            // Bỏ qua nếu bảng không tồn tại trong môi trường test
+        }
+
+        // Xóa Lead
+        String sql = "DELETE FROM `lead` WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Xóa một Lead theo ID (Story S4-02).
+     */
+    public boolean xoa(Long id) {
+        if (id == null) return false;
+        try (Connection conn = DatabaseConnection.layKetNoi()) {
+            boolean oldAutoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false);
+            try {
+                boolean result = xoa(conn, id);
+                conn.commit();
+                return result;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(oldAutoCommit);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi xóa Lead ID: " + id, e);
+            return false;
+        }
+    }
+
+    /**
      * Kiểm tra trùng mã Lead.
      */
     public boolean kiemTraTonTaiMa(String maLead) {

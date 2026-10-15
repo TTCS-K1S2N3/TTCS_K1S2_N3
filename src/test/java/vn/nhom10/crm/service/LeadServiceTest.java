@@ -246,4 +246,85 @@ class LeadServiceTest {
         assertNotNull(timThay);
         assertEquals("Lead Số 1", timThay.getHoTen());
     }
+
+    @Test
+    @DisplayName("S4-02 & S4-05 AC2: Cập nhật thông tin Lead thành công và tự động tính lại điểm")
+    void testCapNhatLeadThanhCong() {
+        Lead lead = new Lead();
+        lead.setHoTen("Nguyễn Văn An");
+        lead.setNguonLeadId(1L);
+        lead.setMucDoQuanTam("TRUNG_BINH");
+        Lead taoMoi = leadService.taoLeadThuCong(lead, 100L);
+
+        // Chuẩn bị dữ liệu cập nhật
+        Lead updateInput = new Lead();
+        updateInput.setId(taoMoi.getId());
+        updateInput.setHoTen("Nguyễn Văn An Đã Sửa");
+        updateInput.setTenCongTy("Công ty Công Nghệ Mới");
+        updateInput.setSoDienThoai("0988 777 666");
+        updateInput.setEmail("an.sua@tech.vn");
+        updateInput.setNguonLeadId(2L);
+        updateInput.setMucDoQuanTam("CAO");
+
+        Lead ketQua = leadService.capNhatLead(updateInput, 100L);
+
+        assertNotNull(ketQua);
+        assertEquals("Nguyễn Văn An Đã Sửa", ketQua.getHoTen());
+        assertEquals("CÔNG TY CÔNG NGHỆ MỚI", ketQua.getTenCongTyChuanHoa());
+        assertEquals("0988777666", ketQua.getSoDienThoaiChuanHoa());
+        assertEquals("an.sua@tech.vn", ketQua.getEmailChuanHoa());
+        assertEquals(2L, ketQua.getNguonLeadId());
+        assertEquals("CAO", ketQua.getMucDoQuanTam());
+
+        // Kiểm tra đọc lại từ DB
+        Lead fromDb = leadDAO.timTheoId(taoMoi.getId());
+        assertEquals("Nguyễn Văn An Đã Sửa", fromDb.getHoTen());
+        assertEquals(2L, fromDb.getNguonLeadId());
+    }
+
+    @Test
+    @DisplayName("S4-02 AC3: Từ chối cập nhật khi thiếu nguồn lead hợp lệ")
+    void testCapNhatLeadThieuNguon() {
+        Lead lead = new Lead();
+        lead.setHoTen("Nguyễn Văn An");
+        lead.setNguonLeadId(1L);
+        Lead taoMoi = leadService.taoLeadThuCong(lead, 100L);
+
+        Lead updateInput = new Lead();
+        updateInput.setId(taoMoi.getId());
+        updateInput.setHoTen("Tên Mới");
+        updateInput.setNguonLeadId(null); // Vi phạm AC3
+
+        assertThrows(IllegalArgumentException.class, () -> leadService.capNhatLead(updateInput, 100L));
+    }
+
+    @Test
+    @DisplayName("S4-02: Xóa Lead thành công khỏi hệ thống")
+    void testXoaLeadThanhCong() {
+        Lead lead = new Lead();
+        lead.setHoTen("Lead Cần Xóa");
+        lead.setNguonLeadId(1L);
+        Lead taoMoi = leadService.taoLeadThuCong(lead, 100L);
+
+        boolean daXoa = leadService.xoaLead(taoMoi.getId(), 100L);
+        assertTrue(daXoa, "Xóa Lead phải trả về true");
+
+        Lead timLai = leadDAO.timTheoId(taoMoi.getId());
+        assertNull(timLai, "Lead sau khi xóa không còn tồn tại trong DB");
+    }
+
+    @Test
+    @DisplayName("S4-05: Chấm điểm và phân loại lại lead thành công")
+    void testChamDiemLeadThanhCong() {
+        Lead lead = new Lead();
+        lead.setHoTen("Khách Hàng VIP");
+        lead.setNguonLeadId(1L);
+        lead.setMucDoQuanTam("CAO");
+        Lead taoMoi = leadService.taoLeadThuCong(lead, 100L);
+
+        Lead scored = leadService.chamDiemLead(taoMoi.getId());
+        assertNotNull(scored);
+        assertTrue(scored.getDiem() >= 0);
+        assertNotNull(scored.getPhanLoai());
+    }
 }
