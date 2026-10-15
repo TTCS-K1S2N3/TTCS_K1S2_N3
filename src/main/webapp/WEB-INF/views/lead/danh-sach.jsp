@@ -49,6 +49,10 @@
                     <p>Quản lý toàn bộ danh sách lead tiếp nhận từ hội thảo, danh thiếp sự kiện, nhập hàng loạt từ Excel hoặc qua biểu mẫu nhúng website (Epic EP-04 / Story S4-02).</p>
                 </div>
                 <div class="lead-header-actions">
+                    <a href="${pageContext.request.contextPath}/marketing/campaigns" class="lead-btn lead-btn-outline" id="btnChienDichMarketing" title="Quản lý chiến dịch marketing (S4-03)">
+                        <span class="material-symbols-outlined" aria-hidden="true">campaign</span>
+                        <span>Chiến dịch Marketing</span>
+                    </a>
                     <a href="${pageContext.request.contextPath}/bieu-mau" class="lead-btn lead-btn-outline" id="btnBieuMauNhung" title="Quản lý biểu mẫu nhúng website">
                         <span class="material-symbols-outlined" aria-hidden="true">dynamic_form</span>
                         <span>Biểu mẫu nhúng</span>
