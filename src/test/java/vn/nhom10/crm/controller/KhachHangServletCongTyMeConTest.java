@@ -34,6 +34,7 @@ public class KhachHangServletCongTyMeConTest {
 
     private PhanQuyenDuLieuService phanQuyenService;
     private CongTyMeConService congTyMeConService;
+    private vn.nhom10.crm.service.KhachHangService khachHangService;
     private KhachHangServlet servlet;
 
     private HttpServletRequest request;
@@ -48,7 +49,8 @@ public class KhachHangServletCongTyMeConTest {
     void setUp() {
         phanQuyenService = mock(PhanQuyenDuLieuService.class);
         congTyMeConService = mock(CongTyMeConService.class);
-        servlet = new KhachHangServlet(phanQuyenService, congTyMeConService);
+        khachHangService = mock(vn.nhom10.crm.service.KhachHangService.class);
+        servlet = new KhachHangServlet(phanQuyenService, congTyMeConService, khachHangService);
 
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
@@ -75,6 +77,9 @@ public class KhachHangServletCongTyMeConTest {
     void testGetChiTietKhachHang_HienThiThongKeNhomCongTy() throws Exception {
         when(request.getServletPath()).thenReturn("/khach-hang/chi-tiet");
         when(request.getParameter("id")).thenReturn("10");
+
+        KhachHang khMe = new KhachHang(10L, "Tập Đoàn Mẹ", 101L);
+        when(khachHangService.timTheoIdVaKiemTraQuyen(eq(10L), any(NguoiDung.class))).thenReturn(khMe);
 
         when(phanQuyenService.timBanGhiTheoId(10L, "KHACH_HANG")).thenReturn(banGhiMe);
         when(phanQuyenService.kiemTraQuyenTruyCap(any(NguoiDungDTO.class), eq(banGhiMe)))

@@ -45,7 +45,7 @@ public class ChamSocKhachHangService {
     }
 
     public ChamSocKhachHangService(ChamSocKhachHangDAO dao, CoCauToChucService coCauToChucService) {
-        this.dao = (dao != null) ? dao : new ChamSocKhachHangDAO();
+        this.dao = dao;
         this.coCauToChucService = (coCauToChucService != null) ? coCauToChucService : new CoCauToChucService();
         this.danhSachBoNho = new CopyOnWriteArrayList<>(khoiTaoDanhSachMau());
     }
