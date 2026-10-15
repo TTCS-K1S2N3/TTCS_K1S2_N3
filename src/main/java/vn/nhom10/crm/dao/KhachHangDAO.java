@@ -64,6 +64,18 @@ public class KhachHangDAO {
      * @return ID bản ghi vừa tạo hoặc null nếu thất bại.
      */
     public Long themKhachHang(KhachHang kh) {
+        try (Connection conn = DatabaseConnection.layKetNoi()) {
+            return themKhachHang(conn, kh);
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi thêm khách hàng: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Thêm mới khách hàng bằng Connection được truyền vào (phục vụ Transaction).
+     */
+    public Long themKhachHang(Connection conn, KhachHang kh) throws SQLException {
         if (kh == null) {
             return null;
         }
@@ -78,9 +90,7 @@ public class KhachHangDAO {
                 "doanh_thu_uoc_tinh, cong_ty_me_id, trang_thai, co_rui_ro, mo_ta_chi_tiet, ngay_tao" +
                 ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = DatabaseConnection.layKetNoi();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             datThamSoLuu(ps, kh);
 
             int rows = ps.executeUpdate();
@@ -93,9 +103,6 @@ public class KhachHangDAO {
                     }
                 }
             }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi thêm khách hàng: " + e.getMessage(), e);
-            return null;
         }
         return null;
     }

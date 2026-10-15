@@ -88,14 +88,6 @@ public class NguoiLienHeDAO {
      * Tự động khởi tạo 1 bản ghi trong bảng lich_su_lien_he_cong_ty.
      */
     public long themNguoiLienHe(NguoiLienHe nlh) {
-        String sqlResetMain = "UPDATE nguoi_lien_he SET la_dau_moi_chinh = 0 WHERE khach_hang_id = ?";
-        String sqlInsert = "INSERT INTO nguoi_lien_he (khach_hang_id, ho_ten, chuc_danh, email, so_dien_thoai, " +
-                "vai_tro_quyet_dinh, la_dau_moi_chinh, trang_thai, created_at, updated_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
-        String sqlInsertHistory = "INSERT INTO lich_su_lien_he_cong_ty (nguoi_lien_he_id, khach_hang_id, " +
-                "chuc_danh, vai_tro_quyet_dinh, tu_ngay, den_ngay, ghi_chu, created_at) " +
-                "VALUES (?, ?, ?, ?, CURRENT_DATE, NULL, ?, NOW())";
-
         Connection conn = null;
         boolean originalAutoCommit = true;
         try {
@@ -103,54 +95,7 @@ public class NguoiLienHeDAO {
             originalAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
 
-            // 1. Nếu là đầu mối chính, reset các đầu mối cũ của khách hàng này
-            if (nlh.isLaDauMoiChinh()) {
-                try (PreparedStatement psReset = conn.prepareStatement(sqlResetMain)) {
-                    psReset.setLong(1, nlh.getKhachHangId());
-                    psReset.executeUpdate();
-                }
-            }
-
-            // 2. Insert người liên hệ mới
-            long newId;
-            try (PreparedStatement ps = conn.prepareStatement(sqlInsert, Statement.RETURN_GENERATED_KEYS)) {
-                ps.setLong(1, nlh.getKhachHangId());
-                ps.setString(2, nlh.getHoTen().trim());
-                ps.setString(3, nlh.getChucDanh() != null ? nlh.getChucDanh().trim() : null);
-                ps.setString(4, nlh.getEmail() != null ? nlh.getEmail().trim() : null);
-                ps.setString(5, nlh.getSoDienThoai() != null ? nlh.getSoDienThoai().trim() : null);
-                if (nlh.getVaiTroQuyetDinh() != null) {
-                    ps.setString(6, nlh.getVaiTroQuyetDinh().getMa());
-                } else {
-                    ps.setNull(6, Types.VARCHAR);
-                }
-                ps.setBoolean(7, nlh.isLaDauMoiChinh());
-                ps.setString(8, nlh.getTrangThai() != null ? nlh.getTrangThai() : "DANG_HOAT_DONG");
-
-                ps.executeUpdate();
-                try (ResultSet gk = ps.getGeneratedKeys()) {
-                    if (gk.next()) {
-                        newId = gk.getLong(1);
-                        nlh.setId(newId);
-                    } else {
-                        throw new SQLException("Không lấy được id phát sinh của người liên hệ mới.");
-                    }
-                }
-            }
-
-            // 3. Khởi tạo bản ghi lịch sử công ty ban đầu (AC4)
-            try (PreparedStatement psHist = conn.prepareStatement(sqlInsertHistory)) {
-                psHist.setLong(1, newId);
-                psHist.setLong(2, nlh.getKhachHangId());
-                psHist.setString(3, nlh.getChucDanh() != null ? nlh.getChucDanh().trim() : null);
-                if (nlh.getVaiTroQuyetDinh() != null) {
-                    psHist.setString(4, nlh.getVaiTroQuyetDinh().getMa());
-                } else {
-                    psHist.setNull(4, Types.VARCHAR);
-                }
-                psHist.setString(5, "Khởi tạo thông tin liên hệ ban đầu");
-                psHist.executeUpdate();
-            }
+            long newId = themNguoiLienHe(conn, nlh);
 
             conn.commit();
             return newId;
@@ -172,6 +117,70 @@ public class NguoiLienHeDAO {
                 }
             }
         }
+    }
+
+    /**
+     * Thêm mới người liên hệ bằng Connection được truyền vào (phục vụ Transaction).
+     */
+    public long themNguoiLienHe(Connection conn, NguoiLienHe nlh) throws SQLException {
+        String sqlResetMain = "UPDATE nguoi_lien_he SET la_dau_moi_chinh = 0 WHERE khach_hang_id = ?";
+        String sqlInsert = "INSERT INTO nguoi_lien_he (khach_hang_id, ho_ten, chuc_danh, email, so_dien_thoai, " +
+                "vai_tro_quyet_dinh, la_dau_moi_chinh, trang_thai, created_at, updated_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+        String sqlInsertHistory = "INSERT INTO lich_su_lien_he_cong_ty (nguoi_lien_he_id, khach_hang_id, " +
+                "chuc_danh, vai_tro_quyet_dinh, tu_ngay, den_ngay, ghi_chu, created_at) " +
+                "VALUES (?, ?, ?, ?, CURRENT_DATE, NULL, ?, NOW())";
+
+        // 1. Nếu là đầu mối chính, reset các đầu mối cũ của khách hàng này
+        if (nlh.isLaDauMoiChinh()) {
+            try (PreparedStatement psReset = conn.prepareStatement(sqlResetMain)) {
+                psReset.setLong(1, nlh.getKhachHangId());
+                psReset.executeUpdate();
+            }
+        }
+
+        // 2. Insert người liên hệ mới
+        long newId;
+        try (PreparedStatement ps = conn.prepareStatement(sqlInsert, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setLong(1, nlh.getKhachHangId());
+            ps.setString(2, nlh.getHoTen().trim());
+            ps.setString(3, nlh.getChucDanh() != null ? nlh.getChucDanh().trim() : null);
+            ps.setString(4, nlh.getEmail() != null ? nlh.getEmail().trim() : null);
+            ps.setString(5, nlh.getSoDienThoai() != null ? nlh.getSoDienThoai().trim() : null);
+            if (nlh.getVaiTroQuyetDinh() != null) {
+                ps.setString(6, nlh.getVaiTroQuyetDinh().getMa());
+            } else {
+                ps.setNull(6, Types.VARCHAR);
+            }
+            ps.setBoolean(7, nlh.isLaDauMoiChinh());
+            ps.setString(8, nlh.getTrangThai() != null ? nlh.getTrangThai() : "DANG_HOAT_DONG");
+
+            ps.executeUpdate();
+            try (ResultSet gk = ps.getGeneratedKeys()) {
+                if (gk.next()) {
+                    newId = gk.getLong(1);
+                    nlh.setId(newId);
+                } else {
+                    throw new SQLException("Không lấy được id phát sinh của người liên hệ mới.");
+                }
+            }
+        }
+
+        // 3. Khởi tạo bản ghi lịch sử công ty ban đầu (AC4)
+        try (PreparedStatement psHist = conn.prepareStatement(sqlInsertHistory)) {
+            psHist.setLong(1, newId);
+            psHist.setLong(2, nlh.getKhachHangId());
+            psHist.setString(3, nlh.getChucDanh() != null ? nlh.getChucDanh().trim() : null);
+            if (nlh.getVaiTroQuyetDinh() != null) {
+                psHist.setString(4, nlh.getVaiTroQuyetDinh().getMa());
+            } else {
+                psHist.setNull(4, Types.VARCHAR);
+            }
+            psHist.setString(5, "Khởi tạo thông tin liên hệ ban đầu");
+            psHist.executeUpdate();
+        }
+
+        return newId;
     }
 
     /**

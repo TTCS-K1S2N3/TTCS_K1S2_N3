@@ -197,6 +197,141 @@ public class LeadDAO {
         return false;
     }
 
+    /**
+     * Khóa dòng Lead bằng SELECT ... FOR UPDATE trong transaction (Story S4-08).
+     * Ngăn chặn race condition khi hai người cùng bấm chuyển đổi hoặc chỉnh sửa đồng thời.
+     */
+    public Lead timTheoIdDeKhoa(Connection conn, Long id) throws SQLException {
+        if (id == null) return null;
+        String sql = "SELECT " + COT_SELECT_LEAD + FROM_JOIN_LEAD + "WHERE l.id = ? FOR UPDATE";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetSangLead(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Cập nhật chuyển đổi Lead thành công sang trạng thái DA_CHUYEN_DOI (Story S4-08 AC3).
+     * Gắn liên kết tới Khách hàng, Người liên hệ, Cơ hội và ghi nhận thời điểm chuyển đổi.
+     * @return true nếu cập nhật thành công 1 bản ghi, false nếu lead đã được chuyển đổi trước đó.
+     */
+    public boolean chuyenDoiLead(Connection conn, Long leadId, Long khachHangId, Long nlhId, Long coHoiId, LocalDateTime thoiDiem) throws SQLException {
+        if (leadId == null) return false;
+        String sql = "UPDATE `lead` SET " +
+                "trang_thai = 'DA_CHUYEN_DOI', " +
+                "khach_hang_chuyen_doi_id = ?, " +
+                "nguoi_lien_he_chuyen_doi_id = ?, " +
+                "co_hoi_chuyen_doi_id = ?, " +
+                "chuyen_doi_luc = ?, " +
+                "updated_at = CURRENT_TIMESTAMP " +
+                "WHERE id = ? AND trang_thai != 'DA_CHUYEN_DOI'";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, khachHangId);
+            ps.setLong(2, nlhId);
+            ps.setLong(3, coHoiId);
+            ps.setTimestamp(4, Timestamp.valueOf(thoiDiem != null ? thoiDiem : LocalDateTime.now()));
+            ps.setLong(5, leadId);
+
+            int rows = ps.executeUpdate();
+            return rows > 0;
+        }
+    }
+
+    /**
+     * Kiểm tra trạng thái Lead đã chuyển đổi chưa (Story S4-08 AC3).
+     */
+    public boolean kiemTraDaChuyenDoi(Long leadId) {
+        if (leadId == null) return false;
+        String sql = "SELECT trang_thai FROM `lead` WHERE id = ?";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, leadId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String tt = rs.getString("trang_thai");
+                    return "DA_CHUYEN_DOI".equalsIgnoreCase(tt);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi kiểm tra trạng thái chuyển đổi Lead: " + leadId, e);
+        }
+        return false;
+    }
+
+    /**
+     * Cập nhật thông tin Lead (có guard chặn sửa khi Lead đã chuyển đổi - Story S4-08 AC3).
+     */
+    public boolean capNhat(Lead lead) throws SQLException {
+        if (lead == null || lead.getId() == null) return false;
+
+        // Guard AC3: Chặn mọi chỉnh sửa nếu trạng thái hiện tại là DA_CHUYEN_DOI
+        if (kiemTraDaChuyenDoi(lead.getId())) {
+            throw new IllegalStateException("Lead đã ở trạng thái Đã chuyển đổi, không được phép chỉnh sửa nữa.");
+        }
+
+        String sql = "UPDATE `lead` SET " +
+                "ho_ten = ?, email = ?, email_chuan_hoa = ?, so_dien_thoai = ?, so_dien_thoai_chuan_hoa = ?, " +
+                "ten_cong_ty = ?, ten_cong_ty_chuan_hoa = ?, nhu_cau_quan_tam = ?, muc_do_quan_tam = ?, " +
+                "nganh_nghe_id = ?, quy_mo_id = ?, khu_vuc_id = ?, nguon_lead_id = ?, chien_dich_id = ?, " +
+                "bieu_mau_id = ?, diem = ?, phan_loai = ?, trang_thai = ?, nguoi_phu_trach_id = ?, " +
+                "nhom_phan_bo_id = ?, qua_sla = ?, updated_at = CURRENT_TIMESTAMP " +
+                "WHERE id = ? AND trang_thai != 'DA_CHUYEN_DOI'";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, lead.getHoTen());
+            ps.setString(2, lead.getEmail());
+            ps.setString(3, lead.getEmailChuanHoa());
+            ps.setString(4, lead.getSoDienThoai());
+            ps.setString(5, lead.getSoDienThoaiChuanHoa());
+            ps.setString(6, lead.getTenCongTy());
+            ps.setString(7, lead.getTenCongTyChuanHoa());
+            ps.setString(8, lead.getNhuCauQuanTam());
+            ps.setString(9, lead.getMucDoQuanTam());
+
+            if (lead.getNganhNgheId() != null) ps.setLong(10, lead.getNganhNgheId());
+            else ps.setNull(10, Types.BIGINT);
+
+            if (lead.getQuyMoId() != null) ps.setLong(11, lead.getQuyMoId());
+            else ps.setNull(11, Types.BIGINT);
+
+            if (lead.getKhuVucId() != null) ps.setLong(12, lead.getKhuVucId());
+            else ps.setNull(12, Types.BIGINT);
+
+            ps.setLong(13, lead.getNguonLeadId());
+
+            if (lead.getChienDichId() != null) ps.setLong(14, lead.getChienDichId());
+            else ps.setNull(14, Types.BIGINT);
+
+            if (lead.getBieuMauId() != null) ps.setLong(15, lead.getBieuMauId());
+            else ps.setNull(15, Types.BIGINT);
+
+            ps.setInt(16, lead.getDiem());
+            ps.setString(17, lead.getPhanLoai());
+            ps.setString(18, lead.getTrangThai() != null ? lead.getTrangThai().getMa() : TrangThaiLeadEnum.MOI.getMa());
+
+            if (lead.getNguoiPhuTrachId() != null) ps.setLong(19, lead.getNguoiPhuTrachId());
+            else ps.setNull(19, Types.BIGINT);
+
+            if (lead.getNhomPhanBoId() != null) ps.setLong(20, lead.getNhomPhanBoId());
+            else ps.setNull(20, Types.BIGINT);
+
+            ps.setBoolean(21, lead.isQuaSla());
+            ps.setLong(22, lead.getId());
+
+            return ps.executeUpdate() > 0;
+        }
+    }
+
     private void datThamSoLead(PreparedStatement ps, Lead lead) throws SQLException {
         ps.setString(1, lead.getMaLead());
         ps.setString(2, lead.getHoTen());
