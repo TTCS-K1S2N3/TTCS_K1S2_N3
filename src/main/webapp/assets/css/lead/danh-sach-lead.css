@@ -1,0 +1,1145 @@
+/* ==========================================================================
+   CSS DANH SÁCH & BỘ LỌC LEAD (STORY S4-09)
+   - AC1: Lọc theo trạng thái, nguồn, phân loại nóng/ấm/lạnh, người phụ trách, thời gian
+   - AC2: Nổi bật Lead quá hạn SLA (viền cảnh báo, badge đỏ pulse, tag cảnh báo)
+   - AC3: Quản lý bộ lọc đã lưu (Saved Filters Bar, Modal lưu bộ lọc)
+   Dự án: MSys CRM - Phân hệ Lead & Phân bổ (Sprint 4)
+   ========================================================================== */
+
+:root {
+    --lead-primary: #2563eb;
+    --lead-primary-dark: #1d4ed8;
+    --lead-primary-light: #eff6ff;
+    --lead-primary-glow: rgba(37, 99, 235, 0.15);
+
+    --lead-sla-danger: #dc2626;
+    --lead-sla-danger-bg: #fef2f2;
+    --lead-sla-danger-border: #fca5a5;
+    --lead-sla-danger-glow: rgba(220, 38, 38, 0.2);
+
+    --lead-hot-red: #ea580c;
+    --lead-hot-bg: #fff7ed;
+    --lead-hot-border: #ffedd5;
+
+    --lead-warm-orange: #d97706;
+    --lead-warm-bg: #fffbeb;
+    --lead-warm-border: #fef3c7;
+
+    --lead-cold-blue: #0284c7;
+    --lead-cold-bg: #f0f9ff;
+    --lead-cold-border: #e0f2fe;
+
+    --lead-success: #16a34a;
+    --lead-success-bg: #f0fdf4;
+    --lead-success-border: #bbf7d0;
+
+    --lead-border: #e2e8f0;
+    --lead-border-focus: #93c5fd;
+    --lead-card-bg: #ffffff;
+    --lead-text-main: #0f172a;
+    --lead-text-muted: #64748b;
+    --lead-text-sub: #475569;
+    --lead-bg-soft: #f8fafc;
+}
+
+/* ==========================================================================
+   1. BREADCRUMB & HEADER
+   ========================================================================== */
+.lead-page-container {
+    padding: 24px 32px 60px;
+    max-width: 1600px;
+    margin: 0 auto;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--lead-text-main);
+}
+
+.lead-breadcrumb {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-size: 13.5px;
+}
+
+.lead-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+}
+
+.lead-breadcrumb-link {
+    color: var(--lead-text-muted);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.lead-breadcrumb-link:hover {
+    color: var(--lead-primary);
+}
+
+.lead-breadcrumb-separator {
+    color: #94a3b8;
+    user-select: none;
+}
+
+.lead-breadcrumb-active {
+    font-weight: 600;
+    color: var(--lead-text-main);
+}
+
+.lead-header-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.lead-header-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.lead-header-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.lead-header-icon-box .material-symbols-outlined {
+    font-size: 26px;
+}
+
+.lead-header-text h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--lead-text-main);
+    letter-spacing: -0.02em;
+    margin: 0 0 4px 0;
+}
+
+.lead-header-text p {
+    font-size: 14px;
+    color: var(--lead-text-muted);
+    margin: 0;
+}
+
+.lead-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ==========================================================================
+   2. MORNING KPI STAT CARDS (Dành cho Sales Rep mở máy buổi sáng)
+   ========================================================================== */
+.lead-morning-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.lead-kpi-card {
+    background: var(--lead-card-bg);
+    border: 1px solid var(--lead-border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+}
+
+.lead-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px -4px rgba(15, 23, 42, 0.08);
+}
+
+.lead-kpi-card.kpi-sla-alert {
+    background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%);
+    border-color: var(--lead-sla-danger-border);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.08);
+}
+
+.lead-kpi-card.kpi-sla-alert:hover {
+    border-color: var(--lead-sla-danger);
+    box-shadow: 0 8px 20px -4px rgba(220, 38, 38, 0.2);
+}
+
+.lead-kpi-card.kpi-sla-alert::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.lead-kpi-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.kpi-sla-alert .lead-kpi-icon-wrap {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.kpi-hot .lead-kpi-icon-wrap {
+    background: var(--lead-hot-bg);
+    color: var(--lead-hot-red);
+}
+
+.kpi-new .lead-kpi-icon-wrap {
+    background: var(--lead-primary-light);
+    color: var(--lead-primary);
+}
+
+.kpi-total .lead-kpi-icon-wrap {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.lead-kpi-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.lead-kpi-value {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--lead-text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.kpi-sla-alert .lead-kpi-value {
+    color: var(--lead-sla-danger);
+}
+
+.kpi-hot .lead-kpi-value {
+    color: var(--lead-hot-red);
+}
+
+.lead-kpi-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--lead-text-muted);
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lead-sla-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #ef4444;
+    display: inline-block;
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    animation: lead-sla-pulse 1.8s infinite;
+}
+
+@keyframes lead-sla-pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+/* ==========================================================================
+   3. SAVED FILTERS BAR (AC3: Bộ lọc đã lưu sẵn)
+   ========================================================================== */
+.lead-saved-filters-section {
+    background: #ffffff;
+    border: 1px solid var(--lead-border);
+    border-radius: 12px;
+    padding: 12px 18px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.lead-saved-filters-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.lead-saved-filter-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--lead-text-sub);
+    white-space: nowrap;
+}
+
+.lead-saved-filter-label .material-symbols-outlined {
+    font-size: 18px;
+    color: #f59e0b;
+}
+
+.lead-saved-filter-chips {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.lead-saved-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--lead-text-sub);
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.lead-saved-filter-chip:hover {
+    background: #e2e8f0;
+    color: var(--lead-text-main);
+    border-color: #cbd5e1;
+}
+
+.lead-saved-filter-chip.is-active {
+    background: #eff6ff;
+    color: var(--lead-primary);
+    border-color: #bfdbfe;
+    font-weight: 600;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.lead-saved-filter-chip .material-symbols-outlined {
+    font-size: 15px;
+}
+
+.lead-saved-filter-empty-text {
+    font-size: 12.5px;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.lead-btn-save-filter-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--lead-primary);
+    background: #ffffff;
+    border: 1px dashed var(--lead-primary);
+    border-radius: 8px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.lead-btn-save-filter-trigger:hover {
+    background: var(--lead-primary-light);
+    border-style: solid;
+}
+
+.lead-btn-save-filter-trigger .material-symbols-outlined {
+    font-size: 17px;
+}
+
+/* ==========================================================================
+   4. ADVANCED FILTER CARD (AC1: 5 nhóm tiêu chí AND)
+   ========================================================================== */
+.lead-filter-card {
+    background: #ffffff;
+    border: 1px solid var(--lead-border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.lead-filter-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.lead-filter-header-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--lead-text-main);
+}
+
+.lead-filter-header-title .material-symbols-outlined {
+    font-size: 20px;
+    color: var(--lead-primary);
+}
+
+.lead-active-filter-counter {
+    background: var(--lead-primary-light);
+    color: var(--lead-primary);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 6px;
+}
+
+.lead-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.lead-filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.lead-filter-field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--lead-text-sub);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.lead-filter-field label .material-symbols-outlined {
+    font-size: 16px;
+    color: #94a3b8;
+}
+
+.lead-select,
+.lead-input {
+    width: 100%;
+    height: 40px;
+    padding: 8px 12px;
+    font-size: 13.5px;
+    color: var(--lead-text-main);
+    background-color: #ffffff;
+    border: 1px solid var(--lead-border);
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    font-family: inherit;
+}
+
+.lead-select:focus,
+.lead-input:focus {
+    border-color: var(--lead-primary);
+    box-shadow: 0 0 0 3px var(--lead-primary-glow);
+}
+
+.lead-date-range-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.lead-filter-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 14px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.lead-filter-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ==========================================================================
+   ACTIVE FILTER TAGS (HIỂN THỊ CÁC TIÊU CHÍ ĐANG LỌC)
+   ========================================================================== */
+.lead-active-chips-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 10px;
+}
+
+.lead-active-chip-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--lead-text-muted);
+}
+
+.lead-active-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--lead-text-sub);
+}
+
+.lead-active-tag-remove {
+    cursor: pointer;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    transition: all 0.15s ease;
+}
+
+.lead-active-tag-remove:hover {
+    background: #e2e8f0;
+    color: #ef4444;
+}
+
+.lead-active-tag-remove .material-symbols-outlined {
+    font-size: 14px;
+}
+
+/* ==========================================================================
+   BUTTONS
+   ========================================================================== */
+.lead-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 40px;
+    padding: 0 16px;
+    font-size: 13.5px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.lead-btn-primary {
+    background: var(--lead-primary);
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+}
+
+.lead-btn-primary:hover {
+    background: var(--lead-primary-dark);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+}
+
+.lead-btn-outline {
+    background: #ffffff;
+    color: var(--lead-text-sub);
+    border-color: var(--lead-border);
+}
+
+.lead-btn-outline:hover {
+    background: #f8fafc;
+    color: var(--lead-text-main);
+    border-color: #cbd5e1;
+}
+
+.lead-btn-sm {
+    height: 34px;
+    padding: 0 12px;
+    font-size: 12.5px;
+}
+
+.lead-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   5. DATA TABLE & SLA HIGHLIGHT (AC1, AC2)
+   ========================================================================== */
+.lead-table-card {
+    background: #ffffff;
+    border: 1px solid var(--lead-border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+}
+
+.lead-table-header-meta {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--lead-border);
+    background: #fafafa;
+}
+
+.lead-table-count {
+    font-size: 14px;
+    color: var(--lead-text-sub);
+}
+
+.lead-table-count strong {
+    color: var(--lead-text-main);
+    font-weight: 700;
+}
+
+.lead-table-wrap {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.lead-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 13.5px;
+}
+
+.lead-table th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--lead-border);
+    white-space: nowrap;
+}
+
+.lead-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--lead-text-main);
+    vertical-align: middle;
+}
+
+.lead-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.lead-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* AC2: ROW NỔI BẬT DÀNH CHO LEAD QUÁ SLA */
+.lead-table tbody tr.row-sla-overdue {
+    background-color: #fff9f9;
+    border-left: 4px solid var(--lead-sla-danger);
+}
+
+.lead-table tbody tr.row-sla-overdue:hover {
+    background-color: #fee2e2;
+}
+
+/* Code & Links */
+.lead-code-cell {
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-weight: 700;
+    color: var(--lead-primary);
+}
+
+.lead-name-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.lead-fullname {
+    font-weight: 600;
+    color: var(--lead-text-main);
+    text-decoration: none;
+}
+
+.lead-fullname:hover {
+    color: var(--lead-primary);
+}
+
+.lead-company {
+    font-size: 12px;
+    color: var(--lead-text-muted);
+}
+
+.lead-contact-info {
+    font-size: 12px;
+    color: var(--lead-text-sub);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* BADGES */
+.lead-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* AC2: SLA BADGES */
+.lead-badge-sla-danger {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+    animation: lead-sla-badge-pulse 2s infinite ease-in-out;
+}
+
+.lead-badge-sla-danger .material-symbols-outlined {
+    font-size: 15px;
+    color: #dc2626;
+}
+
+@keyframes lead-sla-badge-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15);
+    }
+}
+
+.lead-badge-sla-normal {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.lead-badge-sla-normal .material-symbols-outlined {
+    font-size: 15px;
+}
+
+/* PHÂN LOẠI BADGES (Nóng / Ấm / Lạnh) */
+.lead-badge-hot {
+    background: var(--lead-hot-bg);
+    color: var(--lead-hot-red);
+    border: 1px solid #fdba74;
+}
+
+.lead-badge-hot .material-symbols-outlined {
+    font-size: 15px;
+    color: #ea580c;
+}
+
+.lead-badge-warm {
+    background: var(--lead-warm-bg);
+    color: var(--lead-warm-orange);
+    border: 1px solid #fde68a;
+}
+
+.lead-badge-warm .material-symbols-outlined {
+    font-size: 15px;
+    color: #d97706;
+}
+
+.lead-badge-cold {
+    background: var(--lead-cold-bg);
+    color: var(--lead-cold-blue);
+    border: 1px solid #bae6fd;
+}
+
+.lead-badge-cold .material-symbols-outlined {
+    font-size: 15px;
+    color: #0284c7;
+}
+
+/* TRẠNG THÁI BADGES */
+.lead-badge-status-new {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.lead-badge-status-progress {
+    background: #fefce8;
+    color: #a16207;
+    border: 1px solid #fef08a;
+}
+
+.lead-badge-status-converted {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.lead-badge-status-rejected {
+    background: #f8fafc;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+/* NGUỒN BADGE */
+.lead-badge-source {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+}
+
+.lead-badge-source .material-symbols-outlined {
+    font-size: 14px;
+    color: #64748b;
+}
+
+/* ASSIGNEE CELL */
+.lead-assignee-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lead-avatar-mini {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lead-unassigned-tag {
+    font-size: 12px;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* ==========================================================================
+   6. EMPTY STATE & ALERT BOXES
+   ========================================================================== */
+.lead-empty-state-wrap {
+    padding: 60px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.lead-empty-icon-circle {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.lead-empty-icon-circle .material-symbols-outlined {
+    font-size: 36px;
+}
+
+.lead-empty-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--lead-text-main);
+    margin: 0 0 6px 0;
+}
+
+.lead-empty-desc {
+    font-size: 13.5px;
+    color: var(--lead-text-muted);
+    max-width: 420px;
+    margin: 0 0 20px 0;
+    line-height: 1.5;
+}
+
+/* ALERTS */
+.lead-alert {
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+}
+
+.lead-alert-success {
+    background: var(--lead-success-bg);
+    border: 1px solid var(--lead-success-border);
+    color: #166534;
+}
+
+.lead-alert-error {
+    background: var(--lead-sla-danger-bg);
+    border: 1px solid var(--lead-sla-danger-border);
+    color: #991b1b;
+}
+
+.lead-alert .material-symbols-outlined {
+    font-size: 20px;
+}
+
+/* ==========================================================================
+   7. MODAL LƯU BỘ LỌC (AC3: Save Filter Modal)
+   ========================================================================== */
+.lead-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+}
+
+.lead-modal-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.lead-modal-dialog {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: scale(0.95);
+    transition: transform 0.2s ease;
+    overflow: hidden;
+    margin: 16px;
+}
+
+.lead-modal-backdrop.is-open .lead-modal-dialog {
+    transform: scale(1);
+}
+
+.lead-modal-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.lead-modal-header-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--lead-text-main);
+}
+
+.lead-modal-header-title .material-symbols-outlined {
+    font-size: 22px;
+    color: #f59e0b;
+}
+
+.lead-modal-close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94a3b8;
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.lead-modal-close-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.lead-modal-body {
+    padding: 20px 24px;
+}
+
+.lead-modal-group {
+    margin-bottom: 18px;
+}
+
+.lead-modal-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--lead-text-sub);
+    margin-bottom: 6px;
+}
+
+.lead-modal-char-count {
+    font-size: 11.5px;
+    color: #94a3b8;
+    text-align: right;
+    margin-top: 4px;
+}
+
+.lead-modal-preview-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 14px;
+}
+
+.lead-modal-preview-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lead-modal-preview-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.lead-modal-preview-tag {
+    font-size: 11.5px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: #334155;
+}
+
+.lead-modal-footer {
+    padding: 16px 24px;
+    background: #fafafa;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* ==========================================================================
+   8. RESPONSIVE DESIGN (360px -> Desktop)
+   ========================================================================== */
+@media (max-width: 1200px) {
+    .lead-filter-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .lead-page-container {
+        padding: 16px;
+    }
+
+    .lead-morning-kpis {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .lead-filter-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .lead-morning-kpis {
+        grid-template-columns: 1fr;
+    }
+
+    .lead-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lead-header-banner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .lead-header-actions {
+        width: 100%;
+    }
+
+    .lead-header-actions .lead-btn {
+        flex: 1;
+    }
+
+    .lead-filter-actions {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    .lead-filter-actions-right {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+}
