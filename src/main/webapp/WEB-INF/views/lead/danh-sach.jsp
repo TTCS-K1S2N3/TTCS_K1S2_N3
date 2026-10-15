@@ -119,6 +119,7 @@
                                 <th>Email</th>
                                 <th style="width: 120px; text-align: center;">Trạng Thái</th>
                                 <th style="width: 140px; text-align: right;">Thời Gian Tạo</th>
+                                <th style="width: 100px; text-align: center;">Thao Tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -127,7 +128,11 @@
                                     <c:forEach var="lead" items="${dsLead}">
                                         <tr class="row-valid">
                                             <td class="font-mono">
-                                                <strong style="color: var(--lead-primary);"><c:out value="${lead.maLead}" /></strong>
+                                                <a href="${pageContext.request.contextPath}/lead/chi-tiet?leadId=${lead.id}"
+                                                   class="lead-code-link"
+                                                   title="Xem chi tiết khách hàng tiềm năng ${lead.maLead}">
+                                                    <strong><c:out value="${lead.maLead}" /></strong>
+                                                </a>
                                             </td>
                                             <td>
                                                 <strong style="color: var(--lead-neutral-900);"><c:out value="${lead.hoTen}" /></strong>
@@ -156,13 +161,22 @@
                                             <td style="text-align: right; font-size: 12.5px; color: var(--lead-neutral-500);">
                                                 <c:out value="${lead.createdAt != null ? lead.createdAt : 'Vừa xong'}" />
                                             </td>
+                                            <td style="text-align: center;">
+                                                <a href="${pageContext.request.contextPath}/lead/chi-tiet?leadId=${lead.id}"
+                                                   class="lead-btn-action"
+                                                   id="btnXemChiTiet_${lead.id}"
+                                                   title="Xem chi tiết Lead ${lead.maLead}">
+                                                    <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">visibility</span>
+                                                    <span>Chi tiết</span>
+                                                </a>
+                                            </td>
                                         </tr>
                                     </c:forEach>
                                 </c:when>
                                 <c:otherwise>
                                     <!-- Trạng thái rỗng chuẩn khi chưa có Lead nào trong hệ thống -->
                                     <tr>
-                                        <td colspan="8">
+                                        <td colspan="9">
                                             <div class="lead-empty-state">
                                                 <div class="lead-empty-icon" aria-hidden="true">
                                                     <span class="material-symbols-outlined">person_search</span>
