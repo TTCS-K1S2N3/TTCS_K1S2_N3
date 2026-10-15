@@ -1897,6 +1897,16 @@ UPDATE nhom_kinh_doanh
 SET truong_nhom_id = 3
 WHERE id = 2;
 
+INSERT INTO nguon_lead
+    (id, ma_nguon, ten_nguon, thu_tu_hien_thi, hoat_dong)
+VALUES
+    (1, 'SU_KIEN', 'Sự kiện / Hội thảo', 10, 1),
+    (2, 'DANH_THIEP', 'Danh thiếp đối tác', 20, 1),
+    (3, 'GIOI_THIEU', 'Khách hàng giới thiệu', 30, 1),
+    (4, 'WEBSITE', 'Website / Biểu mẫu', 40, 1),
+    (5, 'DIEN_THOAI', 'Gọi điện thoại', 50, 1),
+    (6, 'KHAC', 'Nguồn khác', 60, 1);
+
 INSERT INTO loai_hoat_dong
     (id, ma_loai, ten_loai, thu_tu_hien_thi, hoat_dong)
 VALUES

@@ -98,7 +98,9 @@ class LichSuPhanBoLeadDAOTest {
 
         List<LichSuPhanBoLead> lichSuList = dao.layTheoLeadId(10L);
         assertEquals(2, lichSuList.size());
-        assertEquals(HanhDongPhanBoEnum.TRUONG_NHOM_PHAN_TAY, lichSuList.get(0).getHanhDong());
-        assertEquals(HanhDongPhanBoEnum.TU_DONG_THEO_QUY_TAC, lichSuList.get(1).getHanhDong());
+        assertEquals(HanhDongPhanBoEnum.TRUONG_NHOM_PHAN_TAY, lichSuList.get(0).getHanhDongEnum());
+        assertEquals("TRUONG_NHOM_PHAN_TAY", lichSuList.get(0).getHanhDong());
+        assertEquals(HanhDongPhanBoEnum.TU_DONG_THEO_QUY_TAC, lichSuList.get(1).getHanhDongEnum());
+        assertEquals("TU_DONG_THEO_QUY_TAC", lichSuList.get(1).getHanhDong());
     }
 }

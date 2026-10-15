@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import vn.nhom10.crm.dao.HopDongDAO;
 import vn.nhom10.crm.dao.KhachHangDAO;
 import vn.nhom10.crm.dto.BanGhiNghiepVuDTO;
+import vn.nhom10.crm.dto.BaoGiaHopLeDTO;
 import vn.nhom10.crm.dto.NguoiDungDTO;
 import vn.nhom10.crm.dto.ThongKeNhomCongTyDTO;
 import vn.nhom10.crm.model.HopDong;
@@ -205,5 +206,145 @@ public class CongTyMeConServiceTest {
         assertEquals(0, dto.getSoLuongCongTyCon());
         assertEquals(new BigDecimal("250000000.00"), dto.getTongGiaTriHopDongNhomCongTy());
         assertEquals(BigDecimal.ZERO, dto.getTongGiaTriHopDongCacCongTyCon());
+    }
+
+    @Test
+    @DisplayName("Thêm hợp đồng: Thiếu báo giá ID -> Báo lỗi IllegalArgumentException")
+    void testThemHopDong_KhongCoBaoGia_Loi() throws Exception {
+        when(khachHangDAO.timTheoId(10L)).thenReturn(khachHangMe);
+        when(phanQuyenService.kiemTraQuyenSua(eq(userAdmin), any(BanGhiNghiepVuDTO.class)))
+                .thenReturn(new PhanQuyenDuLieuService.KetQuaKiemTra(true, "Có quyền", null));
+
+        HopDong hd = new HopDong();
+        hd.setKhachHangId(10L);
+        hd.setSoHopDong("HD-2026-TEST");
+        hd.setGiaTriHopDong(new BigDecimal("100000000.00"));
+        hd.setBaoGiaId(null);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> service.themHopDong(hd, userAdmin));
+        assertTrue(ex.getMessage().contains("báo giá hợp lệ"));
+    }
+
+    @Test
+    @DisplayName("Thêm hợp đồng: Báo giá không tồn tại -> Báo lỗi IllegalArgumentException")
+    void testThemHopDong_BaoGiaKhongTonTai_Loi() throws Exception {
+        when(khachHangDAO.timTheoId(10L)).thenReturn(khachHangMe);
+        when(phanQuyenService.kiemTraQuyenSua(eq(userAdmin), any(BanGhiNghiepVuDTO.class)))
+                .thenReturn(new PhanQuyenDuLieuService.KetQuaKiemTra(true, "Có quyền", null));
+        when(hopDongDAO.timBaoGiaTheoId(99L)).thenReturn(null);
+
+        HopDong hd = new HopDong();
+        hd.setKhachHangId(10L);
+        hd.setSoHopDong("HD-2026-TEST");
+        hd.setGiaTriHopDong(new BigDecimal("100000000.00"));
+        hd.setBaoGiaId(99L);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> service.themHopDong(hd, userAdmin));
+        assertTrue(ex.getMessage().contains("không tồn tại"));
+    }
+
+    @Test
+    @DisplayName("Thêm hợp đồng: Báo giá không thuộc về khách hàng này -> Báo lỗi")
+    void testThemHopDong_BaoGiaKhongThuocKhachHang_Loi() throws Exception {
+        when(khachHangDAO.timTheoId(10L)).thenReturn(khachHangMe);
+        when(phanQuyenService.kiemTraQuyenSua(eq(userAdmin), any(BanGhiNghiepVuDTO.class)))
+                .thenReturn(new PhanQuyenDuLieuService.KetQuaKiemTra(true, "Có quyền", null));
+
+        BaoGiaHopLeDTO bg = new BaoGiaHopLeDTO();
+        bg.setId(5L);
+        bg.setKhachHangId(999L); // Khác với 10L
+        when(hopDongDAO.timBaoGiaTheoId(5L)).thenReturn(bg);
+
+        HopDong hd = new HopDong();
+        hd.setKhachHangId(10L);
+        hd.setSoHopDong("HD-2026-TEST");
+        hd.setGiaTriHopDong(new BigDecimal("100000000.00"));
+        hd.setBaoGiaId(5L);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> service.themHopDong(hd, userAdmin));
+        assertTrue(ex.getMessage().contains("không thuộc về khách hàng này"));
+    }
+
+    @Test
+    @DisplayName("Thêm hợp đồng: Báo giá đã được sử dụng (UNIQUE uk_hd_bg) -> Báo lỗi không cho dùng lại")
+    void testThemHopDong_BaoGiaDaSuDung_Loi() throws Exception {
+        when(khachHangDAO.timTheoId(10L)).thenReturn(khachHangMe);
+        when(phanQuyenService.kiemTraQuyenSua(eq(userAdmin), any(BanGhiNghiepVuDTO.class)))
+                .thenReturn(new PhanQuyenDuLieuService.KetQuaKiemTra(true, "Có quyền", null));
+
+        BaoGiaHopLeDTO bg = new BaoGiaHopLeDTO();
+        bg.setId(1L);
+        bg.setKhachHangId(10L);
+        bg.setTrangThai("DA_DUYET");
+        when(hopDongDAO.timBaoGiaTheoId(1L)).thenReturn(bg);
+        when(hopDongDAO.kiemTraBaoGiaDaSuDung(1L)).thenReturn(true); // Đã có hợp đồng
+
+        HopDong hd = new HopDong();
+        hd.setKhachHangId(10L);
+        hd.setSoHopDong("HD-2026-TEST");
+        hd.setGiaTriHopDong(new BigDecimal("100000000.00"));
+        hd.setBaoGiaId(1L);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> service.themHopDong(hd, userAdmin));
+        assertTrue(ex.getMessage().contains("đã được sử dụng cho một hợp đồng khác"));
+    }
+
+    @Test
+    @DisplayName("Thêm hợp đồng: Báo giá ở trạng thái TU_CHOI hoặc DA_HUY -> Báo lỗi")
+    void testThemHopDong_BaoGiaDaHuy_Loi() throws Exception {
+        when(khachHangDAO.timTheoId(10L)).thenReturn(khachHangMe);
+        when(phanQuyenService.kiemTraQuyenSua(eq(userAdmin), any(BanGhiNghiepVuDTO.class)))
+                .thenReturn(new PhanQuyenDuLieuService.KetQuaKiemTra(true, "Có quyền", null));
+
+        BaoGiaHopLeDTO bg = new BaoGiaHopLeDTO();
+        bg.setId(2L);
+        bg.setKhachHangId(10L);
+        bg.setTrangThai("TU_CHOI");
+        when(hopDongDAO.timBaoGiaTheoId(2L)).thenReturn(bg);
+
+        HopDong hd = new HopDong();
+        hd.setKhachHangId(10L);
+        hd.setSoHopDong("HD-2026-TEST");
+        hd.setGiaTriHopDong(new BigDecimal("100000000.00"));
+        hd.setBaoGiaId(2L);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> service.themHopDong(hd, userAdmin));
+        assertTrue(ex.getMessage().contains("TU_CHOI"));
+    }
+
+    @Test
+    @DisplayName("Thêm hợp đồng thành công: Tự động gán phienBanBaoGiaId và coHoiId từ báo giá")
+    void testThemHopDong_ThanhCong() throws Exception {
+        when(khachHangDAO.timTheoId(10L)).thenReturn(khachHangMe);
+        when(phanQuyenService.kiemTraQuyenSua(eq(userAdmin), any(BanGhiNghiepVuDTO.class)))
+                .thenReturn(new PhanQuyenDuLieuService.KetQuaKiemTra(true, "Có quyền", null));
+
+        BaoGiaHopLeDTO bg = new BaoGiaHopLeDTO();
+        bg.setId(7L);
+        bg.setKhachHangId(10L);
+        bg.setCoHoiId(15L);
+        bg.setPhienBanId(22L);
+        bg.setTrangThai("DA_DUYET");
+        when(hopDongDAO.timBaoGiaTheoId(7L)).thenReturn(bg);
+        when(hopDongDAO.kiemTraBaoGiaDaSuDung(7L)).thenReturn(false);
+        when(hopDongDAO.themMoi(any(HopDong.class))).thenReturn(101L);
+
+        HopDong hd = new HopDong();
+        hd.setKhachHangId(10L);
+        hd.setSoHopDong("HD-2026-NEW");
+        hd.setGiaTriHopDong(new BigDecimal("350000000.00"));
+        hd.setBaoGiaId(7L);
+
+        Long newId = service.themHopDong(hd, userAdmin);
+
+        assertEquals(101L, newId);
+        assertEquals(15L, hd.getCoHoiId(), "Tự động gán cơ hội ID từ báo giá");
+        assertEquals(22L, hd.getPhienBanBaoGiaId(), "Tự động gán phiên bản ID từ báo giá");
+        verify(hopDongDAO).themMoi(hd);
     }
 }
