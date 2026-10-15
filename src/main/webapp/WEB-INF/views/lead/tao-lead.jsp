@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
     <!-- CSS Chuyên biệt Module Lead S4-02 (Modern SaaS Design) -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/lead.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/lead.css?v=2.1">
 </head>
 <body class="crm-body">
 
