@@ -870,6 +870,237 @@
 }
 
 /* ==========================================================================
+   8B. LỚP ĐỒNG BỘ GIAO DIỆN DANH SÁCH LEAD & TRẠNG THÁI RỖNG (EMPTY STATE)
+   ========================================================================== */
+.lead-header-card {
+    background: #ffffff;
+    border-radius: var(--lead-radius-md);
+    box-shadow: var(--lead-shadow-card);
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    box-sizing: border-box;
+}
+
+.lead-header-title h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--lead-neutral-900);
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lead-header-title p {
+    font-size: 13.5px;
+    color: var(--lead-neutral-500);
+    margin: 0;
+    max-width: 680px;
+    line-height: 1.5;
+}
+
+.lead-stats-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.lead-stat-card {
+    background: #ffffff;
+    border-radius: var(--lead-radius-md);
+    box-shadow: var(--lead-shadow-card);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-sizing: border-box;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lead-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--lead-shadow-md);
+}
+
+.lead-stat-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: var(--lead-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.lead-stat-icon.total {
+    background: var(--lead-primary-light);
+    color: var(--lead-primary);
+}
+
+.lead-stat-icon.valid {
+    background: var(--lead-success-light);
+    color: var(--lead-success);
+}
+
+.lead-stat-icon.error {
+    background: var(--lead-warning-light);
+    color: var(--lead-warning-text);
+}
+
+.lead-stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--lead-neutral-900);
+    line-height: 1.1;
+    display: block;
+}
+
+.lead-stat-label {
+    font-size: 13px;
+    color: var(--lead-neutral-500);
+    margin-top: 3px;
+    display: block;
+}
+
+.lead-form-card {
+    background: #ffffff;
+    border-radius: var(--lead-radius-md);
+    box-shadow: var(--lead-shadow-card);
+    padding: 24px 28px;
+    box-sizing: border-box;
+    margin-bottom: 24px;
+}
+
+.lead-table-container {
+    border: 1px solid var(--lead-neutral-200);
+    border-radius: var(--lead-radius-sm);
+    overflow-x: auto;
+    background: #ffffff;
+    -webkit-overflow-scrolling: touch;
+}
+
+.lead-preview-table {
+    width: 100%;
+    min-width: 860px;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    text-align: left;
+}
+
+.lead-preview-table th {
+    background: #f8fafc;
+    color: var(--lead-neutral-600);
+    font-weight: 600;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--lead-neutral-200);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.lead-preview-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--lead-neutral-100);
+    color: var(--lead-neutral-800);
+    vertical-align: middle;
+}
+
+.lead-preview-table tr:last-child td {
+    border-bottom: none;
+}
+
+.lead-preview-table tr:hover {
+    background: #fafcff;
+}
+
+.lead-preview-table tr.row-valid:hover {
+    background: #fafcff;
+}
+
+/* Badges phân loại nguồn & trạng thái */
+.lead-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.lead-badge-source {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+}
+
+.lead-badge-valid {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.lead-badge-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* Trạng thái rỗng (Empty State) */
+.lead-empty-state {
+    padding: 48px 24px;
+    text-align: center;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.lead-empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--lead-neutral-100);
+    color: var(--lead-neutral-400);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+}
+
+.lead-empty-icon .material-symbols-outlined {
+    font-size: 32px;
+}
+
+.lead-empty-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--lead-neutral-800);
+    margin: 0 0 6px 0;
+}
+
+.lead-empty-desc {
+    font-size: 13.5px;
+    color: var(--lead-neutral-500);
+    margin: 0 0 20px 0;
+    line-height: 1.5;
+}
+
+.lead-empty-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ==========================================================================
    9. RESPONSIVE DESIGN (360px - 1024px)
    ========================================================================== */
 @media (max-width: 1024px) {
@@ -886,12 +1117,19 @@
     .lead-container {
         padding: 16px 14px 32px;
     }
-    .lead-main-card {
+    .lead-main-card,
+    .lead-form-card,
+    .lead-header-card {
         padding: 20px 16px;
+    }
+    .lead-header-card {
+        flex-direction: column;
+        align-items: flex-start;
     }
     .lead-grid-2,
     .lead-source-chips,
-    .lead-stats-row {
+    .lead-stats-row,
+    .lead-stats-summary {
         grid-template-columns: 1fr;
     }
     .lead-stepper-modern {
@@ -908,8 +1146,38 @@
     }
     .lead-header-actions {
         width: 100%;
+        flex-wrap: wrap;
     }
     .lead-header-actions .lead-btn {
-        flex: 1;
+        flex: 1 1 auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .lead-container {
+        padding: 12px 10px 24px;
+    }
+    .lead-header-title h1,
+    .lead-title-wrap h1 {
+        font-size: 19px;
+    }
+    .lead-header-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    .lead-header-actions .lead-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    .lead-stat-card,
+    .lead-stat-box {
+        padding: 14px 16px;
+    }
+    .lead-stat-number,
+    .lead-stat-num {
+        font-size: 20px;
+    }
+    .lead-empty-state {
+        padding: 32px 12px;
     }
 }
