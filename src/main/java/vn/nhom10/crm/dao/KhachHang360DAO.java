@@ -15,7 +15,9 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -389,6 +391,112 @@ public class KhachHang360DAO {
             }
         }
         return ketQua;
+    }
+
+    /**
+     * Thêm mới một tệp đính kèm vào database.
+     */
+    public Long themMoiTepDinhKem(TepDinhKem tdk) throws SQLException {
+        if (tdk == null || tdk.getKhachHangId() == null) {
+            return null;
+        }
+
+        String sql = "INSERT INTO tep_dinh_kem (khach_hang_id, co_hoi_id, hoat_dong_id, bao_gia_id, hop_dong_id, " +
+                "loai_tep, ten_file_goc, ten_file_luu, duong_dan, mime_type, kich_thuoc_byte, nguoi_tai_len_id, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setLong(1, tdk.getKhachHangId());
+            if (tdk.getCoHoiId() != null) ps.setLong(2, tdk.getCoHoiId()); else ps.setNull(2, Types.BIGINT);
+            if (tdk.getHoatDongId() != null) ps.setLong(3, tdk.getHoatDongId()); else ps.setNull(3, Types.BIGINT);
+            if (tdk.getBaoGiaId() != null) ps.setLong(4, tdk.getBaoGiaId()); else ps.setNull(4, Types.BIGINT);
+            if (tdk.getHopDongId() != null) ps.setLong(5, tdk.getHopDongId()); else ps.setNull(5, Types.BIGINT);
+            ps.setString(6, tdk.getLoaiTep() != null ? tdk.getLoaiTep() : "TAI_LIEU");
+            ps.setString(7, tdk.getTenFileGoc());
+            ps.setString(8, tdk.getTenFileLuu());
+            ps.setString(9, tdk.getDuongDan());
+            ps.setString(10, tdk.getMimeType());
+            ps.setLong(11, tdk.getKichThuocByte());
+            if (tdk.getNguoiTaiLenId() != null) ps.setLong(12, tdk.getNguoiTaiLenId()); else ps.setNull(12, Types.BIGINT);
+            ps.setTimestamp(13, tdk.getCreatedAt() != null ? tdk.getCreatedAt() : new Timestamp(System.currentTimeMillis()));
+
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        long newId = rs.getLong(1);
+                        tdk.setId(newId);
+                        return newId;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Tìm tệp đính kèm theo ID.
+     */
+    public TepDinhKem timTepDinhKemTheoId(Long id) throws SQLException {
+        if (id == null || id <= 0) {
+            return null;
+        }
+
+        String sql = "SELECT tdk.id, tdk.khach_hang_id, tdk.co_hoi_id, tdk.hoat_dong_id, tdk.bao_gia_id, " +
+                "tdk.hop_dong_id, tdk.loai_tep, tdk.ten_file_goc, tdk.ten_file_luu, tdk.duong_dan, " +
+                "tdk.mime_type, tdk.kich_thuoc_byte, tdk.nguoi_tai_len_id, tdk.created_at, " +
+                "nd.ho_ten AS ten_nguoi_tai_len " +
+                "FROM tep_dinh_kem tdk " +
+                "LEFT JOIN nguoi_dung nd ON tdk.nguoi_tai_len_id = nd.id " +
+                "WHERE tdk.id = ?";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    TepDinhKem tdk = new TepDinhKem();
+                    tdk.setId(rs.getLong("id"));
+                    tdk.setKhachHangId(rs.getLong("khach_hang_id"));
+                    long chId = rs.getLong("co_hoi_id");
+                    if (!rs.wasNull()) tdk.setCoHoiId(chId);
+                    long hdId = rs.getLong("hoat_dong_id");
+                    if (!rs.wasNull()) tdk.setHoatDongId(hdId);
+                    long bgId = rs.getLong("bao_gia_id");
+                    if (!rs.wasNull()) tdk.setBaoGiaId(bgId);
+                    long hopDongId = rs.getLong("hop_dong_id");
+                    if (!rs.wasNull()) tdk.setHopDongId(hopDongId);
+                    tdk.setLoaiTep(rs.getString("loai_tep"));
+                    tdk.setTenFileGoc(rs.getString("ten_file_goc"));
+                    tdk.setTenFileLuu(rs.getString("ten_file_luu"));
+                    tdk.setDuongDan(rs.getString("duong_dan"));
+                    tdk.setMimeType(rs.getString("mime_type"));
+                    tdk.setKichThuocByte(rs.getLong("kich_thuoc_byte"));
+                    tdk.setNguoiTaiLenId(rs.getLong("nguoi_tai_len_id"));
+                    tdk.setCreatedAt(rs.getTimestamp("created_at"));
+                    tdk.setTenNguoiTaiLen(rs.getString("ten_nguoi_tai_len"));
+                    return tdk;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Xóa một tệp đính kèm theo ID.
+     */
+    public boolean xoaTepDinhKem(Long id) throws SQLException {
+        if (id == null || id <= 0) {
+            return false;
+        }
+
+        String sql = "DELETE FROM tep_dinh_kem WHERE id = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            return ps.executeUpdate() > 0;
+        }
     }
 
     /**

@@ -250,6 +250,8 @@ public class HoatDong implements Serializable {
         if ("CUOC_HOP".equalsIgnoreCase(loaiHoatDong)) return "Cuộc họp";
         if ("EMAIL".equalsIgnoreCase(loaiHoatDong)) return "Email";
         if ("GHI_CHU".equalsIgnoreCase(loaiHoatDong)) return "Ghi chú";
+        if ("CHINH_SUA".equalsIgnoreCase(loaiHoatDong)) return "Nhật ký thay đổi";
+        if ("CAP_NHAT".equalsIgnoreCase(loaiHoatDong)) return "Cập nhật";
         return "Hoạt động";
     }
 
@@ -258,6 +260,8 @@ public class HoatDong implements Serializable {
         if ("CUOC_HOP".equalsIgnoreCase(loaiHoatDong)) return "groups";
         if ("EMAIL".equalsIgnoreCase(loaiHoatDong)) return "mail";
         if ("GHI_CHU".equalsIgnoreCase(loaiHoatDong)) return "edit_note";
+        if ("CHINH_SUA".equalsIgnoreCase(loaiHoatDong)) return "manage_history";
+        if ("CAP_NHAT".equalsIgnoreCase(loaiHoatDong)) return "update";
         return "notes";
     }
 
@@ -266,6 +270,8 @@ public class HoatDong implements Serializable {
         if ("CUOC_HOP".equalsIgnoreCase(loaiHoatDong)) return "badge-meeting";
         if ("EMAIL".equalsIgnoreCase(loaiHoatDong)) return "badge-email";
         if ("GHI_CHU".equalsIgnoreCase(loaiHoatDong)) return "badge-note";
+        if ("CHINH_SUA".equalsIgnoreCase(loaiHoatDong)) return "badge-history";
+        if ("CAP_NHAT".equalsIgnoreCase(loaiHoatDong)) return "badge-update";
         return "badge-note";
     }
 
@@ -277,5 +283,15 @@ public class HoatDong implements Serializable {
             return createdAt.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
         }
         return "";
+    }
+
+    public long getThoiGianEpoch() {
+        if (thoiGianBatDau != null) {
+            return thoiGianBatDau.getTime();
+        }
+        if (createdAt != null) {
+            return createdAt.getTime();
+        }
+        return System.currentTimeMillis();
     }
 }

@@ -1,5 +1,6 @@
 package vn.nhom10.crm.dao;
 
+import vn.nhom10.crm.dto.BaoGiaHopLeDTO;
 import vn.nhom10.crm.model.HopDong;
 import vn.nhom10.crm.util.DatabaseConnection;
 
@@ -15,6 +16,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -24,6 +27,7 @@ import java.util.logging.Logger;
 public class HopDongDAO {
 
     private static final Logger LOGGER = Logger.getLogger(HopDongDAO.class.getName());
+    private static final AtomicLong TEST_BG_COUNTER = new AtomicLong(100000L);
 
     /**
      * Tính tổng giá trị hợp đồng của một khách hàng cụ thể (trừ các hợp đồng đã hủy).
@@ -185,7 +189,7 @@ public class HopDongDAO {
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, hd.getSoHopDong());
-            ps.setLong(2, hd.getBaoGiaId() != null ? hd.getBaoGiaId() : 1L);
+            ps.setLong(2, hd.getBaoGiaId() != null ? hd.getBaoGiaId() : TEST_BG_COUNTER.incrementAndGet());
             ps.setLong(3, hd.getPhienBanBaoGiaId() != null ? hd.getPhienBanBaoGiaId() : 1L);
             ps.setLong(4, hd.getCoHoiId() != null ? hd.getCoHoiId() : 1L);
             ps.setLong(5, hd.getKhachHangId());
@@ -223,6 +227,159 @@ public class HopDongDAO {
             }
         }
         return null;
+    }
+
+    /**
+     * Lấy danh sách báo giá hợp lệ của khách hàng để tạo hợp đồng.
+     * Chỉ lấy các báo giá chưa từng được gán cho hợp đồng nào, trạng thái hợp lệ.
+     */
+    public List<BaoGiaHopLeDTO> layDanhSachBaoGiaHopLe(Long khachHangId) throws SQLException {
+        List<BaoGiaHopLeDTO> ds = new ArrayList<>();
+        if (khachHangId == null) {
+            return ds;
+        }
+
+        String sql = "SELECT bg.id, bg.ma_bao_gia, bg.tieu_de, " +
+                "COALESCE(bg.khach_hang_id, ch.khach_hang_id) AS khach_hang_id, " +
+                "bg.co_hoi_id, ch.ten_co_hoi, " +
+                "COALESCE(bg.tong_sau_chiet_khau, bg.tong_tien, 0) AS gia_tri_bao_gia, " +
+                "bg.trang_thai, bg.dieu_khoan_thanh_toan, bg.nguoi_phu_trach_id, bg.nhom_kinh_doanh_id, " +
+                "pb.id AS phien_ban_id " +
+                "FROM bao_gia bg " +
+                "LEFT JOIN co_hoi ch ON bg.co_hoi_id = ch.id " +
+                "LEFT JOIN ( " +
+                "    SELECT p1.id, p1.bao_gia_id, p1.so_phien_ban " +
+                "    FROM bao_gia_phien_ban p1 " +
+                "    INNER JOIN ( " +
+                "        SELECT bao_gia_id, MAX(so_phien_ban) AS max_ver " +
+                "        FROM bao_gia_phien_ban " +
+                "        GROUP BY bao_gia_id " +
+                "    ) p2 ON p1.bao_gia_id = p2.bao_gia_id AND p1.so_phien_ban = p2.max_ver " +
+                ") pb ON pb.bao_gia_id = bg.id " +
+                "WHERE (bg.khach_hang_id = ? OR (bg.khach_hang_id IS NULL AND ch.khach_hang_id = ?)) " +
+                "  AND bg.id NOT IN ( " +
+                "      SELECT hd.bao_gia_id FROM hop_dong hd WHERE hd.bao_gia_id IS NOT NULL " +
+                "  ) " +
+                "  AND UPPER(COALESCE(bg.trang_thai, '')) NOT IN ('TU_CHOI', 'DA_HUY', 'HET_HAN') " +
+                "ORDER BY bg.id DESC";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, khachHangId);
+            ps.setLong(2, khachHangId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    BaoGiaHopLeDTO dto = new BaoGiaHopLeDTO();
+                    dto.setId(rs.getLong("id"));
+                    dto.setMaBaoGia(rs.getString("ma_bao_gia"));
+                    dto.setTieuDe(rs.getString("tieu_de"));
+                    dto.setKhachHangId(rs.getLong("khach_hang_id"));
+
+                    long chId = rs.getLong("co_hoi_id");
+                    dto.setCoHoiId(rs.wasNull() ? null : chId);
+                    dto.setTenCoHoi(rs.getString("ten_co_hoi"));
+
+                    long pbId = rs.getLong("phien_ban_id");
+                    dto.setPhienBanId(rs.wasNull() ? null : pbId);
+
+                    dto.setGiaTriBaoGia(rs.getBigDecimal("gia_tri_bao_gia"));
+                    dto.setTrangThai(rs.getString("trang_thai"));
+                    dto.setDieuKhoanThanhToan(rs.getString("dieu_khoan_thanh_toan"));
+
+                    long npt = rs.getLong("nguoi_phu_trach_id");
+                    dto.setNguoiPhuTrachId(rs.wasNull() ? null : npt);
+
+                    long nkd = rs.getLong("nhom_kinh_doanh_id");
+                    dto.setNhomKinhDoanhId(rs.wasNull() ? null : nkd);
+
+                    ds.add(dto);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.FINE, "Không thể truy vấn danh sách báo giá hợp lệ: " + e.getMessage());
+        }
+        return ds;
+    }
+
+    /**
+     * Tìm thông tin báo giá theo ID.
+     */
+    public BaoGiaHopLeDTO timBaoGiaTheoId(Long baoGiaId) throws SQLException {
+        if (baoGiaId == null) return null;
+        String sql = "SELECT bg.id, bg.ma_bao_gia, bg.tieu_de, " +
+                "COALESCE(bg.khach_hang_id, ch.khach_hang_id) AS khach_hang_id, " +
+                "bg.co_hoi_id, ch.ten_co_hoi, " +
+                "COALESCE(bg.tong_sau_chiet_khau, bg.tong_tien, 0) AS gia_tri_bao_gia, " +
+                "bg.trang_thai, bg.dieu_khoan_thanh_toan, bg.nguoi_phu_trach_id, bg.nhom_kinh_doanh_id, " +
+                "pb.id AS phien_ban_id " +
+                "FROM bao_gia bg " +
+                "LEFT JOIN co_hoi ch ON bg.co_hoi_id = ch.id " +
+                "LEFT JOIN ( " +
+                "    SELECT p1.id, p1.bao_gia_id, p1.so_phien_ban " +
+                "    FROM bao_gia_phien_ban p1 " +
+                "    INNER JOIN ( " +
+                "        SELECT bao_gia_id, MAX(so_phien_ban) AS max_ver " +
+                "        FROM bao_gia_phien_ban " +
+                "        GROUP BY bao_gia_id " +
+                "    ) p2 ON p1.bao_gia_id = p2.bao_gia_id AND p1.so_phien_ban = p2.max_ver " +
+                ") pb ON pb.bao_gia_id = bg.id " +
+                "WHERE bg.id = ?";
+
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, baoGiaId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    BaoGiaHopLeDTO dto = new BaoGiaHopLeDTO();
+                    dto.setId(rs.getLong("id"));
+                    dto.setMaBaoGia(rs.getString("ma_bao_gia"));
+                    dto.setTieuDe(rs.getString("tieu_de"));
+                    dto.setKhachHangId(rs.getLong("khach_hang_id"));
+
+                    long chId = rs.getLong("co_hoi_id");
+                    dto.setCoHoiId(rs.wasNull() ? null : chId);
+                    dto.setTenCoHoi(rs.getString("ten_co_hoi"));
+
+                    long pbId = rs.getLong("phien_ban_id");
+                    dto.setPhienBanId(rs.wasNull() ? null : pbId);
+
+                    dto.setGiaTriBaoGia(rs.getBigDecimal("gia_tri_bao_gia"));
+                    dto.setTrangThai(rs.getString("trang_thai"));
+                    dto.setDieuKhoanThanhToan(rs.getString("dieu_khoan_thanh_toan"));
+
+                    long npt = rs.getLong("nguoi_phu_trach_id");
+                    dto.setNguoiPhuTrachId(rs.wasNull() ? null : npt);
+
+                    long nkd = rs.getLong("nhom_kinh_doanh_id");
+                    dto.setNhomKinhDoanhId(rs.wasNull() ? null : nkd);
+
+                    return dto;
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.FINE, "Không thể tìm báo giá ID " + baoGiaId + ": " + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Kiểm tra xem báo giá đã được dùng để tạo hợp đồng nào hay chưa (uk_hd_bg).
+     */
+    public boolean kiemTraBaoGiaDaSuDung(Long baoGiaId) throws SQLException {
+        if (baoGiaId == null) return false;
+        String sql = "SELECT COUNT(*) FROM hop_dong WHERE bao_gia_id = ?";
+        try (Connection conn = DatabaseConnection.layKetNoi();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, baoGiaId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.FINE, "Lỗi kiểm tra báo giá đã sử dụng: " + e.getMessage());
+        }
+        return false;
     }
 
     private HopDong mapResultSetToHopDong(ResultSet rs) throws SQLException {

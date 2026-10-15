@@ -301,4 +301,35 @@ class KhachHang360DAOTest {
         assertFalse(list.isEmpty());
         assertEquals("Họp thẩm định bảo mật", list.get(0).getTieuDe());
     }
+
+    @Test
+    @DisplayName("Thêm mới, tìm kiếm và xóa tệp đính kèm")
+    void testThemMoiVaXoaTepDinhKem() throws Exception {
+        TepDinhKem tdk = new TepDinhKem();
+        tdk.setKhachHangId(10L);
+        tdk.setLoaiTep("HOP_DONG");
+        tdk.setTenFileGoc("HopDong_FPT_2026.pdf");
+        tdk.setTenFileLuu("kh_10_hopdong.pdf");
+        tdk.setDuongDan("/khach-hang/tep-dinh-kem?id=");
+        tdk.setMimeType("application/pdf");
+        tdk.setKichThuocByte(1048576L); // 1MB
+        tdk.setNguoiTaiLenId(1L);
+
+        Long newId = khachHang360DAO.themMoiTepDinhKem(tdk);
+        assertNotNull(newId);
+        assertTrue(newId > 0);
+
+        TepDinhKem timThay = khachHang360DAO.timTepDinhKemTheoId(newId);
+        assertNotNull(timThay);
+        assertEquals("HopDong_FPT_2026.pdf", timThay.getTenFileGoc());
+        assertEquals(10L, timThay.getKhachHangId());
+        assertEquals("Nguyễn Văn A", timThay.getTenNguoiTaiLen());
+        assertEquals("1.0 MB", timThay.getDungLuongHienThi());
+
+        boolean daXoa = khachHang360DAO.xoaTepDinhKem(newId);
+        assertTrue(daXoa);
+
+        TepDinhKem sauXoa = khachHang360DAO.timTepDinhKemTheoId(newId);
+        assertNull(sauXoa);
+    }
 }

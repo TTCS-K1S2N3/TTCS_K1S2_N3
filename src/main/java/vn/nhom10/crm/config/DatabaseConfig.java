@@ -23,6 +23,7 @@ public class DatabaseConfig {
     private static String user;
     private static String password;
     private static String avatarUploadDir;
+    private static String fileUploadDir;
 
     private static Supplier<Connection> connectionSupplier;
 
@@ -78,6 +79,9 @@ public class DatabaseConfig {
         avatarUploadDir = System.getenv("AVATAR_UPLOAD_DIR") != null ? System.getenv("AVATAR_UPLOAD_DIR")
                 : props.getProperty("avatar.upload.dir", "uploads/avatars");
 
+        fileUploadDir = System.getenv("FILE_UPLOAD_DIR") != null ? System.getenv("FILE_UPLOAD_DIR")
+                : props.getProperty("file.upload.dir", "uploads/tep-dinh-kem");
+
         try {
             Class.forName(driver);
         } catch (ClassNotFoundException e) {
@@ -110,6 +114,10 @@ public class DatabaseConfig {
 
     public static String getAvatarUploadDir() {
         return avatarUploadDir;
+    }
+
+    public static String getFileUploadDir() {
+        return fileUploadDir != null ? fileUploadDir : "uploads/tep-dinh-kem";
     }
 
     /**
