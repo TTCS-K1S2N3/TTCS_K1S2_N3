@@ -119,6 +119,11 @@ public class KhachHangServlet extends HttpServlet {
                 new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService(), new GopKhachHangService(), new BoLocKhachHangService());
     }
 
+    public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, CongTyMeConService congTyMeConService, KhachHangService khachHangService) {
+        this(phanQuyenService, congTyMeConService, new ChamSocKhachHangService(),
+                new KhachHang360Service(), (khachHangService != null ? khachHangService : new KhachHangService()), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService(), new GopKhachHangService(), new BoLocKhachHangService());
+    }
+
     public KhachHangServlet(PhanQuyenDuLieuService phanQuyenService, ChamSocKhachHangService chamSocService) {
         this(phanQuyenService, new CongTyMeConService(), chamSocService,
                 new KhachHang360Service(), new KhachHangService(), new DanhMucBanHangService(), new NguoiDungDAO(), new NguoiLienHeService(), new GopKhachHangService(), new BoLocKhachHangService());
