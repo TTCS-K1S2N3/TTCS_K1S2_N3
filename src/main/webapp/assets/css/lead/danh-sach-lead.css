@@ -1452,6 +1452,7 @@
         flex-direction: column;
     }
 
+    .panel-filter-actions .lead-btn,
     .panel-filter-actions .btn {
         width: 100%;
         justify-content: center;

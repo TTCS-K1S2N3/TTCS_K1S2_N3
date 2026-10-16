@@ -351,6 +351,8 @@
                                 <select name="trangThai" id="filterTrangThai" class="filter-select">
                                     <option value="">-- Tất cả trạng thái --</option>
                                     <option value="MOI" ${param.trangThai == 'MOI' or boLocHienTai.trangThai == 'MOI' ? 'selected' : ''}>Mới tiếp nhận</option>
+                                    <option value="HANG_CHO_PHAN_BO" ${param.trangThai == 'HANG_CHO_PHAN_BO' or boLocHienTai.trangThai == 'HANG_CHO_PHAN_BO' ? 'selected' : ''}>Hàng chờ phân bổ</option>
+                                    <option value="DA_PHAN_BO" ${param.trangThai == 'DA_PHAN_BO' or boLocHienTai.trangThai == 'DA_PHAN_BO' ? 'selected' : ''}>Đã phân bổ</option>
                                     <option value="DANG_CHAM_SOC" ${param.trangThai == 'DANG_CHAM_SOC' or boLocHienTai.trangThai == 'DANG_CHAM_SOC' ? 'selected' : ''}>Đang chăm sóc</option>
                                     <option value="DA_CHUYEN_DOI" ${param.trangThai == 'DA_CHUYEN_DOI' or boLocHienTai.trangThai == 'DA_CHUYEN_DOI' ? 'selected' : ''}>Đã chuyển đổi</option>
                                     <option value="TU_CHOI" ${param.trangThai == 'TU_CHOI' or boLocHienTai.trangThai == 'TU_CHOI' ? 'selected' : ''}>Từ chối</option>
@@ -437,16 +439,16 @@
 
                         <!-- Thao tác panel lọc (Đóng, Đặt lại, Áp dụng) -->
                         <div class="panel-filter-actions">
-                            <button type="button" class="btn btn-outline btn-sm" id="btnDongFilterPanelBottom">
+                            <button type="button" class="lead-btn lead-btn-outline lead-btn-sm" id="btnDongFilterPanelBottom">
                                 <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">close</span>
                                 <span>Đóng</span>
                             </button>
                             <div style="display: flex; gap: 8px;">
-                                <a href="${pageContext.request.contextPath}/lead" class="btn btn-outline btn-sm" title="Xóa tất cả điều kiện lọc">
+                                <a href="${pageContext.request.contextPath}/lead" class="lead-btn lead-btn-outline lead-btn-sm" title="Xóa tất cả điều kiện lọc">
                                     <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">restart_alt</span>
                                     <span>Đặt lại</span>
                                 </a>
-                                <button type="submit" class="btn btn-primary btn-sm">
+                                <button type="submit" class="lead-btn lead-btn-primary lead-btn-sm">
                                     <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">filter_alt</span>
                                     <span>Áp dụng</span>
                                 </button>
@@ -459,26 +461,60 @@
                         <div class="active-filter-chips-bar" id="activeFilterChips">
                             <span class="active-chips-label">Đang lọc:</span>
                             <c:if test="${not empty param.trangThai or not empty boLocHienTai.trangThai}">
+                                <c:set var="curTrangThai" value="${not empty param.trangThai ? param.trangThai : boLocHienTai.trangThai}" />
                                 <span class="filter-chip">
-                                    Trạng thái: <strong>${not empty param.trangThai ? param.trangThai : boLocHienTai.trangThai}</strong>
+                                    Trạng thái: <strong>
+                                        <c:choose>
+                                            <c:when test="${curTrangThai == 'MOI'}">Mới tiếp nhận</c:when>
+                                            <c:when test="${curTrangThai == 'HANG_CHO_PHAN_BO'}">Hàng chờ phân bổ</c:when>
+                                            <c:when test="${curTrangThai == 'DA_PHAN_BO'}">Đã phân bổ</c:when>
+                                            <c:when test="${curTrangThai == 'DANG_CHAM_SOC'}">Đang chăm sóc</c:when>
+                                            <c:when test="${curTrangThai == 'DA_CHUYEN_DOI'}">Đã chuyển đổi</c:when>
+                                            <c:when test="${curTrangThai == 'TU_CHOI'}">Từ chối</c:when>
+                                            <c:when test="${curTrangThai == 'DA_GOP'}">Đã gộp trùng</c:when>
+                                            <c:otherwise><c:out value="${curTrangThai}" /></c:otherwise>
+                                        </c:choose>
+                                    </strong>
                                     <button type="button" class="filter-chip-remove" data-field="filterTrangThai" aria-label="Xóa điều kiện trạng thái" title="Xóa">&times;</button>
                                 </span>
                             </c:if>
                             <c:if test="${not empty param.phanLoai or not empty boLocHienTai.phanLoai}">
+                                <c:set var="curPhanLoai" value="${not empty param.phanLoai ? param.phanLoai : boLocHienTai.phanLoai}" />
                                 <span class="filter-chip">
-                                    Phân loại: <strong>${not empty param.phanLoai ? param.phanLoai : boLocHienTai.phanLoai}</strong>
+                                    Phân loại: <strong>
+                                        <c:choose>
+                                            <c:when test="${curPhanLoai == 'NONG'}">Nóng</c:when>
+                                            <c:when test="${curPhanLoai == 'AM'}">Ấm</c:when>
+                                            <c:when test="${curPhanLoai == 'LANH'}">Lạnh</c:when>
+                                            <c:otherwise><c:out value="${curPhanLoai}" /></c:otherwise>
+                                        </c:choose>
+                                    </strong>
                                     <button type="button" class="filter-chip-remove" data-field="filterPhanLoai" aria-label="Xóa điều kiện phân loại" title="Xóa">&times;</button>
                                 </span>
                             </c:if>
                             <c:if test="${not empty param.nguonLeadId or not empty boLocHienTai.nguonLeadId}">
+                                <c:set var="curNguonId" value="${not empty param.nguonLeadId ? param.nguonLeadId : boLocHienTai.nguonLeadId}" />
+                                <c:set var="tenNguonHienThi" value="" />
+                                <c:forEach var="nguon" items="${luaChonNguon}">
+                                    <c:if test="${nguon.id == curNguonId}">
+                                        <c:set var="tenNguonHienThi" value="${nguon.tenMuc}" />
+                                    </c:if>
+                                </c:forEach>
                                 <span class="filter-chip">
-                                    Nguồn: <strong>#${not empty param.nguonLeadId ? param.nguonLeadId : boLocHienTai.nguonLeadId}</strong>
+                                    Nguồn: <strong><c:out value="${not empty tenNguonHienThi ? tenNguonHienThi : '#' += curNguonId}" /></strong>
                                     <button type="button" class="filter-chip-remove" data-field="filterNguonLead" aria-label="Xóa điều kiện nguồn" title="Xóa">&times;</button>
                                 </span>
                             </c:if>
                             <c:if test="${not empty param.nguoiPhuTrachId or not empty boLocHienTai.nguoiPhuTrachId}">
+                                <c:set var="curNptId" value="${not empty param.nguoiPhuTrachId ? param.nguoiPhuTrachId : boLocHienTai.nguoiPhuTrachId}" />
+                                <c:set var="tenNptHienThi" value="" />
+                                <c:forEach var="npt" items="${luaChonNguoiPhuTrach}">
+                                    <c:if test="${npt.id == curNptId}">
+                                        <c:set var="tenNptHienThi" value="${npt.hoTen}" />
+                                    </c:if>
+                                </c:forEach>
                                 <span class="filter-chip">
-                                    Phụ trách: <strong>#${not empty param.nguoiPhuTrachId ? param.nguoiPhuTrachId : boLocHienTai.nguoiPhuTrachId}</strong>
+                                    Phụ trách: <strong><c:out value="${not empty tenNptHienThi ? tenNptHienThi : '#' += curNptId}" /></strong>
                                     <button type="button" class="filter-chip-remove" data-field="filterNguoiPhuTrach" aria-label="Xóa điều kiện phụ trách" title="Xóa">&times;</button>
                                 </span>
                             </c:if>

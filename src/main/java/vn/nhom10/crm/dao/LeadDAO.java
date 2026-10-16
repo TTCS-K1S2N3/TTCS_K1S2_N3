@@ -1079,8 +1079,8 @@ public class LeadDAO {
         String sql = "SELECT " + COT_SELECT_LEAD + FROM_JOIN_LEAD +
                 "WHERE l.nguoi_phu_trach_id IS NOT NULL " +
                 "AND l.trang_thai IN ('MOI', 'DA_PHAN_BO', 'DANG_CHAM_SOC') " +
-                "AND l.qua_sla = 0 " +
-                "AND l.duoc_phan_bo_luc IS NOT NULL " +
+                "AND (l.qua_sla = 0 OR l.qua_sla IS NULL) " +
+                "AND (l.han_phan_hoi_sla IS NOT NULL OR l.duoc_phan_bo_luc IS NOT NULL) " +
                 "ORDER BY l.han_phan_hoi_sla ASC";
 
         try (Connection conn = DatabaseConnection.layKetNoi();

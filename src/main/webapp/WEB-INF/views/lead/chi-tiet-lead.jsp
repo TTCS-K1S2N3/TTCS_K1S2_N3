@@ -116,6 +116,12 @@
                                         Hàng chờ phân bổ
                                     </span>
                                 </c:when>
+                                <c:when test="${leadChiTiet.trangThai == 'DA_GOP' || leadChiTiet.trangThai.name() == 'DA_GOP'}">
+                                    <span class="ctl-badge" id="badgeTrangThaiLead" style="background-color: #64748b; color: #ffffff;">
+                                        <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">call_merge</span>
+                                        Đã gộp trùng
+                                    </span>
+                                </c:when>
                                 <c:otherwise>
                                     <span class="ctl-badge ctl-badge-info" id="badgeTrangThaiLead">
                                         <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">pending_actions</span>
@@ -179,9 +185,27 @@
                 </div>
             </header>
 
+            <!-- Cảnh báo Lead đã gộp (Story S4-04 / BUG-08) -->
+            <c:if test="${leadChiTiet.trangThai == 'DA_GOP' || leadChiTiet.trangThai.name() == 'DA_GOP'}">
+                <section class="ctl-sla-banner" style="background: #f8fafc; border-color: #cbd5e1; margin-bottom: 20px;" aria-label="Thông tin Lead đã gộp">
+                    <div class="ctl-sla-banner-icon-wrap" style="background: #f1f5f9; color: #64748b;" aria-hidden="true">
+                        <span class="material-symbols-outlined" style="font-size: 28px;">call_merge</span>
+                    </div>
+                    <div class="ctl-sla-banner-body">
+                        <div class="ctl-sla-banner-title">
+                            <span style="color: #475569;">HỒ SƠ LEAD ĐÃ ĐƯỢC GỘP TRÙNG</span>
+                            <span class="ctl-badge" style="background: #64748b; color: #fff;">Đã đóng</span>
+                        </div>
+                        <div class="ctl-sla-banner-desc" style="color: #64748b;">
+                            Khách hàng tiềm năng này đã được gộp vào hồ sơ chính <c:if test="${not empty leadChiTiet.gopVaoLeadId}"><strong>(ID Lead chính: #${leadChiTiet.gopVaoLeadId})</strong></c:if>. Mọi ràng buộc SLA và thao tác xử lý trên bản ghi này đều đã ngừng hiệu lực.
+                        </div>
+                    </div>
+                </section>
+            </c:if>
+
             <!-- 4. KHU VỰC CẢNH BÁO RÀNG BUỘC SLA (AC3) -->
             <c:choose>
-                <c:when test="${trangThaiSla == 'QUA_HAN' || leadChiTiet.quaSla}">
+                <c:when test="${(trangThaiSla == 'QUA_HAN' || leadChiTiet.quaSla) && leadChiTiet.trangThai != 'DA_GOP' && leadChiTiet.trangThai.name() != 'DA_GOP'}">
                     <section class="ctl-sla-banner ctl-sla-banner-overdue" id="slaBannerOverdue" aria-label="Cảnh báo quá hạn SLA">
                         <div class="ctl-sla-banner-icon-wrap" aria-hidden="true">
                             <span class="material-symbols-outlined" style="font-size: 28px;">notification_important</span>
@@ -208,7 +232,7 @@
                     </section>
                 </c:when>
 
-                <c:when test="${trangThaiSla == 'DUNG_HAN'}">
+                <c:when test="${trangThaiSla == 'DUNG_HAN' && leadChiTiet.trangThai != 'DA_GOP' && leadChiTiet.trangThai.name() != 'DA_GOP'}">
                     <section class="ctl-sla-banner ctl-sla-banner-ontime" id="slaBannerOnTime" aria-label="Thông tin SLA trong hạn">
                         <div class="ctl-sla-banner-icon-wrap" aria-hidden="true">
                             <span class="material-symbols-outlined" style="font-size: 28px;">timer</span>

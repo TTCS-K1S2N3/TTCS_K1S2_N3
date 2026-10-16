@@ -96,7 +96,17 @@ public class LeadTiepNhanService {
         view.setCoTheChuyenDoi(dangChamSoc && coQuyenChuyenDoi);
 
         // Xác định trạng thái SLA
-        view.setTrangThaiSla(xacDinhTrangThaiSla(lead, LocalDateTime.now()));
+        LocalDateTime now = LocalDateTime.now();
+        TrangThaiSlaEnum ttSla = xacDinhTrangThaiSla(lead, now);
+        view.setTrangThaiSla(ttSla);
+
+        // Nếu phát hiện quá hạn mà DB chưa gắn cờ, tự động đồng bộ ngay
+        if (ttSla == TrangThaiSlaEnum.QUA_HAN && !lead.isQuaSla()) {
+            leadDAO.capNhatQuaSla(lead.getId(), true);
+            lead.setQuaSla(true);
+            guiThongBaoQuaSlaChoTruongNhom(lead, now);
+        }
+
         view.setDanhMucLyDoTuChoi(DanhMucLyDoTuChoiDTO.layDanhMucMacDinh());
         view.setSoThongBaoChuaDoc(thongBaoDAO.demThongBaoChuaDoc((long) nguoiDung.getId()));
 
@@ -250,32 +260,33 @@ public class LeadTiepNhanService {
         List<Lead> dsLead = leadDAO.layDanhSachLeadCanKiemTraSla();
         for (Lead lead : dsLead) {
             LocalDateTime duocPhanBoLuc = lead.getDuocPhanBoLuc();
-            if (duocPhanBoLuc == null) {
-                continue;
-            }
-
             LocalDateTime hanSla = lead.getHanPhanHoiSla();
             if (hanSla == null) {
+                if (duocPhanBoLuc == null) {
+                    continue;
+                }
                 hanSla = duocPhanBoLuc.plusMinutes(slaPhut);
             }
 
             // Biên SLA: chỉ khi now > hanSla mới coi là quá hạn
             if (now.isAfter(hanSla)) {
                 // AC3 + Q2: Kiểm tra xem đã có hoạt động liên hệ hợp lệ (CUOC_GOI, EMAIL, CUOC_HOP) trước hạn chưa
-                boolean daLienHeDungHan = hoatDongDAO.coHoatDongLienHeHopLe(lead.getId(), duocPhanBoLuc, hanSla);
+                LocalDateTime mocBatDau = (duocPhanBoLuc != null) ? duocPhanBoLuc : (lead.getCreatedAt() != null ? lead.getCreatedAt() : now.minusDays(1));
+                boolean daLienHeDungHan = hoatDongDAO.coHoatDongLienHeHopLe(lead.getId(), mocBatDau, hanSla);
 
                 if (!daLienHeDungHan) {
-                    // Gắn cờ quá SLA trên Lead
+                    // Gắn cờ quá SLA trên Lead trong DB
                     boolean ganCo = leadDAO.capNhatQuaSla(lead.getId(), true);
                     if (ganCo) {
+                        lead.setQuaSla(true);
                         soLeadQuaSla++;
 
-                        // Gửi thông báo cho Trưởng nhóm trực tiếp
+                        // Gửi thông báo cho Trưởng nhóm trực tiếp (đã có cơ chế chống gửi trùng)
                         guiThongBaoQuaSlaChoTruongNhom(lead, now);
                     }
                 } else {
                     // Đã liên hệ đúng hạn -> cập nhật mốc liên hệ nếu chưa có
-                    LocalDateTime mocLienHe = hoatDongDAO.layMocLienHeDauTien(lead.getId(), duocPhanBoLuc);
+                    LocalDateTime mocLienHe = hoatDongDAO.layMocLienHeDauTien(lead.getId(), mocBatDau);
                     if (mocLienHe != null && lead.getLienHeDauLuc() == null) {
                         leadDAO.capNhatLienHeDau(lead.getId(), mocLienHe);
                     }
@@ -358,6 +369,11 @@ public class LeadTiepNhanService {
     }
 
     private TrangThaiSlaEnum xacDinhTrangThaiSla(Lead lead, LocalDateTime now) {
+        if (lead.getTrangThai() == TrangThaiLeadEnum.DA_GOP
+                || lead.getTrangThai() == TrangThaiLeadEnum.TU_CHOI
+                || lead.getTrangThai() == TrangThaiLeadEnum.DA_CHUYEN_DOI) {
+            return TrangThaiSlaEnum.KHONG_XAC_DINH;
+        }
         if (lead.isQuaSla()) {
             return TrangThaiSlaEnum.QUA_HAN;
         }
@@ -366,7 +382,8 @@ public class LeadTiepNhanService {
         }
         if (now.isAfter(lead.getHanPhanHoiSla())) {
             // Kiểm tra xem trước hạn đã liên hệ chưa
-            boolean daLienHe = hoatDongDAO.coHoatDongLienHeHopLe(lead.getId(), lead.getDuocPhanBoLuc(), lead.getHanPhanHoiSla());
+            LocalDateTime mocBatDau = (lead.getDuocPhanBoLuc() != null) ? lead.getDuocPhanBoLuc() : lead.getCreatedAt();
+            boolean daLienHe = hoatDongDAO.coHoatDongLienHeHopLe(lead.getId(), mocBatDau, lead.getHanPhanHoiSla());
             return daLienHe ? TrangThaiSlaEnum.DUNG_HAN : TrangThaiSlaEnum.QUA_HAN;
         }
         return TrangThaiSlaEnum.DUNG_HAN;

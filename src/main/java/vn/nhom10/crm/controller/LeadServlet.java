@@ -15,11 +15,13 @@ import vn.nhom10.crm.model.MucQuyen;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.service.BoLocLeadService;
 import vn.nhom10.crm.service.LeadService;
+import vn.nhom10.crm.service.LeadTiepNhanService;
 import vn.nhom10.crm.service.PermissionService;
 import vn.nhom10.crm.util.ExcelLeadUtil;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,31 +48,37 @@ public class LeadServlet extends HttpServlet {
     private final LeadService leadService;
     private final BoLocLeadService boLocLeadService;
     private final PermissionService permissionService;
+    private final LeadTiepNhanService leadTiepNhanService;
 
     public LeadServlet() {
-        this(new LeadService(), new BoLocLeadService(), PermissionService.getInstance());
+        this(new LeadService(), new BoLocLeadService(), PermissionService.getInstance(), new LeadTiepNhanService());
     }
 
     public LeadServlet(LeadService leadService) {
-        this(leadService, new BoLocLeadService(), PermissionService.getInstance());
+        this(leadService, new BoLocLeadService(), PermissionService.getInstance(), new LeadTiepNhanService());
     }
 
     public LeadServlet(BoLocLeadService boLocLeadService) {
-        this(new LeadService(), boLocLeadService, PermissionService.getInstance());
+        this(new LeadService(), boLocLeadService, PermissionService.getInstance(), new LeadTiepNhanService());
     }
 
     public LeadServlet(BoLocLeadService boLocLeadService, PermissionService permissionService) {
-        this(new LeadService(), boLocLeadService, permissionService);
+        this(new LeadService(), boLocLeadService, permissionService, new LeadTiepNhanService());
     }
 
     public LeadServlet(LeadService leadService, PermissionService permissionService) {
-        this(leadService, new BoLocLeadService(), permissionService);
+        this(leadService, new BoLocLeadService(), permissionService, new LeadTiepNhanService());
     }
 
     public LeadServlet(LeadService leadService, BoLocLeadService boLocLeadService, PermissionService permissionService) {
+        this(leadService, boLocLeadService, permissionService, new LeadTiepNhanService());
+    }
+
+    public LeadServlet(LeadService leadService, BoLocLeadService boLocLeadService, PermissionService permissionService, LeadTiepNhanService leadTiepNhanService) {
         this.leadService = leadService != null ? leadService : new LeadService();
         this.boLocLeadService = boLocLeadService != null ? boLocLeadService : new BoLocLeadService();
         this.permissionService = permissionService != null ? permissionService : PermissionService.getInstance();
+        this.leadTiepNhanService = leadTiepNhanService != null ? leadTiepNhanService : new LeadTiepNhanService();
     }
 
     @Override
@@ -209,6 +217,13 @@ public class LeadServlet extends HttpServlet {
             boLoc.setDenNgay(request.getParameter("denNgay"));
         }
 
+        // Tự động kiểm tra và đồng bộ trạng thái quá hạn SLA trước khi hiển thị (Story S4-07 AC3, S4-09 AC2, BUG-07)
+        try {
+            leadTiepNhanService.kiemTraVaCapNhatQuaSla(LocalDateTime.now());
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Không thể cập nhật trạng thái SLA trước khi tải danh sách: " + e.getMessage(), e);
+        }
+
         // Truy vấn danh sách Lead theo bộ lọc và Data Scope
         List<Lead> dsLead = boLocLeadService.timKiemLead(boLoc, user, 100, 0);
         int tongBanGhi = boLocLeadService.demTongSoLead(boLoc, user);
@@ -228,9 +243,21 @@ public class LeadServlet extends HttpServlet {
                     (maLead != null && !maLead.isBlank() ? " (" + maLead + ")" : "") + ".");
         }
 
-        // CSRF Token cho modal lưu bộ lọc
+        // Đọc flash messages từ session (ví dụ sau khi từ chối lead hoặc tiếp nhận lead - S4-07)
         HttpSession session = request.getSession(false);
         if (session != null) {
+            String flashThanhCong = (String) session.getAttribute("flashThanhCong");
+            if (flashThanhCong != null && !flashThanhCong.isBlank()) {
+                request.setAttribute("thongBaoThanhCong", flashThanhCong);
+                session.removeAttribute("flashThanhCong");
+            }
+            String flashLoi = (String) session.getAttribute("flashLoi");
+            if (flashLoi != null && !flashLoi.isBlank()) {
+                request.setAttribute("thongBaoLoi", flashLoi);
+                session.removeAttribute("flashLoi");
+            }
+
+            // CSRF Token cho modal lưu bộ lọc
             String csrfToken = (String) session.getAttribute("csrfToken");
             if (csrfToken == null || csrfToken.isBlank()) {
                 csrfToken = UUID.randomUUID().toString();

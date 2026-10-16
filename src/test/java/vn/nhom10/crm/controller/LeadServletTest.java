@@ -452,4 +452,20 @@ class LeadServletTest {
         assertTrue(List.of(patterns).contains("/lead/tao-moi"));
         assertTrue(List.of(patterns).contains("/lead/bo-loc/luu"));
     }
+
+    @Test
+    @DisplayName("S4-07: Đọc flashThanhCong từ session sau khi từ chối Lead và xóa khỏi session")
+    void testHienThiDanhSachLead_DocFlashThanhCongTuSession() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userSales);
+        when(request.getServletPath()).thenReturn("/lead");
+        when(permissionService.coQuyen(eq(userSales), eq("LEAD"), any())).thenReturn(true);
+        when(session.getAttribute("flashThanhCong")).thenReturn("Lead đã được trả về hàng chờ phân bổ");
+
+        servlet.doGet(request, response);
+
+        verify(request).setAttribute("thongBaoThanhCong", "Lead đã được trả về hàng chờ phân bổ");
+        verify(session).removeAttribute("flashThanhCong");
+        verify(request).getRequestDispatcher("/WEB-INF/views/lead/danh-sach.jsp");
+        verify(dispatcher).forward(request, response);
+    }
 }

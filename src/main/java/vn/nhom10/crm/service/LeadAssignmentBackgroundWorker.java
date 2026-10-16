@@ -19,15 +19,21 @@ public class LeadAssignmentBackgroundWorker {
     private static LeadAssignmentBackgroundWorker instance;
 
     private final QuyTacPhanBoService quyTacPhanBoService;
+    private final LeadTiepNhanService leadTiepNhanService;
     private ScheduledExecutorService scheduler;
     private boolean dangChay = false;
 
     public LeadAssignmentBackgroundWorker() {
-        this(new QuyTacPhanBoService());
+        this(new QuyTacPhanBoService(), new LeadTiepNhanService());
     }
 
     public LeadAssignmentBackgroundWorker(QuyTacPhanBoService quyTacPhanBoService) {
+        this(quyTacPhanBoService, new LeadTiepNhanService());
+    }
+
+    public LeadAssignmentBackgroundWorker(QuyTacPhanBoService quyTacPhanBoService, LeadTiepNhanService leadTiepNhanService) {
         this.quyTacPhanBoService = quyTacPhanBoService;
+        this.leadTiepNhanService = leadTiepNhanService != null ? leadTiepNhanService : new LeadTiepNhanService();
     }
 
     public static synchronized LeadAssignmentBackgroundWorker getInstance() {
@@ -97,6 +103,16 @@ public class LeadAssignmentBackgroundWorker {
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Lỗi trong chu kỳ chạy ngầm của LeadAssignmentBackgroundWorker: " + e.getMessage(), e);
+        }
+
+        // Tự động kiểm tra và cập nhật quá hạn SLA định kỳ (Story S4-07 AC3, S4-09 AC2, BUG-07)
+        try {
+            int soQuaSla = leadTiepNhanService.kiemTraVaCapNhatQuaSla(null);
+            if (soQuaSla > 0) {
+                LOGGER.info("Worker SLA: Đã phát hiện và gắn cờ quá SLA cho " + soQuaSla + " lead.");
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Lỗi trong chu kỳ quét SLA của LeadAssignmentBackgroundWorker: " + e.getMessage(), e);
         }
     }
 }
