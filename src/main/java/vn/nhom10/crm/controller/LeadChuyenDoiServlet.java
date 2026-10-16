@@ -51,6 +51,9 @@ public class LeadChuyenDoiServlet extends HttpServlet {
         }
 
         String idStr = request.getParameter("id");
+        if (idStr == null || idStr.isBlank()) {
+            idStr = request.getParameter("leadId");
+        }
         Long leadId = parseLong(idStr);
         if (leadId == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Yêu cầu không hợp lệ: thiếu ID Lead");

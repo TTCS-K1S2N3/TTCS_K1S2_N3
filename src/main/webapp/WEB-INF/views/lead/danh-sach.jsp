@@ -20,8 +20,8 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
 
     <!-- CSS Module Lead (S4-02 & S4-09) -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/lead.css?v=2.4">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/danh-sach-lead.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/lead.css?v=20261016_ui_fix2">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/danh-sach-lead.css?v=20261016_ui_fix2">
 </head>
 <body class="crm-body">
 
@@ -72,32 +72,87 @@
                         <p>Quản lý toàn bộ danh sách lead tiếp nhận từ hội thảo, danh thiếp sự kiện, nhập hàng loạt từ Excel hoặc qua biểu mẫu nhúng website</p>
                     </div>
                 </div>
-                <div class="lead-header-actions" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                    <c:if test="${coQuyenQuyTac}">
-                        <a href="${pageContext.request.contextPath}/admin/lead/phan-bo" class="lead-btn lead-btn-outline" id="btnQuyTacPhanBo" title="Cấu hình quy tắc phân bổ lead tự động (S4-06)">
-                            <span class="material-symbols-outlined" aria-hidden="true">tune</span>
-                            <span>Quy tắc phân bổ</span>
-                        </a>
-                    </c:if>
-                    <c:if test="${coQuyenHangCho}">
-                        <a href="${pageContext.request.contextPath}/lead/hang-cho-phan-bo" class="lead-btn lead-btn-outline" id="btnHangChoPhanBo" title="Hàng chờ phân bổ lead (S4-06)">
-                            <span class="material-symbols-outlined" aria-hidden="true">inbox</span>
-                            <span>Hàng chờ phân bổ</span>
-                        </a>
-                    </c:if>
-                    <a href="${pageContext.request.contextPath}/marketing/campaigns" class="lead-btn lead-btn-outline" id="btnChienDichMarketing" title="Quản lý chiến dịch marketing (S4-03)">
-                        <span class="material-symbols-outlined" aria-hidden="true">campaign</span>
-                        <span>Chiến dịch Marketing</span>
-                    </a>
-                    <a href="${pageContext.request.contextPath}/bieu-mau" class="lead-btn lead-btn-outline" id="btnBieuMauNhung" title="Quản lý biểu mẫu nhúng website">
-                        <span class="material-symbols-outlined" aria-hidden="true">dynamic_form</span>
-                        <span>Biểu mẫu nhúng</span>
-                    </a>
-                    <a href="${pageContext.request.contextPath}/lead/import-excel" class="lead-btn lead-btn-outline" id="btnNhapExcel" title="Nhập hàng loạt lead từ tệp Excel (AC2)">
+                <div class="lead-header-actions">
+                    <!-- Dropdown Nghiệp vụ Lead (S4-01, S4-03, S4-04, S4-05, S4-06) -->
+                    <div class="lead-dropdown" id="dropdownNghiepVuWrap">
+                        <button type="button" class="lead-btn lead-btn-outline" id="btnToggleNghiepVu" aria-haspopup="true" aria-expanded="false" title="Menu các nghiệp vụ liên quan đến Lead (Story S4-01 đến S4-06)">
+                            <span class="material-symbols-outlined" aria-hidden="true">settings_suggest</span>
+                            <span>Nghiệp vụ Lead</span>
+                            <span class="material-symbols-outlined dropdown-arrow-icon" id="iconDropdownArrow" style="font-size: 18px;" aria-hidden="true">expand_more</span>
+                        </button>
+                        <div class="lead-dropdown-menu" id="menuNghiepVuLead" role="menu" aria-label="Nghiệp vụ Lead" style="display: none;">
+                            <!-- S4-04: Cảnh báo & gộp Lead trùng -->
+                            <a href="${pageContext.request.contextPath}/lead/duplicates" class="lead-dropdown-item" role="menuitem" id="menuItemGopTrung" title="Cảnh báo và so sánh gộp khách hàng tiềm năng trùng lặp (Story S4-04)">
+                                <span class="material-symbols-outlined item-icon icon-s404" aria-hidden="true">call_merge</span>
+                                <div class="lead-dropdown-item-text">
+                                    <div class="item-title">Cảnh báo & Gộp Lead trùng <span class="story-tag">S4-04</span></div>
+                                    <small>Phát hiện và hợp nhất lead trùng số điện thoại, email, họ tên</small>
+                                </div>
+                            </a>
+
+                            <!-- S4-05: Cấu hình quy tắc chấm điểm Lead -->
+                            <a href="${pageContext.request.contextPath}/lead/cham-diem" class="lead-dropdown-item" role="menuitem" id="menuItemChamDiem" title="Cấu hình ma trận chấm điểm và phân loại Nóng/Ấm/Lạnh (Story S4-05)">
+                                <span class="material-symbols-outlined item-icon icon-s405" aria-hidden="true">score</span>
+                                <div class="lead-dropdown-item-text">
+                                    <div class="item-title">Cấu hình chấm điểm Lead <span class="story-tag">S4-05</span></div>
+                                    <small>Thiết lập ngưỡng điểm đánh giá tiềm năng Nóng, Ấm, Lạnh</small>
+                                </div>
+                            </a>
+
+                            <div class="lead-dropdown-divider"></div>
+
+                            <!-- S4-06: Hàng chờ phân bổ Lead -->
+                            <c:if test="${coQuyenHangCho}">
+                                <a href="${pageContext.request.contextPath}/lead/hang-cho-phan-bo" class="lead-dropdown-item" role="menuitem" id="menuItemHangCho" title="Hàng chờ phân bổ lead chưa ghép quy tắc (Story S4-06)">
+                                    <span class="material-symbols-outlined item-icon icon-s406" aria-hidden="true">inbox</span>
+                                    <div class="lead-dropdown-item-text">
+                                        <div class="item-title">Hàng chờ phân bổ Lead <span class="story-tag">S4-06</span></div>
+                                        <small>Tiếp nhận và gán thủ công lead không khớp quy tắc tự động</small>
+                                    </div>
+                                </a>
+                            </c:if>
+
+                            <!-- S4-06: Quy tắc phân bổ tự động -->
+                            <c:if test="${coQuyenQuyTac}">
+                                <a href="${pageContext.request.contextPath}/admin/lead/phan-bo" class="lead-dropdown-item" role="menuitem" id="menuItemQuyTacPhanBo" title="Cấu hình quy tắc phân bổ tự động Round-Robin & Tiêu chí (Story S4-06)">
+                                    <span class="material-symbols-outlined item-icon icon-s406-rules" aria-hidden="true">alt_route</span>
+                                    <div class="lead-dropdown-item-text">
+                                        <div class="item-title">Quy tắc phân bổ tự động <span class="story-tag">S4-06</span></div>
+                                        <small>Cấu hình chia tải tự động theo vòng tròn, khu vực, nguồn</small>
+                                    </div>
+                                </a>
+                            </c:if>
+
+                            <div class="lead-dropdown-divider"></div>
+
+                            <!-- S4-03: Quản lý chiến dịch Marketing -->
+                            <a href="${pageContext.request.contextPath}/marketing/campaigns" class="lead-dropdown-item" role="menuitem" id="menuItemChienDich" title="Quản lý chiến dịch marketing và nguồn phát sinh lead (Story S4-03)">
+                                <span class="material-symbols-outlined item-icon icon-s403" aria-hidden="true">campaign</span>
+                                <div class="lead-dropdown-item-text">
+                                    <div class="item-title">Chiến dịch Marketing <span class="story-tag">S4-03</span></div>
+                                    <small>Theo dõi chiến dịch và nguồn tiếp nhận khách hàng tiềm năng</small>
+                                </div>
+                            </a>
+
+                            <!-- S4-01: Biểu mẫu nhúng website -->
+                            <a href="${pageContext.request.contextPath}/bieu-mau" class="lead-dropdown-item" role="menuitem" id="menuItemBieuMau" title="Quản lý biểu mẫu web form thu thập thông tin lead tự động (Story S4-01)">
+                                <span class="material-symbols-outlined item-icon icon-s401" aria-hidden="true">dynamic_form</span>
+                                <div class="lead-dropdown-item-text">
+                                    <div class="item-title">Biểu mẫu nhúng website <span class="story-tag">S4-01</span></div>
+                                    <small>Tạo mã nhúng HTML form thu thập lead trên website</small>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- S4-02: Nhập Excel -->
+                    <a href="${pageContext.request.contextPath}/lead/import-excel" class="lead-btn lead-btn-outline" id="btnNhapExcel" title="Nhập hàng loạt lead từ tệp Excel (Story S4-02)">
                         <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
                         <span>Nhập Excel</span>
                     </a>
-                    <a href="${pageContext.request.contextPath}/lead/tao-moi" class="lead-btn lead-btn-primary" id="btnThemLeadMoi" title="Tạo thủ công lead từ sự kiện hoặc danh thiếp (AC1)">
+
+                    <!-- S4-02: Tạo Lead thủ công -->
+                    <a href="${pageContext.request.contextPath}/lead/tao-moi" class="lead-btn lead-btn-primary" id="btnThemLeadMoi" title="Tạo thủ công lead từ sự kiện hoặc danh thiếp (Story S4-02)">
                         <span class="material-symbols-outlined" aria-hidden="true">add</span>
                         <span>Tạo Lead thủ công</span>
                     </a>
@@ -202,203 +257,245 @@
                 </div>
             </section>
 
-            <!-- 5. Saved Filters Bar (AC3: Thanh Bộ Lọc Đã Lưu Sẵn) -->
-            <section class="lead-saved-filters-section" aria-label="Bộ lọc đã lưu sẵn">
-                <div class="lead-saved-filters-left">
-                    <span class="lead-saved-filter-label">
-                        <span class="material-symbols-outlined" aria-hidden="true">bookmark</span>
-                        <span>Bộ lọc đã lưu:</span>
-                    </span>
+            <!-- 5. BỘ LỌC LEAD TINH GỌN (1 HÀNG CHÍNH + BỘ LỌC NÂNG CAO THU GỌN - CHUẨN TRANG KHÁCH HÀNG) -->
+            <c:set var="activeCount" value="0" />
+            <c:if test="${not empty param.trangThai or not empty boLocHienTai.trangThai}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
+            <c:if test="${not empty param.nguonLeadId or not empty boLocHienTai.nguonLeadId}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
+            <c:if test="${not empty param.phanLoai or not empty boLocHienTai.phanLoai}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
+            <c:if test="${not empty param.nguoiPhuTrachId or not empty boLocHienTai.nguoiPhuTrachId}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
+            <c:if test="${not empty param.tuNgay or not empty param.denNgay or not empty boLocHienTai.tuNgay or not empty boLocHienTai.denNgay}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
 
-                    <div class="lead-saved-filter-chips" id="savedFilterChipsWrap">
-                        <c:choose>
-                            <c:when test="${not empty dsBoLocDaLuu}">
-                                <c:forEach var="bl" items="${dsBoLocDaLuu}">
-                                    <c:set var="isActiveFilter" value="${not empty boLocHienTai and boLocHienTai.savedFilterId == bl.id}" />
-                                    <a href="${pageContext.request.contextPath}/lead?savedFilterId=${bl.id}"
-                                       class="lead-saved-filter-chip ${isActiveFilter ? 'is-active' : ''}"
-                                       title="Bấm để áp dụng bộ lọc: ${bl.tenBoLoc}">
-                                        <span class="material-symbols-outlined" aria-hidden="true">filter_list</span>
-                                        <span><c:out value="${bl.tenBoLoc}" /></span>
-                                        <c:if test="${isActiveFilter}">
-                                            <span class="material-symbols-outlined" style="font-size: 14px; color: var(--lead-primary);" aria-hidden="true">check</span>
-                                        </c:if>
-                                    </a>
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                <span class="lead-saved-filter-empty-text">Chưa có bộ lọc cá nhân nào được lưu.</span>
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-                </div>
-
-                <div class="lead-saved-filters-right">
-                    <button type="button" class="lead-btn-save-filter-trigger" id="btnOpenModalLuuBoLoc" title="Lưu lại các tiêu chí lọc đang chọn">
-                        <span class="material-symbols-outlined" aria-hidden="true">bookmark_add</span>
-                        <span>⭐ Lưu bộ lọc hiện tại</span>
-                    </button>
-                </div>
-            </section>
-
-            <!-- 6. Form Bộ Lọc 5 Tiêu Chí (AC1: Trạng thái, Nguồn, Phân loại, Người phụ trách, Thời gian) -->
-            <section class="lead-filter-card" aria-label="Bộ lọc tiêu chí Lead">
-                <div class="lead-filter-header">
-                    <div class="lead-filter-header-title">
-                        <span class="material-symbols-outlined" aria-hidden="true">tune</span>
-                        <span>Bộ lọc tìm kiếm (AND giữa 5 tiêu chí)</span>
-                        <c:set var="activeCount" value="0" />
-                        <c:if test="${not empty param.trangThai or not empty boLocHienTai.trangThai}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
-                        <c:if test="${not empty param.nguonLeadId or not empty boLocHienTai.nguonLeadId}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
-                        <c:if test="${not empty param.phanLoai or not empty boLocHienTai.phanLoai}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
-                        <c:if test="${not empty param.nguoiPhuTrachId or not empty boLocHienTai.nguoiPhuTrachId}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
-                        <c:if test="${not empty param.tuNgay or not empty param.denNgay or not empty boLocHienTai.tuNgay or not empty boLocHienTai.denNgay}"><c:set var="activeCount" value="${activeCount + 1}" /></c:if>
-
-                        <c:if test="${activeCount > 0}">
-                            <span class="lead-active-filter-counter" id="activeFilterBadge">${activeCount} đang chọn</span>
-                        </c:if>
-                    </div>
-                    <div>
-                        <a href="${pageContext.request.contextPath}/lead" class="lead-btn lead-btn-outline lead-btn-sm" id="btnResetFilter" title="Xóa tất cả tiêu chí lọc về mặc định">
-                            <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">restart_alt</span>
-                            <span>Xóa bộ lọc</span>
-                        </a>
-                    </div>
-                </div>
-
+            <section class="compact-filter-card" id="compactFilterCard" aria-label="Tìm kiếm và lọc Lead">
                 <form method="GET" action="${pageContext.request.contextPath}/lead" id="formLocLead">
-                    <div class="lead-filter-grid">
 
-                        <!-- Tiêu chí 1: Trạng thái -->
-                        <div class="lead-filter-field">
-                            <label for="filterTrangThai">
-                                <span class="material-symbols-outlined" aria-hidden="true">flag</span>
-                                <span>1. Trạng thái</span>
-                            </label>
-                            <select name="trangThai" id="filterTrangThai" class="lead-select">
-                                <option value="">-- Tất cả trạng thái --</option>
-                                <option value="MOI" ${param.trangThai == 'MOI' or boLocHienTai.trangThai == 'MOI' ? 'selected' : ''}>Mới tiếp nhận</option>
-                                <option value="DANG_CHAM_SOC" ${param.trangThai == 'DANG_CHAM_SOC' or boLocHienTai.trangThai == 'DANG_CHAM_SOC' ? 'selected' : ''}>Đang chăm sóc</option>
-                                <option value="DA_CHUYEN_DOI" ${param.trangThai == 'DA_CHUYEN_DOI' or boLocHienTai.trangThai == 'DA_CHUYEN_DOI' ? 'selected' : ''}>Đã chuyển đổi</option>
-                                <option value="TU_CHOI" ${param.trangThai == 'TU_CHOI' or boLocHienTai.trangThai == 'TU_CHOI' ? 'selected' : ''}>Từ chối</option>
-                                <option value="DA_GOP" ${param.trangThai == 'DA_GOP' or boLocHienTai.trangThai == 'DA_GOP' ? 'selected' : ''}>Đã gộp trùng</option>
+                    <!-- HÀNG THAO TÁC CHÍNH (COMPACT ROW TRÊN DESKTOP: BỘ LỌC ĐÃ LƯU + NÚT BỘ LỌC + NÚT ÁP DỤNG + NÚT ĐẶT LẠI + LƯU BỘ LỌC) -->
+                    <div class="search-main-row">
+                        <!-- Quick Saved Filters Dropdown -->
+                        <div class="quick-filter-box">
+                            <span class="material-symbols-outlined quick-filter-icon" aria-hidden="true">bookmark</span>
+                            <select id="selectBoLocDaLuuQuick" class="quick-filter-select" onchange="if(this.value){window.location.href='${pageContext.request.contextPath}/lead?savedFilterId='+this.value;} else {window.location.href='${pageContext.request.contextPath}/lead';}" title="Chọn nhanh bộ lọc cá nhân đã lưu">
+                                <option value="">-- Bộ lọc cá nhân đã lưu --</option>
+                                <c:forEach var="bl" items="${dsBoLocDaLuu}">
+                                    <option value="${bl.id}" ${not empty boLocHienTai and boLocHienTai.savedFilterId == bl.id ? 'selected' : ''}>
+                                        <c:out value="${bl.tenBoLoc}" />
+                                    </option>
+                                </c:forEach>
                             </select>
                         </div>
 
-                        <!-- Tiêu chí 2: Nguồn Lead -->
-                        <div class="lead-filter-field">
-                            <label for="filterNguonLead">
-                                <span class="material-symbols-outlined" aria-hidden="true">share</span>
-                                <span>2. Nguồn Lead</span>
-                            </label>
-                            <select name="nguonLeadId" id="filterNguonLead" class="lead-select">
-                                <option value="">-- Tất cả nguồn --</option>
-                                <c:choose>
-                                    <c:when test="${not empty luaChonNguon}">
+                        <!-- Toggle Advanced Filter Button -->
+                        <button type="button" class="btn-filter-toggle ${activeCount > 0 ? 'is-active' : ''}"
+                                id="btnToggleAdvancedFilter" aria-expanded="false" aria-controls="advancedFilterPanel" title="Mở bộ lọc 5 tiêu chí Lead">
+                            <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+                            <span>Bộ lọc tiêu chí</span>
+                            <c:if test="${activeCount > 0}">
+                                <span class="filter-count-badge" id="filterCountBadge">${activeCount}</span>
+                            </c:if>
+                            <span class="material-symbols-outlined filter-arrow-icon" id="iconFilterArrow" aria-hidden="true">expand_more</span>
+                        </button>
+
+                        <!-- Submit Filter Button -->
+                        <button type="submit" class="btn-search-submit" id="btnSubmitFilter" title="Áp dụng bộ lọc">
+                            <span class="material-symbols-outlined" aria-hidden="true">filter_alt</span>
+                            <span>Áp dụng</span>
+                        </button>
+
+                        <!-- Reset Filter Button -->
+                        <a href="${pageContext.request.contextPath}/lead" class="btn-reset-filters" id="btnResetFilters" title="Xóa bộ lọc và quay về mặc định">
+                            <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">restart_alt</span>
+                            <span>Đặt lại</span>
+                        </a>
+
+                        <!-- Save Filter Button -->
+                        <button type="button" class="btn-save-filter-action" id="btnOpenModalLuuBoLoc" title="Lưu lại các tiêu chí lọc đang chọn thành bộ lọc cá nhân">
+                            <span class="material-symbols-outlined" aria-hidden="true">bookmark_add</span>
+                            <span>Lưu bộ lọc</span>
+                        </button>
+                    </div>
+
+                    <!-- KHUNG / PANEL BỘ LỌC NÂNG CAO (MẶC ĐỊNH ĐÓNG, MỞ RA KHI BẤM NÚT 'BỘ LỌC TIÊU CHÍ') -->
+                    <div class="advanced-filter-panel" id="advancedFilterPanel" style="display: none;" aria-hidden="true">
+                        <div class="panel-header-mini">
+                            <div class="panel-title-mini">
+                                <span class="material-symbols-outlined" style="font-size: 18px; color: var(--lead-primary);" aria-hidden="true">tune</span>
+                                <strong>Bộ lọc nâng cao Lead (5 nhóm tiêu chí S4-09)</strong>
+                                <span class="text-muted" style="font-size: 12.5px;">(Điều kiện kết hợp AND)</span>
+                            </div>
+                            <button type="button" class="panel-close-mini" id="btnDongFilterPanel" title="Đóng bộ lọc" aria-label="Đóng bộ lọc">
+                                <span class="material-symbols-outlined" style="font-size: 18px;" aria-hidden="true">close</span>
+                            </button>
+                        </div>
+
+                        <!-- Nếu đang áp dụng bộ lọc cá nhân đã lưu -->
+                        <c:if test="${not empty boLocHienTai and not empty boLocHienTai.savedFilterId}">
+                            <div class="panel-saved-filter-section">
+                                <span class="saved-filter-active-pill">
+                                    <span class="material-symbols-outlined" style="font-size: 14px;" aria-hidden="true">bookmark</span>
+                                    Đang áp dụng bộ lọc cá nhân: <strong><c:out value="${boLocHienTai.tenBoLoc}" /></strong>
+                                </span>
+                                <a href="${pageContext.request.contextPath}/lead" class="btn-clear-saved-filter" title="Bỏ áp dụng bộ lọc này">
+                                    <span class="material-symbols-outlined" style="font-size: 14px;" aria-hidden="true">close</span>
+                                    <span>Bỏ chọn</span>
+                                </a>
+                            </div>
+                        </c:if>
+
+                        <!-- LƯỚI 5 TIÊU CHÍ LỌC LEAD (S4-09) -->
+                        <div class="filter-grid">
+                            <!-- Tiêu chí 1: Trạng thái -->
+                            <div class="filter-field">
+                                <label class="filter-label" for="filterTrangThai">
+                                    <span class="material-symbols-outlined filter-label-icon" aria-hidden="true">flag</span>
+                                    <span>1. Trạng thái</span>
+                                </label>
+                                <select name="trangThai" id="filterTrangThai" class="filter-select">
+                                    <option value="">-- Tất cả trạng thái --</option>
+                                    <option value="MOI" ${param.trangThai == 'MOI' or boLocHienTai.trangThai == 'MOI' ? 'selected' : ''}>Mới tiếp nhận</option>
+                                    <option value="DANG_CHAM_SOC" ${param.trangThai == 'DANG_CHAM_SOC' or boLocHienTai.trangThai == 'DANG_CHAM_SOC' ? 'selected' : ''}>Đang chăm sóc</option>
+                                    <option value="DA_CHUYEN_DOI" ${param.trangThai == 'DA_CHUYEN_DOI' or boLocHienTai.trangThai == 'DA_CHUYEN_DOI' ? 'selected' : ''}>Đã chuyển đổi</option>
+                                    <option value="TU_CHOI" ${param.trangThai == 'TU_CHOI' or boLocHienTai.trangThai == 'TU_CHOI' ? 'selected' : ''}>Từ chối</option>
+                                    <option value="DA_GOP" ${param.trangThai == 'DA_GOP' or boLocHienTai.trangThai == 'DA_GOP' ? 'selected' : ''}>Đã gộp trùng</option>
+                                </select>
+                            </div>
+
+                            <!-- Tiêu chí 2: Nguồn Lead -->
+                            <div class="filter-field">
+                                <label class="filter-label" for="filterNguonLead">
+                                    <span class="material-symbols-outlined filter-label-icon" aria-hidden="true">share</span>
+                                    <span>2. Nguồn Lead</span>
+                                </label>
+                                <select name="nguonLeadId" id="filterNguonLead" class="filter-select">
+                                    <option value="">-- Tất cả nguồn --</option>
+                                    <c:if test="${not empty luaChonNguon}">
                                         <c:forEach var="nguon" items="${luaChonNguon}">
                                             <option value="${nguon.id}" ${(param.nguonLeadId == nguon.id) or (boLocHienTai.nguonLeadId == nguon.id) ? 'selected' : ''}>
-                                                <c:out value="${nguon.tenNguon != null ? nguon.tenNguon : nguon.tenMuc}" />
+                                                <c:out value="${not empty nguon.tenMuc ? nguon.tenMuc : (not empty nguon.ten ? nguon.ten : nguon.tenNguon)}" />
                                             </option>
                                         </c:forEach>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <option value="1" ${param.nguonLeadId == '1' ? 'selected' : ''}>Website / Biểu mẫu nhúng</option>
-                                        <option value="2" ${param.nguonLeadId == '2' ? 'selected' : ''}>Nhập tệp Excel</option>
-                                        <option value="3" ${param.nguonLeadId == '3' ? 'selected' : ''}>Sự kiện / Hội thảo</option>
-                                        <option value="4" ${param.nguonLeadId == '4' ? 'selected' : ''}>Chiến dịch Quảng cáo</option>
-                                        <option value="5" ${param.nguonLeadId == '5' ? 'selected' : ''}>Giới thiệu (Referral)</option>
-                                    </c:otherwise>
-                                </c:choose>
-                            </select>
-                        </div>
+                                    </c:if>
+                                </select>
+                            </div>
 
-                        <!-- Tiêu chí 3: Phân loại Nóng / Ấm / Lạnh -->
-                        <div class="lead-filter-field">
-                            <label for="filterPhanLoai">
-                                <span class="material-symbols-outlined" aria-hidden="true">thermostat</span>
-                                <span>3. Phân loại</span>
-                            </label>
-                            <select name="phanLoai" id="filterPhanLoai" class="lead-select">
-                                <option value="">-- Tất cả phân loại --</option>
-                                <option value="NONG" ${param.phanLoai == 'NONG' or boLocHienTai.phanLoai == 'NONG' ? 'selected' : ''}>🔥 Nóng (Hot)</option>
-                                <option value="AM" ${param.phanLoai == 'AM' or boLocHienTai.phanLoai == 'AM' ? 'selected' : ''}>☀️ Ấm (Warm)</option>
-                                <option value="LANH" ${param.phanLoai == 'LANH' or boLocHienTai.phanLoai == 'LANH' ? 'selected' : ''}>❄️ Lạnh (Cold)</option>
-                            </select>
-                        </div>
+                            <!-- Tiêu chí 3: Phân loại Nóng / Ấm / Lạnh -->
+                            <div class="filter-field">
+                                <label class="filter-label" for="filterPhanLoai">
+                                    <span class="material-symbols-outlined filter-label-icon" aria-hidden="true">thermostat</span>
+                                    <span>3. Phân loại</span>
+                                </label>
+                                <select name="phanLoai" id="filterPhanLoai" class="filter-select">
+                                    <option value="">-- Tất cả phân loại --</option>
+                                    <option value="NONG" ${param.phanLoai == 'NONG' or boLocHienTai.phanLoai == 'NONG' ? 'selected' : ''}>🔥 Nóng (Hot)</option>
+                                    <option value="AM" ${param.phanLoai == 'AM' or boLocHienTai.phanLoai == 'AM' ? 'selected' : ''}>☀️ Ấm (Warm)</option>
+                                    <option value="LANH" ${param.phanLoai == 'LANH' or boLocHienTai.phanLoai == 'LANH' ? 'selected' : ''}>❄️ Lạnh (Cold)</option>
+                                </select>
+                            </div>
 
-                        <!-- Tiêu chí 4: Người phụ trách -->
-                        <div class="lead-filter-field">
-                            <label for="filterNguoiPhuTrach">
-                                <span class="material-symbols-outlined" aria-hidden="true">support_agent</span>
-                                <span>4. Người phụ trách</span>
-                            </label>
-                            <select name="nguoiPhuTrachId" id="filterNguoiPhuTrach" class="lead-select">
-                                <option value="">-- Tất cả trong phạm vi --</option>
-                                <c:choose>
-                                    <c:when test="${not empty luaChonNguoiPhuTrach}">
-                                        <c:forEach var="u" items="${luaChonNguoiPhuTrach}">
-                                            <option value="${u.id}" ${(param.nguoiPhuTrachId == u.id) or (boLocHienTai.nguoiPhuTrachId == u.id) ? 'selected' : ''}>
-                                                <c:out value="${u.hoTen}" /> (<c:out value="${u.tenDangNhap}" />)
-                                            </option>
-                                        </c:forEach>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <c:if test="${not empty sessionScope.nguoiDung}">
-                                            <option value="${sessionScope.nguoiDung.id}" ${param.nguoiPhuTrachId == sessionScope.nguoiDung.id ? 'selected' : ''}>
-                                                Chính tôi (<c:out value="${sessionScope.nguoiDung.hoTen}" />)
-                                            </option>
-                                        </c:if>
-                                    </c:otherwise>
-                                </c:choose>
-                            </select>
-                        </div>
+                            <!-- Tiêu chí 4: Người phụ trách -->
+                            <div class="filter-field">
+                                <label class="filter-label" for="filterNguoiPhuTrach">
+                                    <span class="material-symbols-outlined filter-label-icon" aria-hidden="true">support_agent</span>
+                                    <span>4. Người phụ trách</span>
+                                </label>
+                                <select name="nguoiPhuTrachId" id="filterNguoiPhuTrach" class="filter-select">
+                                    <option value="">-- Tất cả trong phạm vi --</option>
+                                    <c:choose>
+                                        <c:when test="${not empty luaChonNguoiPhuTrach}">
+                                            <c:forEach var="u" items="${luaChonNguoiPhuTrach}">
+                                                <option value="${u.id}" ${(param.nguoiPhuTrachId == u.id) or (boLocHienTai.nguoiPhuTrachId == u.id) ? 'selected' : ''}>
+                                                    <c:out value="${u.hoTen}" /> (<c:out value="${u.tenDangNhap}" />)
+                                                </option>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <c:if test="${not empty sessionScope.nguoiDung}">
+                                                <option value="${sessionScope.nguoiDung.id}" ${param.nguoiPhuTrachId == sessionScope.nguoiDung.id ? 'selected' : ''}>
+                                                    Chính tôi (<c:out value="${sessionScope.nguoiDung.hoTen}" />)
+                                                </option>
+                                            </c:if>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </select>
+                            </div>
 
-                        <!-- Tiêu chí 5: Khoảng thời gian tạo Lead -->
-                        <div class="lead-filter-field">
-                            <label>
-                                <span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>
-                                <span>5. Khoảng thời gian tạo</span>
-                            </label>
-                            <div class="lead-date-range-row">
-                                <input type="date" name="tuNgay" id="filterTuNgay" class="lead-input"
-                                       value="<c:out value='${not empty param.tuNgay ? param.tuNgay : boLocHienTai.tuNgay}' />"
-                                       title="Từ ngày tạo" placeholder="Từ ngày">
-                                <input type="date" name="denNgay" id="filterDenNgay" class="lead-input"
-                                       value="<c:out value='${not empty param.denNgay ? param.denNgay : boLocHienTai.denNgay}' />"
-                                       title="Đến ngày tạo" placeholder="Đến ngày">
+                            <!-- Tiêu chí 5: Khoảng thời gian tạo Lead -->
+                            <div class="filter-field filter-field-date-range">
+                                <label class="filter-label">
+                                    <span class="material-symbols-outlined filter-label-icon" aria-hidden="true">calendar_month</span>
+                                    <span>5. Khoảng thời gian tạo</span>
+                                </label>
+                                <div class="lead-date-range-inputs">
+                                    <input type="date" name="tuNgay" id="filterTuNgay" class="filter-input"
+                                           value="<c:out value='${not empty param.tuNgay ? param.tuNgay : boLocHienTai.tuNgay}' />"
+                                           title="Từ ngày tạo" placeholder="Từ ngày">
+                                    <span class="date-range-separator">&rarr;</span>
+                                    <input type="date" name="denNgay" id="filterDenNgay" class="filter-input"
+                                           value="<c:out value='${not empty param.denNgay ? param.denNgay : boLocHienTai.denNgay}' />"
+                                           title="Đến ngày tạo" placeholder="Đến ngày">
+                                </div>
                             </div>
                         </div>
 
+                        <!-- Thao tác panel lọc (Đóng, Đặt lại, Áp dụng) -->
+                        <div class="panel-filter-actions">
+                            <button type="button" class="btn btn-outline btn-sm" id="btnDongFilterPanelBottom">
+                                <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">close</span>
+                                <span>Đóng</span>
+                            </button>
+                            <div style="display: flex; gap: 8px;">
+                                <a href="${pageContext.request.contextPath}/lead" class="btn btn-outline btn-sm" title="Xóa tất cả điều kiện lọc">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">restart_alt</span>
+                                    <span>Đặt lại</span>
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">filter_alt</span>
+                                    <span>Áp dụng</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Bottom Bar: Nút Lọc và hiển thị Tag tiêu chí đang áp dụng -->
-                    <div class="lead-filter-actions">
-                        <div class="lead-active-chips-bar" id="activeFilterTagsBar">
-                            <span class="lead-active-chip-title">Điều kiện đang áp dụng:</span>
+                    <!-- THANH HIỂN THỊ CÁC TIÊU CHÍ ĐANG ÁP DỤNG (CHIPS) -->
+                    <c:if test="${activeCount > 0 or (not empty boLocHienTai and boLocHienTai.savedFilterId != null)}">
+                        <div class="active-filter-chips-bar" id="activeFilterChips">
+                            <span class="active-chips-label">Đang lọc:</span>
                             <c:if test="${not empty param.trangThai or not empty boLocHienTai.trangThai}">
-                                <span class="lead-active-tag">Trạng thái: <strong>${not empty param.trangThai ? param.trangThai : boLocHienTai.trangThai}</strong></span>
+                                <span class="filter-chip">
+                                    Trạng thái: <strong>${not empty param.trangThai ? param.trangThai : boLocHienTai.trangThai}</strong>
+                                    <button type="button" class="filter-chip-remove" data-field="filterTrangThai" aria-label="Xóa điều kiện trạng thái" title="Xóa">&times;</button>
+                                </span>
                             </c:if>
                             <c:if test="${not empty param.phanLoai or not empty boLocHienTai.phanLoai}">
-                                <span class="lead-active-tag">Phân loại: <strong>${not empty param.phanLoai ? param.phanLoai : boLocHienTai.phanLoai}</strong></span>
+                                <span class="filter-chip">
+                                    Phân loại: <strong>${not empty param.phanLoai ? param.phanLoai : boLocHienTai.phanLoai}</strong>
+                                    <button type="button" class="filter-chip-remove" data-field="filterPhanLoai" aria-label="Xóa điều kiện phân loại" title="Xóa">&times;</button>
+                                </span>
                             </c:if>
-                            <c:if test="${not empty param.tuNgay}">
-                                <span class="lead-active-tag">Từ ngày: <strong>${param.tuNgay}</strong></span>
+                            <c:if test="${not empty param.nguonLeadId or not empty boLocHienTai.nguonLeadId}">
+                                <span class="filter-chip">
+                                    Nguồn: <strong>#${not empty param.nguonLeadId ? param.nguonLeadId : boLocHienTai.nguonLeadId}</strong>
+                                    <button type="button" class="filter-chip-remove" data-field="filterNguonLead" aria-label="Xóa điều kiện nguồn" title="Xóa">&times;</button>
+                                </span>
                             </c:if>
-                            <c:if test="${not empty param.denNgay}">
-                                <span class="lead-active-tag">Đến ngày: <strong>${param.denNgay}</strong></span>
+                            <c:if test="${not empty param.nguoiPhuTrachId or not empty boLocHienTai.nguoiPhuTrachId}">
+                                <span class="filter-chip">
+                                    Phụ trách: <strong>#${not empty param.nguoiPhuTrachId ? param.nguoiPhuTrachId : boLocHienTai.nguoiPhuTrachId}</strong>
+                                    <button type="button" class="filter-chip-remove" data-field="filterNguoiPhuTrach" aria-label="Xóa điều kiện phụ trách" title="Xóa">&times;</button>
+                                </span>
                             </c:if>
-                            <c:if test="${empty param.trangThai and empty param.phanLoai and empty param.tuNgay and empty param.denNgay and empty param.nguonLeadId and empty param.nguoiPhuTrachId and empty boLocHienTai.savedFilterId}">
-                                <span style="font-size: 12px; color: #94a3b8; font-style: italic;">Mặc định (Toàn bộ trong phạm vi phân quyền)</span>
+                            <c:if test="${not empty param.tuNgay or not empty boLocHienTai.tuNgay}">
+                                <span class="filter-chip">
+                                    Từ ngày: <strong>${not empty param.tuNgay ? param.tuNgay : boLocHienTai.tuNgay}</strong>
+                                    <button type="button" class="filter-chip-remove" data-field="filterTuNgay" aria-label="Xóa điều kiện từ ngày" title="Xóa">&times;</button>
+                                </span>
+                            </c:if>
+                            <c:if test="${not empty param.denNgay or not empty boLocHienTai.denNgay}">
+                                <span class="filter-chip">
+                                    Đến ngày: <strong>${not empty param.denNgay ? param.denNgay : boLocHienTai.denNgay}</strong>
+                                    <button type="button" class="filter-chip-remove" data-field="filterDenNgay" aria-label="Xóa điều kiện đến ngày" title="Xóa">&times;</button>
+                                </span>
                             </c:if>
                         </div>
-
-                        <div class="lead-filter-actions-right">
-                            <button type="submit" class="lead-btn lead-btn-primary" id="btnSubmitFilter">
-                                <span class="material-symbols-outlined" aria-hidden="true">filter_alt</span>
-                                <span>Áp dụng lọc</span>
-                            </button>
-                        </div>
-                    </div>
+                    </c:if>
                 </form>
             </section>
 
@@ -429,7 +526,7 @@
                                 <th style="width: 160px;">Người Phụ Trách</th>
                                 <th style="width: 130px; text-align: center;">Cảnh Báo SLA</th>
                                 <th style="width: 130px; text-align: right;">Ngày Tạo</th>
-                                <th style="width: 100px; text-align: center;">Thao Tác</th>
+                                <th style="width: 150px; text-align: center;">Thao Tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -584,13 +681,27 @@
 
                                             <!-- 10. Thao tác -->
                                             <td style="text-align: center;">
-                                                <a href="${pageContext.request.contextPath}/lead/chi-tiet?leadId=${lead.id}"
-                                                   class="lead-btn-action"
-                                                   id="btnXemChiTiet_${lead.id}"
-                                                   title="Xem chi tiết Lead ${lead.maLead}">
-                                                    <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">visibility</span>
-                                                    <span>Chi tiết</span>
-                                                </a>
+                                                <div class="lead-action-btn-group" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; flex-wrap: wrap;">
+                                                    <!-- S4-07: Tiếp nhận/Chi tiết Lead -->
+                                                    <a href="${pageContext.request.contextPath}/lead/chi-tiet?leadId=${lead.id}"
+                                                       class="lead-btn-action"
+                                                       id="btnXemChiTiet_${lead.id}"
+                                                       title="Xem chi tiết, tiếp nhận hoặc từ chối Lead ${lead.maLead} (Story S4-07)">
+                                                        <span class="material-symbols-outlined" style="font-size: 15px;" aria-hidden="true">visibility</span>
+                                                        <span>Chi tiết</span>
+                                                    </a>
+
+                                                    <!-- S4-08: Chuyển đổi Lead sang Khách hàng -->
+                                                    <c:if test="${lead.trangThai != null && (lead.trangThai == 'DANG_CHAM_SOC' || lead.trangThai.name() == 'DANG_CHAM_SOC')}">
+                                                        <a href="${pageContext.request.contextPath}/lead/chuyen-doi?leadId=${lead.id}&id=${lead.id}"
+                                                           class="lead-btn-action lead-btn-action-convert"
+                                                           id="btnChuyenDoi_${lead.id}"
+                                                           title="Chuyển đổi sang Khách hàng chính thức (Story S4-08)">
+                                                            <span class="material-symbols-outlined" style="font-size: 15px;" aria-hidden="true">transform</span>
+                                                            <span>Chuyển đổi</span>
+                                                        </a>
+                                                    </c:if>
+                                                </div>
                                             </td>
                                         </tr>
                                     </c:forEach>
@@ -635,7 +746,7 @@
     </main>
 
     <!-- 8. Modal Lưu Bộ Lọc Cá Nhân (AC3) -->
-    <div class="lead-modal-backdrop" id="modalLuuBoLoc" aria-hidden="true" role="dialog" aria-labelledby="modalLuuBoLocTitle">
+    <div class="lead-modal-backdrop" id="modalLuuBoLoc" aria-hidden="true" role="dialog" aria-labelledby="modalLuuBoLocTitle" style="display: none;">
         <div class="lead-modal-dialog">
             <div class="lead-modal-header">
                 <div class="lead-modal-header-title" id="modalLuuBoLocTitle">
@@ -684,6 +795,6 @@
     </div>
 
     <!-- JS chuyên biệt Danh sách & Bộ lọc Lead -->
-    <script src="${pageContext.request.contextPath}/assets/js/lead/danh-sach-lead.js"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/lead/danh-sach-lead.js?v=20261016_ui_fix2"></script>
 </body>
 </html>

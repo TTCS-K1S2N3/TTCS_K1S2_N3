@@ -32,7 +32,7 @@
                 <ol class="gl-breadcrumb-nav">
                     <li><a href="${pageContext.request.contextPath}/dieu-huong" class="gl-breadcrumb-link">Trang chủ</a></li>
                     <span class="gl-breadcrumb-sep" aria-hidden="true">/</span>
-                    <li><a href="${pageContext.request.contextPath}/lead/duplicates" class="gl-breadcrumb-link">Lead & Phân bổ</a></li>
+                    <li><a href="${pageContext.request.contextPath}/lead" class="gl-breadcrumb-link">Danh sách Lead</a></li>
                     <span class="gl-breadcrumb-sep" aria-hidden="true">/</span>
                     <li><a href="${pageContext.request.contextPath}/lead/duplicate?action=check&leadId=${targetLead.id}" class="gl-breadcrumb-link">Cảnh báo trùng</a></li>
                     <span class="gl-breadcrumb-sep" aria-hidden="true">/</span>

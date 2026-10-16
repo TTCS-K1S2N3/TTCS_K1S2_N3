@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
     <!-- CSS chuyên biệt module Phân bổ Lead (Story S4-06) -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/phan-bo.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/phan-bo.css?v=20261016_ui_fix2">
 
     <script>
         window.CONTEXT_PATH = "${pageContext.request.contextPath}";
@@ -39,6 +39,9 @@
                     <span class="current">Phân bổ lead tự động (S4-06)</span>
                 </div>
                 <div style="display: flex; gap: 8px;">
+                    <a href="${pageContext.request.contextPath}/lead" class="btn btn-outline btn-sm" id="btn-ve-lead" title="Quay lại danh sách Lead">
+                        <span class="material-symbols-outlined icon-xs">list</span> Danh sách Lead
+                    </a>
                     <a href="${pageContext.request.contextPath}/lead/hang-cho-phan-bo" class="btn btn-outline btn-sm" id="btn-link-hang-cho-top" title="Xem Hàng chờ phân bổ (AC3)">
                         <span class="material-symbols-outlined icon-xs">inbox</span> Hàng chờ (${not empty soLuongHangCho ? soLuongHangCho : 0})
                     </a>
@@ -74,7 +77,7 @@
 
                     <!-- Action PBL-02: Tạo quy tắc mới (AC1) -->
                     <button type="button" class="btn btn-primary" id="btn-them-quy-tac" title="Thêm quy tắc phân bổ lead tự động mới">
-                        <span class="material-symbols-outlined">add</span> + Thêm quy tắc phân bổ
+                        <span class="material-symbols-outlined">add</span> Thêm quy tắc phân bổ
                     </button>
                 </div>
             </header>
@@ -113,7 +116,7 @@
                     </div>
                     <div class="pb-stat-info">
                         <span class="pb-stat-label">Tổng quy tắc cấu hình</span>
-                        <span class="pb-stat-value" id="stat-total-rules">${not empty danhSachQuyTac ? fn:length(danhSachQuyTac) : '4'}</span>
+                        <span class="pb-stat-value" id="stat-total-rules">${not empty danhSachQuyTac ? fn:length(danhSachQuyTac) : 0}</span>
                         <span class="pb-stat-note" id="stat-active-rules">Đang hoạt động trong chuỗi</span>
                     </div>
                 </div>
@@ -177,7 +180,7 @@
                                 <input type="text" id="input-search-rule" placeholder="Tìm theo tên quy tắc, mã quy tắc, nhóm nhận..." aria-label="Tìm kiếm quy tắc">
                             </div>
                             <div class="pb-filter-select">
-                                <select id="select-filter-type" aria-label="Lọc theo kiểu phân bổ">
+                                <select id="select-filter-type" class="pb-select-filter" aria-label="Lọc theo kiểu phân bổ">
                                     <option value="ALL">Tất cả kiểu phân bổ</option>
                                     <option value="THEO_KHU_VUC">Theo khu vực</option>
                                     <option value="THEO_NGANH_NGHE">Theo ngành nghề</option>
@@ -185,7 +188,7 @@
                                 </select>
                             </div>
                             <div class="pb-filter-select">
-                                <select id="select-filter-status" aria-label="Lọc theo trạng thái">
+                                <select id="select-filter-status" class="pb-select-filter" aria-label="Lọc theo trạng thái">
                                     <option value="ALL">Tất cả trạng thái</option>
                                     <option value="ACTIVE">Đang bật</option>
                                     <option value="INACTIVE">Tạm tắt</option>
@@ -413,7 +416,7 @@
     <!-- ========================================================
          MODAL THÊM MỚI / CHỈNH SỬA QUY TẮC (ACTION PBL-02)
          ======================================================== -->
-    <div class="pb-modal-overlay" id="modal-quy-tac" role="dialog" aria-modal="true" aria-labelledby="modal-rule-title">
+    <div class="pb-modal-overlay" id="modal-quy-tac" role="dialog" aria-modal="true" aria-labelledby="modal-rule-title" style="display: none;">
         <div class="pb-modal-dialog">
             <div class="pb-modal-header">
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -577,7 +580,7 @@
     <!-- ========================================================
          MODAL KẾT QUẢ CHẠY PHÂN BỔ NGAY (AC4, ACTION PBL-07)
          ======================================================== -->
-    <div class="pb-modal-overlay" id="modal-ket-qua-chay" role="dialog" aria-modal="true" aria-labelledby="modal-res-title">
+    <div class="pb-modal-overlay" id="modal-ket-qua-chay" role="dialog" aria-modal="true" aria-labelledby="modal-res-title" style="display: none;">
         <div class="pb-modal-dialog" style="max-width: 500px;">
             <div class="pb-modal-header">
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -627,6 +630,6 @@
     <div class="pb-toast-container" id="pb-toast-container" aria-live="polite"></div>
 
     <!-- Scripts logic -->
-    <script src="${pageContext.request.contextPath}/assets/js/lead/phan-bo.js"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/lead/phan-bo.js?v=20261016_ui_fix2"></script>
 </body>
 </html>

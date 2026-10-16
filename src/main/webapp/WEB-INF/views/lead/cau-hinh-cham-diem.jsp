@@ -46,6 +46,10 @@
                         <p>Khai báo tiêu chí đánh giá tiềm năng và phân loại Nóng, Ấm, Lạnh giúp đội ngũ kinh doanh ưu tiên chăm sóc khách hàng hiệu quả.</p>
                     </div>
                     <div class="cd-header-actions">
+                        <a href="${pageContext.request.contextPath}/lead" class="btn btn-outline" id="btnQuayLaiDanhSachLead" style="text-decoration: none;">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span>
+                            <span>Danh sách Lead</span>
+                        </a>
                         <c:if test="${canEditScoringConfig}">
                             <button type="button" class="btn btn-secondary" id="btnDatLaiMacDinh">
                                 <span class="material-symbols-outlined" style="font-size: 18px;">restart_alt</span>

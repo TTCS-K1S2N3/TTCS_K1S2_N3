@@ -32,14 +32,14 @@
                 <ol class="gl-breadcrumb-nav">
                     <li><a href="${pageContext.request.contextPath}/dieu-huong" class="gl-breadcrumb-link">Trang chủ</a></li>
                     <span class="gl-breadcrumb-sep" aria-hidden="true">/</span>
-                    <li><a href="${pageContext.request.contextPath}/lead/duplicates" class="gl-breadcrumb-link">Lead & Phân bổ</a></li>
+                    <li><a href="${pageContext.request.contextPath}/lead" class="gl-breadcrumb-link">Danh sách Lead</a></li>
                     <span class="gl-breadcrumb-sep" aria-hidden="true">/</span>
-                    <li class="gl-breadcrumb-current" aria-current="page">Cảnh báo và gộp lead trùng</li>
+                    <li class="gl-breadcrumb-current" aria-current="page">Cảnh báo và gộp lead trùng (S4-04)</li>
                 </ol>
-                <div>
-                    <a href="${pageContext.request.contextPath}/dieu-huong" class="gl-btn gl-btn-outline gl-btn-sm" id="btnQuayLaiTrangChu">
+                <div style="display: flex; gap: 8px;">
+                    <a href="${pageContext.request.contextPath}/lead" class="gl-btn gl-btn-outline gl-btn-sm" id="btnQuayLaiDanhSachLead">
                         <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
-                        <span>Trang chủ</span>
+                        <span>Danh sách Lead</span>
                     </a>
                 </div>
             </nav>

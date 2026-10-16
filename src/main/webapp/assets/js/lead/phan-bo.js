@@ -111,7 +111,7 @@ const PhanBoLeadApp = {
                 updatedAt: tr.dataset.ruleUpdated || ''
             }));
         } else {
-            this.currentRules = JSON.parse(JSON.stringify(this.mockRules));
+            this.currentRules = [];
         }
     },
 
@@ -149,7 +149,9 @@ const PhanBoLeadApp = {
         if (statTotal) statTotal.textContent = total;
 
         const statActive = document.getElementById('stat-active-rules');
-        if (statActive) statActive.textContent = `${active}/${total} đang hoạt động`;
+        if (statActive) {
+            statActive.textContent = total > 0 ? `${active}/${total} đang hoạt động` : 'Chưa có quy tắc nào';
+        }
     }
 };
 
@@ -607,6 +609,20 @@ PhanBoLeadApp.RuleModal = {
             if (e.target === this.modal) this.close();
         });
 
+        // Đóng modal khi bấm ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (this.modal && (this.modal.classList.contains('active') || this.modal.style.display === 'flex')) {
+                    this.close();
+                }
+                const resModal = document.getElementById('modal-ket-qua-chay');
+                if (resModal && (resModal.classList.contains('active') || resModal.style.display === 'flex')) {
+                    resModal.classList.remove('active');
+                    resModal.style.display = 'none';
+                }
+            }
+        });
+
         // Thay đổi kiểu phân bổ (Dropdown)
         const selectKieu = document.getElementById('kieu_phan_bo');
         if (selectKieu) {
@@ -652,6 +668,12 @@ PhanBoLeadApp.RuleModal = {
     },
 
     openCreate() {
+        const resModal = document.getElementById('modal-ket-qua-chay');
+        if (resModal) {
+            resModal.classList.remove('active');
+            resModal.style.display = 'none';
+        }
+
         this.editingRuleId = null;
         this.form.reset();
         this.form.action = `${PhanBoLeadApp.contextPath}/admin/lead/phan-bo/tao-moi`;
@@ -665,10 +687,17 @@ PhanBoLeadApp.RuleModal = {
         }
 
         this.clearErrors();
+        this.modal.style.display = 'flex';
         this.modal.classList.add('active');
     },
 
     openEdit(ruleId) {
+        const resModal = document.getElementById('modal-ket-qua-chay');
+        if (resModal) {
+            resModal.classList.remove('active');
+            resModal.style.display = 'none';
+        }
+
         const rule = PhanBoLeadApp.currentRules.find(r => r.id === ruleId);
         if (!rule) return;
 
@@ -715,11 +744,13 @@ PhanBoLeadApp.RuleModal = {
         }
 
         this.clearErrors();
+        this.modal.style.display = 'flex';
         this.modal.classList.add('active');
     },
 
     close() {
         this.modal.classList.remove('active');
+        this.modal.style.display = 'none';
     },
 
     switchConditionPanel(kieuPhanBo) {
@@ -809,7 +840,10 @@ PhanBoLeadApp.BackgroundWorker = {
         if (this.modalResult) {
             const btnClose = document.getElementById('btn-close-res-modal');
             const btnDone = document.getElementById('btn-done-res-modal');
-            const close = () => this.modalResult.classList.remove('active');
+            const close = () => {
+                this.modalResult.classList.remove('active');
+                this.modalResult.style.display = 'none';
+            };
 
             if (btnClose) btnClose.addEventListener('click', close);
             if (btnDone) btnDone.addEventListener('click', close);
@@ -864,6 +898,12 @@ PhanBoLeadApp.BackgroundWorker = {
     },
 
     showResultModal(data) {
+        const ruleModal = document.getElementById('modal-quy-tac');
+        if (ruleModal) {
+            ruleModal.classList.remove('active');
+            ruleModal.style.display = 'none';
+        }
+
         if (!this.modalResult) {
             PhanBoLeadToast.show(`Đã quét ${data.soLeadDaQuet} lead, phân bổ thành công ${data.soLeadPhanBoThanhCong} lead (${data.thoiGianXuLyMs}ms)`, 'success');
             return;
@@ -879,6 +919,7 @@ PhanBoLeadApp.BackgroundWorker = {
         if (elHangCho) elHangCho.textContent = data.soLeadVaoHangCho;
         if (elLatency) elLatency.textContent = `${data.thoiGianXuLyMs} ms`;
 
+        this.modalResult.style.display = 'flex';
         this.modalResult.classList.add('active');
         PhanBoLeadToast.show('Đã kích hoạt quét phân bổ nền ngay lập tức!', 'success');
     }
