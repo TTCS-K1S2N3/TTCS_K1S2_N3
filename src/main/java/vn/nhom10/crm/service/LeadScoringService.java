@@ -136,23 +136,37 @@ public class LeadScoringService {
             throw new IllegalArgumentException("Phải kích hoạt ít nhất một tiêu chí chấm điểm.");
         }
 
-        int newVersion = config.getPhienBan() + 1;
-        config.setPhienBan(newVersion);
-        config.setNgayCapNhat(LocalDateTime.now());
-        if (userHoTen != null && !userHoTen.isBlank()) {
-            config.setNguoiCapNhat(userHoTen);
-        }
+        int currentVersion = (config.getPhienBan() > 0) ? config.getPhienBan()
+                : (cachedConfig != null && cachedConfig.getPhienBan() > 0 ? cachedConfig.getPhienBan()
+                : cauHinhHeThongDAO.layGiaTriInt(MA_VERSION, 1));
+        int newVersion = currentVersion + 1;
 
         // Lưu vào CSDL bảng cau_hinh_he_thong
         try {
-            cauHinhHeThongDAO.datGiaTri(MA_HOT_MIN, String.valueOf(hotMin), userId);
-            cauHinhHeThongDAO.datGiaTri(MA_WARM_MIN, String.valueOf(warmMin), userId);
-            cauHinhHeThongDAO.datGiaTri(MA_VERSION, String.valueOf(newVersion), userId);
+            boolean okHot = cauHinhHeThongDAO.datGiaTri(MA_HOT_MIN, String.valueOf(hotMin), userId);
+            boolean okWarm = cauHinhHeThongDAO.datGiaTri(MA_WARM_MIN, String.valueOf(warmMin), userId);
+            boolean okVer = cauHinhHeThongDAO.datGiaTri(MA_VERSION, String.valueOf(newVersion), userId);
+
+            if (!okHot || !okWarm || !okVer) {
+                LOGGER.severe("Lỗi ghi nhận ngưỡng điểm hoặc phiên bản vào bảng cau_hinh_he_thong");
+                return false;
+            }
 
             for (TieuChiChamDiemDTO tc : config.getDanhSachTieuChi()) {
                 String key = tc.getKey();
-                cauHinhHeThongDAO.datGiaTri(MA_PREFIX_POINTS + key, String.valueOf(tc.getSoDiem()), userId);
-                cauHinhHeThongDAO.datGiaTri(MA_PREFIX_ENABLED + key, tc.isKichHoat() ? "1" : "0", userId);
+                boolean okPts = cauHinhHeThongDAO.datGiaTri(MA_PREFIX_POINTS + key, String.valueOf(tc.getSoDiem()), userId);
+                boolean okEn = cauHinhHeThongDAO.datGiaTri(MA_PREFIX_ENABLED + key, tc.isKichHoat() ? "1" : "0", userId);
+                if (!okPts || !okEn) {
+                    LOGGER.severe("Lỗi ghi nhận tiêu chí " + key + " vào bảng cau_hinh_he_thong");
+                    return false;
+                }
+            }
+
+            // Chỉ cập nhật object và cache sau khi DB ghi thành công toàn bộ
+            config.setPhienBan(newVersion);
+            config.setNgayCapNhat(LocalDateTime.now());
+            if (userHoTen != null && !userHoTen.isBlank()) {
+                config.setNguoiCapNhat(userHoTen);
             }
 
             synchronized (this) {

@@ -100,28 +100,44 @@
                                 </div>
                             </div>
                             <div class="cd-card-body">
+                                <!-- Cảnh báo lỗi ngưỡng phân loại (BUG-06) -->
+                                <div id="thresholdErrorAlert" class="cd-threshold-alert <c:if test='${not empty fieldErrors[\"thresholds.hotMin\"] or (not empty thresholds and thresholds.hotMin <= thresholds.warmMin)}'>show</c:if>">
+                                    <span class="material-symbols-outlined icon">error</span>
+                                    <span id="thresholdErrorMsg">
+                                        <c:choose>
+                                            <c:when test="${not empty fieldErrors['thresholds.hotMin']}">${fieldErrors['thresholds.hotMin']}</c:when>
+                                            <c:otherwise>Ngưỡng Nóng (${thresholds.hotMin}đ) phải lớn hơn ngưỡng Ấm (${thresholds.warmMin}đ).</c:otherwise>
+                                        </c:choose>
+                                    </span>
+                                </div>
+
                                 <div class="cd-thresholds-grid">
                                     <!-- Lạnh -->
-                                    <div class="cd-threshold-card cold-card">
+                                    <div class="cd-threshold-card cold-card" id="cardCold">
                                         <div class="cd-threshold-header">
                                             <span class="lead-tag tag-cold">Lead Lạnh</span>
                                         </div>
                                         <div class="cd-threshold-input-group">
                                             <span class="cd-threshold-input-label">Dưới</span>
-                                            <span id="labelColdMax" style="font-size: 1.125rem; font-weight: 700; color: #0284c7;">${thresholds.warmMin}</span>
+                                            <span id="labelColdMax" style="font-size: 1.125rem; font-weight: 700; color: #0284c7;">
+                                                <c:choose>
+                                                    <c:when test="${thresholds.hotMin > thresholds.warmMin}">${thresholds.warmMin}</c:when>
+                                                    <c:otherwise>--</c:otherwise>
+                                                </c:choose>
+                                            </span>
                                             <span class="cd-threshold-desc">điểm</span>
                                         </div>
                                         <p class="cd-threshold-desc">Nhu cầu chưa cấp thiết; chuyển sang luồng nuôi dưỡng định kỳ qua Marketing.</p>
                                     </div>
 
                                     <!-- Ấm -->
-                                    <div class="cd-threshold-card warm-card">
+                                    <div class="cd-threshold-card warm-card" id="cardWarm">
                                         <div class="cd-threshold-header">
                                             <span class="lead-tag tag-warm">Lead Ấm</span>
                                         </div>
                                         <div class="cd-threshold-input-group">
                                             <span class="cd-threshold-input-label">Từ</span>
-                                            <input type="number" id="warmMin" name="warmMin" class="cd-threshold-number-input"
+                                            <input type="number" id="warmMin" name="warmMin" class="cd-threshold-number-input <c:if test='${thresholds.hotMin <= thresholds.warmMin}'>input-invalid</c:if>"
                                                    value="${thresholds.warmMin}" min="0" max="99" required
                                                    <c:if test="${not canEditScoringConfig}">disabled</c:if> />
                                             <span class="cd-threshold-desc">điểm</span>
@@ -130,13 +146,13 @@
                                     </div>
 
                                     <!-- Nóng -->
-                                    <div class="cd-threshold-card hot-card">
+                                    <div class="cd-threshold-card hot-card" id="cardHot">
                                         <div class="cd-threshold-header">
                                             <span class="lead-tag tag-hot">Lead Nóng</span>
                                         </div>
                                         <div class="cd-threshold-input-group">
                                             <span class="cd-threshold-input-label">Từ</span>
-                                            <input type="number" id="hotMin" name="hotMin" class="cd-threshold-number-input"
+                                            <input type="number" id="hotMin" name="hotMin" class="cd-threshold-number-input <c:if test='${thresholds.hotMin <= thresholds.warmMin}'>input-invalid</c:if>"
                                                    value="${thresholds.hotMin}" min="1" max="100" required
                                                    <c:if test="${not canEditScoringConfig}">disabled</c:if> />
                                             <span class="cd-threshold-desc">điểm</span>
@@ -149,17 +165,26 @@
                                 <div class="range-wrapper">
                                     <div class="range-header">
                                         <span>Phân bổ thang điểm (0 – 100 điểm)</span>
-                                        <span id="rangeSummaryText">Lạnh: 0 - ${thresholds.warmMin - 1}đ | Ấm: ${thresholds.warmMin} - ${thresholds.hotMin - 1}đ | Nóng: ≥ ${thresholds.hotMin}đ</span>
+                                        <span id="rangeSummaryText">
+                                            <c:choose>
+                                                <c:when test="${thresholds.hotMin > thresholds.warmMin}">
+                                                    Lạnh: 0 - ${thresholds.warmMin - 1}đ | Ấm: ${thresholds.warmMin} - ${thresholds.hotMin - 1}đ | Nóng: ≥ ${thresholds.hotMin}đ
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="range-summary-error"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;margin-right:4px;">warning</span>Cấu hình ngưỡng chưa hợp lệ (Nóng phải &gt; Ấm)</span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </span>
                                     </div>
-                                    <div class="range-bar">
+                                    <div class="range-bar <c:if test='${thresholds.hotMin <= thresholds.warmMin}'>is-invalid</c:if>">
                                         <div class="range-segment seg-cold" id="segCold"></div>
                                         <div class="range-segment seg-warm" id="segWarm"></div>
                                         <div class="range-segment seg-hot" id="segHot"></div>
                                     </div>
                                     <div class="range-scale">
                                         <span>0đ</span>
-                                        <span id="tickWarm">${thresholds.warmMin}đ</span>
-                                        <span id="tickHot">${thresholds.hotMin}đ</span>
+                                        <span id="tickWarm"><c:choose><c:when test="${thresholds.hotMin > thresholds.warmMin}">${thresholds.warmMin}đ</c:when><c:otherwise>--</c:otherwise></c:choose></span>
+                                        <span id="tickHot"><c:choose><c:when test="${thresholds.hotMin > thresholds.warmMin}">${thresholds.hotMin}đ</c:when><c:otherwise>--</c:otherwise></c:choose></span>
                                         <span>100đ</span>
                                     </div>
                                 </div>

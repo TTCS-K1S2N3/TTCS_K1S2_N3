@@ -29,14 +29,63 @@ document.addEventListener('DOMContentLoaded', function () {
     const ptsBadgeSource = document.getElementById('ptsBadge_SOURCE');
     const ptsBadgeInterest = document.getElementById('ptsBadge_INTEREST_LEVEL');
 
-    // Cập nhật Visual Range Bar
+    // Cập nhật Visual Range Bar (BUG-06)
     function updateRangeBar() {
         if (!inputWarm || !inputHot) return;
-        let warm = parseInt(inputWarm.value, 10) || 40;
-        let hot = parseInt(inputHot.value, 10) || 70;
+        const rawWarm = inputWarm.value.trim();
+        const rawHot = inputHot.value.trim();
+        const warm = parseInt(rawWarm, 10);
+        const hot = parseInt(rawHot, 10);
 
-        if (warm < 0) warm = 0;
-        if (hot > 100) hot = 100;
+        const alertEl = document.getElementById('thresholdErrorAlert');
+        const alertMsg = document.getElementById('thresholdErrorMsg');
+        const rangeBar = document.querySelector('.range-bar');
+
+        const isNumber = !isNaN(warm) && !isNaN(hot);
+        const isRangeValid = isNumber && warm >= 0 && warm < 100 && hot >= 1 && hot <= 100 && hot > warm;
+
+        if (!isRangeValid) {
+            let msg = 'Ngưỡng điểm không hợp lệ!';
+            if (!isNumber) {
+                msg = 'Ngưỡng điểm Nóng và Ấm phải là số nguyên hợp lệ.';
+            } else if (warm < 0 || warm >= 100) {
+                msg = 'Ngưỡng điểm Ấm phải từ 0 đến 99.';
+            } else if (hot < 1 || hot > 100) {
+                msg = 'Ngưỡng điểm Nóng phải từ 1 đến 100.';
+            } else if (hot <= warm) {
+                msg = 'Ngưỡng Nóng (' + hot + 'đ) phải lớn hơn ngưỡng Ấm (' + warm + 'đ).';
+            }
+
+            if (alertEl) {
+                alertEl.classList.add('show');
+                if (alertMsg) alertMsg.textContent = msg;
+            }
+
+            if (inputHot) inputHot.classList.add('input-invalid');
+            if (inputWarm) inputWarm.classList.add('input-invalid');
+
+            if (rangeSummaryText) {
+                rangeSummaryText.innerHTML = '<span class="range-summary-error"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;margin-right:4px;">warning</span>Cấu hình ngưỡng chưa hợp lệ (' + (isNumber && hot <= warm ? 'Nóng phải > Ấm' : 'Kiểm tra lại số điểm') + ')</span>';
+            }
+
+            if (rangeBar) rangeBar.classList.add('is-invalid');
+            if (segCold) segCold.style.width = '0%';
+            if (segWarm) segWarm.style.width = '0%';
+            if (segHot) segHot.style.width = '0%';
+
+            if (tickWarm) tickWarm.textContent = '--';
+            if (tickHot) tickHot.textContent = '--';
+            if (labelColdMax) labelColdMax.textContent = '--';
+
+            updateSimulation(false, msg);
+            return;
+        }
+
+        // Dữ liệu hợp lệ:
+        if (alertEl) alertEl.classList.remove('show');
+        if (inputHot) inputHot.classList.remove('input-invalid');
+        if (inputWarm) inputWarm.classList.remove('input-invalid');
+        if (rangeBar) rangeBar.classList.remove('is-invalid');
 
         const coldPct = Math.min(Math.max(warm, 0), 100);
         const warmPct = Math.min(Math.max(hot - warm, 0), 100 - coldPct);
@@ -54,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function () {
             rangeSummaryText.textContent = 'Lạnh: 0 - ' + (warm - 1) + 'đ | Ấm: ' + warm + ' - ' + (hot - 1) + 'đ | Nóng: ≥ ' + hot + 'đ';
         }
 
-        updateSimulation();
+        updateSimulation(true, null);
     }
 
     if (inputWarm) inputWarm.addEventListener('input', updateRangeBar);
@@ -94,12 +143,24 @@ document.addEventListener('DOMContentLoaded', function () {
         if (disp) disp.textContent = total + 'đ';
     }
 
-    // Cập nhật Simulator tính điểm
-    function updateSimulation() {
+    // Cập nhật Simulator tính điểm (BUG-06)
+    function updateSimulation(isThresholdValid, invalidMsg) {
         if (!simScoreCard || !simScoreValue) return;
 
-        let warm = parseInt(inputWarm ? inputWarm.value : 40, 10) || 40;
-        let hot = parseInt(inputHot ? inputHot.value : 70, 10) || 70;
+        if (typeof isThresholdValid === 'undefined') {
+            const rawWarm = inputWarm ? inputWarm.value.trim() : '40';
+            const rawHot = inputHot ? inputHot.value.trim() : '70';
+            const warm = parseInt(rawWarm, 10);
+            const hot = parseInt(rawHot, 10);
+            isThresholdValid = !isNaN(warm) && !isNaN(hot) && warm >= 0 && warm < 100 && hot >= 1 && hot <= 100 && hot > warm;
+            if (!isThresholdValid && !invalidMsg) {
+                if (hot <= warm) {
+                    invalidMsg = 'Ngưỡng điểm Nóng (' + hot + 'đ) phải lớn hơn ngưỡng Ấm (' + warm + 'đ).';
+                } else {
+                    invalidMsg = 'Ngưỡng điểm chưa hợp lệ.';
+                }
+            }
+        }
 
         const chkInd = document.getElementById('enabled_INDUSTRY_FIT');
         const chkSize = document.getElementById('enabled_COMPANY_SIZE');
@@ -119,7 +180,21 @@ document.addEventListener('DOMContentLoaded', function () {
         const total = ptsInd + ptsSize + ptsSrc + ptsInt;
         simScoreValue.textContent = total;
 
-        simScoreCard.classList.remove('state-hot', 'state-warm', 'state-cold');
+        simScoreCard.classList.remove('state-hot', 'state-warm', 'state-cold', 'state-invalid');
+
+        if (!isThresholdValid) {
+            simScoreCard.classList.add('state-invalid');
+            if (simTagContainer) {
+                simTagContainer.innerHTML = '<span class="lead-tag tag-invalid">Không thể phân loại</span>';
+            }
+            if (simHint) {
+                simHint.textContent = invalidMsg || 'Ngưỡng điểm Nóng phải lớn hơn ngưỡng điểm Ấm để có thể phân loại Lead.';
+            }
+            return;
+        }
+
+        let warm = parseInt(inputWarm ? inputWarm.value : 40, 10) || 40;
+        let hot = parseInt(inputHot ? inputHot.value : 70, 10) || 70;
 
         if (total >= hot) {
             simScoreCard.classList.add('state-hot');
@@ -188,6 +263,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (isNaN(warm) || isNaN(hot)) {
                 showToast('Lỗi: Ngưỡng điểm Nóng và Ấm phải là số hợp lệ!', true);
+                return;
+            }
+
+            if (warm < 0 || warm >= 100) {
+                showToast('Lỗi: Ngưỡng điểm Ấm phải từ 0 đến 99!', true);
+                return;
+            }
+
+            if (hot < 1 || hot > 100) {
+                showToast('Lỗi: Ngưỡng điểm Nóng phải từ 1 đến 100!', true);
                 return;
             }
 

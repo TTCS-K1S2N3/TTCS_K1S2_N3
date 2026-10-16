@@ -187,7 +187,7 @@ public class LeadScoringServlet extends HttpServlet {
 
         // Đọc cấu hình các tiêu chí
         CauHinhChamDiemDTO updatedConfig = new CauHinhChamDiemDTO();
-        updatedConfig.setPhienBan(currentConfig.getPhienBan() + 1);
+        updatedConfig.setPhienBan(currentConfig.getPhienBan());
         updatedConfig.setNgayCapNhat(LocalDateTime.now());
         updatedConfig.setNguoiCapNhat(nguoiDung.getHoTen() != null ? nguoiDung.getHoTen() : "Giám đốc kinh doanh");
         updatedConfig.setNguongPhanLoai(new NguongPhanLoaiLeadDTO(hotMin, warmMin));
@@ -257,8 +257,28 @@ public class LeadScoringServlet extends HttpServlet {
             return;
         }
 
-        // Cập nhật cấu hình thành công
-        leadScoringService.luuCauHinh(updatedConfig, nguoiDung.getId(), nguoiDung.getHoTen());
+        // Cập nhật cấu hình qua Service
+        boolean luuThanhCong = leadScoringService.luuCauHinh(updatedConfig, nguoiDung.getId(), nguoiDung.getHoTen());
+
+        if (!luuThanhCong) {
+            LOGGER.log(Level.SEVERE, "Lưu cấu hình chấm điểm lead thất bại cho user {0}", nguoiDung.getId());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            if (isAjaxRequest(request)) {
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":false,\"error\":{\"code\":\"INTERNAL_ERROR\",\"message\":\"Không thể lưu cấu hình chấm điểm lead vào cơ sở dữ liệu. Vui lòng thử lại sau.\"}}");
+            } else {
+                request.setAttribute("thongBaoLoi", "Có lỗi xảy ra khi lưu cấu hình vào hệ thống. Vui lòng thử lại sau.");
+                request.setAttribute("scoringConfig", currentConfig);
+                request.setAttribute("criteriaRows", currentConfig.getDanhSachTieuChi());
+                request.setAttribute("thresholds", currentConfig.getNguongPhanLoai());
+                request.setAttribute("canEditScoringConfig", true);
+                ThongTinDieuHuongDTO thongTinDieuHuong = menuService.layThongTinDieuHuong(nguoiDung, request.getContextPath());
+                request.setAttribute("thongTinDieuHuong", thongTinDieuHuong);
+                request.getRequestDispatcher("/WEB-INF/views/lead/cau-hinh-cham-diem.jsp").forward(request, response);
+            }
+            return;
+        }
+
         LOGGER.log(Level.INFO, "Cấu hình chấm điểm lead đã được cập nhật bởi user {0}", nguoiDung.getId());
 
         if (isAjaxRequest(request)) {
