@@ -73,6 +73,7 @@ body {
 
 .crm-container {
     max-width: 1360px;
+    width: 100%;
     margin: 0 auto;
 }
 
@@ -318,19 +319,22 @@ body {
 /* AC 1: Visual Pipeline Stepper (Phễu bán hàng chuỗi giai đoạn) */
 .pipeline-stepper-container {
     overflow-x: auto;
-    padding: 10px 4px 20px 4px;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 4px 18px 4px;
 }
 
 .pipeline-stepper {
     display: flex;
     align-items: stretch;
-    gap: 12px;
-    min-width: 980px;
+    gap: 14px;
+    width: max-content;
+    min-width: 100%;
 }
 
 .stepper-item {
-    flex: 1;
-    min-width: 170px;
+    flex: 0 0 240px;
+    min-width: 220px;
+    max-width: 280px;
     background: #ffffff;
     border: 1.5px solid var(--gray-200);
     border-radius: var(--radius-md);
@@ -465,15 +469,52 @@ body {
 /* AC 2: Weighted Forecast Section & Live Simulator */
 .forecast-summary-box {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 24px;
+    grid-template-columns: minmax(0, 1.35fr) minmax(350px, 1fr);
+    gap: 20px;
+    align-items: start;
     margin-top: 10px;
 }
 
-@media (max-width: 1024px) {
-    .forecast-summary-box {
-        grid-template-columns: 1fr;
-    }
+.forecast-table-col {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+.forecast-note-card {
+    background: #f8fafc;
+    border: 1px solid var(--gray-200);
+    border-left: 4px solid var(--primary-600);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    box-shadow: var(--shadow-xs);
+}
+
+.forecast-note-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: 8px;
+}
+
+.forecast-note-list {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 12.5px;
+    color: var(--gray-600);
+    line-height: 1.55;
+}
+
+.forecast-note-list li {
+    margin-bottom: 4px;
+}
+
+.forecast-note-list li:last-child {
+    margin-bottom: 0;
 }
 
 /* Live Simulator Card */
@@ -483,6 +524,7 @@ body {
     border-radius: var(--radius-lg);
     padding: 22px;
     box-shadow: var(--shadow-sm);
+    min-width: 0;
 }
 
 .simulator-header {
@@ -566,8 +608,55 @@ body {
 /* Data Table */
 .table-responsive {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     border-radius: var(--radius-md);
     border: 1px solid var(--gray-200);
+    background: #ffffff;
+    width: 100%;
+    max-width: 100%;
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 7px;
+    width: 7px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: var(--radius-full);
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: var(--radius-full);
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-400);
+}
+
+#bangGiaiDoan {
+    min-width: 1080px;
+    width: 100%;
+}
+
+#bangDuBao {
+    min-width: 480px;
+    width: 100%;
+}
+
+.stage-action-group {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+}
+
+.form-action-inline {
+    display: inline-flex;
+    margin: 0;
+    padding: 0;
 }
 
 .crm-table {
@@ -1050,3 +1139,135 @@ body {
     max-width: 460px;
     margin: 0 auto 20px auto;
 }
+
+/* ========================================================
+   Responsive Breakpoints: 360px, 768px, 1024px, 1366px, 1920px
+   ======================================================== */
+
+@media (min-width: 1920px) {
+    .crm-container {
+        max-width: 1440px;
+    }
+}
+
+@media (max-width: 1366px) {
+    .crm-container {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 1024px) {
+    .forecast-summary-box {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 16px;
+    }
+
+    .crm-header {
+        padding: 18px 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .crm-header-title h1 {
+        font-size: 20px;
+    }
+
+    .role-switcher-card {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .kpi-card {
+        padding: 14px;
+        gap: 12px;
+    }
+
+    .kpi-icon-box {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+
+    .kpi-value {
+        font-size: 19px;
+    }
+
+    .crm-card {
+        padding: 18px;
+        margin-bottom: 18px;
+    }
+
+    .card-header-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .card-header-bar .card-heading {
+        width: 100%;
+    }
+
+    .table-search-box {
+        width: 100%;
+    }
+
+    .table-search-box input {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 576px) {
+    body {
+        padding: 12px 10px;
+        overflow-x: hidden;
+    }
+
+    .crm-header {
+        padding: 16px 14px;
+        border-radius: var(--radius-md);
+    }
+
+    .crm-header-title h1 {
+        font-size: 18px;
+        flex-wrap: wrap;
+    }
+
+    .kpi-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .simulator-card {
+        padding: 16px 14px;
+    }
+
+    .sim-result-value {
+        font-size: 21px;
+    }
+
+    .sim-presets {
+        gap: 4px;
+    }
+
+    .btn-preset {
+        font-size: 10.5px;
+        padding: 3px 6px;
+    }
+
+    .modal-card {
+        padding: 20px 16px;
+    }
+}
+
