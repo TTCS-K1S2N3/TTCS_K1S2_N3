@@ -22,7 +22,7 @@ public class BieuMauLeadDAO {
     private static final String COT_SELECT_BIEU_MAU =
             "bm.id, bm.ma_bieu_mau, bm.ten_bieu_mau, bm.token_cong_khai, " +
             "bm.nguon_lead_id, nl.ten_nguon AS ten_nguon_lead, " +
-            "bm.chien_dich_id, cd.ten_chien_dich AS ten_chien_dich, " +
+            "bm.chien_dich_id, cd.ma_chien_dich AS ma_chien_dich, cd.ten_chien_dich AS ten_chien_dich, " +
             "bm.cau_hinh_truong_json, bm.gioi_han_gui_moi_gio, bm.bat_honeypot, bm.hoat_dong, " +
             "bm.created_by, nd.ho_ten AS ten_nguoi_tao, bm.created_at, bm.updated_at ";
 
@@ -370,7 +370,14 @@ public class BieuMauLeadDAO {
         long cdId = rs.getLong("chien_dich_id");
         if (!rs.wasNull()) {
             bm.setChienDichId(cdId);
-            bm.setTenChienDich(rs.getString("ten_chien_dich"));
+            try {
+                bm.setMaChienDich(rs.getString("ma_chien_dich"));
+            } catch (SQLException ignored) {
+            }
+            try {
+                bm.setTenChienDich(rs.getString("ten_chien_dich"));
+            } catch (SQLException ignored) {
+            }
         }
 
         bm.setCauHinhTruongJson(rs.getString("cau_hinh_truong_json"));

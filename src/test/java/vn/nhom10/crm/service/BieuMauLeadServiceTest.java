@@ -58,7 +58,15 @@ class BieuMauLeadServiceTest {
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
                     "ma_chien_dich VARCHAR(50) NOT NULL UNIQUE, " +
                     "ten_chien_dich VARCHAR(200) NOT NULL, " +
-                    "created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
+                    "ngan_sach DECIMAL(18,2) DEFAULT 0, " +
+                    "kenh VARCHAR(100) NULL, " +
+                    "ngay_bat_dau DATE NULL, " +
+                    "ngay_ket_thuc DATE NULL, " +
+                    "trang_thai VARCHAR(30) NOT NULL DEFAULT 'DANG_CHAY', " +
+                    "mo_ta TEXT NULL, " +
+                    "created_by BIGINT NULL, " +
+                    "created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+                    "updated_at DATETIME NULL)");
 
             st.execute("CREATE TABLE IF NOT EXISTS nguoi_dung (" +
                     "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
@@ -128,6 +136,8 @@ class BieuMauLeadServiceTest {
 
             st.execute("INSERT INTO nguon_lead (id, ma_nguon, ten_nguon) VALUES (1, 'WEB_LANDING', 'Landing Page Website')");
             st.execute("INSERT INTO nguon_lead (id, ma_nguon, ten_nguon) VALUES (2, 'FACEBOOK_ADS', 'Quảng cáo Facebook')");
+            st.execute("INSERT INTO chien_dich (id, ma_chien_dich, ten_chien_dich, trang_thai) VALUES (1, 'CD_ACTIVE', 'Chiến dịch đang chạy', 'DANG_CHAY')");
+            st.execute("INSERT INTO chien_dich (id, ma_chien_dich, ten_chien_dich, trang_thai) VALUES (2, 'CD_INACTIVE', 'Chiến dịch kết thúc', 'KET_THUC')");
         }
     }
 
@@ -332,5 +342,83 @@ class BieuMauLeadServiceTest {
         assertTrue(nhatKy.get(0).isThanhCong());
         assertNull(nhatKy.get(0).getLyDoTuChoi());
         assertEquals("14.161.20.15", nhatKy.get(0).getDiaChiIp());
+    }
+
+    @Test
+    @DisplayName("BUG-S4-03-AC2-01: Tạo biểu mẫu không chọn chiến dịch thành công")
+    void testTaoBieuMauKhongChonChienDich() {
+        BieuMauLead bm = new BieuMauLead("FORM_NO_CD", "Form không chiến dịch", "token_no_cd", 1L);
+        bm.setChienDichId(null);
+
+        BieuMauLead daTao = service.taoBieuMau(bm, 1L);
+        assertNotNull(daTao.getId());
+        assertNull(daTao.getChienDichId());
+
+        BieuMauLead timLai = bieuMauLeadDAO.timTheoId(daTao.getId());
+        assertNotNull(timLai);
+        assertNull(timLai.getChienDichId());
+    }
+
+    @Test
+    @DisplayName("BUG-S4-03-AC2-01: Tạo biểu mẫu chọn chiến dịch đang hoạt động thành công")
+    void testTaoBieuMauChonChienDichHopLe() {
+        BieuMauLead bm = new BieuMauLead("FORM_WITH_CD", "Form có chiến dịch", "token_cd", 1L);
+        bm.setChienDichId(1L);
+
+        BieuMauLead daTao = service.taoBieuMau(bm, 1L);
+        assertNotNull(daTao.getId());
+        assertEquals(1L, daTao.getChienDichId());
+
+        BieuMauLead timLai = bieuMauLeadDAO.timTheoId(daTao.getId());
+        assertNotNull(timLai);
+        assertEquals(1L, timLai.getChienDichId());
+        assertEquals("Chiến dịch đang chạy", timLai.getTenChienDich());
+    }
+
+    @Test
+    @DisplayName("BUG-S4-03-AC2-01: Từ chối tạo biểu mẫu khi chiến dịch không tồn tại")
+    void testTuChoiChienDichKhongTonTai() {
+        BieuMauLead bm = new BieuMauLead("FORM_ERR_NOT_FOUND", "Form lỗi CD", "token_err_nf", 1L);
+        bm.setChienDichId(9999L);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> service.taoBieuMau(bm, 1L));
+        assertTrue(ex.getMessage().contains("Chiến dịch được chọn không tồn tại"));
+    }
+
+    @Test
+    @DisplayName("BUG-S4-03-AC2-01: Từ chối tạo biểu mẫu khi chiến dịch không còn hoạt động")
+    void testTuChoiChienDichKhongHoatDong() {
+        BieuMauLead bm = new BieuMauLead("FORM_ERR_INACTIVE", "Form lỗi CD kết thúc", "token_err_inact", 1L);
+        bm.setChienDichId(2L); // Chiến dịch 2 là KET_THUC
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> service.taoBieuMau(bm, 1L));
+        assertTrue(ex.getMessage().contains("hiện không hoạt động") || ex.getMessage().contains("không còn hoạt động"));
+    }
+
+    @Test
+    @DisplayName("BUG-S4-03-AC2-01: Lead tạo từ biểu mẫu giữ nguyên chiến dịch đã liên kết")
+    void testLeadTaoTuBieuMauGiuNguyenChienDich() {
+        // Biểu mẫu liên kết với chiến dịch ID = 1 (CD_ACTIVE)
+        BieuMauLead bm = new BieuMauLead("FORM_LEAD_CD", "Form thu thập kèm CD", "token_lead_cd", 1L);
+        bm.setChienDichId(1L);
+        service.taoBieuMau(bm, 1L);
+
+        GuiFormLeadDTO dto = new GuiFormLeadDTO(
+                "token_lead_cd",
+                "Trần Văn Chiến Dịch",
+                "chiendich@gmail.com",
+                "0987654321",
+                "Cty CP Marketing 4.0",
+                "Cần tư vấn chiến lược CRM"
+        );
+        dto.setDiaChiIp("10.0.0.1");
+
+        KetQuaGuiFormDTO kq = service.xuLyGuiForm(dto);
+        assertTrue(kq.isThanhCong());
+
+        Lead lead = leadDAO.timTheoMa(kq.getMaLead());
+        assertNotNull(lead);
+        assertEquals(1L, lead.getChienDichId(), "Lead tạo từ biểu mẫu phải giữ đúng chien_dich_id = 1 từ biểu mẫu");
+        assertEquals(bm.getId(), lead.getBieuMauId(), "Lead phải giữ liên kết bieu_mau_id");
     }
 }

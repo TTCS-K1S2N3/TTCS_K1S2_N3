@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import vn.nhom10.crm.dao.DanhMucBanHangDAO;
+import vn.nhom10.crm.dto.ChienDichDTO;
 import vn.nhom10.crm.dto.MaNhungDTO;
 import vn.nhom10.crm.dto.MucDanhMucDTO;
 import vn.nhom10.crm.model.BieuMauLead;
@@ -17,6 +18,7 @@ import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.model.VaiTro;
 import vn.nhom10.crm.model.VaiTroEnum;
 import vn.nhom10.crm.service.BieuMauLeadService;
+import vn.nhom10.crm.service.ChienDichService;
 import vn.nhom10.crm.service.MenuService;
 
 import java.io.PrintWriter;
@@ -33,6 +35,7 @@ class BieuMauLeadServletTest {
 
     private BieuMauLeadService service;
     private DanhMucBanHangDAO danhMucDAO;
+    private ChienDichService chienDichService;
     private MenuService menuService;
     private BieuMauLeadServlet servlet;
 
@@ -49,8 +52,9 @@ class BieuMauLeadServletTest {
     void setUp() throws Exception {
         service = mock(BieuMauLeadService.class);
         danhMucDAO = mock(DanhMucBanHangDAO.class);
+        chienDichService = mock(ChienDichService.class);
         menuService = mock(MenuService.class);
-        servlet = new BieuMauLeadServlet(service, danhMucDAO, menuService);
+        servlet = new BieuMauLeadServlet(service, danhMucDAO, chienDichService, menuService);
 
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
@@ -136,9 +140,84 @@ class BieuMauLeadServletTest {
         nguon.setTenMuc("Website");
         when(danhMucDAO.layDanhSach(LoaiDanhMuc.NGUON_LEAD, true)).thenReturn(List.of(nguon));
 
+        ChienDichDTO cd = new ChienDichDTO();
+        cd.setCampaignId(10L);
+        cd.setMaChienDich("CD-2026-001");
+        cd.setName("Chiến dịch Q4");
+        when(chienDichService.layDanhSachChienDichHoatDong()).thenReturn(List.of(cd));
+
         servlet.doGet(request, response);
 
         verify(request).setAttribute(eq("dsNguonLead"), anyList());
+        verify(request).setAttribute(eq("dsChienDich"), anyList());
+        verify(request).getRequestDispatcher("/WEB-INF/views/lead/bieu-mau-form.jsp");
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("BUG-S4-03-AC2-01: Tạo biểu mẫu không chọn chiến dịch (cho phép null)")
+    void testTaoBieuMauKhongChonChienDich() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userMarketing);
+        when(request.getServletPath()).thenReturn("/bieu-mau/tao");
+
+        when(request.getParameter("ma_bieu_mau")).thenReturn("BM_NO_CD");
+        when(request.getParameter("ten_bieu_mau")).thenReturn("Biểu mẫu không chiến dịch");
+        when(request.getParameter("nguon_lead_id")).thenReturn("1");
+        when(request.getParameter("chien_dich_id")).thenReturn(""); // Không chọn chiến dịch
+        when(request.getParameter("gioi_han_gui_moi_gio")).thenReturn("10");
+        when(request.getParameter("bat_honeypot")).thenReturn("1");
+
+        servlet.doPost(request, response);
+
+        verify(service).taoBieuMau(argThat(bm -> bm.getChienDichId() == null), eq(5L));
+        verify(session).setAttribute(eq("thongBaoThanhCong"), anyString());
+        verify(response).sendRedirect("/crm/bieu-mau");
+    }
+
+    @Test
+    @DisplayName("BUG-S4-03-AC2-01: Tạo biểu mẫu chọn chiến dịch hợp lệ")
+    void testTaoBieuMauChonChienDichHopLe() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userMarketing);
+        when(request.getServletPath()).thenReturn("/bieu-mau/tao");
+
+        when(request.getParameter("ma_bieu_mau")).thenReturn("BM_WITH_CD");
+        when(request.getParameter("ten_bieu_mau")).thenReturn("Biểu mẫu có chiến dịch");
+        when(request.getParameter("nguon_lead_id")).thenReturn("1");
+        when(request.getParameter("chien_dich_id")).thenReturn("10");
+        when(request.getParameter("gioi_han_gui_moi_gio")).thenReturn("10");
+        when(request.getParameter("bat_honeypot")).thenReturn("1");
+
+        when(chienDichService.laChienDichHoatDongHopLe(10L)).thenReturn(true);
+
+        servlet.doPost(request, response);
+
+        verify(service).taoBieuMau(argThat(bm -> Long.valueOf(10L).equals(bm.getChienDichId())), eq(5L));
+        verify(session).setAttribute(eq("thongBaoThanhCong"), anyString());
+        verify(response).sendRedirect("/crm/bieu-mau");
+    }
+
+    @Test
+    @DisplayName("BUG-S4-03-AC2-01: Từ chối chiến dịch không tồn tại/không hoạt động và giữ lại giá trị")
+    void testTuChoiChienDichKhongHopLeVaGiuNguyenDuLieu() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userMarketing);
+        when(request.getServletPath()).thenReturn("/bieu-mau/tao");
+
+        when(request.getParameter("ma_bieu_mau")).thenReturn("BM_ERR_CD");
+        when(request.getParameter("ten_bieu_mau")).thenReturn("Biểu mẫu lỗi CD");
+        when(request.getParameter("nguon_lead_id")).thenReturn("1");
+        when(request.getParameter("chien_dich_id")).thenReturn("999");
+        when(request.getParameter("gioi_han_gui_moi_gio")).thenReturn("10");
+        when(request.getParameter("bat_honeypot")).thenReturn("1");
+
+        when(chienDichService.laChienDichHoatDongHopLe(999L)).thenReturn(false);
+
+        servlet.doPost(request, response);
+
+        // Không được gọi service.taoBieuMau
+        verify(service, never()).taoBieuMau(any(), any());
+        // Giữ lại lựa chọn chien_dich_id đã chọn
+        verify(request).setAttribute(eq("chien_dich_id"), eq("999"));
+        verify(request).setAttribute(eq("thongBaoLoi"), contains("Chiến dịch được chọn không tồn tại hoặc không còn hoạt động."));
         verify(request).getRequestDispatcher("/WEB-INF/views/lead/bieu-mau-form.jsp");
         verify(dispatcher).forward(request, response);
     }
@@ -195,5 +274,23 @@ class BieuMauLeadServletTest {
 
         verify(response).sendRedirect("/crm/bieu-mau");
         verifyNoInteractions(service);
+    }
+
+    @Test
+    @DisplayName("BUG-NAV-S4-01-01: Kiểm tra cấu hình Breadcrumb và nút quay lại trong JSP")
+    void testKiemTraBreadcrumbVaDieuHuong() throws Exception {
+        java.nio.file.Path danhSachJsp = java.nio.file.Paths.get("src/main/webapp/WEB-INF/views/lead/bieu-mau-danh-sach.jsp");
+        assertTrue(java.nio.file.Files.exists(danhSachJsp));
+        String contentDs = java.nio.file.Files.readString(danhSachJsp);
+        assertTrue(contentDs.contains("${pageContext.request.contextPath}/dieu-huong"), "Trang chủ phải trỏ về /dieu-huong");
+        assertTrue(contentDs.contains("${pageContext.request.contextPath}/lead\" class=\"bml-breadcrumb-link\">Lead & Phân bổ"), "Lead & Phân bổ phải trỏ về /lead");
+
+        java.nio.file.Path formJsp = java.nio.file.Paths.get("src/main/webapp/WEB-INF/views/lead/bieu-mau-form.jsp");
+        assertTrue(java.nio.file.Files.exists(formJsp));
+        String contentForm = java.nio.file.Files.readString(formJsp);
+        assertTrue(contentForm.contains("${pageContext.request.contextPath}/dieu-huong"), "Trang chủ phải trỏ về /dieu-huong");
+        assertTrue(contentForm.contains("${pageContext.request.contextPath}/lead\" class=\"bml-breadcrumb-link\">Lead & Phân bổ"), "Lead & Phân bổ phải trỏ về /lead");
+        assertTrue(contentForm.contains("${pageContext.request.contextPath}/bieu-mau\" class=\"bml-btn bml-btn-outline bml-btn-sm\" id=\"btnQuayLaiDanhSach\""), "Quay lại danh sách phải trỏ về /bieu-mau");
+        assertTrue(contentForm.contains("name=\"chien_dich_id\""), "Form phải có dropdown chọn chiến dịch marketing");
     }
 }

@@ -25,7 +25,7 @@
                 <ol class="bml-breadcrumb-nav">
                     <li><a href="${pageContext.request.contextPath}/dieu-huong" class="bml-breadcrumb-link">Trang chủ</a></li>
                     <span class="bml-breadcrumb-sep" aria-hidden="true">/</span>
-                    <li><a href="${pageContext.request.contextPath}/bieu-mau" class="bml-breadcrumb-link">Lead & Phân bổ</a></li>
+                    <li><a href="${pageContext.request.contextPath}/lead" class="bml-breadcrumb-link">Lead & Phân bổ</a></li>
                     <span class="bml-breadcrumb-sep" aria-hidden="true">/</span>
                     <li class="bml-breadcrumb-current" aria-current="page">Biểu mẫu thu thập Lead</li>
                 </ol>
@@ -201,7 +201,10 @@
                                             <td>
                                                 <c:choose>
                                                     <c:when test="${not empty bm.tenChienDich}">
-                                                        <c:out value="${bm.tenChienDich}" />
+                                                        <div style="font-weight: 500;"><c:out value="${bm.tenChienDich}" /></div>
+                                                        <c:if test="${not empty bm.maChienDich}">
+                                                            <div style="font-size: 0.75rem; color: var(--bml-neutral-400); font-family: monospace;"><c:out value="${bm.maChienDich}" /></div>
+                                                        </c:if>
                                                     </c:when>
                                                     <c:otherwise>
                                                         <span style="color: var(--bml-neutral-400);">-</span>

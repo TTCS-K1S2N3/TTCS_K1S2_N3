@@ -1,11 +1,13 @@
 package vn.nhom10.crm.service;
 
 import vn.nhom10.crm.dao.BieuMauLeadDAO;
+import vn.nhom10.crm.dao.ChienDichDAO;
 import vn.nhom10.crm.dao.LeadDAO;
 import vn.nhom10.crm.dto.GuiFormLeadDTO;
 import vn.nhom10.crm.dto.KetQuaGuiFormDTO;
 import vn.nhom10.crm.dto.MaNhungDTO;
 import vn.nhom10.crm.model.BieuMauLead;
+import vn.nhom10.crm.model.ChienDich;
 import vn.nhom10.crm.model.Lead;
 import vn.nhom10.crm.model.NhatKyGuiFormLead;
 import vn.nhom10.crm.model.TrangThaiLeadEnum;
@@ -40,14 +42,20 @@ public class BieuMauLeadService {
 
     private final BieuMauLeadDAO bieuMauLeadDAO;
     private final LeadDAO leadDAO;
+    private final ChienDichDAO chienDichDAO;
 
     public BieuMauLeadService() {
-        this(new BieuMauLeadDAO(), new LeadDAO());
+        this(new BieuMauLeadDAO(), new LeadDAO(), new ChienDichDAO());
     }
 
     public BieuMauLeadService(BieuMauLeadDAO bieuMauLeadDAO, LeadDAO leadDAO) {
+        this(bieuMauLeadDAO, leadDAO, new ChienDichDAO());
+    }
+
+    public BieuMauLeadService(BieuMauLeadDAO bieuMauLeadDAO, LeadDAO leadDAO, ChienDichDAO chienDichDAO) {
         this.bieuMauLeadDAO = bieuMauLeadDAO;
         this.leadDAO = leadDAO;
+        this.chienDichDAO = chienDichDAO != null ? chienDichDAO : new ChienDichDAO();
     }
 
     /**
@@ -74,6 +82,18 @@ public class BieuMauLeadService {
 
         if (bm.getNguonLeadId() == null || bm.getNguonLeadId() <= 0) {
             throw new IllegalArgumentException("Biểu mẫu bắt buộc phải gắn với một Nguồn Lead hợp lệ.");
+        }
+
+        // Kiểm tra hợp lệ chiến dịch marketing (S4-03 AC2) nếu có chọn
+        if (bm.getChienDichId() != null && bm.getChienDichId() > 0) {
+            ChienDich cd = chienDichDAO.timTheoId(bm.getChienDichId());
+            if (cd == null) {
+                throw new IllegalArgumentException("Chiến dịch được chọn không tồn tại.");
+            }
+            String status = cd.getTrangThai();
+            if (status != null && !"DANG_CHAY".equalsIgnoreCase(status) && !"NHAP".equalsIgnoreCase(status)) {
+                throw new IllegalArgumentException("Chiến dịch '" + cd.getTenChienDich() + "' hiện không hoạt động.");
+            }
         }
 
         // Tự động sinh token công khai ngẫu nhiên an toàn nếu chưa có
