@@ -982,7 +982,7 @@ public class LeadDAO {
             return false;
         }
         String sql = "UPDATE `lead` SET trang_thai = 'DANG_CHAM_SOC', duoc_nhan_luc = ?, updated_at = CURRENT_TIMESTAMP " +
-                "WHERE id = ? AND nguoi_phu_trach_id = ? AND trang_thai = 'MOI'";
+                "WHERE id = ? AND nguoi_phu_trach_id = ? AND trang_thai IN ('MOI', 'DA_PHAN_BO')";
 
         try (Connection conn = DatabaseConnection.layKetNoi();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -1001,16 +1001,16 @@ public class LeadDAO {
 
     /**
      * Từ chối Lead trong Connection ngoài (hỗ trợ Transaction):
-     * Trả lead về hàng chờ phân bổ (nguoi_phu_trach_id = NULL, trạng thái = MOI), lưu lý do từ chối.
-     * Tuân thủ Q3: Chỉ cho phép từ chối khi đang ở trạng thái MOI (chưa nhận).
+     * Trả lead về hàng chờ phân bổ (nguoi_phu_trach_id = NULL, trạng thái = HANG_CHO_PHAN_BO), lưu lý do từ chối.
+     * Tuân thủ Q3: Chỉ cho phép từ chối khi đang ở trạng thái MOI hoặc DA_PHAN_BO (chưa nhận).
      */
     public boolean tuChoiLead(Connection conn, Long leadId, Long nguoiDungId, String lyDoTongHop) throws SQLException {
         if (leadId == null || nguoiDungId == null) {
             return false;
         }
-        String sql = "UPDATE `lead` SET trang_thai = 'MOI', nguoi_phu_trach_id = NULL, " +
+        String sql = "UPDATE `lead` SET trang_thai = 'HANG_CHO_PHAN_BO', nguoi_phu_trach_id = NULL, " +
                 "ly_do_tu_choi = ?, updated_at = CURRENT_TIMESTAMP " +
-                "WHERE id = ? AND nguoi_phu_trach_id = ? AND trang_thai = 'MOI'";
+                "WHERE id = ? AND nguoi_phu_trach_id = ? AND trang_thai IN ('MOI', 'DA_PHAN_BO')";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, lyDoTongHop);
@@ -1070,7 +1070,7 @@ public class LeadDAO {
     /**
      * Lấy danh sách các Lead cần kiểm tra SLA:
      * - Đã được phân bổ cho nhân viên (nguoi_phu_trach_id IS NOT NULL)
-     * - Đang trong chu kỳ xử lý (trang_thai IN ('MOI', 'DANG_CHAM_SOC'))
+     * - Đang trong chu kỳ xử lý (trang_thai IN ('MOI', 'DA_PHAN_BO', 'DANG_CHAM_SOC'))
      * - Chưa bị đánh dấu quá hạn (qua_sla = 0)
      * - Đã có mốc phân bổ hoặc mốc hạn SLA
      */
@@ -1078,7 +1078,7 @@ public class LeadDAO {
         List<Lead> ds = new ArrayList<>();
         String sql = "SELECT " + COT_SELECT_LEAD + FROM_JOIN_LEAD +
                 "WHERE l.nguoi_phu_trach_id IS NOT NULL " +
-                "AND l.trang_thai IN ('MOI', 'DANG_CHAM_SOC') " +
+                "AND l.trang_thai IN ('MOI', 'DA_PHAN_BO', 'DANG_CHAM_SOC') " +
                 "AND l.qua_sla = 0 " +
                 "AND l.duoc_phan_bo_luc IS NOT NULL " +
                 "ORDER BY l.han_phan_hoi_sla ASC";

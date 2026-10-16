@@ -85,7 +85,7 @@ public class LeadTiepNhanService {
 
         // Kiểm tra xem nhân viên hiện tại có quyền Nhận hoặc Từ chối không
         boolean laNguoiPhuTrach = (lead.getNguoiPhuTrachId() != null && lead.getNguoiPhuTrachId().equals((long) nguoiDung.getId()));
-        boolean dangChoNhan = (lead.getTrangThai() == TrangThaiLeadEnum.MOI);
+        boolean dangChoNhan = (lead.getTrangThai() == TrangThaiLeadEnum.DA_PHAN_BO || lead.getTrangThai() == TrangThaiLeadEnum.MOI);
 
         view.setCoTheNhan(laNguoiPhuTrach && dangChoNhan);
         view.setCoTheTuChoi(laNguoiPhuTrach && dangChoNhan);
@@ -125,8 +125,8 @@ public class LeadTiepNhanService {
             throw new LoiPhanQuyenException("Bạn không có quyền tiếp nhận Lead này vì không được phân công");
         }
 
-        // Chặn nhận lại hoặc nhận khi trạng thái không còn là MOI
-        if (lead.getTrangThai() != TrangThaiLeadEnum.MOI) {
+        // Chặn nhận lại hoặc nhận khi trạng thái không còn là DA_PHAN_BO hoặc MOI
+        if (lead.getTrangThai() != TrangThaiLeadEnum.DA_PHAN_BO && lead.getTrangThai() != TrangThaiLeadEnum.MOI) {
             throw new IllegalStateException("Lead đã thay đổi trạng thái hoặc đã được tiếp nhận trước đó");
         }
 
@@ -191,7 +191,7 @@ public class LeadTiepNhanService {
             throw new IllegalStateException("Không được từ chối sau khi đã nhận lead");
         }
 
-        if (lead.getTrangThai() != TrangThaiLeadEnum.MOI) {
+        if (lead.getTrangThai() != TrangThaiLeadEnum.DA_PHAN_BO && lead.getTrangThai() != TrangThaiLeadEnum.MOI) {
             throw new IllegalStateException("Lead đã thay đổi trạng thái, không thể từ chối");
         }
 

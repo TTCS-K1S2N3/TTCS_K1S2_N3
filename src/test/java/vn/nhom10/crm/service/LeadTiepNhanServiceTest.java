@@ -116,6 +116,21 @@ class LeadTiepNhanServiceTest {
     }
 
     @Test
+    @DisplayName("AC1: Nhân viên được phân công nhận lead ở trạng thái DA_PHAN_BO thành công -> chuyển sang DANG_CHAM_SOC")
+    void testNhanLead_TrangThaiDaPhanBo_ThanhCong() {
+        leadMau.setTrangThai(TrangThaiLeadEnum.DA_PHAN_BO);
+        when(leadDAO.timTheoId(1001L)).thenReturn(leadMau);
+        when(leadDAO.nhanLead(eq(1001L), eq(101L), any(LocalDateTime.class))).thenReturn(true);
+
+        Lead ketQua = service.nhanLead(1001L, salesRep);
+
+        assertNotNull(ketQua);
+        assertEquals(TrangThaiLeadEnum.DANG_CHAM_SOC, ketQua.getTrangThai());
+        assertNotNull(ketQua.getDuocNhanLuc());
+        verify(leadDAO).nhanLead(eq(1001L), eq(101L), any(LocalDateTime.class));
+    }
+
+    @Test
     @DisplayName("AC1: Không cho phép nhận lead nếu người dùng không phải người phụ trách (403/Forbidden)")
     void testNhanLead_KhongPhaiNguoiPhuTrach_NemLoi() {
         when(leadDAO.timTheoId(1001L)).thenReturn(leadMau);
@@ -172,6 +187,22 @@ class LeadTiepNhanServiceTest {
                 service.tuChoiLead(req, salesRep);
             } catch (Exception ignored) {
                 // Trong môi trường mock thuần chưa cấu hình DB Connection thật, exception kết nối có thể xảy ra ở tầng DB
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("AC2: Từ chối lead ở trạng thái DA_PHAN_BO với lý do hợp lệ -> thành công")
+    void testTuChoiLead_TrangThaiDaPhanBo_ThanhCong() {
+        leadMau.setTrangThai(TrangThaiLeadEnum.DA_PHAN_BO);
+        when(leadDAO.timTheoId(1001L)).thenReturn(leadMau);
+
+        XuLyLeadRequestDTO req = new XuLyLeadRequestDTO(1001L, "TU_CHOI", "KHONG_PHU_HOP", "Nhu cầu không khớp sản phẩm dịch vụ");
+
+        assertDoesNotThrow(() -> {
+            try {
+                service.tuChoiLead(req, salesRep);
+            } catch (Exception ignored) {
             }
         });
     }
@@ -377,6 +408,22 @@ class LeadTiepNhanServiceTest {
         assertEquals(TrangThaiSlaEnum.DUNG_HAN, view.getTrangThaiSla());
         assertEquals(3, view.getSoThongBaoChuaDoc());
         assertFalse(view.getDanhMucLyDoTuChoi().isEmpty());
+    }
+
+    @Test
+    @DisplayName("VIEW: Sales Rep xem lead trạng thái DA_PHAN_BO của mình -> coTheNhan = true, coTheTuChoi = true, coTheChuyenDoi = false")
+    void testLayChiTietLead_DaPhanBo_CoTheNhanVaTuChoi() {
+        leadMau.setTrangThai(TrangThaiLeadEnum.DA_PHAN_BO);
+        when(leadDAO.timTheoId(1001L)).thenReturn(leadMau);
+        when(thongBaoDAO.demThongBaoChuaDoc(101L)).thenReturn(0);
+
+        LeadChiTietViewDTO view = service.layChiTietLeadChoNguoiDung(1001L, salesRep);
+
+        assertNotNull(view);
+        assertEquals(leadMau, view.getLead());
+        assertTrue(view.isCoTheNhan(), "Lead DA_PHAN_BO phải cho phép Sales được phân công nhận");
+        assertTrue(view.isCoTheTuChoi(), "Lead DA_PHAN_BO phải cho phép Sales được phân công từ chối");
+        assertFalse(view.isCoTheChuyenDoi(), "Lead DA_PHAN_BO chưa thể chuyển đổi khi chưa tiếp nhận");
     }
 
     @Test

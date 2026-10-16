@@ -92,6 +92,12 @@
                                         Đang chăm sóc
                                     </span>
                                 </c:when>
+                                <c:when test="${leadChiTiet.trangThai == 'DA_PHAN_BO' || leadChiTiet.trangThai.name() == 'DA_PHAN_BO'}">
+                                    <span class="ctl-badge ctl-badge-info" id="badgeTrangThaiLead">
+                                        <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">assignment_ind</span>
+                                        Đã phân bổ
+                                    </span>
+                                </c:when>
                                 <c:when test="${leadChiTiet.trangThai == 'TU_CHOI'}">
                                     <span class="ctl-badge ctl-badge-danger" id="badgeTrangThaiLead">
                                         <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">cancel</span>
@@ -102,6 +108,12 @@
                                     <span class="ctl-badge ctl-badge-primary" id="badgeTrangThaiLead">
                                         <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">verified</span>
                                         Đã chuyển đổi
+                                    </span>
+                                </c:when>
+                                <c:when test="${leadChiTiet.trangThai == 'HANG_CHO_PHAN_BO' || leadChiTiet.trangThai.name() == 'HANG_CHO_PHAN_BO'}">
+                                    <span class="ctl-badge ctl-badge-warning" id="badgeTrangThaiLead">
+                                        <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">hourglass_empty</span>
+                                        Hàng chờ phân bổ
                                     </span>
                                 </c:when>
                                 <c:otherwise>

@@ -619,6 +619,18 @@
                                                             <span>Mới tiếp nhận</span>
                                                         </span>
                                                     </c:when>
+                                                    <c:when test="${lead.trangThai != null && (lead.trangThai == 'DA_PHAN_BO' || lead.trangThai.name() == 'DA_PHAN_BO')}">
+                                                        <span class="lead-badge lead-badge-status-progress" style="background: rgba(3, 105, 161, 0.12); color: #0284c7; border-color: rgba(3, 105, 161, 0.25);">
+                                                            <span class="material-symbols-outlined" style="font-size: 14px;" aria-hidden="true">assignment_ind</span>
+                                                            <span>Đã phân bổ</span>
+                                                        </span>
+                                                    </c:when>
+                                                    <c:when test="${lead.trangThai != null && (lead.trangThai == 'HANG_CHO_PHAN_BO' || lead.trangThai.name() == 'HANG_CHO_PHAN_BO')}">
+                                                        <span class="lead-badge lead-badge-status-new" style="background: rgba(217, 119, 6, 0.12); color: #d97706; border-color: rgba(217, 119, 6, 0.25);">
+                                                            <span class="material-symbols-outlined" style="font-size: 14px;" aria-hidden="true">hourglass_empty</span>
+                                                            <span>Hàng chờ phân bổ</span>
+                                                        </span>
+                                                    </c:when>
                                                     <c:when test="${lead.trangThai != null && (lead.trangThai == 'DANG_CHAM_SOC' || lead.trangThai.name() == 'DANG_CHAM_SOC')}">
                                                         <span class="lead-badge lead-badge-status-progress">
                                                             <span class="material-symbols-outlined" style="font-size: 14px;" aria-hidden="true">pending</span>
