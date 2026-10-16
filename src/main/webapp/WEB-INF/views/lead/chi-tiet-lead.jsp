@@ -135,6 +135,8 @@
                         <c:if test="${soThongBaoChuaDoc > 0}">
                             <span class="ctl-badge-bell-count" id="badgeSoThongBaoChuaDoc">${soThongBaoChuaDoc > 99 ? '99+' : soThongBaoChuaDoc}</span>
                         </c:if>
+                    </a>
+
                     <!-- Chấm điểm Lead (S4-05) -->
                     <form action="${pageContext.request.contextPath}/lead/cham-diem-lead" method="POST" style="display: inline; margin: 0;">
                         <input type="hidden" name="id" value="${leadChiTiet.id}">
@@ -143,12 +145,6 @@
                             <span>Chấm điểm</span>
                         </button>
                     </form>
-
-                    <!-- Sửa thông tin Lead (S4-02) -->
-                    <a href="${pageContext.request.contextPath}/lead/sua?id=${leadChiTiet.id}" class="ctl-btn ctl-btn-outline" id="btnSuaLeadChiTiet" title="Sửa thông tin Lead">
-                        <span class="material-symbols-outlined" aria-hidden="true">edit</span>
-                        <span>Sửa</span>
-                    </a>
 
                     <!-- AC1: Nút Nhận Lead -->
                     <c:if test="${coTheNhan}">

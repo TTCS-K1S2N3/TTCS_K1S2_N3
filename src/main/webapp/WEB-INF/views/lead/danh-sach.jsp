@@ -82,15 +82,8 @@
                     <!-- Nút Chấm điểm của phần S4-05 -->
                     <a href="${pageContext.request.contextPath}/lead/cham-diem" class="lead-btn lead-btn-outline" id="btnChamDiemLead" title="Cấu hình quy tắc chấm điểm và phân loại Lead (Story S4-05)">
                         <span class="material-symbols-outlined" style="color: #7c3aed;" aria-hidden="true">award_star</span>
-                        <span>Cấu hình chấm điểm</span>
+                        <span>Chấm điểm</span>
                     </a>
-                    <!-- Nút Tính lại điểm toàn bộ S4-05 -->
-                    <form action="${pageContext.request.contextPath}/lead/tinh-lai-diem" method="POST" style="display: inline-flex; margin: 0;">
-                        <button type="submit" class="lead-btn lead-btn-outline" id="btnTinhLaiDiem" title="Chấm điểm lại toàn bộ danh sách Lead theo quy tắc hiện tại (Story S4-05)">
-                            <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
-                            <span>Tính lại điểm</span>
-                        </button>
-                    </form>
                     <a href="${pageContext.request.contextPath}/bieu-mau" class="lead-btn lead-btn-outline" id="btnBieuMauNhung" title="Quản lý biểu mẫu nhúng website">
                         <span class="material-symbols-outlined" aria-hidden="true">dynamic_form</span>
                         <span>Biểu mẫu nhúng</span>
@@ -233,7 +226,7 @@
                                             <td style="text-align: right; font-size: 12.5px; color: var(--lead-neutral-500);">
                                                 <c:out value="${lead.createdAt != null ? lead.createdAt : 'Vừa xong'}" />
                                             </td>
-                                            <!-- Cột Thao tác đầy đủ: Chi tiết, Chấm điểm, Sửa, Xóa -->
+                                            <!-- Cột Thao tác: Chi tiết -->
                                             <td style="text-align: center; white-space: nowrap;">
                                                 <div style="display: inline-flex; align-items: center; justify-content: center; gap: 5px;">
                                                     <!-- Chi tiết -->
@@ -244,37 +237,6 @@
                                                         <span class="material-symbols-outlined" style="font-size: 15px;" aria-hidden="true">visibility</span>
                                                         <span>Chi tiết</span>
                                                     </a>
-
-                                                    <!-- Chấm điểm 1 Lead (S4-05) -->
-                                                    <form action="${pageContext.request.contextPath}/lead/cham-diem-lead" method="POST" style="display: inline; margin: 0;">
-                                                        <input type="hidden" name="id" value="${lead.id}">
-                                                        <button type="submit"
-                                                                class="lead-btn-action lead-btn-score"
-                                                                id="btnChamDiem_${lead.id}"
-                                                                title="Chấm điểm lại Lead ${lead.maLead} theo quy tắc S4-05">
-                                                            <span class="material-symbols-outlined" style="font-size: 15px;" aria-hidden="true">award_star</span>
-                                                            <span>Chấm điểm</span>
-                                                        </button>
-                                                    </form>
-
-                                                    <!-- Sửa (S4-02) -->
-                                                    <a href="${pageContext.request.contextPath}/lead/sua?id=${lead.id}"
-                                                       class="lead-btn-action lead-btn-edit"
-                                                       id="btnSuaLead_${lead.id}"
-                                                       title="Sửa thông tin Lead ${lead.maLead}">
-                                                        <span class="material-symbols-outlined" style="font-size: 15px;" aria-hidden="true">edit</span>
-                                                        <span>Sửa</span>
-                                                    </a>
-
-                                                    <!-- Xóa (S4-02) -->
-                                                    <button type="button"
-                                                            class="lead-btn-action lead-btn-delete"
-                                                            id="btnXoaLead_${lead.id}"
-                                                            onclick="xacNhanXoaLead('${lead.id}', '<c:out value="${lead.hoTen}" />', '<c:out value="${lead.maLead}" />')"
-                                                            title="Xóa Lead ${lead.maLead}">
-                                                        <span class="material-symbols-outlined" style="font-size: 15px;" aria-hidden="true">delete</span>
-                                                        <span>Xóa</span>
-                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -293,17 +255,17 @@
                                                     Bắt đầu tiếp nhận lead bằng cách tạo thủ công từ danh thiếp sự kiện hoặc nhập hàng loạt từ tệp Excel.
                                                 </p>
                                                 <div class="lead-empty-actions">
-                                                    <a href="${pageContext.request.contextPath}/lead/tao-moi" class="lead-btn lead-btn-primary lead-btn-sm" id="btnEmptyTaoLead">
-                                                        <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">add</span>
-                                                        <span>Tạo Lead thủ công</span>
-                                                    </a>
                                                     <a href="${pageContext.request.contextPath}/lead/import-excel" class="lead-btn lead-btn-outline lead-btn-sm" id="btnEmptyNhapExcel">
                                                         <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">upload_file</span>
                                                         <span>Nhập từ Excel</span>
                                                     </a>
+                                                    <a href="${pageContext.request.contextPath}/lead/tao-moi" class="lead-btn lead-btn-primary lead-btn-sm" id="btnEmptyTaoLead">
+                                                        <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">add</span>
+                                                        <span>Tạo Lead thủ công</span>
+                                                    </a>
                                                     <a href="${pageContext.request.contextPath}/lead/cham-diem" class="lead-btn lead-btn-outline lead-btn-sm" id="btnEmptyChamDiem">
                                                         <span class="material-symbols-outlined" style="font-size: 16px; color: #7c3aed;" aria-hidden="true">award_star</span>
-                                                        <span>Cấu hình chấm điểm</span>
+                                                        <span>Chấm điểm</span>
                                                     </a>
                                                 </div>
                                             </div>
