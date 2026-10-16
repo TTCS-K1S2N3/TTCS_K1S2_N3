@@ -137,15 +137,6 @@
                         </c:if>
                     </a>
 
-                    <!-- Chấm điểm Lead (S4-05) -->
-                    <form action="${pageContext.request.contextPath}/lead/cham-diem-lead" method="POST" style="display: inline; margin: 0;">
-                        <input type="hidden" name="id" value="${leadChiTiet.id}">
-                        <button type="submit" class="ctl-btn ctl-btn-outline" id="btnChamDiemChiTiet" title="Chấm điểm lại Lead theo quy tắc S4-05">
-                            <span class="material-symbols-outlined" style="color: #7c3aed;" aria-hidden="true">award_star</span>
-                            <span>Chấm điểm</span>
-                        </button>
-                    </form>
-
                     <!-- AC1: Nút Nhận Lead -->
                     <c:if test="${coTheNhan}">
                         <form action="${pageContext.request.contextPath}/lead/xu-ly" method="POST" id="formNhanLead" style="display: inline;">
