@@ -402,7 +402,7 @@
                                         <c:when test="${not empty luaChonNguoiPhuTrach}">
                                             <c:forEach var="u" items="${luaChonNguoiPhuTrach}">
                                                 <option value="${u.id}" ${(param.nguoiPhuTrachId == u.id) or (boLocHienTai.nguoiPhuTrachId == u.id) ? 'selected' : ''}>
-                                                    <c:out value="${u.hoTen}" /> (<c:out value="${u.tenDangNhap}" />)
+                                                    <c:out value="${u.hoTen}" /> (<c:out value="${u.email}" />)
                                                 </option>
                                             </c:forEach>
                                         </c:when>
