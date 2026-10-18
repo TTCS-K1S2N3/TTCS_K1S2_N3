@@ -6,29 +6,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cập nhật sản phẩm & Bảng giá | CRM</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/san-pham/san-pham.css">
+
+    <!-- Google Fonts & Material Symbols -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- CSS chung toàn hệ thống -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/material-symbols.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/san-pham/san-pham.css?v=20261018_ui">
 </head>
-<body>
+<body class="crm-body">
 
-<div class="crm-container" style="max-width: 920px;">
+    <!-- Thanh điều hướng và Sidebar chuẩn hệ thống S1-06 -->
+    <jsp:include page="/WEB-INF/views/layout/navigation.jsp" />
 
-    <!-- Header & Navigation -->
-    <header class="crm-header">
-        <div class="crm-header-title">
-            <h1>Cập nhật Sản phẩm & Bảng giá niêm yết</h1>
-            <p>
-                Điều chỉnh thông số mặt hàng hoặc cập nhật biểu giá chuẩn cho sản phẩm
-                <strong style="color: var(--primary);">${sanPham.maSanPham} - ${sanPham.tenSanPham}</strong>
-            </p>
-        </div>
-        <div class="header-actions">
-            <a href="${pageContext.request.contextPath}/san-pham"
-               class="btn btn-outline" id="btnQuayLai" style="display: inline-flex; align-items: center; gap: 4px;">
-                <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span>
-                <span>Quay lại danh sách</span>
-            </a>
-        </div>
-    </header>
+    <main class="crm-main-content page-container" id="crm-main-content">
+        <div class="category-page-container sanpham-page-container" style="max-width: 960px;">
+
+            <!-- Breadcrumb điều hướng -->
+            <nav class="category-breadcrumb sanpham-breadcrumb crm-breadcrumb" aria-label="Breadcrumb">
+                <ul class="category-breadcrumb-list sanpham-breadcrumb-list crm-breadcrumb-list">
+                    <li>
+                        <a href="${pageContext.request.contextPath}/dieu-huong" class="category-breadcrumb-link sanpham-breadcrumb-link crm-breadcrumb-link">Trang chủ</a>
+                    </li>
+                    <li class="category-breadcrumb-separator sanpham-breadcrumb-separator crm-breadcrumb-separator" aria-hidden="true">/</li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/san-pham" class="category-breadcrumb-link sanpham-breadcrumb-link crm-breadcrumb-link">Sản phẩm & Bảng giá</a>
+                    </li>
+                    <li class="category-breadcrumb-separator sanpham-breadcrumb-separator crm-breadcrumb-separator" aria-hidden="true">/</li>
+                    <li class="category-breadcrumb-active sanpham-breadcrumb-active crm-breadcrumb-active" aria-current="page">Cập nhật sản phẩm</li>
+                </ul>
+                <div>
+                    <a href="${pageContext.request.contextPath}/san-pham" class="btn btn-outline btn-sm" id="btnQuayLaiTop">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span>
+                        <span>Quay lại danh sách</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Header Section (Card Banner đồng bộ) -->
+            <header class="category-header-banner sanpham-header-banner">
+                <div class="category-header-title-wrap sanpham-header-title-wrap">
+                    <div class="category-header-icon-box sanpham-header-icon-box" aria-hidden="true">
+                        <span class="material-symbols-outlined">edit_note</span>
+                    </div>
+                    <div class="category-header-text sanpham-header-text">
+                        <h1>Cập nhật Sản phẩm & Bảng giá niêm yết</h1>
+                        <p>
+                            Điều chỉnh thông số mặt hàng hoặc cập nhật biểu giá chuẩn cho sản phẩm
+                            <strong style="color: var(--primary);">${sanPham.maSanPham} - ${sanPham.tenSanPham}</strong>
+                        </p>
+                    </div>
+                </div>
+                <div class="category-header-actions sanpham-header-actions">
+                    <a href="${pageContext.request.contextPath}/san-pham"
+                       class="btn btn-outline" id="btnQuayLai">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span>
+                        <span>Quay lại danh sách</span>
+                    </a>
+                </div>
+            </header>
 
     <!-- Cảnh báo nếu sản phẩm đã phát sinh trong Báo giá (AC4) -->
     <c:if test="${sanPham.daXuatHienTrongBaoGia}">
@@ -59,7 +99,7 @@
     </c:if>
 
     <!-- Form Chỉnh sửa sản phẩm -->
-    <main class="crm-card">
+    <section class="crm-card">
         <form id="formSanPham" method="post" action="${pageContext.request.contextPath}/san-pham/sua" novalidate>
             <input type="hidden" name="id" value="${sanPham.id}">
 
@@ -229,9 +269,10 @@
                 </button>
             </div>
         </form>
-    </main>
+    </section>
 
 </div>
+</main>
 
 <script>
     window.APP_CONTEXT = '${pageContext.request.contextPath}';

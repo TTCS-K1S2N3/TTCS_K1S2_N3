@@ -7,9 +7,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Khai báo danh mục lý do thắng thua và đối thủ cạnh tranh - Phục vụ đóng cơ hội bán hàng Sprint 5">
     <title>Danh Mục Lý Do Thắng Thua & Đối Thủ - CRM Bán Hàng</title>
+
+    <!-- Google Fonts & Material Symbols (Đồng bộ chuẩn hệ thống) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- CSS chung toàn hệ thống -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/material-symbols.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/co-hoi/ly-do-thang-thua.css">
+
+    <!-- CSS Module Lý do thắng/thua & Đối thủ -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/co-hoi/ly-do-thang-thua.css?v=20261018_ui_v2">
     <script>
         window.CRM_CONTEXT_PATH = "${pageContext.request.contextPath}";
     </script>
@@ -19,23 +29,30 @@
     <jsp:include page="/WEB-INF/views/layout/navigation.jsp" />
 
     <main class="crm-main-content page-container" id="crm-main-content">
-        <div class="crm-catalog-page">
+        <div class="category-page-container crm-catalog-page">
 
-            <!-- Breadcrumb điều hướng -->
-            <nav class="crm-catalog-breadcrumb" aria-label="Đường dẫn điều hướng" style="display:flex; justify-content:space-between; align-items:center;">
+            <!-- 1. Breadcrumb điều hướng chuẩn -->
+            <nav class="crm-breadcrumb" aria-label="Breadcrumb">
+                <ul class="crm-breadcrumb-list">
+                    <li>
+                        <a href="${pageContext.request.contextPath}/dieu-huong" class="crm-breadcrumb-link">Trang chủ</a>
+                    </li>
+                    <li class="crm-breadcrumb-separator" aria-hidden="true">/</li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/danh-muc" class="crm-breadcrumb-link">Danh mục & Cấu hình</a>
+                    </li>
+                    <li class="crm-breadcrumb-separator" aria-hidden="true">/</li>
+                    <li class="crm-breadcrumb-active" aria-current="page">Lý do Thắng/Thua & Đối thủ</li>
+                </ul>
                 <div>
-                    <a href="${pageContext.request.contextPath}/dieu-huong">Trang chủ</a>
-                    <span class="separator">/</span>
-                    <a href="${pageContext.request.contextPath}/danh-muc">Danh mục & Cấu hình</a>
-                    <span class="separator">/</span>
-                    <span class="current">Lý do Thắng Thua & Đối thủ</span>
+                    <a href="${pageContext.request.contextPath}/danh-muc" class="btn btn-outline btn-sm" id="btnQuayLaiDanhMuc">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span>
+                        <span>Quay lại Danh mục</span>
+                    </a>
                 </div>
-                <a href="${pageContext.request.contextPath}/danh-muc" class="crm-btn crm-btn-outline" style="padding: 4px 12px; font-size: 13px; text-decoration: none;">
-                    <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span> Quay lại Danh mục
-                </a>
             </nav>
 
-            <!-- Page Header Banner -->
+            <!-- 2. Page Header Banner -->
             <header class="crm-catalog-header">
                 <div class="crm-header-info">
                     <div class="crm-header-badges">
@@ -57,17 +74,17 @@
                 </div>
                 <div class="crm-header-actions">
                     <c:if test="${coQuyenQuanLy}">
-                        <form method="POST" action="${pageContext.request.contextPath}/danh-muc/ly-do-thang-thua" style="display:inline;">
+                        <form method="POST" action="${pageContext.request.contextPath}/danh-muc/ly-do-thang-thua" style="display:inline; margin: 0;">
                             <input type="hidden" name="action" value="nap-du-lieu-mau">
                             <input type="hidden" name="tab" value="${currentTab}">
                             <button type="submit" class="crm-btn crm-btn-outline" id="btn-seed-sample" title="Tự động nạp danh mục lý do và đối thủ mẫu chuẩn">
-                                <span class="material-symbols-outlined" aria-hidden="true">sync</span>
-                                Nạp dữ liệu mẫu
+                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">sync</span>
+                                <span>Nạp dữ liệu mẫu</span>
                             </button>
                         </form>
                         <button type="button" class="crm-btn crm-btn-primary" id="btn-add-new-record">
-                            <span class="material-symbols-outlined" aria-hidden="true">add</span>
-                            Thêm mới
+                            <span class="material-symbols-outlined icon-sm" aria-hidden="true">add</span>
+                            <span>Thêm mới</span>
                         </button>
                     </c:if>
                     <c:if test="${!coQuyenQuanLy}">
@@ -78,6 +95,30 @@
                     </c:if>
                 </div>
             </header>
+
+            <!-- 3. Liên kết 5 phân hệ Cấu hình & Danh mục Sprint 2 -->
+            <nav class="submodule-nav-bar" aria-label="Các phân hệ danh mục và cấu hình">
+                <a href="${pageContext.request.contextPath}/danh-muc-ban-hang" class="submodule-nav-link">
+                    <span class="material-symbols-outlined" aria-hidden="true">category</span>
+                    <span>Danh mục dùng chung</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/san-pham" class="submodule-nav-link">
+                    <span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>
+                    <span>Sản phẩm & Bảng giá</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/truong-tuy-chinh" class="submodule-nav-link">
+                    <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+                    <span>Trường tùy chỉnh</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/pipeline/giai-doan" class="submodule-nav-link">
+                    <span class="material-symbols-outlined" aria-hidden="true">linear_scale</span>
+                    <span>Giai đoạn Pipeline</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/danh-muc/ly-do-thang-thua" class="submodule-nav-link active">
+                    <span class="material-symbols-outlined" aria-hidden="true">flag</span>
+                    <span>Lý do thắng/thua & Đối thủ</span>
+                </a>
+            </nav>
 
             <!-- Thông báo trạng thái Flash Message -->
             <c:if test="${param.msg == 'success'}">
@@ -232,7 +273,7 @@
                                     <th style="width: 140px;">Mã Lý Do</th>
                                     <th>Tên Lý Do Thắng</th>
                                     <th style="width: 100px; text-align: center;">Thứ Tự</th>
-                                    <th style="width: 180px;">Trạng Thái</th>
+                                    <th style="width: 190px;">Trạng Thái</th>
                                     <th style="width: 150px; text-align: center;">Cơ Hội Áp Dụng</th>
                                     <c:if test="${coQuyenQuanLy}">
                                         <th style="width: 120px; text-align: right;">Thao Tác</th>
@@ -251,16 +292,18 @@
                                         <td style="text-align: center;">
                                             <span class="crm-sort-order-pill">${item.thuTuHienThi}</span>
                                         </td>
-                                        <td>
-                                            <c:if test="${coQuyenQuanLy}">
-                                                <label class="crm-switch">
-                                                    <input type="checkbox" class="crm-ajax-status-toggle" data-type="ly-do" data-id="${item.id}" ${item.hoatDong ? 'checked' : ''}>
-                                                    <span class="crm-slider"></span>
-                                                </label>
-                                            </c:if>
-                                            <span class="crm-status-label ${item.hoatDong ? 'crm-status-active' : 'crm-status-inactive'}">
-                                                ${item.hoatDong ? 'Đang hoạt động' : 'Ngừng hoạt động'}
-                                            </span>
+                                        <td class="crm-status-cell-td">
+                                            <div class="crm-status-cell">
+                                                <c:if test="${coQuyenQuanLy}">
+                                                    <label class="crm-switch">
+                                                        <input type="checkbox" class="crm-ajax-status-toggle" data-type="ly-do" data-id="${item.id}" ${item.hoatDong ? 'checked' : ''}>
+                                                        <span class="crm-slider"></span>
+                                                    </label>
+                                                </c:if>
+                                                <span class="crm-status-label ${item.hoatDong ? 'crm-status-active' : 'crm-status-inactive'}">
+                                                    ${item.hoatDong ? 'Đang hoạt động' : 'Ngừng hoạt động'}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td style="text-align: center;">
                                             <span class="crm-badge-ref ${item.soCoHoiThamChieu > 0 ? 'has-ref' : ''}">
@@ -311,7 +354,7 @@
                                     <th style="width: 140px;">Mã Lý Do</th>
                                     <th>Tên Lý Do Thua</th>
                                     <th style="width: 100px; text-align: center;">Thứ Tự</th>
-                                    <th style="width: 180px;">Trạng Thái</th>
+                                    <th style="width: 190px;">Trạng Thái</th>
                                     <th style="width: 150px; text-align: center;">Cơ Hội Áp Dụng</th>
                                     <c:if test="${coQuyenQuanLy}">
                                         <th style="width: 120px; text-align: right;">Thao Tác</th>
@@ -330,16 +373,18 @@
                                         <td style="text-align: center;">
                                             <span class="crm-sort-order-pill">${item.thuTuHienThi}</span>
                                         </td>
-                                        <td>
-                                            <c:if test="${coQuyenQuanLy}">
-                                                <label class="crm-switch">
-                                                    <input type="checkbox" class="crm-ajax-status-toggle" data-type="ly-do" data-id="${item.id}" ${item.hoatDong ? 'checked' : ''}>
-                                                    <span class="crm-slider"></span>
-                                                </label>
-                                            </c:if>
-                                            <span class="crm-status-label ${item.hoatDong ? 'crm-status-active' : 'crm-status-inactive'}">
-                                                ${item.hoatDong ? 'Đang hoạt động' : 'Ngừng hoạt động'}
-                                            </span>
+                                        <td class="crm-status-cell-td">
+                                            <div class="crm-status-cell">
+                                                <c:if test="${coQuyenQuanLy}">
+                                                    <label class="crm-switch">
+                                                        <input type="checkbox" class="crm-ajax-status-toggle" data-type="ly-do" data-id="${item.id}" ${item.hoatDong ? 'checked' : ''}>
+                                                        <span class="crm-slider"></span>
+                                                    </label>
+                                                </c:if>
+                                                <span class="crm-status-label ${item.hoatDong ? 'crm-status-active' : 'crm-status-inactive'}">
+                                                    ${item.hoatDong ? 'Đang hoạt động' : 'Ngừng hoạt động'}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td style="text-align: center;">
                                             <span class="crm-badge-ref ${item.soCoHoiThamChieu > 0 ? 'has-ref' : ''}">
@@ -387,12 +432,12 @@
                         <table class="crm-data-table" id="table-doi-thu">
                             <thead>
                                 <tr>
-                                    <th style="width: 140px;">Mã Đối Thủ</th>
-                                    <th style="width: 240px;">Tên Đối Thủ Cạnh Tranh</th>
-                                    <th style="width: 200px;">Website</th>
+                                    <th style="width: 130px;">Mã Đối Thủ</th>
+                                    <th style="width: 220px;">Tên Đối Thủ Cạnh Tranh</th>
+                                    <th style="width: 180px;">Website</th>
                                     <th>Ghi Chú Phân Tích (Điểm mạnh / Yếu)</th>
-                                    <th style="width: 170px;">Trạng Thái</th>
-                                    <th style="width: 140px; text-align: center;">Cơ Hội Thua</th>
+                                    <th style="width: 190px;">Trạng Thái</th>
+                                    <th style="width: 130px; text-align: center;">Cơ Hội Thua</th>
                                     <c:if test="${coQuyenQuanLy}">
                                         <th style="width: 120px; text-align: right;">Thao Tác</th>
                                     </c:if>
@@ -424,16 +469,18 @@
                                                 <c:out value="${item.ghiChu != null ? item.ghiChu : 'Chưa có ghi chú'}" />
                                             </span>
                                         </td>
-                                        <td>
-                                            <c:if test="${coQuyenQuanLy}">
-                                                <label class="crm-switch">
-                                                    <input type="checkbox" class="crm-ajax-status-toggle" data-type="doi-thu" data-id="${item.id}" ${item.hoatDong ? 'checked' : ''}>
-                                                    <span class="crm-slider"></span>
-                                                </label>
-                                            </c:if>
-                                            <span class="crm-status-label ${item.hoatDong ? 'crm-status-active' : 'crm-status-inactive'}">
-                                                ${item.hoatDong ? 'Đang theo dõi' : 'Ngừng theo dõi'}
-                                            </span>
+                                        <td class="crm-status-cell-td">
+                                            <div class="crm-status-cell">
+                                                <c:if test="${coQuyenQuanLy}">
+                                                    <label class="crm-switch">
+                                                        <input type="checkbox" class="crm-ajax-status-toggle" data-type="doi-thu" data-id="${item.id}" ${item.hoatDong ? 'checked' : ''}>
+                                                        <span class="crm-slider"></span>
+                                                    </label>
+                                                </c:if>
+                                                <span class="crm-status-label ${item.hoatDong ? 'crm-status-active' : 'crm-status-inactive'}">
+                                                    ${item.hoatDong ? 'Đang theo dõi' : 'Ngừng theo dõi'}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td style="text-align: center;">
                                             <span class="crm-badge-ref ${item.soCoHoiThamChieu > 0 ? 'has-ref' : ''}">

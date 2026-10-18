@@ -16,25 +16,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Khai báo Trường Tuỳ Chỉnh Mới | CRM Doanh nghiệp</title>
     <meta name="description" content="Khai báo trường tuỳ chỉnh mới cho Khách hàng hoặc Cơ hội trong hệ thống CRM.">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/truong-tuy-chinh/truong-tuy-chinh.css">
+
+    <!-- Google Fonts & Material Symbols -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- CSS chung toàn hệ thống -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/material-symbols.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/truong-tuy-chinh/truong-tuy-chinh.css?v=20261017_ui">
 </head>
-<body>
+<body class="crm-body">
 
-<div class="ttc-container" style="max-width: 960px;">
+    <!-- Thanh điều hướng và Sidebar chuẩn hệ thống S1-06 -->
+    <jsp:include page="/WEB-INF/views/layout/navigation.jsp" />
 
-    <!-- ===== HEADER ===== -->
-    <header class="page-header">
-        <div class="page-header-title">
-            <h1>Khai báo Trường Tuỳ Chỉnh Mới</h1>
-            <p>Định nghĩa trường mở rộng cho phép nhân sự thu thập các thông tin đặc thù của doanh nghiệp.</p>
-        </div>
-        <div class="page-header-actions">
-            <a href="${pageContext.request.contextPath}/truong-tuy-chinh" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 4px;">
-                <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span>
-                <span>Quay lại danh sách</span>
-            </a>
-        </div>
-    </header>
+    <main class="crm-main-content page-container" id="crm-main-content">
+        <div class="category-page-container" style="max-width: 960px;">
+
+            <!-- Breadcrumb điều hướng chuẩn -->
+            <nav class="crm-breadcrumb" aria-label="Breadcrumb">
+                <ul class="crm-breadcrumb-list">
+                    <li>
+                        <a href="${pageContext.request.contextPath}/dieu-huong" class="crm-breadcrumb-link">Trang chủ</a>
+                    </li>
+                    <li class="crm-breadcrumb-separator" aria-hidden="true">/</li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/truong-tuy-chinh" class="crm-breadcrumb-link">Trường tùy chỉnh</a>
+                    </li>
+                    <li class="crm-breadcrumb-separator" aria-hidden="true">/</li>
+                    <li class="crm-breadcrumb-active" aria-current="page">Khai báo trường mới</li>
+                </ul>
+                <div>
+                    <a href="${pageContext.request.contextPath}/truong-tuy-chinh" class="btn btn-outline btn-sm" id="btnQuayLaiTop">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span>
+                        <span>Quay lại danh sách</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- ===== HEADER ===== -->
+            <header class="page-header">
+                <div class="page-header-title">
+                    <h1>
+                        <span class="material-symbols-outlined" style="color: var(--primary); font-size: 28px;" aria-hidden="true">add_circle</span>
+                        <span>Khai báo Trường Tuỳ Chỉnh Mới</span>
+                    </h1>
+                    <p>Định nghĩa trường mở rộng cho phép nhân sự thu thập các thông tin đặc thù của doanh nghiệp.</p>
+                </div>
+                <div class="page-header-actions">
+                    <a href="${pageContext.request.contextPath}/truong-tuy-chinh" class="btn btn-secondary">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span>
+                        <span>Quay lại danh sách</span>
+                    </a>
+                </div>
+            </header>
 
     <!-- ===== THÔNG BÁO LỖI ===== -->
     <c:if test="${not empty formError['_global'] or not empty formError['global']}">
@@ -324,7 +362,8 @@
         </form>
     </div><%-- end form-card --%>
 
-</div><%-- end ttc-container --%>
+        </div><%-- end category-page-container --%>
+    </main>
 
 <script>
     window.APP_CONTEXT = '${pageContext.request.contextPath}';
