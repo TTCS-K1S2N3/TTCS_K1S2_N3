@@ -951,9 +951,19 @@ PhanBoLeadApp.Simulator = {
         const resultBox = document.getElementById('sandbox-result-box');
         if (!resultBox) return;
 
-        const activeRules = PhanBoLeadApp.currentRules
+        const activeRules = (PhanBoLeadApp.currentRules || [])
             .filter(r => r.hoatDong)
             .sort((a, b) => a.thuTuUuTien - b.thuTuUuTien);
+
+        if (activeRules.length === 0) {
+            resultBox.innerHTML = `
+                <div style="padding: 16px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; color: #92400e;">
+                    <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 6px;">warning</span>
+                    Hiện tại không có quy tắc phân bổ nào đang hoạt động để chạy mô phỏng.
+                </div>
+            `;
+            return;
+        }
 
         let winningRule = null;
         let stepsHtml = '';
@@ -961,59 +971,109 @@ PhanBoLeadApp.Simulator = {
         for (let i = 0; i < activeRules.length; i++) {
             const rule = activeRules[i];
             let matched = false;
+            let configError = null;
+            let failReason = '';
 
             if (rule.kieuPhanBo === 'THEO_KHU_VUC') {
+                let cond = null;
                 try {
-                    const cond = JSON.parse(rule.dieuKienJson || '{}');
-                    if (cond.khu_vuc_ids && areaId) {
-                        matched = cond.khu_vuc_ids.includes(Number(areaId));
-                    }
+                    cond = typeof rule.dieuKienJson === 'object' && rule.dieuKienJson !== null
+                        ? rule.dieuKienJson
+                        : JSON.parse(rule.dieuKienJson || '{}');
                 } catch (e) {
-                    matched = (areaId === '1' || areaId === '2');
+                    configError = 'JSON điều kiện lỗi định dạng (' + e.message + ')';
+                }
+
+                if (!configError) {
+                    if (!cond || typeof cond !== 'object' || !Array.isArray(cond.khu_vuc_ids) || cond.khu_vuc_ids.length === 0) {
+                        configError = 'Cấu hình thiếu danh sách khu_vuc_ids hợp lệ';
+                    } else {
+                        const targetAreaIds = cond.khu_vuc_ids.map(id => String(id).trim());
+                        if (!areaId) {
+                            failReason = 'Lead không có thông tin khu vực (NULL)';
+                        } else if (targetAreaIds.includes(String(areaId).trim())) {
+                            matched = true;
+                        } else {
+                            failReason = 'Khu vực của Lead không nằm trong danh sách áp dụng (' + (rule.dieuKienMoTa || 'theo khu vực đã cấu hình') + ')';
+                        }
+                    }
                 }
             } else if (rule.kieuPhanBo === 'THEO_NGANH_NGHE') {
+                let cond = null;
                 try {
-                    const cond = JSON.parse(rule.dieuKienJson || '{}');
-                    if (cond.nganh_nghe_ids && indusId) {
-                        matched = cond.nganh_nghe_ids.includes(Number(indusId));
-                    }
+                    cond = typeof rule.dieuKienJson === 'object' && rule.dieuKienJson !== null
+                        ? rule.dieuKienJson
+                        : JSON.parse(rule.dieuKienJson || '{}');
                 } catch (e) {
-                    matched = (indusId === '5' || indusId === '8');
+                    configError = 'JSON điều kiện lỗi định dạng (' + e.message + ')';
+                }
+
+                if (!configError) {
+                    if (!cond || typeof cond !== 'object' || !Array.isArray(cond.nganh_nghe_ids) || cond.nganh_nghe_ids.length === 0) {
+                        configError = 'Cấu hình thiếu danh sách nganh_nghe_ids hợp lệ';
+                    } else {
+                        const targetIndusIds = cond.nganh_nghe_ids.map(id => String(id).trim());
+                        if (!indusId) {
+                            failReason = 'Lead không có thông tin ngành nghề (NULL)';
+                        } else if (targetIndusIds.includes(String(indusId).trim())) {
+                            matched = true;
+                        } else {
+                            failReason = 'Ngành nghề của Lead không nằm trong danh sách áp dụng (' + (rule.dieuKienMoTa || 'theo ngành nghề đã cấu hình') + ')';
+                        }
+                    }
                 }
             } else if (rule.kieuPhanBo === 'XOAY_VONG') {
                 matched = true;
+            } else {
+                configError = 'Kiểu phân bổ không xác định: ' + escapeHtml(rule.kieuPhanBo);
             }
 
-            if (matched && !winningRule) {
+            if (winningRule) {
+                // Đã có quy tắc trước đó thắng -> Quy tắc hiện tại bị bỏ qua (First-Match-Wins)
+                stepsHtml += `
+                    <div style="padding: 8px 14px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; margin-bottom: 8px; opacity: 0.6; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="color: #64748b;">#${rule.thuTuUuTien}. [${rule.maQuyTac}] ${escapeHtml(rule.tenQuyTac)}</span>
+                            <div style="font-size: 11px; color: #94a3b8;">Bị bỏ qua do quy tắc ưu tiên cao hơn (#${winningRule.thuTuUuTien}) đã thắng</div>
+                        </div>
+                        <span style="background: #e2e8f0; color: #64748b; font-size: 10.5px; padding: 2px 6px; border-radius: 4px;">BỎ QUA</span>
+                    </div>
+                `;
+            } else if (configError) {
+                // Cấu hình điều kiện không hợp lệ -> Báo lỗi rõ ràng thay vì báo KHỚP
+                stepsHtml += `
+                    <div style="padding: 10px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong style="color: #991b1b;">#${rule.thuTuUuTien}. [${rule.maQuyTac}] ${escapeHtml(rule.tenQuyTac)}</strong>
+                            <div style="font-size: 12px; color: #b91c1c; margin-top: 2px;">
+                                <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: -2px;">error</span> <strong>LỖI CẤU HÌNH:</strong> ${escapeHtml(configError)} (Không thể so khớp)
+                            </div>
+                        </div>
+                        <span style="background: #ef4444; color: #fff; font-size: 10.5px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">LỖI CẤU HÌNH</span>
+                    </div>
+                `;
+            } else if (matched) {
+                // Quy tắc khớp đầu tiên -> Thắng (First-Match-Wins)
                 winningRule = rule;
                 stepsHtml += `
                     <div style="padding: 10px 14px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <strong style="color: #065f46;">#${rule.thuTuUuTien}. [${rule.maQuyTac}] ${escapeHtml(rule.tenQuyTac)}</strong>
                             <div style="font-size: 12px; color: #047857; margin-top: 2px;">
-                                Thỏa mãn điều kiện: ${escapeHtml(rule.dieuKienMoTa)} -> <strong>KHỚP (FIRST-MATCH THẮNG)</strong>
+                                Thỏa mãn điều kiện: ${escapeHtml(rule.dieuKienMoTa || 'Tất cả lead')} -> <strong>KHỚP (FIRST-MATCH THẮNG)</strong>
                             </div>
                         </div>
                         <span style="background: #10b981; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;">FIRST MATCH</span>
                     </div>
                 `;
-            } else if (winningRule) {
-                stepsHtml += `
-                    <div style="padding: 8px 14px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; margin-bottom: 8px; opacity: 0.6; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <span style="color: #64748b;">#${rule.thuTuUuTien}. [${rule.maQuyTac}] ${escapeHtml(rule.tenQuyTac)}</span>
-                            <div style="font-size: 11px; color: #94a3b8;">Bị bỏ qua do quy tắc ưu tiên trên đã thắng</div>
-                        </div>
-                        <span style="background: #e2e8f0; color: #64748b; font-size: 10.5px; padding: 2px 6px; border-radius: 4px;">BỎ QUA</span>
-                    </div>
-                `;
             } else {
+                // Không khớp điều kiện
                 stepsHtml += `
                     <div style="padding: 8px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <span style="color: #334155;">#${rule.thuTuUuTien}. [${rule.maQuyTac}] ${escapeHtml(rule.tenQuyTac)}</span>
                             <div style="font-size: 11.5px; color: #64748b; margin-top: 2px;">
-                                Không khớp điều kiện (${escapeHtml(rule.dieuKienMoTa)})
+                                ${escapeHtml(failReason || ('Không khớp điều kiện (' + (rule.dieuKienMoTa || '') + ')'))}
                             </div>
                         </div>
                         <span style="background: #f1f5f9; color: #94a3b8; font-size: 10.5px; padding: 2px 6px; border-radius: 4px;">KHÔNG KHỚP</span>
@@ -1024,11 +1084,12 @@ PhanBoLeadApp.Simulator = {
 
         let verdictHtml = '';
         if (winningRule) {
+            const targetName = winningRule.tenNhomDich || winningRule.tenNguoiDungDich || 'Nhóm kinh doanh tiếp nhận';
             verdictHtml = `
                 <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 14px 16px; margin-top: 14px;">
                     <div style="font-size: 14px; font-weight: 800; color: #065f46; margin-bottom: 4px;">KẾT QUẢ: TỰ ĐỘNG PHÂN BỔ THÀNH CÔNG</div>
                     <div style="font-size: 13px; color: #047857;">
-                        Lead <strong>"${escapeHtml(leadName)}"</strong> được gán ngay cho <strong>${escapeHtml(winningRule.tenNhomDich || winningRule.tenNguoiDungDich)}</strong> theo quy tắc ưu tiên cao nhất <strong>#${winningRule.thuTuUuTien} (${winningRule.maQuyTac})</strong>. Trạng thái Lead chuyển thành <code>DA_PHAN_BO</code>.
+                        Lead <strong>"${escapeHtml(leadName)}"</strong> được gán ngay cho <strong>${escapeHtml(targetName)}</strong> theo quy tắc ưu tiên cao nhất <strong>#${winningRule.thuTuUuTien} (${escapeHtml(winningRule.maQuyTac)} - ${escapeHtml(winningRule.tenQuyTac)})</strong>. Trạng thái Lead chuyển thành <code>DA_PHAN_BO</code>.
                     </div>
                 </div>
             `;

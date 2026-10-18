@@ -370,13 +370,16 @@
                                     <label class="form-label" for="sim-lead-area">Khu vực địa lý của Lead</label>
                                     <select id="sim-lead-area" class="form-control">
                                         <option value="">-- Khách không cung cấp khu vực (NULL) --</option>
-                                        <c:forEach var="kv" items="${danhSachKhuVuc}">
-                                            <option value="${kv.id}"><c:out value="${kv.tenKhuVuc}"/></option>
-                                        </c:forEach>
-                                        <option value="1" selected>Hà Nội (Miền Bắc)</option>
-                                        <option value="2">Hải Phòng</option>
-                                        <option value="4">TP. Hồ Chí Minh (Miền Nam)</option>
-                                        <option value="99">Tỉnh khác</option>
+                                        <c:choose>
+                                            <c:when test="${not empty danhSachKhuVuc}">
+                                                <c:forEach var="kv" items="${danhSachKhuVuc}">
+                                                    <option value="${kv.id}"><c:out value="${kv.tenKhuVuc}"/></option>
+                                                </c:forEach>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <option value="" disabled>-- Chưa có dữ liệu khu vực từ hệ thống --</option>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </select>
                                 </div>
 
@@ -384,13 +387,16 @@
                                     <label class="form-label" for="sim-lead-industry">Ngành nghề kinh doanh của Lead</label>
                                     <select id="sim-lead-industry" class="form-control">
                                         <option value="">-- Khách không chọn ngành nghề (NULL) --</option>
-                                        <c:forEach var="nn" items="${danhSachNganhNghe}">
-                                            <option value="${nn.id}"><c:out value="${nn.tenMuc}"/></option>
-                                        </c:forEach>
-                                        <option value="5">Tài chính - Ngân hàng</option>
-                                        <option value="8" selected>Công nghệ thông tin</option>
-                                        <option value="12">Bất động sản</option>
-                                        <option value="99">Ngành nghề khác</option>
+                                        <c:choose>
+                                            <c:when test="${not empty danhSachNganhNghe}">
+                                                <c:forEach var="nn" items="${danhSachNganhNghe}">
+                                                    <option value="${nn.id}"><c:out value="${nn.tenMuc}"/></option>
+                                                </c:forEach>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <option value="" disabled>-- Chưa có dữ liệu ngành nghề từ hệ thống --</option>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </select>
                                 </div>
 
@@ -475,13 +481,9 @@
                                     </c:forEach>
                                 </c:when>
                                 <c:otherwise>
-                                    <!-- Fallback Mock Khu vực -->
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="khu_vuc_ids" value="1" data-label="Hà Nội" checked> <span>Hà Nội</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="khu_vuc_ids" value="2" data-label="Hải Phòng" checked> <span>Hải Phòng</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="khu_vuc_ids" value="3" data-label="Quảng Ninh" checked> <span>Quảng Ninh</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="khu_vuc_ids" value="4" data-label="TP. Hồ Chí Minh"> <span>TP. Hồ Chí Minh</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="khu_vuc_ids" value="5" data-label="Bình Dương"> <span>Bình Dương</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="khu_vuc_ids" value="6" data-label="Đà Nẵng"> <span>Đà Nẵng</span></label>
+                                    <div class="pb-empty-hint" style="color: var(--pb-slate-500); font-size: 13px; font-style: italic; padding: 6px 0;">
+                                        Chưa có dữ liệu khu vực từ hệ thống.
+                                    </div>
                                 </c:otherwise>
                             </c:choose>
                         </div>
@@ -508,12 +510,9 @@
                                     </c:forEach>
                                 </c:when>
                                 <c:otherwise>
-                                    <!-- Fallback Mock Ngành nghề -->
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="nganh_nghe_ids" value="5" data-label="Tài chính - Ngân hàng" checked> <span>Tài chính - Ngân hàng</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="nganh_nghe_ids" value="8" data-label="Công nghệ thông tin" checked> <span>Công nghệ thông tin</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="nganh_nghe_ids" value="12" data-label="Bất động sản"> <span>Bất động sản</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="nganh_nghe_ids" value="15" data-label="Sản xuất & Công nghiệp"> <span>Sản xuất & Công nghiệp</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="nganh_nghe_ids" value="18" data-label="Bán lẻ & Thương mại"> <span>Bán lẻ & Thương mại</span></label>
+                                    <div class="pb-empty-hint" style="color: var(--pb-slate-500); font-size: 13px; font-style: italic; padding: 6px 0;">
+                                        Chưa có dữ liệu ngành nghề từ hệ thống.
+                                    </div>
                                 </c:otherwise>
                             </c:choose>
                         </div>
@@ -544,11 +543,7 @@
                                     </c:forEach>
                                 </c:when>
                                 <c:otherwise>
-                                    <!-- Fallback Mock Nhóm -->
-                                    <option value="101" selected>Nhóm Kinh Doanh Miền Bắc (8 nhân viên)</option>
-                                    <option value="102">Nhóm Khách hàng Doanh nghiệp Lớn (5 nhân viên)</option>
-                                    <option value="103">Nhóm Inside Sales (6 nhân viên)</option>
-                                    <option value="104">Nhóm Kinh Doanh Miền Nam (10 nhân viên)</option>
+                                    <option value="" disabled>-- Chưa có nhóm kinh doanh nào trong hệ thống --</option>
                                 </c:otherwise>
                             </c:choose>
                         </select>
