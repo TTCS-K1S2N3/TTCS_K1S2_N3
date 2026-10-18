@@ -409,11 +409,11 @@
     width: 100%;
 }
 
-/* S4-09: Quick search box */
+/* S4-09: Thanh tìm kiếm nhanh Lead (Single compact row desktop) */
 .quick-search-box {
     position: relative;
     flex: 1 1 auto;
-    min-width: 220px;
+    min-width: 0;
 }
 
 .quick-search-box .quick-search-input {
@@ -427,6 +427,7 @@
     background-color: #f8fafc;
     color: #0f172a;
     outline: none;
+    box-sizing: border-box;
     transition: all 0.15s ease;
 }
 
@@ -448,62 +449,41 @@
 
 .quick-search-box .quick-search-clear {
     position: absolute;
-    right: 8px;
+    right: 9px;
     top: 50%;
     transform: translateY(-50%);
-    background: transparent;
-    border: none;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
     color: #94a3b8;
     cursor: pointer;
-    padding: 4px;
+    padding: 0;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     display: none;
     align-items: center;
     justify-content: center;
-    transition: color 0.15s, background-color 0.15s;
+    transition: color 0.15s ease, background-color 0.15s ease;
+    appearance: none;
+    -webkit-appearance: none;
 }
 
 .quick-search-box .quick-search-clear:hover {
-    color: #334155;
-    background-color: #e2e8f0;
+    color: #1e293b;
+    background-color: #e2e8f0 !important;
 }
 
-.quick-filter-box {
-    position: relative;
-    flex: 0 0 210px;
-    min-width: 170px;
-    max-width: 240px;
+.quick-search-box .quick-search-clear:focus {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
-.quick-filter-box .quick-filter-icon {
-    position: absolute;
-    left: 11px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #f59e0b;
+.quick-search-box .quick-search-clear .material-symbols-outlined {
+    font-size: 16px;
+    line-height: 1;
     pointer-events: none;
-    font-size: 19px;
-}
-
-.quick-filter-box .quick-filter-select {
-    width: 100%;
-    height: 40px;
-    padding: 8px 12px 8px 36px;
-    font-size: 13.5px;
-    font-family: inherit;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    background-color: #f8fafc;
-    color: #0f172a;
-    outline: none;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.quick-filter-box .quick-filter-select:focus {
-    background-color: #ffffff;
-    border-color: var(--lead-primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .btn-filter-toggle {
@@ -520,6 +500,8 @@
     background-color: #ffffff;
     cursor: pointer;
     white-space: nowrap;
+    box-sizing: border-box;
+    flex-shrink: 0;
     transition: all 0.15s ease;
     font-family: inherit;
 }
@@ -571,6 +553,8 @@
     border: 1px solid var(--lead-primary);
     cursor: pointer;
     white-space: nowrap;
+    box-sizing: border-box;
+    flex-shrink: 0;
     transition: all 0.15s ease;
     font-family: inherit;
 }
@@ -594,6 +578,8 @@
     background-color: #ffffff;
     text-decoration: none;
     white-space: nowrap;
+    box-sizing: border-box;
+    flex-shrink: 0;
     transition: all 0.15s ease;
     font-family: inherit;
 }
@@ -625,6 +611,15 @@
 .btn-save-filter-action:hover {
     background-color: var(--lead-primary-light);
     border-style: solid;
+}
+
+.saved-filter-group-wrap .btn-save-filter-action {
+    height: 34px;
+    padding: 0 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    gap: 4px;
+    border-radius: 6px;
 }
 
 /* ==========================================================================
@@ -685,21 +680,62 @@
     color: #0f172a;
 }
 
+/* Bộ lọc đã lưu bên trong panel nâng cao (chuẩn hóa giống trang Khách hàng) */
 .panel-saved-filter-section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    padding: 8px 12px;
-    margin-bottom: 12px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+}
+
+.panel-saved-filter-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.saved-filter-group-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.saved-filter-select-sm {
+    height: 34px;
+    padding: 4px 10px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    color: #1e293b;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background-color: #ffffff;
+    outline: none;
+    cursor: pointer;
+    max-width: 280px;
+    transition: border-color 0.15s ease;
+}
+
+.saved-filter-select-sm:focus {
+    border-color: var(--lead-primary);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.saved-filter-applied-bar-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
 }
 
 .saved-filter-active-pill {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     padding: 4px 10px;
     background-color: #eff6ff;
     color: #1d4ed8;
@@ -714,15 +750,19 @@
     align-items: center;
     gap: 4px;
     font-size: 12px;
+    font-weight: 500;
     color: #64748b;
     text-decoration: none;
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
     transition: all 0.15s ease;
 }
 
 .btn-clear-saved-filter:hover {
     background: #fee2e2;
+    border-color: #fca5a5;
     color: #dc2626;
 }
 
@@ -1462,19 +1502,33 @@
     .search-main-row {
         flex-direction: column;
         align-items: stretch;
+        gap: 8px;
     }
 
-    .quick-search-box,
-    .quick-filter-box {
+    .quick-search-box {
         width: 100%;
         min-width: 100%;
-        max-width: 100%;
     }
 
     .search-main-row > button,
     .search-main-row > a {
         width: 100%;
+        height: 40px;
         justify-content: center;
+    }
+
+    .panel-saved-filter-inner {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .saved-filter-group-wrap {
+        width: 100%;
+    }
+
+    .saved-filter-select-sm {
+        flex: 1 1 auto;
+        max-width: 100%;
     }
 
     .filter-grid {

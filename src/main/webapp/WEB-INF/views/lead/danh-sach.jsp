@@ -20,8 +20,8 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
 
     <!-- CSS Module Lead (S4-02 & S4-09) -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/lead.css?v=20261016_ui_fix2">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/danh-sach-lead.css?v=20261016_ui_fix2">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/lead.css?v=20261019_ui_fix3">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/danh-sach-lead.css?v=20261019_ui_fix3">
 </head>
 <body class="crm-body">
 
@@ -268,7 +268,7 @@
             <section class="compact-filter-card" id="compactFilterCard" aria-label="Tìm kiếm và lọc Lead">
                 <form method="GET" action="${pageContext.request.contextPath}/lead" id="formLocLead">
 
-                    <!-- HÀNG THAO TÁC CHÍNH (COMPACT ROW TRÊN DESKTOP: TÌM KIẾM NHANH + BỘ LỌC ĐÃ LƯU + NÚT BỘ LỌC + NÚT TÌM KIẾM + NÚT ĐẶT LẠI + LƯU BỘ LỌC) -->
+                    <!-- HÀNG THAO TÁC CHÍNH (CHUẨN HÓA GIỐNG KHÁCH HÀNG: Ô TÌM KIẾM LỚN + NÚT BỘ LỌC + NÚT TÌM KIẾM + NÚT ĐẶT LẠI) -->
                     <div class="search-main-row">
                         <!-- S4-09: Thanh tìm kiếm nhanh Lead (Họ tên, Tên công ty, Mã Lead, Email, SĐT) -->
                         <div class="quick-search-box">
@@ -277,54 +277,35 @@
                                    placeholder="Tìm họ tên, công ty, mã Lead, email, SĐT..."
                                    value="<c:out value='${not empty param.tuKhoa ? param.tuKhoa : boLocHienTai.tuKhoa}' />" autocomplete="off">
                             <button type="button" id="btnClearTuKhoa" class="quick-search-clear" aria-label="Xóa từ khóa tìm kiếm" title="Xóa từ khóa">
-                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span>
+                                <span class="material-symbols-outlined" aria-hidden="true">close</span>
                             </button>
                         </div>
 
-                        <!-- Quick Saved Filters Dropdown -->
-                        <div class="quick-filter-box">
-                            <span class="material-symbols-outlined quick-filter-icon" aria-hidden="true">bookmark</span>
-                            <select id="selectBoLocDaLuuQuick" class="quick-filter-select" onchange="if(this.value){window.location.href='${pageContext.request.contextPath}/lead?savedFilterId='+this.value;} else {window.location.href='${pageContext.request.contextPath}/lead';}" title="Chọn nhanh bộ lọc cá nhân đã lưu">
-                                <option value="">-- Bộ lọc cá nhân đã lưu --</option>
-                                <c:forEach var="bl" items="${dsBoLocDaLuu}">
-                                    <option value="${bl.id}" ${not empty boLocHienTai and boLocHienTai.savedFilterId == bl.id ? 'selected' : ''}>
-                                        <c:out value="${bl.tenBoLoc}" />
-                                    </option>
-                                </c:forEach>
-                            </select>
-                        </div>
-
-                        <!-- Toggle Advanced Filter Button -->
+                        <!-- Nút Mở/Đóng Bộ Lọc Nâng Cao -->
                         <button type="button" class="btn-filter-toggle ${activeCount > 0 ? 'is-active' : ''}"
                                 id="btnToggleAdvancedFilter" aria-expanded="false" aria-controls="advancedFilterPanel" title="Mở bộ lọc 5 tiêu chí Lead">
                             <span class="material-symbols-outlined" aria-hidden="true">tune</span>
-                            <span>Bộ lọc tiêu chí</span>
+                            <span>Bộ lọc</span>
                             <c:if test="${activeCount > 0}">
                                 <span class="filter-count-badge" id="filterCountBadge">${activeCount}</span>
                             </c:if>
                             <span class="material-symbols-outlined filter-arrow-icon" id="iconFilterArrow" aria-hidden="true">expand_more</span>
                         </button>
 
-                        <!-- Submit Filter Button -->
+                        <!-- Nút Tìm Kiếm & Áp Dụng -->
                         <button type="submit" class="btn-search-submit" id="btnSubmitFilter" title="Tìm kiếm & Áp dụng bộ lọc">
                             <span class="material-symbols-outlined" aria-hidden="true">search</span>
                             <span>Tìm kiếm</span>
                         </button>
 
-                        <!-- Reset Filter Button -->
+                        <!-- Nút Đặt Lại Mặc Định -->
                         <a href="${pageContext.request.contextPath}/lead" class="btn-reset-filters" id="btnResetFilters" title="Xóa bộ lọc và quay về mặc định">
                             <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">restart_alt</span>
                             <span>Đặt lại</span>
                         </a>
-
-                        <!-- Save Filter Button -->
-                        <button type="button" class="btn-save-filter-action" id="btnOpenModalLuuBoLoc" title="Lưu lại các tiêu chí lọc đang chọn thành bộ lọc cá nhân">
-                            <span class="material-symbols-outlined" aria-hidden="true">bookmark_add</span>
-                            <span>Lưu bộ lọc</span>
-                        </button>
                     </div>
 
-                    <!-- KHUNG / PANEL BỘ LỌC NÂNG CAO (MẶC ĐỊNH ĐÓNG, MỞ RA KHI BẤM NÚT 'BỘ LỌC TIÊU CHÍ') -->
+                    <!-- KHUNG / PANEL BỘ LỌC NÂNG CAO (MẶC ĐỊNH ĐÓNG, MỞ RA KHI BẤM NÚT 'BỘ LỌC') -->
                     <div class="advanced-filter-panel" id="advancedFilterPanel" style="display: none;" aria-hidden="true">
                         <div class="panel-header-mini">
                             <div class="panel-title-mini">
@@ -337,19 +318,39 @@
                             </button>
                         </div>
 
-                        <!-- Nếu đang áp dụng bộ lọc cá nhân đã lưu -->
-                        <c:if test="${not empty boLocHienTai and not empty boLocHienTai.savedFilterId}">
-                            <div class="panel-saved-filter-section">
-                                <span class="saved-filter-active-pill">
-                                    <span class="material-symbols-outlined" style="font-size: 14px;" aria-hidden="true">bookmark</span>
-                                    Đang áp dụng bộ lọc cá nhân: <strong><c:out value="${boLocHienTai.tenBoLoc}" /></strong>
-                                </span>
-                                <a href="${pageContext.request.contextPath}/lead" class="btn-clear-saved-filter" title="Bỏ áp dụng bộ lọc này">
-                                    <span class="material-symbols-outlined" style="font-size: 14px;" aria-hidden="true">close</span>
-                                    <span>Bỏ chọn</span>
-                                </a>
+                        <!-- Bộ lọc đã lưu nằm gọn trong panel nâng cao (chuẩn hóa giống trang Khách hàng) -->
+                        <div class="panel-saved-filter-section">
+                            <div class="panel-saved-filter-inner">
+                                <div class="saved-filter-group-wrap">
+                                    <span class="material-symbols-outlined text-muted" aria-hidden="true" style="font-size: 18px;">bookmark</span>
+                                    <label for="selectBoLocDaLuu" style="font-size: 13px; font-weight: 600; color: #475569;">Bộ lọc đã lưu:</label>
+                                    <select id="selectBoLocDaLuu" name="savedFilterId" class="saved-filter-select-sm" onchange="chuyenBoLoc(this.value)" title="Chọn bộ lọc đã lưu">
+                                        <option value="">-- Chọn bộ lọc đã lưu --</option>
+                                        <c:forEach var="bl" items="${dsBoLocDaLuu}">
+                                            <option value="${bl.id}" ${not empty boLocHienTai and boLocHienTai.savedFilterId == bl.id ? 'selected' : ''}>
+                                                <c:out value="${bl.tenBoLoc}" />
+                                            </option>
+                                        </c:forEach>
+                                    </select>
+                                    <button type="button" class="btn-save-filter-action" id="btnOpenModalLuuBoLoc" title="Lưu lại các tiêu chí lọc đang chọn thành bộ lọc cá nhân">
+                                        <span class="material-symbols-outlined" style="font-size: 16px;" aria-hidden="true">bookmark_add</span>
+                                        <span>Lưu bộ lọc</span>
+                                    </button>
+                                </div>
+                                <c:if test="${not empty boLocHienTai and not empty boLocHienTai.savedFilterId}">
+                                    <div class="saved-filter-applied-bar-inline">
+                                        <span class="saved-filter-active-pill" title="Bộ lọc đang được áp dụng">
+                                            <span class="material-symbols-outlined" style="font-size: 14px;" aria-hidden="true">check</span>
+                                            Đang áp dụng: <strong><c:out value="${boLocHienTai.tenBoLoc}" /></strong>
+                                        </span>
+                                        <a href="${pageContext.request.contextPath}/lead" class="btn-clear-saved-filter" title="Bỏ áp dụng bộ lọc này">
+                                            <span class="material-symbols-outlined" style="font-size: 14px;" aria-hidden="true">close</span>
+                                            <span>Bỏ chọn</span>
+                                        </a>
+                                    </div>
+                                </c:if>
                             </div>
-                        </c:if>
+                        </div>
 
                         <!-- LƯỚI 5 TIÊU CHÍ LỌC LEAD (S4-09) -->
                         <div class="filter-grid">
@@ -860,6 +861,6 @@
     </div>
 
     <!-- JS chuyên biệt Danh sách & Bộ lọc Lead -->
-    <script src="${pageContext.request.contextPath}/assets/js/lead/danh-sach-lead.js?v=20261016_ui_fix2"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/lead/danh-sach-lead.js?v=20261019_ui_fix3"></script>
 </body>
 </html>

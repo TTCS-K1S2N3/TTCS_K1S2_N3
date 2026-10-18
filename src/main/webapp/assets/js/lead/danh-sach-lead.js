@@ -54,6 +54,19 @@ window.toggleAdvancedFilter = function (forceOpen) {
     }
 };
 
+/**
+ * Hàm chuyển đổi bộ lọc đã lưu (chuẩn hóa giống trang Khách hàng)
+ */
+window.chuyenBoLoc = function (filterId) {
+    const url = new URL(window.location.href);
+    if (filterId) {
+        url.searchParams.set('savedFilterId', filterId);
+    } else {
+        url.searchParams.delete('savedFilterId');
+    }
+    window.location.href = url.pathname + (url.search ? url.search : '');
+};
+
 document.addEventListener('DOMContentLoaded', function () {
     initQuickSearch();
     initAdvancedFilterToggle();
@@ -189,7 +202,7 @@ function initFilterForm() {
     const filterForm = document.getElementById('formLocLead');
     const inputTuNgay = document.getElementById('filterTuNgay');
     const inputDenNgay = document.getElementById('filterDenNgay');
-    const btnResetFilter = document.getElementById('btnResetFilter');
+    const btnResetFilter = document.getElementById('btnResetFilter') || document.getElementById('btnResetFilters');
 
     if (!filterForm) return;
 
