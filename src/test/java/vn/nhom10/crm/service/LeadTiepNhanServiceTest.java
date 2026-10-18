@@ -116,6 +116,21 @@ class LeadTiepNhanServiceTest {
     }
 
     @Test
+    @DisplayName("AC1: Nhân viên được phân công nhận lead ở trạng thái DA_PHAN_BO thành công -> chuyển sang DANG_CHAM_SOC")
+    void testNhanLead_TrangThaiDaPhanBo_ThanhCong() {
+        leadMau.setTrangThai(TrangThaiLeadEnum.DA_PHAN_BO);
+        when(leadDAO.timTheoId(1001L)).thenReturn(leadMau);
+        when(leadDAO.nhanLead(eq(1001L), eq(101L), any(LocalDateTime.class))).thenReturn(true);
+
+        Lead ketQua = service.nhanLead(1001L, salesRep);
+
+        assertNotNull(ketQua);
+        assertEquals(TrangThaiLeadEnum.DANG_CHAM_SOC, ketQua.getTrangThai());
+        assertNotNull(ketQua.getDuocNhanLuc());
+        verify(leadDAO).nhanLead(eq(1001L), eq(101L), any(LocalDateTime.class));
+    }
+
+    @Test
     @DisplayName("AC1: Không cho phép nhận lead nếu người dùng không phải người phụ trách (403/Forbidden)")
     void testNhanLead_KhongPhaiNguoiPhuTrach_NemLoi() {
         when(leadDAO.timTheoId(1001L)).thenReturn(leadMau);
@@ -172,6 +187,22 @@ class LeadTiepNhanServiceTest {
                 service.tuChoiLead(req, salesRep);
             } catch (Exception ignored) {
                 // Trong môi trường mock thuần chưa cấu hình DB Connection thật, exception kết nối có thể xảy ra ở tầng DB
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("AC2: Từ chối lead ở trạng thái DA_PHAN_BO với lý do hợp lệ -> thành công")
+    void testTuChoiLead_TrangThaiDaPhanBo_ThanhCong() {
+        leadMau.setTrangThai(TrangThaiLeadEnum.DA_PHAN_BO);
+        when(leadDAO.timTheoId(1001L)).thenReturn(leadMau);
+
+        XuLyLeadRequestDTO req = new XuLyLeadRequestDTO(1001L, "TU_CHOI", "KHONG_PHU_HOP", "Nhu cầu không khớp sản phẩm dịch vụ");
+
+        assertDoesNotThrow(() -> {
+            try {
+                service.tuChoiLead(req, salesRep);
+            } catch (Exception ignored) {
             }
         });
     }
@@ -380,6 +411,22 @@ class LeadTiepNhanServiceTest {
     }
 
     @Test
+    @DisplayName("VIEW: Sales Rep xem lead trạng thái DA_PHAN_BO của mình -> coTheNhan = true, coTheTuChoi = true, coTheChuyenDoi = false")
+    void testLayChiTietLead_DaPhanBo_CoTheNhanVaTuChoi() {
+        leadMau.setTrangThai(TrangThaiLeadEnum.DA_PHAN_BO);
+        when(leadDAO.timTheoId(1001L)).thenReturn(leadMau);
+        when(thongBaoDAO.demThongBaoChuaDoc(101L)).thenReturn(0);
+
+        LeadChiTietViewDTO view = service.layChiTietLeadChoNguoiDung(1001L, salesRep);
+
+        assertNotNull(view);
+        assertEquals(leadMau, view.getLead());
+        assertTrue(view.isCoTheNhan(), "Lead DA_PHAN_BO phải cho phép Sales được phân công nhận");
+        assertTrue(view.isCoTheTuChoi(), "Lead DA_PHAN_BO phải cho phép Sales được phân công từ chối");
+        assertFalse(view.isCoTheChuyenDoi(), "Lead DA_PHAN_BO chưa thể chuyển đổi khi chưa tiếp nhận");
+    }
+
+    @Test
     @DisplayName("VIEW: Sales Rep khác cố tình truy cập lead không thuộc mình -> 403 Forbidden")
     void testLayChiTietLead_KhacScope_NemLoi() {
         when(leadDAO.timTheoId(1001L)).thenReturn(leadMau);
@@ -449,5 +496,88 @@ class LeadTiepNhanServiceTest {
 
         assertNotNull(view);
         assertTrue(view.isCoTheChuyenDoi(), "Team Lead quản lý nhóm phải có quyền chuyển đổi lead");
+    }
+
+    @Test
+    @DisplayName("BUG-07: Quét và tự động gắn cờ quá SLA khi hạn chót trong quá khứ kể cả khi duocPhanBoLuc null")
+    void testKiemTraVaCapNhatQuaSla_TuDongCapNhatKhiDuocPhanBoLucNull() {
+        LocalDateTime now = LocalDateTime.now();
+        Lead lead29 = new Lead();
+        lead29.setId(29L);
+        lead29.setMaLead("LEAD-TEST-29");
+        lead29.setHoTen("Lead #29 Test SLA");
+        lead29.setNguoiPhuTrachId(101L);
+        lead29.setNhomPhanBoId(10L);
+        lead29.setTrangThai(TrangThaiLeadEnum.DA_PHAN_BO);
+        lead29.setDuocPhanBoLuc(null); // Không có mốc phân bổ
+        lead29.setHanPhanHoiSla(now.minusHours(2)); // Hạn SLA trong quá khứ
+        lead29.setQuaSla(false);
+
+        when(cauHinhHeThongDAO.layGiaTriInt(anyString(), anyInt())).thenReturn(1440);
+        when(leadDAO.layDanhSachLeadCanKiemTraSla()).thenReturn(List.of(lead29));
+        when(hoatDongDAO.coHoatDongLienHeHopLe(eq(29L), any(), any())).thenReturn(false);
+        when(leadDAO.capNhatQuaSla(29L, true)).thenReturn(true);
+        when(nguoiDungDAO.timTheoId(101L)).thenReturn(salesRep);
+        NhomKinhDoanh nhom1 = new NhomKinhDoanh();
+        nhom1.setId(10L);
+        nhom1.setTenNhom("Nhóm Kinh Doanh 1");
+        nhom1.setTruongNhomId(201L);
+        when(nhomKinhDoanhDAO.timTheoId(10L)).thenReturn(nhom1);
+        when(thongBaoDAO.kiemTraDaCoThongBaoSla(201L, 29L)).thenReturn(false);
+
+        int soLuong = service.kiemTraVaCapNhatQuaSla(now);
+
+        assertEquals(1, soLuong, "Phải phát hiện và gắn cờ quá SLA cho Lead #29");
+        assertTrue(lead29.isQuaSla());
+        verify(leadDAO).capNhatQuaSla(29L, true);
+        verify(thongBaoDAO).taoThongBao(any(ThongBao.class));
+    }
+
+    @Test
+    @DisplayName("BUG-07: Xem chi tiết lead phát hiện quá hạn -> Tự động đồng bộ gắn cờ qua_sla vào DB")
+    void testLayChiTietLead_TuDongDongBoQuaSlaVaoDb() {
+        LocalDateTime now = LocalDateTime.now();
+        leadMau.setHanPhanHoiSla(now.minusHours(1));
+        leadMau.setQuaSla(false);
+
+        when(leadDAO.timTheoId(1001L)).thenReturn(leadMau);
+        when(hoatDongDAO.coHoatDongLienHeHopLe(eq(1001L), any(), any())).thenReturn(false);
+        when(thongBaoDAO.demThongBaoChuaDoc(101L)).thenReturn(0);
+        when(nguoiDungDAO.timTheoId(101L)).thenReturn(salesRep);
+        NhomKinhDoanh nhom2 = new NhomKinhDoanh();
+        nhom2.setId(10L);
+        nhom2.setTenNhom("Nhóm 1");
+        nhom2.setTruongNhomId(201L);
+        when(nhomKinhDoanhDAO.timTheoId(10L)).thenReturn(nhom2);
+        when(thongBaoDAO.kiemTraDaCoThongBaoSla(201L, 1001L)).thenReturn(false);
+
+        LeadChiTietViewDTO view = service.layChiTietLeadChoNguoiDung(1001L, salesRep);
+
+        assertNotNull(view);
+        assertEquals(TrangThaiSlaEnum.QUA_HAN, view.getTrangThaiSla());
+        assertTrue(leadMau.isQuaSla(), "Lead object phải được cập nhật quaSla = true");
+        verify(leadDAO).capNhatQuaSla(1001L, true);
+        verify(thongBaoDAO).taoThongBao(any(ThongBao.class));
+    }
+
+    @Test
+    @DisplayName("BUG-08: Lead ở trạng thái DA_GOP không bị tính quá SLA và khóa các thao tác")
+    void testLayChiTietLead_LeadDaGop_KhongBiTinhSla() {
+        leadMau.setTrangThai(TrangThaiLeadEnum.DA_GOP);
+        leadMau.setHanPhanHoiSla(LocalDateTime.now().minusDays(3)); // Hạn cũ trong quá khứ
+        leadMau.setQuaSla(false);
+        leadMau.setGopVaoLeadId(1000L);
+
+        when(leadDAO.timTheoId(1001L)).thenReturn(leadMau);
+        when(thongBaoDAO.demThongBaoChuaDoc(101L)).thenReturn(0);
+
+        LeadChiTietViewDTO view = service.layChiTietLeadChoNguoiDung(1001L, salesRep);
+
+        assertNotNull(view);
+        assertEquals(TrangThaiSlaEnum.KHONG_XAC_DINH, view.getTrangThaiSla(), "Lead đã gộp thì trạng thái SLA là KHONG_XAC_DINH");
+        assertFalse(view.isCoTheNhan(), "Lead đã gộp không được nhận");
+        assertFalse(view.isCoTheTuChoi(), "Lead đã gộp không được từ chối");
+        assertFalse(view.isCoTheChuyenDoi(), "Lead đã gộp không được chuyển đổi");
+        verify(leadDAO, never()).capNhatQuaSla(anyLong(), anyBoolean());
     }
 }

@@ -198,6 +198,37 @@
     margin-bottom: 24px;
 }
 
+/* Cảnh báo lỗi ngưỡng phân loại (BUG-06) */
+.cd-threshold-alert {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-sm);
+    color: #991b1b;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    margin-bottom: 18px;
+    animation: cdAlertFade 0.2s ease-in-out;
+}
+
+.cd-threshold-alert.show {
+    display: flex;
+}
+
+.cd-threshold-alert .icon {
+    font-size: 20px;
+    color: #ef4444;
+    flex-shrink: 0;
+}
+
+@keyframes cdAlertFade {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .cd-threshold-card {
     border: 1px solid var(--cd-border);
     border-radius: var(--radius-md);
@@ -228,6 +259,9 @@
     height: 6px;
     border-radius: 50%;
 }
+
+.lead-tag.tag-invalid { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.lead-tag.tag-invalid::before { background: #ef4444; }
 
 .lead-tag.tag-hot { background: var(--tag-hot-bg); color: var(--tag-hot-text); border: 1px solid var(--tag-hot-border); }
 .lead-tag.tag-hot::before { background: var(--tag-hot-dot); }
@@ -269,6 +303,13 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
+.cd-threshold-number-input.input-invalid {
+    border-color: #ef4444 !important;
+    background-color: #fff5f5 !important;
+    color: #b91c1c !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
 .cd-threshold-desc {
     font-size: 0.75rem;
     color: var(--cd-text-muted);
@@ -293,12 +334,27 @@
     margin-bottom: 10px;
 }
 
+.range-summary-error {
+    color: #dc2626;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+}
+
 .range-bar {
     height: 8px;
     background: #e2e8f0;
     border-radius: 999px;
     overflow: hidden;
     display: flex;
+}
+
+.range-bar.is-invalid {
+    background: #fee2e2;
+}
+
+.range-bar.is-invalid .range-segment {
+    width: 0% !important;
 }
 
 .range-segment {
@@ -634,6 +690,8 @@
 .sim-score-card.state-hot { background: #fff5f5; border-color: #fed7d7; }
 .sim-score-card.state-warm { background: #fffdf5; border-color: #feebc8; }
 .sim-score-card.state-cold { background: #f0f9ff; border-color: #bae6fd; }
+.sim-score-card.state-invalid { background: #fef2f2; border-color: #fca5a5; }
+.sim-score-card.state-invalid .sim-score-value { color: #991b1b; }
 
 .sim-score-value {
     font-size: 2.75rem;

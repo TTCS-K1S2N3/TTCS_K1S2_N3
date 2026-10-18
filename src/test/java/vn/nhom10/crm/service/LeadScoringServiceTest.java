@@ -183,6 +183,91 @@ class LeadScoringServiceTest {
     }
 
     @Test
+    @DisplayName("AC1 & BUG-06: Chặn lưu khi Ấm = 70, Nóng = 40 (hotMin <= warmMin)")
+    void testChanLuuKhi_Warm70_Hot40() {
+        CauHinhChamDiemDTO config = service.layCauHinhHienTai();
+        int initialVersion = config.getPhienBan();
+        config.getNguongPhanLoai().setWarmMin(70);
+        config.getNguongPhanLoai().setHotMin(40);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> service.luuCauHinh(config, 1L, "Director"));
+        assertTrue(ex.getMessage().contains("lớn hơn ngưỡng"));
+
+        // Kiểm tra CSDL không bị thay đổi phiên bản hay ngưỡng điểm
+        LeadScoringService checkService = new LeadScoringService(cauHinhDAO, leadDAO);
+        CauHinhChamDiemDTO checkConfig = checkService.layCauHinhHienTai();
+        assertEquals(initialVersion, checkConfig.getPhienBan());
+        assertEquals(70, checkConfig.getNguongPhanLoai().getHotMin());
+        assertEquals(40, checkConfig.getNguongPhanLoai().getWarmMin());
+    }
+
+    @Test
+    @DisplayName("AC1 & BUG-06: Chặn lưu khi Ấm = 70, Nóng = 70 (hotMin == warmMin)")
+    void testChanLuuKhi_Warm70_Hot70() {
+        CauHinhChamDiemDTO config = service.layCauHinhHienTai();
+        int initialVersion = config.getPhienBan();
+        config.getNguongPhanLoai().setWarmMin(70);
+        config.getNguongPhanLoai().setHotMin(70);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> service.luuCauHinh(config, 1L, "Director"));
+        assertTrue(ex.getMessage().contains("lớn hơn ngưỡng"));
+
+        // Kiểm tra CSDL không bị thay đổi phiên bản
+        LeadScoringService checkService = new LeadScoringService(cauHinhDAO, leadDAO);
+        CauHinhChamDiemDTO checkConfig = checkService.layCauHinhHienTai();
+        assertEquals(initialVersion, checkConfig.getPhienBan());
+    }
+
+    @Test
+    @DisplayName("AC1 & BUG-06: Lưu thành công khi Ấm = 40, Nóng = 70 (hotMin > warmMin)")
+    void testLuuHopLe_Warm40_Hot70() {
+        CauHinhChamDiemDTO config = service.layCauHinhHienTai();
+        config.getNguongPhanLoai().setWarmMin(40);
+        config.getNguongPhanLoai().setHotMin(70);
+
+        boolean ok = service.luuCauHinh(config, 1L, "Director");
+        assertTrue(ok);
+
+        LeadScoringService checkService = new LeadScoringService(cauHinhDAO, leadDAO);
+        CauHinhChamDiemDTO checkConfig = checkService.layCauHinhHienTai();
+        assertEquals(40, checkConfig.getNguongPhanLoai().getWarmMin());
+        assertEquals(70, checkConfig.getNguongPhanLoai().getHotMin());
+    }
+
+    @Test
+    @DisplayName("BUG-05: Mỗi lần lưu thành công chỉ tăng đúng 1 phiên bản (v1 -> v2, v2 -> v3)")
+    void testPhienBanTangDungMotLanKhiLuuThanhCong() {
+        CauHinhChamDiemDTO config1 = service.layCauHinhHienTai();
+        int v0 = config1.getPhienBan(); // Thường là 1
+
+        // Lần lưu 1:
+        config1.getNguongPhanLoai().setHotMin(75);
+        config1.getNguongPhanLoai().setWarmMin(45);
+        boolean ok1 = service.luuCauHinh(config1, 1L, "Director");
+        assertTrue(ok1);
+        assertEquals(v0 + 1, config1.getPhienBan(), "Phiên bản trong DTO sau lần lưu 1 phải tăng đúng 1");
+
+        // Kiểm tra trong DB và service mới:
+        LeadScoringService s2 = new LeadScoringService(cauHinhDAO, leadDAO);
+        CauHinhChamDiemDTO config2 = s2.layCauHinhHienTai();
+        assertEquals(v0 + 1, config2.getPhienBan(), "Phiên bản trong DB sau lần lưu 1 phải bằng v0 + 1");
+
+        // Lần lưu 2:
+        config2.getNguongPhanLoai().setHotMin(80);
+        config2.getNguongPhanLoai().setWarmMin(50);
+        boolean ok2 = s2.luuCauHinh(config2, 1L, "Director");
+        assertTrue(ok2);
+        assertEquals(v0 + 2, config2.getPhienBan(), "Phiên bản trong DTO sau lần lưu 2 phải tăng tiếp đúng 1");
+
+        // Kiểm tra lại trong DB:
+        LeadScoringService s3 = new LeadScoringService(cauHinhDAO, leadDAO);
+        CauHinhChamDiemDTO config3 = s3.layCauHinhHienTai();
+        assertEquals(v0 + 2, config3.getPhienBan(), "Phiên bản trong DB sau lần lưu 2 phải bằng v0 + 2");
+    }
+
+    @Test
     @DisplayName("AC1: Từ chối cấu hình khi ngưỡng Nóng <= ngưỡng Ấm")
     void testValidation_NguongLoi() {
         CauHinhChamDiemDTO config = service.layCauHinhHienTai();

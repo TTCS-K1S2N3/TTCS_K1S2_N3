@@ -25,7 +25,7 @@
                 <ol class="bml-breadcrumb-nav">
                     <li><a href="${pageContext.request.contextPath}/dieu-huong" class="bml-breadcrumb-link">Trang chủ</a></li>
                     <span class="bml-breadcrumb-sep" aria-hidden="true">/</span>
-                    <li><a href="${pageContext.request.contextPath}/bieu-mau" class="bml-breadcrumb-link">Lead & Phân bổ</a></li>
+                    <li><a href="${pageContext.request.contextPath}/lead" class="bml-breadcrumb-link">Lead & Phân bổ</a></li>
                     <span class="bml-breadcrumb-sep" aria-hidden="true">/</span>
                     <li class="bml-breadcrumb-current" aria-current="page">Tạo biểu mẫu mới</li>
                 </ol>
@@ -83,7 +83,7 @@
                         </div>
                     </div>
 
-                    <!-- Gắn nguồn và chiến dịch (AC4) -->
+                    <!-- Gắn nguồn và chiến dịch (AC4, S4-03 AC2) -->
                     <div class="bmf-grid-2">
                         <div class="bmf-form-group">
                             <label class="bmf-label" for="nguon_lead_id">
@@ -100,6 +100,23 @@
                             <div class="bmf-hint">Mọi lead gửi từ biểu mẫu này sẽ tự động gắn đúng nguồn này vào hồ sơ.</div>
                         </div>
 
+                        <div class="bmf-form-group">
+                            <label class="bmf-label" for="chien_dich_id">
+                                Chiến dịch Marketing (S4-03 AC2)
+                            </label>
+                            <select id="chien_dich_id" name="chien_dich_id" class="bmf-select">
+                                <option value="">-- Không gắn chiến dịch --</option>
+                                <c:forEach items="${dsChienDich}" var="cd">
+                                    <option value="${cd.campaignId}" ${chien_dich_id == cd.campaignId ? 'selected' : ''}>
+                                        <c:out value="${cd.name}" /> (<c:out value="${cd.maChienDich}" />)
+                                    </option>
+                                </c:forEach>
+                            </select>
+                            <div class="bmf-hint">Tùy chọn: Gắn biểu mẫu với chiến dịch marketing đang chạy để đo lường ROI.</div>
+                        </div>
+                    </div>
+
+                    <div class="bmf-grid-2">
                         <div class="bmf-form-group">
                             <label class="bmf-label" for="gioi_han_gui_moi_gio">
                                 Giới hạn tần suất gửi / IP (AC3)

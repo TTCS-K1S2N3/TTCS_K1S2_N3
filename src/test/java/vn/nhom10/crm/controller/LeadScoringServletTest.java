@@ -25,6 +25,7 @@ import static org.mockito.Mockito.*;
 class LeadScoringServletTest {
 
     private MenuService menuService;
+    private vn.nhom10.crm.service.LeadScoringService leadScoringService;
     private LeadScoringServlet servlet;
 
     private HttpServletRequest request;
@@ -40,7 +41,23 @@ class LeadScoringServletTest {
     @BeforeEach
     void setUp() throws Exception {
         menuService = mock(MenuService.class);
-        servlet = new LeadScoringServlet(menuService);
+        leadScoringService = mock(vn.nhom10.crm.service.LeadScoringService.class);
+        servlet = new LeadScoringServlet(menuService, leadScoringService);
+
+        vn.nhom10.crm.dto.CauHinhChamDiemDTO dummyConfig = new vn.nhom10.crm.dto.CauHinhChamDiemDTO();
+        dummyConfig.setPhienBan(1);
+        dummyConfig.setNguongPhanLoai(new vn.nhom10.crm.dto.NguongPhanLoaiLeadDTO(70, 40));
+        dummyConfig.getDanhSachTieuChi().add(new vn.nhom10.crm.dto.TieuChiChamDiemDTO("INDUSTRY_FIT", "R1", "Ngành", "Mô tả", "business", true, 25, 1));
+        dummyConfig.getDanhSachTieuChi().add(new vn.nhom10.crm.dto.TieuChiChamDiemDTO("COMPANY_SIZE", "R2", "Quy mô", "Mô tả", "groups", true, 20, 2));
+        dummyConfig.getDanhSachTieuChi().add(new vn.nhom10.crm.dto.TieuChiChamDiemDTO("SOURCE", "R3", "Nguồn", "Mô tả", "campaign", true, 15, 3));
+        dummyConfig.getDanhSachTieuChi().add(new vn.nhom10.crm.dto.TieuChiChamDiemDTO("INTEREST_LEVEL", "R4", "Quan tâm", "Mô tả", "favorite", true, 40, 4));
+
+        when(leadScoringService.layCauHinhHienTai()).thenReturn(dummyConfig);
+        when(leadScoringService.luuCauHinh(any(), any(), any())).thenAnswer(inv -> {
+            vn.nhom10.crm.dto.CauHinhChamDiemDTO cfg = inv.getArgument(0);
+            cfg.setPhienBan(cfg.getPhienBan() + 1);
+            return true;
+        });
 
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
@@ -184,5 +201,58 @@ class LeadScoringServletTest {
         String output = responseWriter.toString();
         assertTrue(output.contains("\"success\":true"));
         assertTrue(output.contains("thành công"));
+    }
+
+    @Test
+    @DisplayName("POST & BUG-06: Chặn lưu khi Ấm = 70, Nóng = 40 (hotMin <= warmMin)")
+    void testPost_Warm70_Hot40_ChanLuu() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userDirector);
+        when(request.getParameter("hotMin")).thenReturn("40");
+        when(request.getParameter("warmMin")).thenReturn("70");
+        when(request.getParameter("enabled_INDUSTRY_FIT")).thenReturn("true");
+
+        servlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        verify(request).setAttribute(eq("thongBaoLoi"), contains("không hợp lệ"));
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("POST & BUG-06: Chặn lưu khi Ấm = 70, Nóng = 70 (hotMin == warmMin)")
+    void testPost_Warm70_Hot70_ChanLuu() throws Exception {
+        when(session.getAttribute("nguoiDung")).thenReturn(userDirector);
+        when(request.getParameter("hotMin")).thenReturn("70");
+        when(request.getParameter("warmMin")).thenReturn("70");
+        when(request.getParameter("enabled_INDUSTRY_FIT")).thenReturn("true");
+
+        servlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        verify(dispatcher).forward(request, response);
+    }
+
+    @Test
+    @DisplayName("POST & BUG-05: Lưu cấu hình thất bại từ Service -> Trả về 500 và không báo thành công")
+    void testPost_LuuThatBai_KhongBaoThanhCong() throws Exception {
+        vn.nhom10.crm.service.LeadScoringService mockService = mock(vn.nhom10.crm.service.LeadScoringService.class);
+        LeadScoringServlet customServlet = new LeadScoringServlet(menuService, mockService);
+
+        vn.nhom10.crm.dto.CauHinhChamDiemDTO dummyConfig = new vn.nhom10.crm.dto.CauHinhChamDiemDTO();
+        dummyConfig.setPhienBan(1);
+        dummyConfig.getDanhSachTieuChi().add(new vn.nhom10.crm.dto.TieuChiChamDiemDTO("INDUSTRY_FIT", "R1", "Ngành", "Mô tả", "business", true, 25, 1));
+        when(mockService.layCauHinhHienTai()).thenReturn(dummyConfig);
+        when(mockService.luuCauHinh(any(), any(), any())).thenReturn(false); // Lưu thất bại
+
+        when(session.getAttribute("nguoiDung")).thenReturn(userDirector);
+        when(request.getParameter("hotMin")).thenReturn("80");
+        when(request.getParameter("warmMin")).thenReturn("50");
+        when(request.getParameter("enabled_INDUSTRY_FIT")).thenReturn("true");
+
+        customServlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        verify(session, never()).setAttribute(eq("flashSuccess"), any());
+        verify(request).setAttribute(eq("thongBaoLoi"), contains("Có lỗi xảy ra"));
     }
 }

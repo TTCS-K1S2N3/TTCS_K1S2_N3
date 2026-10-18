@@ -7,35 +7,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thêm Giai đoạn Pipeline Mới | CRM Bán Hàng</title>
     <meta name="description" content="Khai báo một giai đoạn mới trong chuỗi pipeline bán hàng, cài đặt xác suất thắng mặc định và điều kiện bắt buộc để rời giai đoạn.">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/co-hoi/pipeline.css">
+
+    <!-- Google Fonts & Material Symbols (Đồng bộ chuẩn hệ thống) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- CSS chung toàn hệ thống -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/material-symbols.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
+
+    <!-- CSS Module Pipeline -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/co-hoi/pipeline.css?v=20261018_ui_v1">
 </head>
-<body>
+<body class="crm-body">
 
-<div class="crm-container" style="max-width: 920px;">
+    <!-- Thanh điều hướng và Sidebar chuẩn hệ thống S1-06 -->
+    <jsp:include page="/WEB-INF/views/layout/navigation.jsp" />
 
-    <!-- Breadcrumb Navigation -->
-    <nav class="breadcrumb-nav" aria-label="Đường dẫn điều hướng">
-        <a href="${pageContext.request.contextPath}/dieu-huong">Trang chủ</a>
-        <span class="sep">/</span>
-        <a href="${pageContext.request.contextPath}/pipeline/giai-doan">Cấu hình Pipeline</a>
-        <span class="sep">/</span>
-        <span class="current">Thêm giai đoạn mới</span>
-    </nav>
+    <main class="crm-main-content page-container" id="crm-main-content">
+        <div class="category-page-container pipeline-page-container" style="max-width: 960px; margin: 0 auto;">
 
-    <!-- Header -->
-    <header class="crm-header">
-        <div class="crm-header-title">
-            <h1>Thêm Giai đoạn Pipeline Mới (AC 1)</h1>
-            <p>Định nghĩa một bước trong chuỗi phễu bán hàng, xác suất thắng mặc định dùng để tính dự báo và tiêu chuẩn bắt buộc rời giai đoạn.</p>
-        </div>
-        <div>
-            <a href="${pageContext.request.contextPath}/pipeline/giai-doan"
-               class="btn btn-outline"
-               id="btnQuayLai">
-                <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span> Quay lại danh sách
-            </a>
-        </div>
-    </header>
+            <!-- Breadcrumb Navigation chuẩn -->
+            <nav class="crm-breadcrumb" aria-label="Breadcrumb">
+                <ul class="crm-breadcrumb-list">
+                    <li>
+                        <a href="${pageContext.request.contextPath}/dieu-huong" class="crm-breadcrumb-link">Trang chủ</a>
+                    </li>
+                    <li class="crm-breadcrumb-separator" aria-hidden="true">/</li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/pipeline/giai-doan" class="crm-breadcrumb-link">Cấu hình Pipeline</a>
+                    </li>
+                    <li class="crm-breadcrumb-separator" aria-hidden="true">/</li>
+                    <li class="crm-breadcrumb-active" aria-current="page">Thêm giai đoạn mới</li>
+                </ul>
+                <div>
+                    <a href="${pageContext.request.contextPath}/pipeline/giai-doan" class="btn btn-outline btn-sm" id="btnQuayLai">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span>
+                        <span>Quay lại danh sách</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Header -->
+            <header class="category-header-banner pipeline-header-banner">
+                <div class="category-header-title-wrap">
+                    <div class="category-header-icon-box">
+                        <span class="material-symbols-outlined" aria-hidden="true">add_circle</span>
+                    </div>
+                    <div class="category-header-text">
+                        <h1>Thêm Giai đoạn Pipeline Mới (AC 1)</h1>
+                        <p>Định nghĩa một bước trong chuỗi phễu bán hàng, xác suất thắng mặc định dùng để tính dự báo và tiêu chuẩn bắt buộc rời giai đoạn.</p>
+                    </div>
+                </div>
+            </header>
 
     <!-- Flash Error nếu có -->
     <c:if test="${not empty thongBaoLoi}">
@@ -228,9 +254,8 @@
                 </button>
             </div>
         </form>
-    </div>
-
-</div>
+        </div>
+    </main>
 
 <script src="${pageContext.request.contextPath}/assets/js/co-hoi/pipeline.js"></script>
 </body>

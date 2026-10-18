@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
     <!-- CSS chuyên biệt module Phân bổ Lead (Story S4-06) -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/phan-bo.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/phan-bo.css?v=20261016_ui_fix2">
 
     <script>
         window.CONTEXT_PATH = "${pageContext.request.contextPath}";
@@ -39,6 +39,9 @@
                     <span class="current">Phân bổ lead tự động (S4-06)</span>
                 </div>
                 <div style="display: flex; gap: 8px;">
+                    <a href="${pageContext.request.contextPath}/lead" class="btn btn-outline btn-sm" id="btn-ve-lead" title="Quay lại danh sách Lead">
+                        <span class="material-symbols-outlined icon-xs">list</span> Danh sách Lead
+                    </a>
                     <a href="${pageContext.request.contextPath}/lead/hang-cho-phan-bo" class="btn btn-outline btn-sm" id="btn-link-hang-cho-top" title="Xem Hàng chờ phân bổ (AC3)">
                         <span class="material-symbols-outlined icon-xs">inbox</span> Hàng chờ (${not empty soLuongHangCho ? soLuongHangCho : 0})
                     </a>
@@ -74,7 +77,7 @@
 
                     <!-- Action PBL-02: Tạo quy tắc mới (AC1) -->
                     <button type="button" class="btn btn-primary" id="btn-them-quy-tac" title="Thêm quy tắc phân bổ lead tự động mới">
-                        <span class="material-symbols-outlined">add</span> + Thêm quy tắc phân bổ
+                        <span class="material-symbols-outlined">add</span> Thêm quy tắc phân bổ
                     </button>
                 </div>
             </header>
@@ -113,7 +116,7 @@
                     </div>
                     <div class="pb-stat-info">
                         <span class="pb-stat-label">Tổng quy tắc cấu hình</span>
-                        <span class="pb-stat-value" id="stat-total-rules">${not empty danhSachQuyTac ? fn:length(danhSachQuyTac) : '4'}</span>
+                        <span class="pb-stat-value" id="stat-total-rules">${not empty danhSachQuyTac ? fn:length(danhSachQuyTac) : 0}</span>
                         <span class="pb-stat-note" id="stat-active-rules">Đang hoạt động trong chuỗi</span>
                     </div>
                 </div>
@@ -177,7 +180,7 @@
                                 <input type="text" id="input-search-rule" placeholder="Tìm theo tên quy tắc, mã quy tắc, nhóm nhận..." aria-label="Tìm kiếm quy tắc">
                             </div>
                             <div class="pb-filter-select">
-                                <select id="select-filter-type" aria-label="Lọc theo kiểu phân bổ">
+                                <select id="select-filter-type" class="pb-select-filter" aria-label="Lọc theo kiểu phân bổ">
                                     <option value="ALL">Tất cả kiểu phân bổ</option>
                                     <option value="THEO_KHU_VUC">Theo khu vực</option>
                                     <option value="THEO_NGANH_NGHE">Theo ngành nghề</option>
@@ -185,7 +188,7 @@
                                 </select>
                             </div>
                             <div class="pb-filter-select">
-                                <select id="select-filter-status" aria-label="Lọc theo trạng thái">
+                                <select id="select-filter-status" class="pb-select-filter" aria-label="Lọc theo trạng thái">
                                     <option value="ALL">Tất cả trạng thái</option>
                                     <option value="ACTIVE">Đang bật</option>
                                     <option value="INACTIVE">Tạm tắt</option>
@@ -367,13 +370,16 @@
                                     <label class="form-label" for="sim-lead-area">Khu vực địa lý của Lead</label>
                                     <select id="sim-lead-area" class="form-control">
                                         <option value="">-- Khách không cung cấp khu vực (NULL) --</option>
-                                        <c:forEach var="kv" items="${danhSachKhuVuc}">
-                                            <option value="${kv.id}"><c:out value="${kv.tenKhuVuc}"/></option>
-                                        </c:forEach>
-                                        <option value="1" selected>Hà Nội (Miền Bắc)</option>
-                                        <option value="2">Hải Phòng</option>
-                                        <option value="4">TP. Hồ Chí Minh (Miền Nam)</option>
-                                        <option value="99">Tỉnh khác</option>
+                                        <c:choose>
+                                            <c:when test="${not empty danhSachKhuVuc}">
+                                                <c:forEach var="kv" items="${danhSachKhuVuc}">
+                                                    <option value="${kv.id}"><c:out value="${kv.tenKhuVuc}"/></option>
+                                                </c:forEach>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <option value="" disabled>-- Chưa có dữ liệu khu vực từ hệ thống --</option>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </select>
                                 </div>
 
@@ -381,13 +387,16 @@
                                     <label class="form-label" for="sim-lead-industry">Ngành nghề kinh doanh của Lead</label>
                                     <select id="sim-lead-industry" class="form-control">
                                         <option value="">-- Khách không chọn ngành nghề (NULL) --</option>
-                                        <c:forEach var="nn" items="${danhSachNganhNghe}">
-                                            <option value="${nn.id}"><c:out value="${nn.tenMuc}"/></option>
-                                        </c:forEach>
-                                        <option value="5">Tài chính - Ngân hàng</option>
-                                        <option value="8" selected>Công nghệ thông tin</option>
-                                        <option value="12">Bất động sản</option>
-                                        <option value="99">Ngành nghề khác</option>
+                                        <c:choose>
+                                            <c:when test="${not empty danhSachNganhNghe}">
+                                                <c:forEach var="nn" items="${danhSachNganhNghe}">
+                                                    <option value="${nn.id}"><c:out value="${nn.tenMuc}"/></option>
+                                                </c:forEach>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <option value="" disabled>-- Chưa có dữ liệu ngành nghề từ hệ thống --</option>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </select>
                                 </div>
 
@@ -413,7 +422,7 @@
     <!-- ========================================================
          MODAL THÊM MỚI / CHỈNH SỬA QUY TẮC (ACTION PBL-02)
          ======================================================== -->
-    <div class="pb-modal-overlay" id="modal-quy-tac" role="dialog" aria-modal="true" aria-labelledby="modal-rule-title">
+    <div class="pb-modal-overlay" id="modal-quy-tac" role="dialog" aria-modal="true" aria-labelledby="modal-rule-title" style="display: none;">
         <div class="pb-modal-dialog">
             <div class="pb-modal-header">
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -472,13 +481,9 @@
                                     </c:forEach>
                                 </c:when>
                                 <c:otherwise>
-                                    <!-- Fallback Mock Khu vực -->
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="khu_vuc_ids" value="1" data-label="Hà Nội" checked> <span>Hà Nội</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="khu_vuc_ids" value="2" data-label="Hải Phòng" checked> <span>Hải Phòng</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="khu_vuc_ids" value="3" data-label="Quảng Ninh" checked> <span>Quảng Ninh</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="khu_vuc_ids" value="4" data-label="TP. Hồ Chí Minh"> <span>TP. Hồ Chí Minh</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="khu_vuc_ids" value="5" data-label="Bình Dương"> <span>Bình Dương</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="khu_vuc_ids" value="6" data-label="Đà Nẵng"> <span>Đà Nẵng</span></label>
+                                    <div class="pb-empty-hint" style="color: var(--pb-slate-500); font-size: 13px; font-style: italic; padding: 6px 0;">
+                                        Chưa có dữ liệu khu vực từ hệ thống.
+                                    </div>
                                 </c:otherwise>
                             </c:choose>
                         </div>
@@ -505,12 +510,9 @@
                                     </c:forEach>
                                 </c:when>
                                 <c:otherwise>
-                                    <!-- Fallback Mock Ngành nghề -->
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="nganh_nghe_ids" value="5" data-label="Tài chính - Ngân hàng" checked> <span>Tài chính - Ngân hàng</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="nganh_nghe_ids" value="8" data-label="Công nghệ thông tin" checked> <span>Công nghệ thông tin</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="nganh_nghe_ids" value="12" data-label="Bất động sản"> <span>Bất động sản</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="nganh_nghe_ids" value="15" data-label="Sản xuất & Công nghiệp"> <span>Sản xuất & Công nghiệp</span></label>
-                                    <label class="pb-checkbox-item"><input type="checkbox" name="nganh_nghe_ids" value="18" data-label="Bán lẻ & Thương mại"> <span>Bán lẻ & Thương mại</span></label>
+                                    <div class="pb-empty-hint" style="color: var(--pb-slate-500); font-size: 13px; font-style: italic; padding: 6px 0;">
+                                        Chưa có dữ liệu ngành nghề từ hệ thống.
+                                    </div>
                                 </c:otherwise>
                             </c:choose>
                         </div>
@@ -541,11 +543,7 @@
                                     </c:forEach>
                                 </c:when>
                                 <c:otherwise>
-                                    <!-- Fallback Mock Nhóm -->
-                                    <option value="101" selected>Nhóm Kinh Doanh Miền Bắc (8 nhân viên)</option>
-                                    <option value="102">Nhóm Khách hàng Doanh nghiệp Lớn (5 nhân viên)</option>
-                                    <option value="103">Nhóm Inside Sales (6 nhân viên)</option>
-                                    <option value="104">Nhóm Kinh Doanh Miền Nam (10 nhân viên)</option>
+                                    <option value="" disabled>-- Chưa có nhóm kinh doanh nào trong hệ thống --</option>
                                 </c:otherwise>
                             </c:choose>
                         </select>
@@ -577,7 +575,7 @@
     <!-- ========================================================
          MODAL KẾT QUẢ CHẠY PHÂN BỔ NGAY (AC4, ACTION PBL-07)
          ======================================================== -->
-    <div class="pb-modal-overlay" id="modal-ket-qua-chay" role="dialog" aria-modal="true" aria-labelledby="modal-res-title">
+    <div class="pb-modal-overlay" id="modal-ket-qua-chay" role="dialog" aria-modal="true" aria-labelledby="modal-res-title" style="display: none;">
         <div class="pb-modal-dialog" style="max-width: 500px;">
             <div class="pb-modal-header">
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -627,6 +625,6 @@
     <div class="pb-toast-container" id="pb-toast-container" aria-live="polite"></div>
 
     <!-- Scripts logic -->
-    <script src="${pageContext.request.contextPath}/assets/js/lead/phan-bo.js"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/lead/phan-bo.js?v=20261016_ui_fix2"></script>
 </body>
 </html>

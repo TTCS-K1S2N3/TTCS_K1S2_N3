@@ -4,14 +4,146 @@
  * - AC1: Lọc theo 5 tiêu chí (AND), validate ngày từ - đến
  * - AC2: Cảnh báo và highlight Lead quá hạn SLA
  * - AC3: Lưu bộ lọc (Modal, validation, preview điều kiện, chống double-click)
+ * - Navigation: Dropdown nghiệp vụ Lead (S4-01 đến S4-06)
  * ==========================================================================
  */
 
+/**
+ * Hàm toggle bộ lọc nâng cao (chuẩn hóa giống trang Khách hàng)
+ */
+window.toggleAdvancedFilter = function (forceOpen) {
+    const advancedFilterPanel = document.getElementById('advancedFilterPanel');
+    const btnToggleAdvancedFilter = document.getElementById('btnToggleAdvancedFilter');
+    const iconFilterArrow = document.getElementById('iconFilterArrow');
+    if (!advancedFilterPanel) return;
+
+    const isOpen = advancedFilterPanel.classList.contains('is-open') ||
+        (advancedFilterPanel.style.display !== 'none' && advancedFilterPanel.style.display !== '');
+    const willOpen = typeof forceOpen === 'boolean' ? forceOpen : !isOpen;
+
+    if (willOpen) {
+        advancedFilterPanel.classList.add('is-open');
+        advancedFilterPanel.style.display = 'block';
+        advancedFilterPanel.setAttribute('aria-hidden', 'false');
+        if (btnToggleAdvancedFilter) {
+            btnToggleAdvancedFilter.setAttribute('aria-expanded', 'true');
+            btnToggleAdvancedFilter.classList.add('is-active');
+        }
+        if (iconFilterArrow) {
+            iconFilterArrow.textContent = 'expand_less';
+        }
+        // Focus vào input/select đầu tiên
+        const firstInput = advancedFilterPanel.querySelector('select, input');
+        if (firstInput) {
+            setTimeout(function () { firstInput.focus(); }, 100);
+        }
+    } else {
+        advancedFilterPanel.classList.remove('is-open');
+        advancedFilterPanel.style.display = 'none';
+        advancedFilterPanel.setAttribute('aria-hidden', 'true');
+        if (btnToggleAdvancedFilter) {
+            btnToggleAdvancedFilter.setAttribute('aria-expanded', 'false');
+            const badge = document.getElementById('filterCountBadge');
+            if (!badge) {
+                btnToggleAdvancedFilter.classList.remove('is-active');
+            }
+        }
+        if (iconFilterArrow) {
+            iconFilterArrow.textContent = 'expand_more';
+        }
+    }
+};
+
 document.addEventListener('DOMContentLoaded', function () {
+    initAdvancedFilterToggle();
+    initNghiepVuDropdown();
     initFilterForm();
+    initActiveFilterChips();
     initSavedFiltersModal();
     initQuickMorningFilters();
 });
+
+/**
+ * 0. Khởi tạo Toggle Bộ Lọc Nâng Cao
+ */
+function initAdvancedFilterToggle() {
+    const btnToggle = document.getElementById('btnToggleAdvancedFilter');
+    const btnDong = document.getElementById('btnDongFilterPanel');
+    const btnDongBottom = document.getElementById('btnDongFilterPanelBottom');
+
+    if (btnToggle) {
+        btnToggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.toggleAdvancedFilter();
+        });
+    }
+
+    if (btnDong) {
+        btnDong.addEventListener('click', function (e) {
+            e.preventDefault();
+            window.toggleAdvancedFilter(false);
+            if (btnToggle) btnToggle.focus();
+        });
+    }
+
+    if (btnDongBottom) {
+        btnDongBottom.addEventListener('click', function (e) {
+            e.preventDefault();
+            window.toggleAdvancedFilter(false);
+            if (btnToggle) btnToggle.focus();
+        });
+    }
+}
+
+/**
+ * 0.1 Khởi tạo Dropdown Nghiệp Vụ Lead
+ */
+function initNghiepVuDropdown() {
+    const wrap = document.getElementById('dropdownNghiepVuWrap');
+    const btnToggle = document.getElementById('btnToggleNghiepVu');
+    const menu = document.getElementById('menuNghiepVuLead');
+    const arrowIcon = document.getElementById('iconDropdownArrow');
+
+    if (!btnToggle || !menu) return;
+
+    function openMenu() {
+        menu.style.display = 'block';
+        btnToggle.setAttribute('aria-expanded', 'true');
+        if (arrowIcon) arrowIcon.textContent = 'expand_less';
+    }
+
+    function closeMenu() {
+        menu.style.display = 'none';
+        btnToggle.setAttribute('aria-expanded', 'false');
+        if (arrowIcon) arrowIcon.textContent = 'expand_more';
+    }
+
+    btnToggle.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (menu.style.display === 'block') {
+            closeMenu();
+        } else {
+            openMenu();
+        }
+    });
+
+    // Đóng khi click ngoài dropdown
+    document.addEventListener('click', function (e) {
+        if (wrap && !wrap.contains(e.target)) {
+            closeMenu();
+        }
+    });
+
+    // Đóng khi ấn Escape
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && menu.style.display === 'block') {
+            closeMenu();
+            btnToggle.focus();
+        }
+    });
+}
 
 /**
  * 1. Khởi tạo và xử lý Form Bộ Lọc
@@ -48,10 +180,33 @@ function initFilterForm() {
         btnResetFilter.addEventListener('click', function (e) {
             e.preventDefault();
             const url = new URL(window.location.href);
-            // Giữ lại path, bỏ toàn bộ query parameters liên quan đến filter
             window.location.href = url.pathname;
         });
     }
+}
+
+/**
+ * 1.1 Khởi tạo xử lý gỡ chip điều kiện lọc
+ */
+function initActiveFilterChips() {
+    const removeBtns = document.querySelectorAll('.filter-chip-remove');
+    const formLocLead = document.getElementById('formLocLead');
+
+    removeBtns.forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const fieldId = btn.getAttribute('data-field');
+            if (fieldId) {
+                const targetEl = document.getElementById(fieldId);
+                if (targetEl) {
+                    targetEl.value = '';
+                }
+            }
+            if (formLocLead) {
+                formLocLead.submit();
+            }
+        });
+    });
 }
 
 /**
@@ -72,6 +227,7 @@ function initSavedFiltersModal() {
 
     function openModal() {
         renderFilterPreviewTags(previewContainer);
+        modalBackdrop.style.display = 'flex';
         modalBackdrop.classList.add('is-open');
         modalBackdrop.setAttribute('aria-hidden', 'false');
         if (inputTenBoLoc) {
@@ -82,6 +238,7 @@ function initSavedFiltersModal() {
     }
 
     function closeModal() {
+        modalBackdrop.style.display = 'none';
         modalBackdrop.classList.remove('is-open');
         modalBackdrop.setAttribute('aria-hidden', 'true');
         if (inputTenBoLoc) {
@@ -89,9 +246,8 @@ function initSavedFiltersModal() {
         }
     }
 
-    if (btnOpenModal) {
-        btnOpenModal.addEventListener('click', openModal);
-    }
+    const openTriggers = document.querySelectorAll('#btnOpenModalLuuBoLoc, #btnOpenModalLuuBoLocFilter, .btn-save-filter-action, .lead-btn-save-filter-trigger');
+    openTriggers.forEach(btn => btn.addEventListener('click', openModal));
 
     if (btnCloseModal) {
         btnCloseModal.addEventListener('click', closeModal);
@@ -110,7 +266,7 @@ function initSavedFiltersModal() {
 
     // Đóng khi bấm phím Escape
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && modalBackdrop.classList.contains('is-open')) {
+        if (e.key === 'Escape' && (modalBackdrop.classList.contains('is-open') || modalBackdrop.style.display === 'flex')) {
             closeModal();
         }
     });

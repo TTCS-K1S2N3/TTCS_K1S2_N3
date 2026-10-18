@@ -15,6 +15,7 @@ public class BieuMauLead {
     private Long nguonLeadId;
     private String tenNguonLead;
     private Long chienDichId;
+    private String maChienDich;
     private String tenChienDich;
     private String cauHinhTruongJson;
     private Integer gioiHanGuiMoiGio;
@@ -92,6 +93,14 @@ public class BieuMauLead {
 
     public void setChienDichId(Long chienDichId) {
         this.chienDichId = chienDichId;
+    }
+
+    public String getMaChienDich() {
+        return maChienDich;
+    }
+
+    public void setMaChienDich(String maChienDich) {
+        this.maChienDich = maChienDich;
     }
 
     public String getTenChienDich() {

@@ -8,49 +8,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cấu hình Giai đoạn Pipeline & Dự báo Doanh số | CRM Bán Hàng</title>
     <meta name="description" content="Quản lý cấu hình chuỗi giai đoạn pipeline bán hàng, xác suất thắng mặc định và điều kiện bắt buộc rời giai đoạn để dự báo doanh số chính xác theo số liệu thực tế.">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/co-hoi/pipeline.css">
+
+    <!-- Google Fonts & Material Symbols (Đồng bộ chuẩn hệ thống) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- CSS chung toàn hệ thống -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/material-symbols.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
+
+    <!-- CSS Module Pipeline -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/co-hoi/pipeline.css?v=20261018_ui_v1">
 </head>
-<body>
+<body class="crm-body">
 
-<div class="crm-container">
+    <!-- Thanh điều hướng và Sidebar chuẩn hệ thống S1-06 -->
+    <jsp:include page="/WEB-INF/views/layout/navigation.jsp" />
 
-    <!-- Breadcrumb Navigation -->
-    <nav class="breadcrumb-nav" aria-label="Đường dẫn điều hướng">
-        <a href="${pageContext.request.contextPath}/dieu-huong">Trang chủ</a>
-        <span class="sep">/</span>
-        <a href="${pageContext.request.contextPath}/danh-muc">Danh mục & Cấu hình</a>
-        <span class="sep">/</span>
-        <span class="current">Cấu hình Pipeline & Xác suất Thắng</span>
-    </nav>
+    <main class="crm-main-content page-container" id="crm-main-content">
+        <div class="category-page-container pipeline-page-container">
 
-    <!-- Header & Giả lập phân quyền xem -->
-    <header class="crm-header">
-        <div class="crm-header-title">
-            <h1>Cấu hình Giai đoạn Pipeline & Xác suất Thắng</h1>
-            <p>
-                Thiết lập chuỗi quy trình bán hàng chuẩn hoá, xác suất thắng trọng số theo từng bước và tiêu chuẩn bắt buộc rời giai đoạn để con số dự báo doanh số có cơ sở khoa học thay vì dựa vào cảm nhận.
-            </p>
-        </div>
+            <!-- 1. Breadcrumb điều hướng chuẩn -->
+            <nav class="crm-breadcrumb" aria-label="Breadcrumb">
+                <ul class="crm-breadcrumb-list">
+                    <li>
+                        <a href="${pageContext.request.contextPath}/dieu-huong" class="crm-breadcrumb-link">Trang chủ</a>
+                    </li>
+                    <li class="crm-breadcrumb-separator" aria-hidden="true">/</li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/danh-muc" class="crm-breadcrumb-link">Danh mục & Cấu hình</a>
+                    </li>
+                    <li class="crm-breadcrumb-separator" aria-hidden="true">/</li>
+                    <li class="crm-breadcrumb-active" aria-current="page">Giai đoạn Pipeline & Dự báo</li>
+                </ul>
+                <div>
+                    <a href="${pageContext.request.contextPath}/danh-muc" class="btn btn-outline btn-sm" id="btnQuayLaiDanhMuc">
+                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">arrow_back</span>
+                        <span>Quay lại Danh mục</span>
+                    </a>
+                </div>
+            </nav>
 
-        <div class="role-switcher-card" style="display: flex; align-items: center; gap: 10px;">
-            <a href="${pageContext.request.contextPath}/danh-muc" class="btn btn-outline" id="btnQuayLaiDanhMuc" title="Quay lại Danh mục cấu hình">
-                <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span> Danh mục cấu hình
-            </a>
-            <span class="role-label">Vai trò:</span>
-            <c:choose>
-                <c:when test="${coQuyenCauHinh}">
-                    <span class="role-pill role-pill-director" title="Tài khoản có quyền cấu hình pipeline">
-                        Giám đốc kinh doanh / Quản trị
-                    </span>
-                </c:when>
-                <c:otherwise>
-                    <span class="role-pill role-pill-sales" title="Tài khoản chỉ xem">
-                        Nhân viên kinh doanh (Chỉ xem)
-                    </span>
-                </c:otherwise>
-            </c:choose>
-        </div>
-    </header>
+            <!-- 2. Header Banner & Quick Actions -->
+            <header class="category-header-banner pipeline-header-banner">
+                <div class="category-header-title-wrap">
+                    <div class="category-header-icon-box">
+                        <span class="material-symbols-outlined" aria-hidden="true">linear_scale</span>
+                    </div>
+                    <div class="category-header-text">
+                        <h1>Cấu hình Giai đoạn Pipeline & Xác suất Thắng</h1>
+                        <p>
+                            Thiết lập chuỗi quy trình bán hàng chuẩn hoá, xác suất thắng trọng số theo từng bước và tiêu chuẩn bắt buộc rời giai đoạn để con số dự báo doanh số có cơ sở khoa học thay vì dựa vào cảm nhận.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="category-header-actions">
+                    <c:choose>
+                        <c:when test="${coQuyenCauHinh}">
+                            <span class="role-pill role-pill-director" title="Tài khoản có quyền cấu hình pipeline">
+                                Giám đốc kinh doanh / Quản trị
+                            </span>
+                            <a href="${pageContext.request.contextPath}/pipeline/giai-doan/tao"
+                               class="btn btn-primary"
+                               id="btnThemGiaiDoan">
+                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">add</span>
+                                <span>Thêm giai đoạn mới</span>
+                            </a>
+                        </c:when>
+                        <c:otherwise>
+                            <span class="role-pill role-pill-sales" title="Tài khoản chỉ xem">
+                                Nhân viên kinh doanh (Chỉ xem)
+                            </span>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </header>
+
+            <!-- 3. Liên kết 5 phân hệ Cấu hình & Danh mục Sprint 2 -->
+            <nav class="submodule-nav-bar" aria-label="Các phân hệ danh mục và cấu hình">
+                <a href="${pageContext.request.contextPath}/danh-muc-ban-hang" class="submodule-nav-link">
+                    <span class="material-symbols-outlined" aria-hidden="true">category</span>
+                    <span>Danh mục dùng chung</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/san-pham" class="submodule-nav-link">
+                    <span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>
+                    <span>Sản phẩm & Bảng giá</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/truong-tuy-chinh" class="submodule-nav-link">
+                    <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+                    <span>Trường tùy chỉnh</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/pipeline/giai-doan" class="submodule-nav-link active">
+                    <span class="material-symbols-outlined" aria-hidden="true">linear_scale</span>
+                    <span>Giai đoạn Pipeline</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/danh-muc/ly-do-thang-thua" class="submodule-nav-link">
+                    <span class="material-symbols-outlined" aria-hidden="true">flag</span>
+                    <span>Lý do thắng/thua & Đối thủ</span>
+                </a>
+            </nav>
 
     <!-- Flash Messages (Thông báo thành công / lỗi) -->
     <c:if test="${not empty thongBaoThanhCong}">
@@ -234,58 +293,89 @@
 
         <div class="forecast-summary-box">
             <!-- Bảng dự báo theo giai đoạn -->
-            <div class="table-responsive">
-                <table class="crm-table">
-                    <thead>
-                    <tr>
-                        <th>Giai đoạn</th>
-                        <th style="text-align: center;">Xác suất thắng</th>
-                        <th style="text-align: center;">Cơ hội mở</th>
-                        <th style="text-align: right;">Tổng giá trị phễu</th>
-                        <th style="text-align: right; color: var(--primary-700);">Doanh số dự báo</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <c:forEach var="db" items="${duBaoPipeline}">
+            <div class="forecast-table-col">
+                <div class="table-responsive">
+                    <table class="crm-table" id="bangDuBao">
+                        <thead>
                         <tr>
-                            <td>
-                                <strong><c:out value="${db.tenGiaiDoan}"/></strong>
+                            <th>Giai đoạn</th>
+                            <th style="text-align: center;">Xác suất thắng</th>
+                            <th style="text-align: center;">Cơ hội mở</th>
+                            <th style="text-align: right;">Tổng giá trị phễu</th>
+                            <th style="text-align: right; color: var(--primary-700);">Doanh số dự báo</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <c:if test="${empty duBaoPipeline}">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 28px 16px; color: var(--gray-500);">
+                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                                        <span class="material-symbols-outlined" style="font-size: 32px; color: var(--gray-400);">query_stats</span>
+                                        <span>Chưa có dữ liệu giai đoạn để tính toán dự báo doanh số.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </c:if>
+                        <c:forEach var="db" items="${duBaoPipeline}">
+                            <tr>
+                                <td>
+                                    <strong><c:out value="${db.tenGiaiDoan}"/></strong>
+                                </td>
+                                <td style="text-align: center;">
+                                    <span class="badge badge-prob">${db.xacSuatThang}%</span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <c:choose>
+                                        <c:when test="${db.soLuongCoHoi > 0}">
+                                            <span class="badge badge-open-deals">${db.soLuongCoHoi}</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span style="color: var(--gray-400);">0</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td style="text-align: right; font-weight: 500;">
+                                    ${db.tongGiaTriDinhDang}
+                                </td>
+                                <td style="text-align: right; font-weight: 700; color: var(--primary-600);">
+                                    ${db.doanhSoDuBaoDinhDang}
+                                </td>
+                            </tr>
+                        </c:forEach>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td colspan="2">TỔNG CỘNG DỰ BÁO TOÀN PIPELINE:</td>
+                            <td style="text-align: center;">${tongSoCoHoi} cơ hội</td>
+                            <td style="text-align: right;">
+                                <fmt:formatNumber value="${tongGiaTriRaw}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
                             </td>
-                            <td style="text-align: center;">
-                                <span class="badge badge-prob">${db.xacSuatThang}%</span>
-                            </td>
-                            <td style="text-align: center;">
-                                <c:choose>
-                                    <c:when test="${db.soLuongCoHoi > 0}">
-                                        <span class="badge badge-open-deals">${db.soLuongCoHoi}</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <span style="color: var(--gray-400);">0</span>
-                                    </c:otherwise>
-                                </c:choose>
-                            </td>
-                            <td style="text-align: right; font-weight: 500;">
-                                ${db.tongGiaTriDinhDang}
-                            </td>
-                            <td style="text-align: right; font-weight: 700; color: var(--primary-600);">
-                                ${db.doanhSoDuBaoDinhDang}
+                            <td style="text-align: right; color: var(--success-700); font-size: 15px;">
+                                <fmt:formatNumber value="${tongDuBaoRaw}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
                             </td>
                         </tr>
-                    </c:forEach>
-                    </tbody>
-                    <tfoot>
-                    <tr>
-                        <td colspan="2">TỔNG CỘNG DỰ BÁO TOÀN PIPELINE:</td>
-                        <td style="text-align: center;">${tongSoCoHoi} cơ hội</td>
-                        <td style="text-align: right;">
-                            <fmt:formatNumber value="${tongGiaTriRaw}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
-                        </td>
-                        <td style="text-align: right; color: var(--success-700); font-size: 15px;">
-                            <fmt:formatNumber value="${tongDuBaoRaw}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
-                        </td>
-                    </tr>
-                    </tfoot>
-                </table>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Thẻ ghi chú & giải thích phương pháp dự báo có trọng số -->
+                <div class="forecast-note-card">
+                    <div class="forecast-note-header">
+                        <span class="material-symbols-outlined" style="font-size: 18px; color: var(--primary-600);">insights</span>
+                        <span>Nguyên lý tính toán dự báo doanh số theo giai đoạn (AC 2)</span>
+                    </div>
+                    <ul class="forecast-note-list">
+                        <li>
+                            <strong>Trọng số xác suất:</strong> Mỗi cơ hội trong pipeline được nhân với tỷ lệ xác suất thành công của giai đoạn hiện tại.
+                        </li>
+                        <li>
+                            <strong>Tự động điều chỉnh:</strong> Khi cơ hội tiến sang các bước kế tiếp, xác suất tăng dần và doanh số dự báo sẽ tự động cập nhật theo thời gian thực.
+                        </li>
+                        <li>
+                            <strong>Quản trị rủi ro:</strong> Doanh số dự báo phản ánh doanh thu kỳ vọng an toàn thay vì tổng giá trị hợp đồng gộp.
+                        </li>
+                    </ul>
+                </div>
             </div>
 
             <!-- Bộ mô phỏng tính nhanh dự báo doanh số thời gian thực (Live Forecast Simulator) -->
@@ -310,7 +400,7 @@
                         <button type="button" class="btn-preset" onclick="datPresetGiaTri(100000000)">100 triệu</button>
                         <button type="button" class="btn-preset" onclick="datPresetGiaTri(300000000)">300 triệu</button>
                         <button type="button" class="btn-preset" onclick="datPresetGiaTri(500000000)">500 triệu</button>
-                        <button type="button" class="btn-preset" onclick="datPresetGiaTri(1000000000)">10 tỷ</button>
+                        <button type="button" class="btn-preset" onclick="datPresetGiaTri(1000000000)">1 tỷ</button>
                     </div>
                 </div>
 
@@ -359,7 +449,7 @@
             </div>
 
             <!-- Ô tìm kiếm / lọc nhanh giai đoạn -->
-            <div style="display: flex; gap: 10px; align-items: center;">
+            <div class="table-search-box" style="display: flex; gap: 10px; align-items: center;">
                 <input type="text" id="timKiemGiaiDoan" placeholder="Lọc theo tên hoặc mã..."
                        style="padding: 7px 14px; border: 1.5px solid var(--gray-300); border-radius: var(--radius-md); font-size: 13px; width: 220px; outline: none;">
             </div>
@@ -370,16 +460,34 @@
                 <thead>
                 <tr>
                     <th style="width: 70px; text-align: center;">Thứ tự</th>
-                    <th style="width: 110px;">Mã</th>
-                    <th>Tên giai đoạn & Phân loại</th>
-                    <th style="text-align: center; width: 100px;">Xác suất (AC 2)</th>
-                    <th>Điều kiện bắt buộc để rời giai đoạn (AC 3)</th>
-                    <th style="text-align: center; width: 110px;">Cơ hội đang chạy (AC 4)</th>
-                    <th style="text-align: center; width: 120px;">Trạng thái</th>
-                    <th style="text-align: center; width: 220px;">Thao tác</th>
+                    <th style="width: 100px;">Mã</th>
+                    <th style="min-width: 170px;">Tên giai đoạn & Phân loại</th>
+                    <th style="text-align: center; width: 95px;">Xác suất (AC 2)</th>
+                    <th style="min-width: 220px;">Điều kiện bắt buộc để rời giai đoạn (AC 3)</th>
+                    <th style="text-align: center; width: 105px;">Cơ hội mở (AC 4)</th>
+                    <th style="text-align: center; width: 110px;">Trạng thái</th>
+                    <th style="text-align: center; width: 155px;">Thao tác</th>
                 </tr>
                 </thead>
                 <tbody id="bangGiaiDoanBody">
+                <c:if test="${empty danhSachGiaiDoan}">
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 48px 16px; color: var(--gray-500);">
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                                <span class="material-symbols-outlined" style="font-size: 44px; color: var(--gray-400);">alt_route</span>
+                                <strong style="font-size: 15px; color: var(--gray-700);">Chưa có giai đoạn nào trong Pipeline bán hàng</strong>
+                                <p style="font-size: 13px; max-width: 420px; margin: 0; color: var(--gray-500);">
+                                    Nhấn nút "Thêm giai đoạn mới" ở đầu trang để khởi tạo quy trình bán hàng chuẩn cho đội ngũ kinh doanh.
+                                </p>
+                                <c:if test="${coQuyenCauHinh}">
+                                    <a href="${pageContext.request.contextPath}/pipeline/giai-doan/tao" class="btn btn-primary btn-sm" style="margin-top: 6px;">
+                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">add</span> Thêm giai đoạn đầu tiên
+                                    </a>
+                                </c:if>
+                            </div>
+                        </td>
+                    </tr>
+                </c:if>
                 <c:forEach var="gd" items="${danhSachGiaiDoan}" varStatus="loop">
                     <tr>
                         <!-- Thứ tự và nút di chuyển lên xuống -->
@@ -519,79 +627,87 @@
 
                         <!-- Cột Thao tác -->
                         <td style="text-align: center; white-space: nowrap;">
-                            <!-- Nút thử nghiệm điều kiện rời giai đoạn (AC 3) -->
-                            <button type="button" class="btn btn-outline btn-sm"
-                                    data-giai-doan-id="${gd.id}"
-                                    data-stage-id="${gd.id}"
-                                    data-id="${gd.id}"
-                                    data-ten-giai-doan="<c:out value='${gd.tenGiaiDoan}'/>"
-                                    data-cuoc-gap="${gd.soCuocGapToiThieu}"
-                                    data-cuoc-goi="${gd.soCuocGoiToiThieu}"
-                                    data-bao-gia="${gd.yeuCauBaoGia}"
-                                    data-khao-sat="${gd.yeuCauKhaoSatNhuCau}"
-                                    data-dieu-kien-bat-buoc="<c:out value='${gd.dieuKienBatBuoc}'/>"
-                                    onclick="moModalDieuKienTuBtn(this)"
-                                    title="Thử nghiệm kiểm tra cơ hội có đủ điều kiện rời giai đoạn hay không">
-                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">tune</span> Thử điều kiện
-                            </button>
+                            <div class="stage-action-group">
+                                <!-- Nút thử nghiệm điều kiện rời giai đoạn (AC 3) -->
+                                <button type="button" class="btn-table-action btn-action-test"
+                                        data-giai-doan-id="${gd.id}"
+                                        data-stage-id="${gd.id}"
+                                        data-id="${gd.id}"
+                                        data-ten-giai-doan="<c:out value='${gd.tenGiaiDoan}'/>"
+                                        data-cuoc-gap="${gd.soCuocGapToiThieu}"
+                                        data-cuoc-goi="${gd.soCuocGoiToiThieu}"
+                                        data-bao-gia="${gd.yeuCauBaoGia}"
+                                        data-khao-sat="${gd.yeuCauKhaoSatNhuCau}"
+                                        data-dieu-kien-bat-buoc="<c:out value='${gd.dieuKienBatBuoc}'/>"
+                                        onclick="moModalDieuKienTuBtn(this)"
+                                        title="Thử nghiệm kiểm tra cơ hội có đủ điều kiện rời giai đoạn hay không (AC 3)"
+                                        aria-label="Thử điều kiện">
+                                    <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+                                </button>
 
-                        <c:if test="${coQuyenCauHinh}">
-                            <!-- Nút Sửa -->
-                            <a href="${pageContext.request.contextPath}/pipeline/giai-doan/sua?id=${gd.id}"
-                               class="btn btn-outline btn-sm"
-                               title="Chỉnh sửa xác suất, tên, hoặc tiêu chuẩn điều kiện">
-                                <span class="material-symbols-outlined icon-xs" aria-hidden="true">edit</span> Sửa
-                            </a>
+                            <c:if test="${coQuyenCauHinh}">
+                                <!-- Nút Sửa -->
+                                <a href="${pageContext.request.contextPath}/pipeline/giai-doan/sua?id=${gd.id}"
+                                   class="btn-table-action btn-action-edit"
+                                   title="Chỉnh sửa xác suất, tên, hoặc tiêu chuẩn điều kiện"
+                                   aria-label="Sửa giai đoạn">
+                                    <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                                </a>
 
-                            <!-- Nút Chuyển trạng thái (Đang áp dụng <-> Ngừng áp dụng) -->
-                            <form method="post" action="${pageContext.request.contextPath}/pipeline/giai-doan/trang-thai" style="display:inline;">
-                                <input type="hidden" name="id" value="${gd.id}">
+                                <!-- Nút Chuyển trạng thái (Đang áp dụng <-> Ngừng áp dụng) -->
+                                <form method="post" action="${pageContext.request.contextPath}/pipeline/giai-doan/trang-thai" class="form-action-inline">
+                                    <input type="hidden" name="id" value="${gd.id}">
+                                    <c:choose>
+                                        <c:when test="${gd.dangApDung}">
+                                            <input type="hidden" name="trangThai" value="NGUNG_AP_DUNG">
+                                            <button type="submit" class="btn-table-action btn-action-pause"
+                                                    onclick="return confirm('Chuyển giai đoạn này sang trạng thái Ngừng áp dụng? Các cơ hội đang chạy vẫn được bảo toàn nguyên vẹn.')"
+                                                    title="Tạm ngừng nhận cơ hội mới vào giai đoạn này"
+                                                    aria-label="Ngừng áp dụng">
+                                                <span class="material-symbols-outlined" aria-hidden="true">pause_circle</span>
+                                            </button>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <input type="hidden" name="trangThai" value="DANG_AP_DUNG">
+                                            <button type="submit" class="btn-table-action btn-action-play"
+                                                    title="Kích hoạt lại giai đoạn này trong chuỗi pipeline"
+                                                    aria-label="Kích hoạt lại">
+                                                <span class="material-symbols-outlined" aria-hidden="true">play_circle</span>
+                                            </button>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </form>
+
+                                <!-- AC 4: Nút Xóa có ràng buộc bảo vệ cơ hội đang chạy -->
                                 <c:choose>
-                                    <c:when test="${gd.dangApDung}">
-                                        <input type="hidden" name="trangThai" value="NGUNG_AP_DUNG">
-                                        <button type="submit" class="btn btn-outline btn-sm" style="color: var(--warning-600);"
-                                                onclick="return confirm('Chuyển giai đoạn này sang trạng thái Ngừng áp dụng? Các cơ hội đang chạy vẫn được bảo toàn nguyên vẹn.')"
-                                                title="Tạm ngừng nhận cơ hội mới vào giai đoạn này">
-                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">pause_circle</span> Ngừng
+                                    <c:when test="${gd.soCoHoiHienTai > 0}">
+                                        <!-- Đang có cơ hội: Chặn xóa cứng, giải thích cho người dùng -->
+                                        <button type="button" class="btn-table-action btn-action-lock"
+                                                data-ten-giai-doan="<c:out value='${gd.tenGiaiDoan}'/>"
+                                                data-so-co-hoi="${gd.soCoHoiHienTai}"
+                                                onclick="xacNhanXoaTuBtn(null, this)"
+                                                title="Đang có ${gd.soCoHoiHienTai} cơ hội đang chạy. Hệ thống bảo vệ dữ liệu, không cho phép xoá cứng (AC 4)"
+                                                aria-label="Đang bảo vệ dữ liệu, không thể xóa">
+                                            <span class="material-symbols-outlined" aria-hidden="true">lock</span>
                                         </button>
                                     </c:when>
                                     <c:otherwise>
-                                        <input type="hidden" name="trangThai" value="DANG_AP_DUNG">
-                                        <button type="submit" class="btn btn-outline btn-sm" style="color: var(--success-600);"
-                                                title="Kích hoạt lại giai đoạn này trong chuỗi pipeline">
-                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">play_circle</span> Dùng lại
-                                        </button>
+                                        <!-- Không có cơ hội nào: Cho phép xóa với modal xác nhận -->
+                                        <form method="post" action="${pageContext.request.contextPath}/pipeline/giai-doan/xoa" class="form-action-inline">
+                                            <input type="hidden" name="id" value="${gd.id}">
+                                            <button type="button" class="btn-table-action btn-action-delete"
+                                                    data-ten-giai-doan="<c:out value='${gd.tenGiaiDoan}'/>"
+                                                    data-so-co-hoi="0"
+                                                    onclick="xacNhanXoaTuBtn(this.form, this)"
+                                                    title="Xoá vĩnh viễn giai đoạn khỏi hệ thống"
+                                                    aria-label="Xóa giai đoạn">
+                                                <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                                            </button>
+                                        </form>
                                     </c:otherwise>
                                 </c:choose>
-                            </form>
-
-                            <!-- AC 4: Nút Xóa có ràng buộc bảo vệ cơ hội đang chạy -->
-                            <c:choose>
-                                <c:when test="${gd.soCoHoiHienTai > 0}">
-                                    <!-- Đang có cơ hội: Chặn xóa cứng, giải thích cho người dùng -->
-                                    <button type="button" class="btn btn-outline btn-sm" style="color: var(--gray-400); cursor: help;"
-                                            data-ten-giai-doan="<c:out value='${gd.tenGiaiDoan}'/>"
-                                            data-so-co-hoi="${gd.soCoHoiHienTai}"
-                                            onclick="xacNhanXoaTuBtn(null, this)"
-                                            title="Đang có ${gd.soCoHoiHienTai} cơ hội đang chạy. Hệ thống bảo vệ dữ liệu, không cho phép xoá cứng. Nhấn để xem chi tiết.">
-                                        <span class="material-symbols-outlined icon-xs" aria-hidden="true">block</span> Không thể xoá
-                                    </button>
-                                </c:when>
-                                <c:otherwise>
-                                    <!-- Không có cơ hội nào: Cho phép xóa với modal xác nhận -->
-                                    <form method="post" action="${pageContext.request.contextPath}/pipeline/giai-doan/xoa" style="display:inline;">
-                                        <input type="hidden" name="id" value="${gd.id}">
-                                        <button type="button" class="btn btn-danger btn-sm"
-                                                data-ten-giai-doan="<c:out value='${gd.tenGiaiDoan}'/>"
-                                                data-so-co-hoi="0"
-                                                onclick="xacNhanXoaTuBtn(this.form, this)"
-                                                title="Xoá vĩnh viễn giai đoạn khỏi hệ thống">
-                                            <span class="material-symbols-outlined icon-xs" aria-hidden="true">delete</span> Xoá
-                                        </button>
-                                    </form>
-                                </c:otherwise>
-                            </c:choose>
-                        </c:if>
+                            </c:if>
+                            </div>
                         </td>
                     </tr>
                 </c:forEach>
@@ -600,7 +716,8 @@
         </div>
     </section>
 
-</div>
+        </div>
+    </main>
 
 <!-- MODAL 1: Kiểm tra Điều kiện Rời Giai đoạn (AC 3) -->
 <div id="modalKiemTraDieuKien" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitleDieuKien"

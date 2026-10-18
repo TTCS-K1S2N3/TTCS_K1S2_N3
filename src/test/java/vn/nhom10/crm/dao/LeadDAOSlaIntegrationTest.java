@@ -203,13 +203,84 @@ class LeadDAOSlaIntegrationTest {
 
         Lead sauTuChoi = leadDAO.timTheoId(id);
         assertNotNull(sauTuChoi);
-        assertEquals(TrangThaiLeadEnum.MOI, sauTuChoi.getTrangThai());
+        assertEquals(TrangThaiLeadEnum.HANG_CHO_PHAN_BO, sauTuChoi.getTrangThai());
         assertNull(sauTuChoi.getNguoiPhuTrachId());
         assertEquals("[SAI_KHU_VUC] Địa bàn ngoài khu vực", sauTuChoi.getLyDoTuChoi());
 
         List<LichSuPhanBoLead> dsLs = lichSuDAO.layLichSuTheoLead(id);
         assertFalse(dsLs.isEmpty());
         assertEquals("TU_CHOI", dsLs.get(0).getHanhDong());
+    }
+
+    @Test
+    @DisplayName("DAO: Thao tác Nhận Lead ở trạng thái DA_PHAN_BO chuyển sang DANG_CHAM_SOC")
+    void testNhanLead_DAO_DaPhanBo() {
+        Lead lead = new Lead();
+        lead.setMaLead("LEAD-INT-02B");
+        lead.setHoTen("Khách hàng Test Nhận Đã Phân Bổ");
+        lead.setNguonLeadId(1L);
+        lead.setNguoiPhuTrachId(101L);
+        lead.setTrangThai(TrangThaiLeadEnum.DA_PHAN_BO);
+        Long id = leadDAO.them(lead);
+        assertNotNull(id);
+
+        LocalDateTime now = LocalDateTime.now();
+        boolean thanhCong = leadDAO.nhanLead(id, 101L, now);
+        assertTrue(thanhCong);
+
+        Lead sauKhiNhan = leadDAO.timTheoId(id);
+        assertNotNull(sauKhiNhan);
+        assertEquals(TrangThaiLeadEnum.DANG_CHAM_SOC, sauKhiNhan.getTrangThai());
+        assertNotNull(sauKhiNhan.getDuocNhanLuc());
+    }
+
+    @Test
+    @DisplayName("DAO: Thao tác Từ chối Lead ở trạng thái DA_PHAN_BO trả về HANG_CHO_PHAN_BO")
+    void testTuChoiLead_DAO_DaPhanBo_Transaction() throws Exception {
+        Lead lead = new Lead();
+        lead.setMaLead("LEAD-INT-02C");
+        lead.setHoTen("Khách hàng Test Từ Chối Đã Phân Bổ");
+        lead.setNguonLeadId(1L);
+        lead.setNguoiPhuTrachId(101L);
+        lead.setTrangThai(TrangThaiLeadEnum.DA_PHAN_BO);
+        Long id = leadDAO.them(lead);
+        assertNotNull(id);
+
+        try (Connection conn = DatabaseConfig.getConnection()) {
+            conn.setAutoCommit(false);
+            boolean capNhat = leadDAO.tuChoiLead(conn, id, 101L, "[KHONG_PHU_HOP] Nhu cầu không khớp sản phẩm");
+            assertTrue(capNhat);
+            conn.commit();
+        }
+
+        Lead sauTuChoi = leadDAO.timTheoId(id);
+        assertNotNull(sauTuChoi);
+        assertEquals(TrangThaiLeadEnum.HANG_CHO_PHAN_BO, sauTuChoi.getTrangThai());
+        assertNull(sauTuChoi.getNguoiPhuTrachId());
+        assertEquals("[KHONG_PHU_HOP] Nhu cầu không khớp sản phẩm", sauTuChoi.getLyDoTuChoi());
+    }
+
+    @Test
+    @DisplayName("DAO: layDanhSachLeadCanKiemTraSla bao gồm cả lead ở trạng thái DA_PHAN_BO")
+    void testLayDanhSachLeadCanKiemTraSla_BaoGomDaPhanBo() throws Exception {
+        Lead lead = new Lead();
+        lead.setMaLead("LEAD-INT-SLA-01");
+        lead.setHoTen("Lead Đã Phân Bổ Cần Check SLA");
+        lead.setNguonLeadId(1L);
+        Long id = leadDAO.them(lead);
+        assertNotNull(id);
+
+        try (Connection conn = DatabaseConfig.getConnection()) {
+            LocalDateTime duocPhanBoLuc = LocalDateTime.now().minusHours(25);
+            LocalDateTime hanPhanHoiSla = LocalDateTime.now().minusHours(1);
+            boolean capNhat = leadDAO.capNhatPhanBo(conn, id, 101L, null, TrangThaiLeadEnum.DA_PHAN_BO, duocPhanBoLuc, hanPhanHoiSla);
+            assertTrue(capNhat);
+        }
+
+        List<Lead> dsCanKiemTra = leadDAO.layDanhSachLeadCanKiemTraSla();
+        assertNotNull(dsCanKiemTra);
+        boolean timThay = dsCanKiemTra.stream().anyMatch(l -> id.equals(l.getId()));
+        assertTrue(timThay, "Truy vấn kiểm tra SLA phải bao gồm cả Lead ở trạng thái DA_PHAN_BO");
     }
 
     @Test

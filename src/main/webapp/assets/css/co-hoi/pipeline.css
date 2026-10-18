@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 @import url('../material-symbols.css');
 
 :root {
@@ -39,7 +39,7 @@
     --gray-800: #1e293b;
     --gray-900: #0f172a;
 
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
     /* Elevation */
     --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -55,78 +55,219 @@
     --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Reset & Base */
-*, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
+/* Base Styles */
+body.crm-body {
     font-family: var(--font-sans);
-    background-color: #f4f6fa;
-    color: var(--gray-800);
+    background-color: var(--gray-50);
+    color: var(--gray-900);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
-    padding: 24px;
+    padding: 0;
+    margin: 0;
 }
 
+.pipeline-page-container,
 .crm-container {
-    max-width: 1360px;
+    max-width: 1400px;
+    width: 100%;
     margin: 0 auto;
+    box-sizing: border-box;
 }
 
-/* Breadcrumb */
-.breadcrumb-nav {
+/* Breadcrumb Chuẩn Hệ Thống */
+.crm-breadcrumb {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--gray-500);
+    justify-content: space-between;
+    padding: 0;
     margin-bottom: 16px;
+    font-size: 13px;
+    background: transparent;
+    border: none;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
-.breadcrumb-nav a {
+.crm-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.crm-breadcrumb-list li {
+    display: inline-flex;
+    align-items: center;
+}
+
+.crm-breadcrumb-link {
     color: var(--gray-600);
     text-decoration: none;
-    transition: var(--transition);
+    font-weight: 500;
+    transition: color 0.15s ease;
 }
 
-.breadcrumb-nav a:hover {
+.crm-breadcrumb-link:hover {
     color: var(--primary-600);
+    text-decoration: underline;
 }
 
-.breadcrumb-nav .sep {
+.crm-breadcrumb-separator {
     color: var(--gray-400);
+    font-size: 13px;
+    user-select: none;
+    margin: 0 2px;
 }
 
-.breadcrumb-nav .current {
-    color: var(--gray-800);
-    font-weight: 600;
+.crm-breadcrumb-active {
+    color: var(--gray-900);
+    font-weight: 700;
 }
 
-/* Header & Role Switcher */
-.crm-header {
+/* Header Banner Chuẩn Hệ Thống */
+.category-header-banner,
+.pipeline-header-banner {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    gap: 20px;
     background: #ffffff;
     border: 1px solid var(--gray-200);
     border-radius: var(--radius-lg);
-    padding: 24px 28px;
-    margin-bottom: 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
     box-shadow: var(--shadow-sm);
     position: relative;
     overflow: hidden;
 }
 
-.crm-header::before {
+.category-header-banner::before,
+.pipeline-header-banner::before {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
+    width: 5px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--primary-600) 0%, #8b5cf6 100%);
+}
+
+.category-header-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+
+.category-header-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--primary-50) 0%, #e0e7ff 100%);
+    color: var(--primary-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid var(--primary-200);
+}
+
+.category-header-icon-box .material-symbols-outlined {
+    font-size: 26px;
+}
+
+.category-header-text {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.category-header-text h1 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--gray-900);
+    letter-spacing: -0.02em;
+    margin: 0 0 4px 0;
+    line-height: 1.25;
+}
+
+.category-header-text p {
+    font-size: 13.5px;
+    color: var(--gray-600);
+    margin: 0;
+    line-height: 1.45;
+}
+
+.category-header-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+    flex-shrink: 0 !important;
+    margin-left: auto !important;
+    white-space: nowrap !important;
+}
+
+/* Submodules Pill Navigation Bar */
+.submodule-nav-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.submodule-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    background: #ffffff;
+    color: var(--gray-600);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    border: 1px solid var(--gray-200);
+    white-space: nowrap;
+    transition: var(--transition);
+    box-shadow: var(--shadow-xs);
+}
+
+.submodule-nav-link .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--gray-400);
+    transition: color 0.18s ease;
+}
+
+.submodule-nav-link:hover {
+    background: var(--gray-50);
+    border-color: var(--gray-300);
+    color: var(--gray-800);
+    transform: translateY(-1px);
+}
+
+.submodule-nav-link:hover .material-symbols-outlined {
+    color: var(--primary-600);
+}
+
+.submodule-nav-link.active {
+    background: var(--primary-600);
+    border-color: var(--primary-600);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+
+.submodule-nav-link.active .material-symbols-outlined {
+    color: #ffffff;
+}
     width: 6px;
     height: 100%;
     background: linear-gradient(180deg, var(--primary-600) 0%, #8b5cf6 100%);
@@ -318,19 +459,22 @@ body {
 /* AC 1: Visual Pipeline Stepper (Phễu bán hàng chuỗi giai đoạn) */
 .pipeline-stepper-container {
     overflow-x: auto;
-    padding: 10px 4px 20px 4px;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 4px 18px 4px;
 }
 
 .pipeline-stepper {
     display: flex;
     align-items: stretch;
-    gap: 12px;
-    min-width: 980px;
+    gap: 14px;
+    width: max-content;
+    min-width: 100%;
 }
 
 .stepper-item {
-    flex: 1;
-    min-width: 170px;
+    flex: 0 0 240px;
+    min-width: 220px;
+    max-width: 280px;
     background: #ffffff;
     border: 1.5px solid var(--gray-200);
     border-radius: var(--radius-md);
@@ -465,15 +609,52 @@ body {
 /* AC 2: Weighted Forecast Section & Live Simulator */
 .forecast-summary-box {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 24px;
+    grid-template-columns: minmax(0, 1.35fr) minmax(350px, 1fr);
+    gap: 20px;
+    align-items: start;
     margin-top: 10px;
 }
 
-@media (max-width: 1024px) {
-    .forecast-summary-box {
-        grid-template-columns: 1fr;
-    }
+.forecast-table-col {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+.forecast-note-card {
+    background: #f8fafc;
+    border: 1px solid var(--gray-200);
+    border-left: 4px solid var(--primary-600);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    box-shadow: var(--shadow-xs);
+}
+
+.forecast-note-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: 8px;
+}
+
+.forecast-note-list {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 12.5px;
+    color: var(--gray-600);
+    line-height: 1.55;
+}
+
+.forecast-note-list li {
+    margin-bottom: 4px;
+}
+
+.forecast-note-list li:last-child {
+    margin-bottom: 0;
 }
 
 /* Live Simulator Card */
@@ -483,6 +664,7 @@ body {
     border-radius: var(--radius-lg);
     padding: 22px;
     box-shadow: var(--shadow-sm);
+    min-width: 0;
 }
 
 .simulator-header {
@@ -566,14 +748,148 @@ body {
 /* Data Table */
 .table-responsive {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     border-radius: var(--radius-md);
     border: 1px solid var(--gray-200);
+    background: #ffffff;
+    width: 100%;
+    max-width: 100%;
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 7px;
+    width: 7px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: var(--radius-full);
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: var(--radius-full);
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-400);
+}
+
+#bangGiaiDoan {
+    min-width: 920px;
+    width: 100%;
+}
+
+#bangDuBao {
+    min-width: 480px;
+    width: 100%;
+}
+
+.stage-action-group {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+}
+
+.form-action-inline {
+    display: inline-flex;
+    margin: 0;
+    padding: 0;
+}
+
+/* Nút icon thao tác bảng chuẩn SaaS */
+.btn-table-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--gray-300);
+    background: #ffffff;
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+    text-decoration: none;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+.btn-table-action:hover {
+    background: var(--gray-100);
+    color: var(--gray-900);
+    border-color: var(--gray-400);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.btn-table-action .material-symbols-outlined {
+    font-size: 17px;
+    line-height: 1;
+}
+
+.btn-action-test {
+    color: var(--primary-600);
+    border-color: var(--primary-200);
+    background: var(--primary-50);
+}
+
+.btn-action-test:hover {
+    background: var(--primary-100);
+    color: var(--primary-700);
+    border-color: var(--primary-500);
+}
+
+.btn-action-edit:hover {
+    color: var(--primary-600);
+    border-color: var(--primary-200);
+    background: var(--primary-50);
+}
+
+.btn-action-pause {
+    color: var(--warning-600);
+}
+
+.btn-action-pause:hover {
+    background: var(--warning-50);
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+.btn-action-play {
+    color: var(--success-600);
+}
+
+.btn-action-play:hover {
+    background: var(--success-50);
+    color: var(--success-700);
+    border-color: #a7f3d0;
+}
+
+.btn-action-lock {
+    color: var(--gray-400);
+    background: var(--gray-50);
+    border-color: var(--gray-200);
+    cursor: help;
+}
+
+.btn-action-delete {
+    color: var(--danger-600);
+}
+
+.btn-action-delete:hover {
+    background: var(--danger-50);
+    color: var(--danger-700);
+    border-color: var(--danger-200);
 }
 
 .crm-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 13.5px;
     text-align: left;
     background: #ffffff;
 }
@@ -582,14 +898,14 @@ body {
     background-color: var(--gray-50);
     color: var(--gray-600);
     font-weight: 700;
-    font-size: 13px;
-    padding: 14px 16px;
+    font-size: 12.5px;
+    padding: 10px 12px;
     border-bottom: 1px solid var(--gray-200);
     white-space: nowrap;
 }
 
 .crm-table td {
-    padding: 14px 16px;
+    padding: 10px 12px;
     border-bottom: 1px solid var(--gray-200);
     vertical-align: middle;
     color: var(--gray-800);
@@ -1050,3 +1366,135 @@ body {
     max-width: 460px;
     margin: 0 auto 20px auto;
 }
+
+/* ========================================================
+   Responsive Breakpoints: 360px, 768px, 1024px, 1366px, 1920px
+   ======================================================== */
+
+@media (min-width: 1920px) {
+    .crm-container {
+        max-width: 1440px;
+    }
+}
+
+@media (max-width: 1366px) {
+    .crm-container {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 1024px) {
+    .forecast-summary-box {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 16px;
+    }
+
+    .crm-header {
+        padding: 18px 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .crm-header-title h1 {
+        font-size: 20px;
+    }
+
+    .role-switcher-card {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .kpi-card {
+        padding: 14px;
+        gap: 12px;
+    }
+
+    .kpi-icon-box {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+
+    .kpi-value {
+        font-size: 19px;
+    }
+
+    .crm-card {
+        padding: 18px;
+        margin-bottom: 18px;
+    }
+
+    .card-header-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .card-header-bar .card-heading {
+        width: 100%;
+    }
+
+    .table-search-box {
+        width: 100%;
+    }
+
+    .table-search-box input {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 576px) {
+    body {
+        padding: 12px 10px;
+        overflow-x: hidden;
+    }
+
+    .crm-header {
+        padding: 16px 14px;
+        border-radius: var(--radius-md);
+    }
+
+    .crm-header-title h1 {
+        font-size: 18px;
+        flex-wrap: wrap;
+    }
+
+    .kpi-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .simulator-card {
+        padding: 16px 14px;
+    }
+
+    .sim-result-value {
+        font-size: 21px;
+    }
+
+    .sim-presets {
+        gap: 4px;
+    }
+
+    .btn-preset {
+        font-size: 10.5px;
+        padding: 3px 6px;
+    }
+
+    .modal-card {
+        padding: 20px 16px;
+    }
+}
+

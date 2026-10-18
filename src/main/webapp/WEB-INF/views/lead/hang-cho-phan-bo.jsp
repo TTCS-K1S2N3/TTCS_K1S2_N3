@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
     <!-- CSS chuyên biệt module Phân bổ Lead (Story S4-06) -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/phan-bo.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/lead/phan-bo.css?v=20261016_ui_fix2">
 
     <script>
         window.CONTEXT_PATH = "${pageContext.request.contextPath}";
@@ -38,6 +38,9 @@
                     <span class="current">Hàng chờ phân bổ (AC3)</span>
                 </div>
                 <div style="display: flex; gap: 8px;">
+                    <a href="${pageContext.request.contextPath}/lead" class="btn btn-outline btn-sm" id="btn-ve-danh-sach-lead" title="Quay lại danh sách Lead">
+                        <span class="material-symbols-outlined icon-xs">list</span> Danh sách Lead
+                    </a>
                     <a href="${pageContext.request.contextPath}/admin/lead/phan-bo" class="btn btn-outline btn-sm" id="btn-ve-quy-tac">
                         <span class="material-symbols-outlined icon-xs">settings_suggest</span> Cấu hình quy tắc
                     </a>
@@ -150,7 +153,7 @@
                             <input type="text" id="input-search-queue" placeholder="Tìm theo tên khách, công ty, email, SĐT, mã lead..." aria-label="Tìm kiếm lead trong hàng chờ">
                         </div>
                         <div class="pb-filter-select">
-                            <select id="select-filter-queue-area" aria-label="Lọc theo khu vực">
+                            <select id="select-filter-queue-area" class="pb-select-filter" aria-label="Lọc theo khu vực">
                                 <option value="ALL">Tất cả khu vực</option>
                                 <option value="CHUA_CO">Chưa có khu vực</option>
                             </select>
@@ -294,7 +297,7 @@
     <!-- ========================================================
          MODAL CHỈ ĐỊNH PHÂN TAY LEAD (ACTION PBL-06, AC3)
          ======================================================== -->
-    <div class="pb-modal-overlay" id="modal-phan-tay" role="dialog" aria-modal="true" aria-labelledby="modal-pt-title">
+    <div class="pb-modal-overlay" id="modal-phan-tay" role="dialog" aria-modal="true" aria-labelledby="modal-pt-title" style="display: none;">
         <div class="pb-modal-dialog" style="max-width: 540px;">
             <div class="pb-modal-header">
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -376,6 +379,6 @@
     <div class="pb-toast-container" id="pb-toast-container" aria-live="polite"></div>
 
     <!-- Script điều khiển Hàng chờ -->
-    <script src="${pageContext.request.contextPath}/assets/js/lead/hang-cho.js"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/lead/hang-cho.js?v=20261016_ui_fix2"></script>
 </body>
 </html>

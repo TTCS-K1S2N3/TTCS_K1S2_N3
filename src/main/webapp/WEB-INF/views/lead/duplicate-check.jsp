@@ -32,13 +32,17 @@
                 <ol class="gl-breadcrumb-nav">
                     <li><a href="${pageContext.request.contextPath}/dieu-huong" class="gl-breadcrumb-link">Trang chủ</a></li>
                     <span class="gl-breadcrumb-sep" aria-hidden="true">/</span>
-                    <li><a href="${pageContext.request.contextPath}/lead/duplicates" class="gl-breadcrumb-link">Lead & Phân bổ</a></li>
+                    <li><a href="${pageContext.request.contextPath}/lead" class="gl-breadcrumb-link">Danh sách Lead</a></li>
                     <span class="gl-breadcrumb-sep" aria-hidden="true">/</span>
                     <li><a href="${pageContext.request.contextPath}/lead/duplicates" class="gl-breadcrumb-link">Cảnh báo trùng</a></li>
                     <span class="gl-breadcrumb-sep" aria-hidden="true">/</span>
                     <li class="gl-breadcrumb-current" aria-current="page">Lead #${lead.id} (<c:out value="${lead.hoTen}" />)</li>
                 </ol>
                 <div style="display: flex; gap: 8px;">
+                    <a href="${pageContext.request.contextPath}/lead" class="gl-btn gl-btn-outline gl-btn-sm" id="btnVeDanhSachLead">
+                        <span class="material-symbols-outlined" aria-hidden="true">list</span>
+                        <span>Danh sách Lead</span>
+                    </a>
                     <a href="${pageContext.request.contextPath}/lead/duplicates" class="gl-btn gl-btn-outline gl-btn-sm" id="btnQuayLaiDanhSach">
                         <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
                         <span>Trung tâm cảnh báo</span>

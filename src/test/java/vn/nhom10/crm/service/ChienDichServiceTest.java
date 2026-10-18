@@ -224,4 +224,58 @@ class ChienDichServiceTest {
         ChienDichPermissionsDTO nullPerms = service.layQuyenNguoiDung(null);
         assertFalse(nullPerms.isCanView());
     }
+
+    @Test
+    @DisplayName("AC2 / BUG-S4-03-AC2-01: Lấy danh sách chiến dịch đang hoạt động cho dropdown")
+    void testLayDanhSachChienDichHoatDong() {
+        ChienDich cd1 = new ChienDich("CD-01", "Chiến dịch A", new BigDecimal("1000000"), "SOCIAL", LocalDate.now(), LocalDate.now());
+        cd1.setId(1L);
+        cd1.setTrangThai("DANG_CHAY");
+
+        ChienDich cd2 = new ChienDich("CD-02", "Chiến dịch B", new BigDecimal("2000000"), "EVENT", LocalDate.now(), LocalDate.now());
+        cd2.setId(2L);
+        cd2.setTrangThai("NHAP");
+
+        when(chienDichDAO.layDanhSachHoatDong()).thenReturn(List.of(cd1, cd2));
+
+        List<ChienDichDTO> list = service.layDanhSachChienDichHoatDong();
+        assertNotNull(list);
+        assertEquals(2, list.size());
+        assertEquals("Chiến dịch A", list.get(0).getName());
+        assertEquals("CD-01", list.get(0).getMaChienDich());
+    }
+
+    @Test
+    @DisplayName("AC2 / BUG-S4-03-AC2-01: Kiểm tra chiến dịch hoạt động hợp lệ")
+    void testLaChienDichHoatDongHopLe() {
+        // Null hoặc ID <= 0
+        assertFalse(service.laChienDichHoatDongHopLe(null));
+        assertFalse(service.laChienDichHoatDongHopLe(0L));
+        assertFalse(service.laChienDichHoatDongHopLe(-1L));
+
+        // Không tìm thấy
+        when(chienDichDAO.timTheoId(99L)).thenReturn(null);
+        assertFalse(service.laChienDichHoatDongHopLe(99L));
+
+        // Đang chạy
+        ChienDich cdRunning = new ChienDich();
+        cdRunning.setId(10L);
+        cdRunning.setTrangThai("DANG_CHAY");
+        when(chienDichDAO.timTheoId(10L)).thenReturn(cdRunning);
+        assertTrue(service.laChienDichHoatDongHopLe(10L));
+
+        // Nháp
+        ChienDich cdDraft = new ChienDich();
+        cdDraft.setId(11L);
+        cdDraft.setTrangThai("NHAP");
+        when(chienDichDAO.timTheoId(11L)).thenReturn(cdDraft);
+        assertTrue(service.laChienDichHoatDongHopLe(11L));
+
+        // Kết thúc hoặc tạm dừng -> không hợp lệ
+        ChienDich cdClosed = new ChienDich();
+        cdClosed.setId(12L);
+        cdClosed.setTrangThai("KET_THUC");
+        when(chienDichDAO.timTheoId(12L)).thenReturn(cdClosed);
+        assertFalse(service.laChienDichHoatDongHopLe(12L));
+    }
 }

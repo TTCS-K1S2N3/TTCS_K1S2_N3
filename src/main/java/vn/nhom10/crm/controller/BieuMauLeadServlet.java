@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import vn.nhom10.crm.dao.DanhMucBanHangDAO;
+import vn.nhom10.crm.dto.ChienDichDTO;
 import vn.nhom10.crm.dto.MaNhungDTO;
 import vn.nhom10.crm.dto.MucDanhMucDTO;
 import vn.nhom10.crm.model.BieuMauLead;
@@ -14,6 +15,7 @@ import vn.nhom10.crm.model.LoaiDanhMuc;
 import vn.nhom10.crm.model.ModuleHeThong;
 import vn.nhom10.crm.model.NguoiDung;
 import vn.nhom10.crm.service.BieuMauLeadService;
+import vn.nhom10.crm.service.ChienDichService;
 import vn.nhom10.crm.service.MenuService;
 
 import java.io.IOException;
@@ -32,15 +34,21 @@ public class BieuMauLeadServlet extends HttpServlet {
 
     private final BieuMauLeadService bieuMauLeadService;
     private final DanhMucBanHangDAO danhMucBanHangDAO;
+    private final ChienDichService chienDichService;
     private final MenuService menuService;
 
     public BieuMauLeadServlet() {
-        this(new BieuMauLeadService(), new DanhMucBanHangDAO(), MenuService.getInstance());
+        this(new BieuMauLeadService(), new DanhMucBanHangDAO(), new ChienDichService(), MenuService.getInstance());
     }
 
     public BieuMauLeadServlet(BieuMauLeadService bieuMauLeadService, DanhMucBanHangDAO danhMucBanHangDAO, MenuService menuService) {
+        this(bieuMauLeadService, danhMucBanHangDAO, new ChienDichService(), menuService);
+    }
+
+    public BieuMauLeadServlet(BieuMauLeadService bieuMauLeadService, DanhMucBanHangDAO danhMucBanHangDAO, ChienDichService chienDichService, MenuService menuService) {
         this.bieuMauLeadService = bieuMauLeadService;
         this.danhMucBanHangDAO = danhMucBanHangDAO;
+        this.chienDichService = chienDichService != null ? chienDichService : new ChienDichService();
         this.menuService = menuService;
     }
 
@@ -113,6 +121,10 @@ public class BieuMauLeadServlet extends HttpServlet {
             throws ServletException, IOException {
         List<MucDanhMucDTO> dsNguonLead = danhMucBanHangDAO.layDanhSach(LoaiDanhMuc.NGUON_LEAD, true);
         request.setAttribute("dsNguonLead", dsNguonLead);
+
+        List<ChienDichDTO> dsChienDich = chienDichService.layDanhSachChienDichHoatDong();
+        request.setAttribute("dsChienDich", dsChienDich);
+
         request.getRequestDispatcher("/WEB-INF/views/lead/bieu-mau-form.jsp").forward(request, response);
     }
 
@@ -140,9 +152,24 @@ public class BieuMauLeadServlet extends HttpServlet {
                 throw new IllegalArgumentException("Vui lòng chọn Nguồn Lead cho biểu mẫu.");
             }
 
-            Long nguonLeadId = Long.parseLong(nguonLeadIdStr.trim());
-            Long chienDichId = (chienDichIdStr != null && !chienDichIdStr.trim().isEmpty())
-                    ? Long.parseLong(chienDichIdStr.trim()) : null;
+            Long nguonLeadId;
+            try {
+                nguonLeadId = Long.parseLong(nguonLeadIdStr.trim());
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Nguồn Lead được chọn không hợp lệ.");
+            }
+
+            Long chienDichId = null;
+            if (chienDichIdStr != null && !chienDichIdStr.trim().isEmpty()) {
+                try {
+                    chienDichId = Long.parseLong(chienDichIdStr.trim());
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Chiến dịch được chọn không hợp lệ.");
+                }
+                if (!chienDichService.laChienDichHoatDongHopLe(chienDichId)) {
+                    throw new IllegalArgumentException("Chiến dịch được chọn không tồn tại hoặc không còn hoạt động.");
+                }
+            }
 
             Integer gioiHan = (gioiHanStr != null && !gioiHanStr.trim().isEmpty())
                     ? Integer.parseInt(gioiHanStr.trim()) : 10;
@@ -167,10 +194,16 @@ public class BieuMauLeadServlet extends HttpServlet {
             request.setAttribute("ma_bieu_mau", maBieuMau);
             request.setAttribute("ten_bieu_mau", tenBieuMau);
             request.setAttribute("nguon_lead_id", nguonLeadIdStr);
+            request.setAttribute("chien_dich_id", chienDichIdStr);
             request.setAttribute("gioi_han_gui_moi_gio", gioiHanStr);
             hienThiTrangTao(request, response);
         } catch (Exception e) {
             request.setAttribute("thongBaoLoi", "Lỗi tạo biểu mẫu: " + e.getMessage());
+            request.setAttribute("ma_bieu_mau", maBieuMau);
+            request.setAttribute("ten_bieu_mau", tenBieuMau);
+            request.setAttribute("nguon_lead_id", nguonLeadIdStr);
+            request.setAttribute("chien_dich_id", chienDichIdStr);
+            request.setAttribute("gioi_han_gui_moi_gio", gioiHanStr);
             hienThiTrangTao(request, response);
         }
     }

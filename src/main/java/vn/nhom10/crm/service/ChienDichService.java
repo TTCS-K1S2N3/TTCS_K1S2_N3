@@ -279,6 +279,21 @@ public class ChienDichService {
     }
 
     /**
+     * AC2: Kiểm tra chiến dịch có tồn tại và đang ở trạng thái hoạt động (DANG_CHAY hoặc NHAP) hay không.
+     */
+    public boolean laChienDichHoatDongHopLe(Long campaignId) {
+        if (campaignId == null || campaignId <= 0) {
+            return false;
+        }
+        ChienDich cd = chienDichDAO.timTheoId(campaignId);
+        if (cd == null) {
+            return false;
+        }
+        String tt = cd.getTrangThai();
+        return "DANG_CHAY".equalsIgnoreCase(tt) || "NHAP".equalsIgnoreCase(tt);
+    }
+
+    /**
      * Xác định quyền hạn của người dùng đối với Chiến dịch (CampaignPermissions).
      */
     public ChienDichPermissionsDTO layQuyenNguoiDung(NguoiDung nguoiDung) {
