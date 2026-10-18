@@ -409,10 +409,70 @@
     width: 100%;
 }
 
-.quick-filter-box {
+/* S4-09: Quick search box */
+.quick-search-box {
     position: relative;
     flex: 1 1 auto;
     min-width: 220px;
+}
+
+.quick-search-box .quick-search-input {
+    width: 100%;
+    height: 40px;
+    padding: 8px 36px 8px 36px;
+    font-size: 13.5px;
+    font-family: inherit;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    color: #0f172a;
+    outline: none;
+    transition: all 0.15s ease;
+}
+
+.quick-search-box .quick-search-input:focus {
+    background-color: #ffffff;
+    border-color: var(--lead-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.quick-search-box .quick-search-icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+    font-size: 19px;
+}
+
+.quick-search-box .quick-search-clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s, background-color 0.15s;
+}
+
+.quick-search-box .quick-search-clear:hover {
+    color: #334155;
+    background-color: #e2e8f0;
+}
+
+.quick-filter-box {
+    position: relative;
+    flex: 0 0 210px;
+    min-width: 170px;
+    max-width: 240px;
 }
 
 .quick-filter-box .quick-filter-icon {
@@ -1402,6 +1462,13 @@
     .search-main-row {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .quick-search-box,
+    .quick-filter-box {
+        width: 100%;
+        min-width: 100%;
+        max-width: 100%;
     }
 
     .search-main-row > button,

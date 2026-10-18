@@ -268,8 +268,19 @@
             <section class="compact-filter-card" id="compactFilterCard" aria-label="Tìm kiếm và lọc Lead">
                 <form method="GET" action="${pageContext.request.contextPath}/lead" id="formLocLead">
 
-                    <!-- HÀNG THAO TÁC CHÍNH (COMPACT ROW TRÊN DESKTOP: BỘ LỌC ĐÃ LƯU + NÚT BỘ LỌC + NÚT ÁP DỤNG + NÚT ĐẶT LẠI + LƯU BỘ LỌC) -->
+                    <!-- HÀNG THAO TÁC CHÍNH (COMPACT ROW TRÊN DESKTOP: TÌM KIẾM NHANH + BỘ LỌC ĐÃ LƯU + NÚT BỘ LỌC + NÚT TÌM KIẾM + NÚT ĐẶT LẠI + LƯU BỘ LỌC) -->
                     <div class="search-main-row">
+                        <!-- S4-09: Thanh tìm kiếm nhanh Lead (Họ tên, Tên công ty, Mã Lead, Email, SĐT) -->
+                        <div class="quick-search-box">
+                            <span class="material-symbols-outlined quick-search-icon" aria-hidden="true">search</span>
+                            <input type="text" id="tuKhoa" name="tuKhoa" class="quick-search-input"
+                                   placeholder="Tìm họ tên, công ty, mã Lead, email, SĐT..."
+                                   value="<c:out value='${not empty param.tuKhoa ? param.tuKhoa : boLocHienTai.tuKhoa}' />" autocomplete="off">
+                            <button type="button" id="btnClearTuKhoa" class="quick-search-clear" aria-label="Xóa từ khóa tìm kiếm" title="Xóa từ khóa">
+                                <span class="material-symbols-outlined icon-sm" aria-hidden="true">close</span>
+                            </button>
+                        </div>
+
                         <!-- Quick Saved Filters Dropdown -->
                         <div class="quick-filter-box">
                             <span class="material-symbols-outlined quick-filter-icon" aria-hidden="true">bookmark</span>
@@ -295,9 +306,9 @@
                         </button>
 
                         <!-- Submit Filter Button -->
-                        <button type="submit" class="btn-search-submit" id="btnSubmitFilter" title="Áp dụng bộ lọc">
-                            <span class="material-symbols-outlined" aria-hidden="true">filter_alt</span>
-                            <span>Áp dụng</span>
+                        <button type="submit" class="btn-search-submit" id="btnSubmitFilter" title="Tìm kiếm & Áp dụng bộ lọc">
+                            <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                            <span>Tìm kiếm</span>
                         </button>
 
                         <!-- Reset Filter Button -->
@@ -457,9 +468,15 @@
                     </div>
 
                     <!-- THANH HIỂN THỊ CÁC TIÊU CHÍ ĐANG ÁP DỤNG (CHIPS) -->
-                    <c:if test="${activeCount > 0 or (not empty boLocHienTai and boLocHienTai.savedFilterId != null)}">
+                    <c:if test="${activeCount > 0 or not empty param.tuKhoa or not empty boLocHienTai.tuKhoa or (not empty boLocHienTai and boLocHienTai.savedFilterId != null)}">
                         <div class="active-filter-chips-bar" id="activeFilterChips">
                             <span class="active-chips-label">Đang lọc:</span>
+                            <c:if test="${not empty param.tuKhoa or not empty boLocHienTai.tuKhoa}">
+                                <span class="filter-chip">
+                                    Từ khóa: "<strong><c:out value="${not empty param.tuKhoa ? param.tuKhoa : boLocHienTai.tuKhoa}" /></strong>"
+                                    <button type="button" class="filter-chip-remove" data-field="tuKhoa" aria-label="Xóa từ khóa tìm kiếm" title="Xóa">&times;</button>
+                                </span>
+                            </c:if>
                             <c:if test="${not empty param.trangThai or not empty boLocHienTai.trangThai}">
                                 <c:set var="curTrangThai" value="${not empty param.trangThai ? param.trangThai : boLocHienTai.trangThai}" />
                                 <span class="filter-chip">

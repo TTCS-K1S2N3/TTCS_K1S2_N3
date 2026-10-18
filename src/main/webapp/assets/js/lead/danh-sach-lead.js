@@ -55,6 +55,7 @@ window.toggleAdvancedFilter = function (forceOpen) {
 };
 
 document.addEventListener('DOMContentLoaded', function () {
+    initQuickSearch();
     initAdvancedFilterToggle();
     initNghiepVuDropdown();
     initFilterForm();
@@ -64,7 +65,43 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 /**
- * 0. Khởi tạo Toggle Bộ Lọc Nâng Cao
+ * 0. Khởi tạo Thanh Tìm Kiếm Nhanh (S4-09)
+ */
+function initQuickSearch() {
+    const inputTuKhoa = document.getElementById('tuKhoa');
+    const btnClearTuKhoa = document.getElementById('btnClearTuKhoa');
+    const formLocLead = document.getElementById('formLocLead');
+
+    if (!inputTuKhoa || !btnClearTuKhoa) return;
+
+    function toggleClearButton() {
+        if (inputTuKhoa.value && inputTuKhoa.value.trim().length > 0) {
+            btnClearTuKhoa.style.display = 'inline-flex';
+        } else {
+            btnClearTuKhoa.style.display = 'none';
+        }
+    }
+
+    // Kiểm tra trạng thái ban đầu
+    toggleClearButton();
+
+    // Lắng nghe khi người dùng gõ
+    inputTuKhoa.addEventListener('input', toggleClearButton);
+
+    // Khi bấm nút X xóa từ khóa: xóa input và submit form tìm kiếm
+    btnClearTuKhoa.addEventListener('click', function (e) {
+        e.preventDefault();
+        inputTuKhoa.value = '';
+        toggleClearButton();
+        inputTuKhoa.focus();
+        if (formLocLead) {
+            formLocLead.submit();
+        }
+    });
+}
+
+/**
+ * 0.1 Khởi tạo Toggle Bộ Lọc Nâng Cao
  */
 function initAdvancedFilterToggle() {
     const btnToggle = document.getElementById('btnToggleAdvancedFilter');
@@ -318,6 +355,7 @@ function renderFilterPreviewTags(container) {
     if (!filterForm) return;
 
     const fields = [
+        { id: 'tuKhoa', label: 'Từ khóa' },
         { id: 'filterTrangThai', label: 'Trạng thái' },
         { id: 'filterNguonLead', label: 'Nguồn' },
         { id: 'filterPhanLoai', label: 'Phân loại' },

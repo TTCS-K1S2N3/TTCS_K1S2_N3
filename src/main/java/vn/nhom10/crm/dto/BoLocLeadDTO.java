@@ -14,6 +14,9 @@ import java.util.regex.Pattern;
  */
 public class BoLocLeadDTO {
 
+    // S4-09 Search Keyword: Tìm kiếm nhanh theo họ tên, tên công ty, mã Lead, email, số điện thoại
+    private String tuKhoa;
+
     // AC1: 5 nhóm tiêu chí lọc (AND)
     private String trangThai;           // Mã trạng thái (MOI, DANG_CHAM_SOC, DA_CHUYEN_DOI, TU_CHOI, DA_GOP)
     private Long nguonLeadId;           // ID nguồn lead
@@ -34,7 +37,8 @@ public class BoLocLeadDTO {
     }
 
     public boolean coDieuKienLoc() {
-        return (trangThai != null && !trangThai.isBlank())
+        return (tuKhoa != null && !tuKhoa.isBlank())
+                || (trangThai != null && !trangThai.isBlank())
                 || (nguonLeadId != null && nguonLeadId > 0)
                 || (phanLoai != null && !phanLoai.isBlank())
                 || (nguoiPhuTrachId != null && nguoiPhuTrachId > 0)
@@ -45,6 +49,7 @@ public class BoLocLeadDTO {
 
     public int soDieuKienLoc() {
         int count = 0;
+        if (tuKhoa != null && !tuKhoa.isBlank()) count++;
         if (trangThai != null && !trangThai.isBlank()) count++;
         if (nguonLeadId != null && nguonLeadId > 0) count++;
         if (phanLoai != null && !phanLoai.isBlank()) count++;
@@ -60,6 +65,10 @@ public class BoLocLeadDTO {
         StringBuilder sb = new StringBuilder("{");
         boolean first = true;
 
+        if (tuKhoa != null && !tuKhoa.isBlank()) {
+            appendJsonString(sb, "tuKhoa", tuKhoa.trim(), first);
+            first = false;
+        }
         if (trangThai != null && !trangThai.isBlank()) {
             appendJsonString(sb, "trangThai", trangThai.trim(), first);
             first = false;
@@ -102,6 +111,7 @@ public class BoLocLeadDTO {
             return dto;
         }
 
+        dto.setTuKhoa(docJsonString(json, "tuKhoa"));
         dto.setTrangThai(docJsonString(json, "trangThai"));
         dto.setNguonLeadId(docJsonLong(json, "nguonLeadId"));
         dto.setPhanLoai(docJsonString(json, "phanLoai"));
@@ -173,6 +183,24 @@ public class BoLocLeadDTO {
     }
 
     // Getters and Setters
+    public String getTuKhoa() {
+        return tuKhoa;
+    }
+
+    public void setTuKhoa(String tuKhoa) {
+        this.tuKhoa = tuKhoa;
+    }
+
+    public int soDieuKienNangCao() {
+        int count = 0;
+        if (trangThai != null && !trangThai.isBlank()) count++;
+        if (nguonLeadId != null && nguonLeadId > 0) count++;
+        if (phanLoai != null && !phanLoai.isBlank()) count++;
+        if (nguoiPhuTrachId != null && nguoiPhuTrachId > 0) count++;
+        if ((tuNgay != null && !tuNgay.isBlank()) || (denNgay != null && !denNgay.isBlank())) count++;
+        return count;
+    }
+
     public String getTrangThai() {
         return trangThai;
     }
@@ -258,7 +286,8 @@ public class BoLocLeadDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BoLocLeadDTO that = (BoLocLeadDTO) o;
-        return Objects.equals(trangThai, that.trangThai) &&
+        return Objects.equals(tuKhoa, that.tuKhoa) &&
+                Objects.equals(trangThai, that.trangThai) &&
                 Objects.equals(nguonLeadId, that.nguonLeadId) &&
                 Objects.equals(phanLoai, that.phanLoai) &&
                 Objects.equals(nguoiPhuTrachId, that.nguoiPhuTrachId) &&
@@ -268,13 +297,14 @@ public class BoLocLeadDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(trangThai, nguonLeadId, phanLoai, nguoiPhuTrachId, tuNgay, denNgay);
+        return Objects.hash(tuKhoa, trangThai, nguonLeadId, phanLoai, nguoiPhuTrachId, tuNgay, denNgay);
     }
 
     @Override
     public String toString() {
         return "BoLocLeadDTO{" +
-                "trangThai='" + trangThai + '\'' +
+                "tuKhoa='" + tuKhoa + '\'' +
+                ", trangThai='" + trangThai + '\'' +
                 ", nguonLeadId=" + nguonLeadId +
                 ", phanLoai='" + phanLoai + '\'' +
                 ", nguoiPhuTrachId=" + nguoiPhuTrachId +

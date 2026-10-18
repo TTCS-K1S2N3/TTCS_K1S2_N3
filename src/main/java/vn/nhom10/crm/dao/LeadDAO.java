@@ -909,6 +909,27 @@ public class LeadDAO {
             return;
         }
 
+        // 1.1 S4-09: Tìm kiếm nhanh theo từ khóa (Họ tên, Tên công ty, Mã Lead, Email, Số điện thoại)
+        if (boLoc.getTuKhoa() != null && !boLoc.getTuKhoa().isBlank()) {
+            String kw = "%" + boLoc.getTuKhoa().trim().toLowerCase() + "%";
+            sql.append(" AND (LOWER(COALESCE(l.ho_ten, '')) LIKE ? ")
+               .append("OR LOWER(COALESCE(l.ten_cong_ty, '')) LIKE ? ")
+               .append("OR LOWER(COALESCE(l.ten_cong_ty_chuan_hoa, '')) LIKE ? ")
+               .append("OR LOWER(COALESCE(l.ma_lead, '')) LIKE ? ")
+               .append("OR LOWER(COALESCE(l.email, '')) LIKE ? ")
+               .append("OR LOWER(COALESCE(l.email_chuan_hoa, '')) LIKE ? ")
+               .append("OR LOWER(COALESCE(l.so_dien_thoai, '')) LIKE ? ")
+               .append("OR LOWER(COALESCE(l.so_dien_thoai_chuan_hoa, '')) LIKE ?)");
+            thamSo.add(kw);
+            thamSo.add(kw);
+            thamSo.add(kw);
+            thamSo.add(kw);
+            thamSo.add(kw);
+            thamSo.add(kw);
+            thamSo.add(kw);
+            thamSo.add(kw);
+        }
+
         // 2. Tiêu chí 1: Trạng thái Lead
         if (boLoc.getTrangThai() != null && !boLoc.getTrangThai().isBlank()) {
             sql.append(" AND l.trang_thai = ?");
