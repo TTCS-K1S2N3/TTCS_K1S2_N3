@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+
+/* ====================================================================
+   GOOGLE MATERIAL SYMBOLS OUTLINED - CHUẨN DÙNG CHUNG TOÀN HỆ THỐNG CRM
+   ==================================================================== */
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 20px;
+    line-height: 1;
+    display: inline-block;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+    vertical-align: middle;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'liga';
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24;
+}
+
+/* Kích thước icon chuẩn dùng chung */
+.icon-xs {
+    font-size: 14px;
+}
+
+.icon-sm {
+    font-size: 16px;
+}
+
+.icon-md {
+    font-size: 20px;
+}
+
+.icon-lg {
+    font-size: 24px;
+}
+
+.icon-xl {
+    font-size: 32px;
+}
+
+.icon-2xl {
+    font-size: 48px;
+}
+
+/* Đảm bảo icon trong các nút không làm tăng chiều cao hay lệch dòng */
+.btn .material-symbols-outlined,
+button .material-symbols-outlined,
+a .material-symbols-outlined {
+    line-height: 1;
+    vertical-align: middle;
+}

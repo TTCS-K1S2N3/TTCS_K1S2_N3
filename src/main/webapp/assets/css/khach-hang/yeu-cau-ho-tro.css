@@ -1,0 +1,1079 @@
+/* ====================================================================
+   CRM BÁN HÀNG - YÊU CẦU HỖ TRỢ SAU BÁN & GẮN CỜ RỦI RƠ (STORY S3-08)
+   Quy chuẩn:
+   - Tối đa 3 nhóm màu: Primary (Blue), Neutral (Slate/White), Semantic (Green/Amber/Red)
+   - Hệ icon chuẩn: Material Symbols Outlined
+   - Responsive đa kích thước: Desktop (>=1280px), Laptop (1024px), Tablet (768px), Mobile (390px, 360px)
+   - Touch target >= 44px trên mobile
+   ==================================================================== */
+
+:root {
+    /* 1. PRIMARY: Blue / Indigo */
+    --ycht-primary: #2563eb;
+    --ycht-primary-hover: #1d4ed8;
+    --ycht-primary-light: #eff6ff;
+    --ycht-primary-border: #bfdbfe;
+    --ycht-primary-text: #1e40af;
+    --ycht-primary-focus: rgba(37, 99, 235, 0.25);
+
+    /* 2. NEUTRAL: White / Slate / Gray */
+    --ycht-white: #ffffff;
+    --ycht-bg-page: #f8fafc;
+    --ycht-slate-50: #f8fafc;
+    --ycht-slate-100: #f1f5f9;
+    --ycht-slate-200: #e2e8f0;
+    --ycht-slate-300: #cbd5e1;
+    --ycht-slate-400: #94a3b8;
+    --ycht-slate-500: #64748b;
+    --ycht-slate-600: #475569;
+    --ycht-slate-700: #334155;
+    --ycht-slate-800: #1e293b;
+    --ycht-slate-900: #0f172a;
+
+    --ycht-card-bg: #ffffff;
+    --ycht-border-color: #e2e8f0;
+
+    /* 3. SEMANTIC: Green / Amber / Red */
+    /* Semantic Green (Ổn định, Đã xử lý, Thành công) */
+    --ycht-green: #16a34a;
+    --ycht-green-dark: #15803d;
+    --ycht-green-light: #f0fdf4;
+    --ycht-green-border: #86efac;
+    --ycht-green-text: #166534;
+
+    /* Semantic Amber (Cảnh báo, Chờ khách hàng, Ưu tiên cao) */
+    --ycht-amber: #d97706;
+    --ycht-amber-dark: #b45309;
+    --ycht-amber-light: #fef3c7;
+    --ycht-amber-border: #fde68a;
+    --ycht-amber-text: #854d0e;
+
+    /* Semantic Red (Rủi ro rời bỏ, Khẩn cấp, Lỗi) */
+    --ycht-red: #ef4444;
+    --ycht-red-dark: #dc2626;
+    --ycht-red-light: #fee2e2;
+    --ycht-red-soft: #fff1f2;
+    --ycht-red-border: #fca5a5;
+    --ycht-red-text: #991b1b;
+
+    /* Spacing & Metrics */
+    --ycht-radius-sm: 6px;
+    --ycht-radius-md: 10px;
+    --ycht-radius-lg: 14px;
+    --ycht-radius-full: 9999px;
+
+    --ycht-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --ycht-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --ycht-shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+}
+
+/* ====================================================================
+   CONTAINER & BREADCRUMB
+   ==================================================================== */
+.ycht-page-container {
+    max-width: 1240px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.ycht-breadcrumb {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.ycht-breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    gap: 8px;
+    font-size: 13.5px;
+    color: var(--ycht-slate-500);
+    flex-wrap: wrap;
+}
+
+.ycht-breadcrumb-link {
+    color: var(--ycht-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
+}
+
+.ycht-breadcrumb-link:hover {
+    color: var(--ycht-primary-hover);
+    text-decoration: underline;
+}
+
+.ycht-breadcrumb-sep {
+    color: var(--ycht-slate-400);
+    user-select: none;
+}
+
+.ycht-breadcrumb-current {
+    color: var(--ycht-slate-700);
+    font-weight: 600;
+}
+
+/* ====================================================================
+   PAGE HEADER & ACTIONS
+   ==================================================================== */
+.ycht-header-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 22px 26px;
+    background: var(--ycht-white);
+    border: 1px solid var(--ycht-border-color);
+    border-radius: var(--ycht-radius-lg);
+    box-shadow: var(--ycht-shadow-sm);
+}
+
+.ycht-header-title-group h1 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--ycht-slate-900);
+    margin: 0 0 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 1.3;
+}
+
+.ycht-header-title-group p {
+    font-size: 13.5px;
+    color: var(--ycht-slate-500);
+    margin: 0;
+}
+
+.ycht-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* ====================================================================
+   KPI SUMMARY CARDS (4 THỐNG KÊ NHANH)
+   ==================================================================== */
+.ycht-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.ycht-kpi-card {
+    background: var(--ycht-white);
+    border: 1px solid var(--ycht-border-color);
+    border-radius: var(--ycht-radius-lg);
+    padding: 18px 20px;
+    box-shadow: var(--ycht-shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ycht-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--ycht-shadow-md);
+}
+
+.ycht-kpi-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--ycht-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.ycht-kpi-icon-wrap.primary {
+    background: var(--ycht-primary-light);
+    color: var(--ycht-primary);
+}
+
+.ycht-kpi-icon-wrap.amber {
+    background: var(--ycht-amber-light);
+    color: var(--ycht-amber-dark);
+}
+
+.ycht-kpi-icon-wrap.green {
+    background: var(--ycht-green-light);
+    color: var(--ycht-green);
+}
+
+.ycht-kpi-icon-wrap.red {
+    background: var(--ycht-red-light);
+    color: var(--ycht-red-dark);
+}
+
+.ycht-kpi-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.ycht-kpi-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ycht-slate-500);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+
+.ycht-kpi-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--ycht-slate-900);
+    line-height: 1;
+}
+
+.ycht-kpi-sub {
+    font-size: 11.5px;
+    color: var(--ycht-slate-400);
+    margin-top: 4px;
+}
+
+/* ====================================================================
+   BANNER CỜ RỦI RO RỜI BỎ TRÊN TRANG 360 (STORY S3-08 AC3)
+   ==================================================================== */
+.ycht-risk-banner {
+    background: var(--ycht-red-soft);
+    border: 2px solid var(--ycht-red);
+    border-radius: var(--ycht-radius-lg);
+    padding: 20px 24px;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.15);
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    position: relative;
+    animation: ychtRiskPulse 2.5s infinite ease-in-out;
+}
+
+@keyframes ychtRiskPulse {
+    0% {
+        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.15);
+        border-color: #ef4444;
+    }
+    50% {
+        box-shadow: 0 4px 22px rgba(239, 68, 68, 0.32);
+        border-color: #dc2626;
+    }
+    100% {
+        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.15);
+        border-color: #ef4444;
+    }
+}
+
+.ycht-risk-banner-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--ycht-red-dark);
+    color: var(--ycht-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+}
+
+.ycht-risk-banner-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.ycht-risk-banner-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--ycht-red-text);
+    margin: 0 0 6px 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.ycht-risk-banner-badge {
+    background-color: var(--ycht-red-dark);
+    color: var(--ycht-white);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: var(--ycht-radius-full);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ycht-risk-banner-desc {
+    font-size: 14px;
+    color: #7f1d1d;
+    margin: 0 0 12px 0;
+    line-height: 1.55;
+}
+
+.ycht-risk-banner-desc strong {
+    color: #991b1b;
+}
+
+.ycht-risk-banner-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 18px;
+    font-size: 13px;
+    color: #991b1b;
+}
+
+.ycht-risk-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ycht-risk-meta-item .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--ycht-red-dark);
+}
+
+.ycht-safe-banner {
+    background-color: var(--ycht-green-light);
+    border: 1px solid var(--ycht-green-border);
+    border-radius: var(--ycht-radius-md);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--ycht-green-text);
+    font-size: 13.5px;
+}
+
+.ycht-safe-banner .material-symbols-outlined {
+    color: var(--ycht-green);
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+/* ====================================================================
+   FILTER BAR
+   ==================================================================== */
+.ycht-filter-card {
+    background: var(--ycht-white);
+    border: 1px solid var(--ycht-border-color);
+    border-radius: var(--ycht-radius-lg);
+    padding: 18px 22px;
+    box-shadow: var(--ycht-shadow-sm);
+}
+
+.ycht-filter-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1.6fr auto;
+    gap: 14px;
+    align-items: flex-end;
+}
+
+.ycht-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ycht-form-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ycht-slate-600);
+}
+
+.ycht-form-input,
+.ycht-form-select,
+.ycht-form-textarea {
+    width: 100%;
+    padding: 9px 13px;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--ycht-slate-900);
+    background-color: var(--ycht-white);
+    border: 1px solid var(--ycht-border-color);
+    border-radius: var(--ycht-radius-md);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    min-height: 42px;
+}
+
+.ycht-form-input:focus,
+.ycht-form-select:focus,
+.ycht-form-textarea:focus {
+    border-color: var(--ycht-primary);
+    box-shadow: 0 0 0 3px var(--ycht-primary-focus);
+}
+
+.ycht-form-input::placeholder,
+.ycht-form-textarea::placeholder {
+    color: var(--ycht-slate-400);
+}
+
+.ycht-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ====================================================================
+   TABLE CARD & STYLING
+   ==================================================================== */
+.ycht-table-card {
+    background: var(--ycht-white);
+    border: 1px solid var(--ycht-border-color);
+    border-radius: var(--ycht-radius-lg);
+    box-shadow: var(--ycht-shadow-sm);
+    overflow: hidden;
+}
+
+.ycht-table-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--ycht-border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    background-color: var(--ycht-white);
+}
+
+.ycht-table-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ycht-slate-900);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ycht-table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.ycht-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 13.5px;
+}
+
+.ycht-data-table th {
+    background-color: var(--ycht-slate-50);
+    color: var(--ycht-slate-600);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--ycht-border-color);
+    white-space: nowrap;
+}
+
+.ycht-data-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--ycht-border-color);
+    color: var(--ycht-slate-700);
+    vertical-align: middle;
+}
+
+.ycht-data-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.ycht-data-table tbody tr:hover {
+    background-color: var(--ycht-slate-50);
+}
+
+.ycht-ticket-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 700;
+    font-size: 12.5px;
+    color: var(--ycht-primary-text);
+    background: var(--ycht-primary-light);
+    padding: 3px 8px;
+    border-radius: var(--ycht-radius-sm);
+    display: inline-block;
+    border: 1px solid var(--ycht-primary-border);
+}
+
+.ycht-company-link {
+    font-weight: 700;
+    color: var(--ycht-slate-900);
+    text-decoration: none;
+    transition: color 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ycht-company-link:hover {
+    color: var(--ycht-primary);
+    text-decoration: underline;
+}
+
+.ycht-ticket-title {
+    font-weight: 600;
+    color: var(--ycht-slate-900);
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.ycht-ticket-desc {
+    font-size: 12.5px;
+    color: var(--ycht-slate-500);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.ycht-ticket-contact {
+    font-size: 12px;
+    color: var(--ycht-primary-text);
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ====================================================================
+   BADGES (MỨC ĐỘ ƯU TIÊN & TRẠNG THÁI) - CHUẨN 3 NHÓM MÀU
+   ==================================================================== */
+.ycht-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: var(--ycht-radius-full);
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.3;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Priority Badges */
+.ycht-priority-thap {
+    background-color: var(--ycht-slate-100);
+    color: var(--ycht-slate-600);
+    border: 1px solid var(--ycht-slate-200);
+}
+
+.ycht-priority-binh-thuong {
+    background-color: var(--ycht-primary-light);
+    color: var(--ycht-primary-text);
+    border: 1px solid var(--ycht-primary-border);
+}
+
+.ycht-priority-cao {
+    background-color: var(--ycht-amber-light);
+    color: var(--ycht-amber-text);
+    border: 1px solid var(--ycht-amber-border);
+}
+
+.ycht-priority-khan-cap {
+    background-color: var(--ycht-red-light);
+    color: var(--ycht-red-text);
+    border: 1px solid var(--ycht-red-border);
+    animation: ychtBlinkPriority 1.6s infinite ease-in-out;
+}
+
+@keyframes ychtBlinkPriority {
+    0% { opacity: 1; }
+    50% { opacity: 0.65; }
+    100% { opacity: 1; }
+}
+
+/* Status Badges */
+.ycht-status-moi {
+    background-color: var(--ycht-primary-light);
+    color: var(--ycht-primary-text);
+    border: 1px solid var(--ycht-primary-border);
+}
+
+.ycht-status-dang-xu-ly {
+    background-color: #e0e7ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
+}
+
+.ycht-status-cho-khach-hang {
+    background-color: var(--ycht-amber-light);
+    color: var(--ycht-amber-text);
+    border: 1px solid var(--ycht-amber-border);
+}
+
+.ycht-status-da-xu-ly {
+    background-color: var(--ycht-green-light);
+    color: var(--ycht-green-text);
+    border: 1px solid var(--ycht-green-border);
+}
+
+.ycht-status-dong {
+    background-color: var(--ycht-slate-100);
+    color: var(--ycht-slate-600);
+    border: 1px solid var(--ycht-slate-200);
+}
+
+.ycht-status-huy {
+    background-color: var(--ycht-red-light);
+    color: var(--ycht-red-text);
+    border: 1px solid var(--ycht-red-border);
+}
+
+/* Cờ rủi ro rời bỏ Badge */
+.ycht-risk-flag-badge {
+    background: var(--ycht-red-dark);
+    color: var(--ycht-white);
+    padding: 3px 8px;
+    border-radius: var(--ycht-radius-full);
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    box-shadow: 0 1px 4px rgba(220, 38, 38, 0.25);
+    white-space: nowrap;
+}
+
+.ycht-risk-flag-badge .material-symbols-outlined {
+    font-size: 14px;
+}
+
+/* Quick Status Selector in table */
+.ycht-inline-status-form {
+    margin: 0;
+    display: inline-block;
+}
+
+.ycht-inline-status-select {
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ycht-slate-700);
+    background-color: var(--ycht-slate-50);
+    border: 1px solid var(--ycht-slate-300);
+    border-radius: var(--ycht-radius-sm);
+    cursor: pointer;
+    outline: none;
+    transition: all 0.15s ease;
+    min-height: 32px;
+}
+
+.ycht-inline-status-select:focus,
+.ycht-inline-status-select:hover {
+    border-color: var(--ycht-primary);
+    background-color: var(--ycht-white);
+}
+
+/* User avatar helper in table */
+.ycht-user-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ycht-user-avatar-sm {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--ycht-slate-200);
+    color: var(--ycht-slate-700);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.ycht-user-info-text {
+    line-height: 1.25;
+}
+
+.ycht-user-name {
+    font-weight: 600;
+    color: var(--ycht-slate-900);
+    font-size: 13px;
+}
+
+.ycht-user-email {
+    font-size: 11.5px;
+    color: var(--ycht-slate-400);
+}
+
+/* Empty State */
+.ycht-empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--ycht-slate-500);
+}
+
+.ycht-empty-icon {
+    font-size: 48px;
+    color: var(--ycht-slate-300);
+    display: block;
+    margin-bottom: 12px;
+}
+
+.ycht-empty-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ycht-slate-700);
+    margin-bottom: 6px;
+}
+
+.ycht-empty-desc {
+    font-size: 13.5px;
+    color: var(--ycht-slate-500);
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+/* ====================================================================
+   BUTTON STYLES (ĐỒNG BỘ DESIGN SYSTEM)
+   ==================================================================== */
+.ycht-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 18px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    border-radius: var(--ycht-radius-md);
+    cursor: pointer;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+    min-height: 42px;
+    white-space: nowrap;
+}
+
+.ycht-btn-primary {
+    background-color: var(--ycht-primary);
+    color: var(--ycht-white);
+    border-color: var(--ycht-primary);
+    box-shadow: var(--ycht-shadow-sm);
+}
+
+.ycht-btn-primary:hover {
+    background-color: var(--ycht-primary-hover);
+    border-color: var(--ycht-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--ycht-shadow-md);
+}
+
+.ycht-btn-outline {
+    background-color: var(--ycht-white);
+    color: var(--ycht-slate-700);
+    border-color: var(--ycht-slate-300);
+}
+
+.ycht-btn-outline:hover {
+    background-color: var(--ycht-slate-50);
+    border-color: var(--ycht-slate-400);
+    color: var(--ycht-slate-900);
+}
+
+.ycht-btn-sm {
+    padding: 6px 12px;
+    font-size: 12.5px;
+    min-height: 34px;
+    border-radius: var(--ycht-radius-sm);
+}
+
+.ycht-btn-danger {
+    background-color: var(--ycht-red);
+    color: var(--ycht-white);
+    border-color: var(--ycht-red-dark);
+}
+
+.ycht-btn-danger:hover {
+    background-color: var(--ycht-red-dark);
+}
+
+/* ====================================================================
+   MODAL DIALOG (GHI NHẬN YÊU CẦU HỖ TRỢ)
+   ==================================================================== */
+.ycht-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1050;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.ycht-modal-backdrop.is-active {
+    display: flex;
+    opacity: 1;
+}
+
+.ycht-modal-card {
+    background: var(--ycht-white);
+    border-radius: var(--ycht-radius-lg);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(0.96);
+    transition: transform 0.2s ease;
+}
+
+.ycht-modal-backdrop.is-active .ycht-modal-card {
+    transform: scale(1);
+}
+
+.ycht-modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--ycht-border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background-color: var(--ycht-white);
+}
+
+.ycht-modal-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--ycht-slate-900);
+    margin: 0 0 4px 0;
+}
+
+.ycht-modal-subtitle {
+    font-size: 13px;
+    color: var(--ycht-slate-500);
+    margin: 0;
+}
+
+.ycht-modal-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--ycht-slate-400);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: var(--ycht-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease, background 0.15s ease;
+    min-width: 36px;
+    min-height: 36px;
+}
+
+.ycht-modal-close-btn:hover {
+    color: var(--ycht-slate-700);
+    background-color: var(--ycht-slate-100);
+}
+
+.ycht-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.ycht-modal-footer {
+    padding: 16px 24px;
+    background-color: var(--ycht-slate-50);
+    border-top: 1px solid var(--ycht-border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.ycht-form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.ycht-form-required {
+    color: var(--ycht-red);
+    font-weight: 700;
+}
+
+.ycht-form-help {
+    font-size: 12px;
+    color: var(--ycht-slate-400);
+    margin-top: 2px;
+}
+
+/* ====================================================================
+   ALERT NOTIFICATIONS
+   ==================================================================== */
+.ycht-alert {
+    padding: 14px 18px;
+    border-radius: var(--ycht-radius-md);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: var(--ycht-shadow-sm);
+}
+
+.ycht-alert-success {
+    background-color: var(--ycht-green-light);
+    color: var(--ycht-green-text);
+    border: 1px solid var(--ycht-green-border);
+}
+
+.ycht-alert-danger {
+    background-color: var(--ycht-red-light);
+    color: var(--ycht-red-text);
+    border: 1px solid var(--ycht-red-border);
+}
+
+/* ====================================================================
+   RESPONSIVE DESIGN (KIỂM TRA CHẶT CHẼ THEO QUY ĐỊNH)
+   - Desktop >= 1280px
+   - Laptop 1024 - 1279px
+   - Tablet 768 - 1023px
+   - Mobile 390px
+   - Mobile 360px
+   ==================================================================== */
+
+@media (max-width: 1024px) {
+    .ycht-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .ycht-filter-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .ycht-filter-actions {
+        grid-column: span 2;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 768px) {
+    .ycht-header-card {
+        padding: 18px 20px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ycht-header-actions {
+        width: 100%;
+    }
+
+    .ycht-header-actions .ycht-btn {
+        width: 100%;
+    }
+
+    .ycht-kpi-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .ycht-filter-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .ycht-filter-actions {
+        grid-column: span 1;
+        flex-direction: column;
+    }
+
+    .ycht-filter-actions .ycht-btn {
+        width: 100%;
+    }
+
+    .ycht-form-row-2 {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .ycht-risk-banner {
+        flex-direction: column;
+        gap: 14px;
+        padding: 16px 18px;
+    }
+
+    .ycht-risk-banner-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .ycht-modal-card {
+        max-width: 100%;
+        max-height: 95vh;
+        margin: 0;
+    }
+
+    .ycht-modal-header,
+    .ycht-modal-body,
+    .ycht-modal-footer {
+        padding: 16px 18px;
+    }
+
+    .ycht-modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .ycht-modal-footer .ycht-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 390px) {
+    .ycht-header-title-group h1 {
+        font-size: 19px;
+    }
+
+    .ycht-kpi-value {
+        font-size: 20px;
+    }
+
+    .ycht-data-table td,
+    .ycht-data-table th {
+        padding: 10px 12px;
+    }
+}
+
+@media (max-width: 360px) {
+    .ycht-header-title-group h1 {
+        font-size: 17.5px;
+    }
+
+    .ycht-btn {
+        font-size: 13px;
+        padding: 8px 14px;
+    }
+}
