@@ -192,6 +192,9 @@ public class LeadServlet extends HttpServlet {
                 LOGGER.log(Level.WARNING, "Mã bộ lọc không hợp lệ: " + savedFilterIdStr);
             }
         } else {
+            // Đọc từ khóa tìm kiếm nhanh (S4-09)
+            boLoc.setTuKhoa(request.getParameter("tuKhoa"));
+
             // Đọc 5 nhóm tiêu chí từ Query Parameters (AC1)
             boLoc.setTrangThai(request.getParameter("trangThai"));
 
@@ -322,6 +325,7 @@ public class LeadServlet extends HttpServlet {
         }
 
         BoLocLeadDTO tieuChi = new BoLocLeadDTO();
+        tieuChi.setTuKhoa(request.getParameter("tuKhoa"));
         tieuChi.setTrangThai(request.getParameter("trangThai"));
 
         String nguonStr = request.getParameter("nguonLeadId");

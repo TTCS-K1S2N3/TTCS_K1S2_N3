@@ -78,5 +78,30 @@ class BoLocLeadDTOTest {
         dto = new BoLocLeadDTO();
         dto.setSavedFilterId(5L);
         assertTrue(dto.coDieuKienLoc());
+
+        dto = new BoLocLeadDTO();
+        dto.setTuKhoa("TEST S4-04");
+        assertTrue(dto.coDieuKienLoc());
+        assertEquals(1, dto.soDieuKienLoc());
+    }
+
+    @Test
+    @DisplayName("toJson & tuJson: Chuyển đổi hai chiều có chứa từ khóa tìm kiếm (tuKhoa)")
+    void testToJsonVaTuJson_CoTuKhoa() {
+        BoLocLeadDTO goc = new BoLocLeadDTO();
+        goc.setTuKhoa("TEST S4-04");
+        goc.setTrangThai("MOI");
+
+        String json = goc.toJson();
+        assertNotNull(json);
+        assertTrue(json.contains("\"tuKhoa\":\"TEST S4-04\""));
+        assertTrue(json.contains("\"trangThai\":\"MOI\""));
+
+        BoLocLeadDTO phucHoi = BoLocLeadDTO.tuJson(json);
+        assertEquals("TEST S4-04", phucHoi.getTuKhoa());
+        assertEquals("MOI", phucHoi.getTrangThai());
+        assertTrue(phucHoi.coDieuKienLoc());
+        assertEquals(2, phucHoi.soDieuKienLoc());
+        assertEquals(1, phucHoi.soDieuKienNangCao());
     }
 }
