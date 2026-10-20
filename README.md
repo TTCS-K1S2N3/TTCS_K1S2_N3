@@ -1,4 +1,4 @@
-## TTCS_K1S2_N3 - Hệ Thống CRM Quản Lý Khách Hàng & Bán Hàng
+# TTCS_K1S2_N3 - Hệ Thống CRM Quản Lý Khách Hàng & Bán Hàng
 
 Dự án Thực tập cơ sở - Hệ thống quản lý khách hàng và quy trình bán hàng CRM đa vai trò (Admin, Director, Team Lead, Sales Rep, Marketing, Customer Success, Accountant).
 
