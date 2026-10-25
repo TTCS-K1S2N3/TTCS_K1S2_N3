@@ -21,6 +21,20 @@ SELECT 'DEMO-SU_KIEN','Sự kiện (demo)',103,1
 WHERE NOT EXISTS (SELECT 1 FROM nguon_lead WHERE ma_nguon='DEMO-SU_KIEN');
 
 -- Fail early if canonical users absent (constraint failure avoids partial seed).
+-- Demo-specific sources are seeded even if local DB missed the baseline sources.
+-- This keeps Lead fixtures independent of the exact current nguon_lead codes.
+INSERT INTO nguon_lead(ma_nguon,ten_nguon,thu_tu_hien_thi)
+SELECT 'DEMO-WEBSITE','Website (Demo)',201
+WHERE NOT EXISTS (SELECT 1 FROM nguon_lead WHERE ma_nguon='DEMO-WEBSITE');
+
+INSERT INTO nguon_lead(ma_nguon,ten_nguon,thu_tu_hien_thi)
+SELECT 'DEMO-GIOI_THIEU','Khách hàng giới thiệu (Demo)',202
+WHERE NOT EXISTS (SELECT 1 FROM nguon_lead WHERE ma_nguon='DEMO-GIOI_THIEU');
+
+INSERT INTO nguon_lead(ma_nguon,ten_nguon,thu_tu_hien_thi)
+SELECT 'DEMO-SU_KIEN','Sự kiện hội thảo (Demo)',203
+WHERE NOT EXISTS (SELECT 1 FROM nguon_lead WHERE ma_nguon='DEMO-SU_KIEN');
+
 INSERT INTO nganh_nghe(ma_nganh,ten_nganh,thu_tu_hien_thi)
  SELECT 'DEMO-CNTT','Công nghệ thông tin (Demo)',99 WHERE NOT EXISTS (SELECT 1 FROM nganh_nghe WHERE ma_nganh='DEMO-CNTT');
 INSERT INTO nganh_nghe(ma_nganh,ten_nganh,thu_tu_hien_thi)
@@ -793,280 +807,280 @@ INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_t
 SELECT 'DEMO-LEAD-001','Lead Demo 1','lead1@example.com','lead1@example.com','0987000001','Doanh nghiệp quan tâm Demo 1',
 n.id,27,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='GIOI_THIEU'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-GIOI_THIEU'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-001');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-002','Lead Demo 2','lead2@example.com','lead2@example.com','0987000002','Doanh nghiệp quan tâm Demo 2',
 n.id,34,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='SU_KIEN'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-SU_KIEN'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-002');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-003','Lead Demo 3','lead3@example.com','lead3@example.com','0987000003','Doanh nghiệp quan tâm Demo 3',
 n.id,41,'NONG','DA_PHAN_BO',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='WEBSITE'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-WEBSITE'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-003');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-004','Lead Demo 4','lead4@example.com','lead4@example.com','0987000004','Doanh nghiệp quan tâm Demo 4',
 n.id,48,'AM','DANG_CHAM_SOC',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),1,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='GIOI_THIEU'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-GIOI_THIEU'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-004');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-005','Lead Demo 5','lead5@example.com','lead5@example.com','0987000005','Doanh nghiệp quan tâm Demo 5',
 n.id,55,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='SU_KIEN'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-SU_KIEN'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-005');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-006','Lead Demo 6','lead6@example.com','lead6@example.com','0987000006','Doanh nghiệp quan tâm Demo 6',
 n.id,62,'NONG','DA_PHAN_BO',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),1,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='WEBSITE'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-WEBSITE'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-006');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-007','Lead Demo 7','lead7@example.com','lead7@example.com','0987000007','Doanh nghiệp quan tâm Demo 7',
 n.id,69,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='GIOI_THIEU'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-GIOI_THIEU'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-007');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-008','Lead Demo 8','lead8@example.com','lead8@example.com','0987000008','Doanh nghiệp quan tâm Demo 8',
 n.id,76,'AM','DANG_CHAM_SOC',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),1,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='SU_KIEN'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-SU_KIEN'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-008');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-009','Lead Demo 9','lead9@example.com','lead9@example.com','0987000009','Doanh nghiệp quan tâm Demo 9',
 n.id,83,'NONG','DA_PHAN_BO',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='WEBSITE'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-WEBSITE'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-009');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-010','Lead Demo 10','lead10@example.com','lead10@example.com','0987000010','Doanh nghiệp quan tâm Demo 10',
 n.id,90,'AM','TU_CHOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='GIOI_THIEU'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-GIOI_THIEU'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-010');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-011','Lead Demo 11','lead11@example.com','lead11@example.com','0987000011','Doanh nghiệp quan tâm Demo 11',
 n.id,97,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='SU_KIEN'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-SU_KIEN'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-011');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-012','Lead Demo 12','lead12@example.com','lead12@example.com','0987000012','Doanh nghiệp quan tâm Demo 12',
 n.id,23,'NONG','DANG_CHAM_SOC',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),1,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='WEBSITE'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-WEBSITE'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-012');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-013','Lead Demo 13','lead13@example.com','lead13@example.com','0987000013','Doanh nghiệp quan tâm Demo 13',
 n.id,30,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='GIOI_THIEU'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-GIOI_THIEU'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-013');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-014','Lead Demo 14','lead14@example.com','lead14@example.com','0987000014','Doanh nghiệp quan tâm Demo 14',
 n.id,37,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='SU_KIEN'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-SU_KIEN'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-014');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-015','Lead Demo 15','lead15@example.com','lead15@example.com','0987000015','Doanh nghiệp quan tâm Demo 15',
 n.id,44,'NONG','DA_PHAN_BO',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='WEBSITE'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-WEBSITE'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-015');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-016','Lead Demo 16','lead16@example.com','lead16@example.com','0987000016','Doanh nghiệp quan tâm Demo 16',
 n.id,51,'AM','DANG_CHAM_SOC',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),1,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='GIOI_THIEU'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-GIOI_THIEU'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-016');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-017','Lead Demo 17','lead17@example.com','lead17@example.com','0987000017','Doanh nghiệp quan tâm Demo 17',
 n.id,58,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='SU_KIEN'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-SU_KIEN'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-017');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-018','Lead Demo 18','lead18@example.com','lead18@example.com','0987000018','Doanh nghiệp quan tâm Demo 18',
 n.id,65,'NONG','DA_PHAN_BO',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),1,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='WEBSITE'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-WEBSITE'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-018');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-019','Lead Demo 19','lead19@example.com','lead19@example.com','0987000019','Doanh nghiệp quan tâm Demo 19',
 n.id,72,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='GIOI_THIEU'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-GIOI_THIEU'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-019');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-020','Lead Demo 20','lead20@example.com','lead20@example.com','0987000020','Doanh nghiệp quan tâm Demo 20',
 n.id,79,'AM','TU_CHOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='SU_KIEN'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-SU_KIEN'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-020');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-021','Lead Demo 21','lead21@example.com','lead21@example.com','0987000021','Doanh nghiệp quan tâm Demo 21',
 n.id,86,'NONG','DA_PHAN_BO',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='WEBSITE'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-WEBSITE'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-021');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-022','Lead Demo 22','lead22@example.com','lead22@example.com','0987000022','Doanh nghiệp quan tâm Demo 22',
 n.id,93,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='GIOI_THIEU'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-GIOI_THIEU'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-022');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-023','Lead Demo 23','lead23@example.com','lead23@example.com','0987000023','Doanh nghiệp quan tâm Demo 23',
 n.id,100,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='SU_KIEN'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-SU_KIEN'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-023');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-024','Lead Demo 24','lead24@example.com','lead24@example.com','0987000024','Doanh nghiệp quan tâm Demo 24',
 n.id,26,'NONG','DANG_CHAM_SOC',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),1,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='WEBSITE'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-WEBSITE'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-024');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-025','Lead Demo 25','lead25@example.com','lead25@example.com','0987000025','Doanh nghiệp quan tâm Demo 25',
 n.id,33,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='GIOI_THIEU'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-GIOI_THIEU'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-025');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-026','Lead Demo 26','lead26@example.com','lead26@example.com','0987000026','Doanh nghiệp quan tâm Demo 26',
 n.id,40,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='SU_KIEN'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-SU_KIEN'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-026');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-027','Lead Demo 27','lead27@example.com','lead27@example.com','0987000027','Doanh nghiệp quan tâm Demo 27',
 n.id,47,'NONG','DA_PHAN_BO',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='WEBSITE'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-WEBSITE'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-027');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-028','Lead Demo 28','lead28@example.com','lead28@example.com','0987000028','Doanh nghiệp quan tâm Demo 28',
 n.id,54,'AM','DANG_CHAM_SOC',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),1,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='GIOI_THIEU'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-GIOI_THIEU'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-028');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-029','Lead Demo 29','lead29@example.com','lead29@example.com','0987000029','Doanh nghiệp quan tâm Demo 29',
 n.id,61,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='SU_KIEN'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-SU_KIEN'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-029');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-030','Lead Demo 30','lead30@example.com','lead30@example.com','0987000030','Doanh nghiệp quan tâm Demo 30',
 n.id,68,'NONG','TU_CHOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='WEBSITE'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-WEBSITE'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-030');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-031','Lead Demo 31','lead31@example.com','lead31@example.com','0987000031','Doanh nghiệp quan tâm Demo 31',
 n.id,75,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='GIOI_THIEU'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-GIOI_THIEU'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-031');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-032','Lead Demo 32','lead32@example.com','lead32@example.com','0987000032','Doanh nghiệp quan tâm Demo 32',
 n.id,82,'AM','DANG_CHAM_SOC',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),1,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='SU_KIEN'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-SU_KIEN'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-032');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-033','Lead Demo 33','lead33@example.com','lead33@example.com','0987000033','Doanh nghiệp quan tâm Demo 33',
 n.id,89,'NONG','DA_PHAN_BO',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='WEBSITE'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-WEBSITE'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-033');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-034','Lead Demo 34','lead34@example.com','lead34@example.com','0987000034','Doanh nghiệp quan tâm Demo 34',
 n.id,96,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='GIOI_THIEU'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-GIOI_THIEU'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-034');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-035','Lead Demo 35','lead35@example.com','lead35@example.com','0987000035','Doanh nghiệp quan tâm Demo 35',
 n.id,22,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='SU_KIEN'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-SU_KIEN'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-035');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-036','Lead Demo 36','lead36@example.com','lead36@example.com','0987000036','Doanh nghiệp quan tâm Demo 36',
 n.id,29,'NONG','DANG_CHAM_SOC',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),1,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='WEBSITE'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-WEBSITE'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-036');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-037','Lead Demo 37','lead37@example.com','lead37@example.com','0987000037','Doanh nghiệp quan tâm Demo 37',
 n.id,36,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='GIOI_THIEU'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-GIOI_THIEU'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-037');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-038','Lead Demo 38','lead38@example.com','lead38@example.com','0987000038','Doanh nghiệp quan tâm Demo 38',
 n.id,43,'AM','MOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='SU_KIEN'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-SU_KIEN'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-038');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-039','Lead Demo 39','lead39@example.com','lead39@example.com','0987000039','Doanh nghiệp quan tâm Demo 39',
 n.id,50,'NONG','DA_PHAN_BO',u.id,u.nhom_kinh_doanh_id,
 DATE_SUB(NOW(),INTERVAL 3 DAY),DATE_SUB(NOW(),INTERVAL 1 DAY),0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='WEBSITE'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-WEBSITE'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-039');
 
 INSERT INTO `lead`(ma_lead,ho_ten,email,email_chuan_hoa,so_dien_thoai,ten_cong_ty,nguon_lead_id,diem,phan_loai,trang_thai,nguoi_phu_trach_id,nhom_phan_bo_id,duoc_phan_bo_luc,han_phan_hoi_sla,qua_sla,created_by)
 SELECT 'DEMO-LEAD-040','Lead Demo 40','lead40@example.com','lead40@example.com','0987000040','Doanh nghiệp quan tâm Demo 40',
 n.id,57,'AM','TU_CHOI',NULL,NULL,
 NULL,NULL,0,u.id
-FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='GIOI_THIEU'
+FROM nguon_lead n JOIN nguoi_dung u ON u.email='sales@crm.vn' WHERE n.ma_nguon='DEMO-GIOI_THIEU'
 AND NOT EXISTS (SELECT 1 FROM `lead` WHERE ma_lead='DEMO-LEAD-040');
 
 INSERT INTO co_hoi(ma_co_hoi,ten_co_hoi,khach_hang_id,nguoi_lien_he_chinh_id,giai_doan_id,nguoi_phu_trach_id,nhom_kinh_doanh_id,gia_tri_du_kien,xac_suat,ngay_chot_du_kien,trang_thai,gia_tri_chot_thuc_te,ngay_ky,ly_do_thang_thua_id,mo_ta_chi_tiet,created_by)
