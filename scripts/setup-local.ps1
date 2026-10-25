@@ -34,10 +34,34 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $originalLocation = Get-Location
 
-function Assert-LastExitCode {
-    param([string]$Step)
-    if ($LASTEXITCODE -ne 0) {
-        throw "$Step that bai (exit code: $LASTEXITCODE)."
+function Invoke-ExternalCommand {
+    param(
+        [Parameter(Mandatory = $true)][string]$Name,
+        [string[]]$Arguments = @(),
+        [switch]$CaptureOutput
+    )
+
+    # PowerShell 5.1 can treat native STDERR warnings as terminating
+    # NativeCommandError when ErrorActionPreference is Stop.
+    # Inspect the process exit code instead of classifying STDERR as failure.
+    $savedPreference = $ErrorActionPreference
+    $exitCode = -1
+    try {
+        $ErrorActionPreference = 'Continue'
+        if ($CaptureOutput) {
+            $output = @(& $Name @Arguments 2>&1)
+        } else {
+            & $Name @Arguments 2>&1 | ForEach-Object { Write-Host $_.ToString() }
+        }
+        $exitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $savedPreference
+    }
+    if ($exitCode -ne 0) {
+        throw "$Name $($Arguments -join ' ') that bai (exit code: $exitCode)."
+    }
+    if ($CaptureOutput) {
+        return $output
     }
 }
 
@@ -57,8 +81,7 @@ try {
         }
     }
 
-    $javaInfo = & java --version 2>&1
-    Assert-LastExitCode 'Kiem tra Java'
+    $javaInfo = Invoke-ExternalCommand -Name 'java' -Arguments @('--version') -CaptureOutput
     $javaText = $javaInfo -join "`n"
     $javaMatch = [regex]::Match($javaText, '(?im)^(?:openjdk|java)\s+(\d+)')
     if (-not $javaMatch.Success) {
@@ -70,8 +93,7 @@ try {
     }
     Write-Host "[OK] Java $javaMajor" -ForegroundColor Green
 
-    $mavenInfo = & mvn -version 2>&1
-    Assert-LastExitCode 'Kiem tra Maven'
+    $mavenInfo = Invoke-ExternalCommand -Name 'mvn' -Arguments @('-version') -CaptureOutput
     $mavenText = $mavenInfo -join "`n"
     $mavenJavaMatch = [regex]::Match($mavenText, '(?i)Java version:\s*(\d+)')
     if (-not $mavenJavaMatch.Success -or [int]$mavenJavaMatch.Groups[1].Value -lt 25) {
@@ -99,15 +121,12 @@ try {
 
     if ($SkipTests) {
         Write-Warning 'Dang build bo qua test; khong duoc xem la test PASS.'
-        & mvn clean package '-DskipTests'
-        Assert-LastExitCode 'Maven package (skip tests)'
+        Invoke-ExternalCommand -Name 'mvn' -Arguments @('clean', 'package', '-DskipTests')
     } else {
         Write-Host '[BUILD] Running mvn clean test...' -ForegroundColor Cyan
-        & mvn clean test
-        Assert-LastExitCode 'Maven test'
+        Invoke-ExternalCommand -Name 'mvn' -Arguments @('clean', 'test')
         Write-Host '[BUILD] Running mvn clean package...' -ForegroundColor Cyan
-        & mvn clean package
-        Assert-LastExitCode 'Maven package'
+        Invoke-ExternalCommand -Name 'mvn' -Arguments @('clean', 'package')
     }
 
     $warPath = Join-Path $projectRoot 'target\crm-ban-hang.war'
@@ -127,8 +146,7 @@ try {
             -not (Test-Path -LiteralPath $webappsDir -PathType Container)) {
             throw 'CATALINA_HOME khong tro toi mot ban cai Tomcat hop le.'
         }
-        $tomcatInfo = & $versionBat 2>&1 | Out-String
-        Assert-LastExitCode 'Kiem tra Tomcat'
+        $tomcatInfo = Invoke-ExternalCommand -Name $versionBat -CaptureOutput | Out-String
         if ($tomcatInfo -notmatch 'Apache Tomcat/11\.') {
             throw 'Project dung Jakarta Servlet 6.1: can Apache Tomcat 11, khong dung Tomcat 10.1.'
         }
