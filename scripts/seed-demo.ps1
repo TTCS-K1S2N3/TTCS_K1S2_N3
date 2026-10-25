@@ -74,8 +74,7 @@ try {
     }
     $counts = @{}
     foreach ($line in $outputLines) {
-        if ($line -match '^(customers|leads|opportunities|activities|quotes|contracts)\s+(\d+)\s*
-) {
+        if ($line -match '^(customers|leads|opportunities|activities|quotes|contracts)[ \t]+([0-9]+)') {
             $counts[$Matches[1]] = [int]$Matches[2]
         }
     }
